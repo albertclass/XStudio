@@ -1,0 +1,8 @@
+# ignore some directory
+
+.vscode
+/bin
+/lib
+/prj
+/obj
+/src/ServerBase

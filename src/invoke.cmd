@@ -1,0 +1,4 @@
+@ECHO OFF
+
+SET PATH=%PREMAKE_PATH%;%PATH%
+cmd /k
