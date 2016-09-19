@@ -6,7 +6,7 @@ XStudio is a game base library. that very useful library to help build game serv
 this library has much more useful code snippet like singleton, thread pool, http request, md5, sha1, file watcher and so on.
 
 ## Netbase
-this is a network library
+this is a network library package from asio.
 
 ## Database
 this is a package for mysql. if you well, you can translate to mssql quickly.
