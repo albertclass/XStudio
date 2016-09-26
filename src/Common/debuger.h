@@ -147,13 +147,13 @@ namespace xgc
 		xgc_uint32 Release() { --mRef; return mRef; }
 	public:
 		void FunctionBegin( const char* function, int line );
-		void FunctionEnd( xgc_time32 nTimeOut );
+		void FunctionEnd( xgc_time64 timeout );
 
 	private:
 		struct CallFrame
 		{
 			xgc_lpcstr lpFileName;
-			volatile xgc_uint64 nTime;
+			volatile xgc_time64 nTime;
 			xgc_uint32 nLine;
 		}mStack[WATCH_STACKFRAME_MAX];
 

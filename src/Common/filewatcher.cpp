@@ -10,14 +10,17 @@ namespace xgc
 	namespace common
 	{
 		#define MAX_BUFF_SIZE (1024*4)
+		/// 最后一次错误的代码
 		static xgc_ulong  last_error = 0;
+		/// 完成端口句柄
 		static HANDLE iocp_handle = xgc_nullptr;
-
+		/// 守护线程是否仍需工作
 		static xgc_bool hardwork = true;
 		/// 线程锁
 		static std::mutex thread_guard;
+		/// 工作线程数组
+		static xgc_vector< std::thread > work_threads;
 
-		static std::vector< std::thread > work_threads;
 		///
 		/// \brief 事件句柄
 		///

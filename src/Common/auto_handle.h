@@ -8,6 +8,7 @@
 #define _AUTO_HANDLE_H_
 #include "defines.h"
 #include "exports.h"
+
 namespace xgc
 {
 	namespace common

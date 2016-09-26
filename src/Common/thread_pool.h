@@ -83,15 +83,15 @@ namespace xgc
 		class thread_pool
 		{
 		private:
-			// 线程池
+			/// 线程池
 			xgc_vector<std::thread> pool;
-			// 任务队列
+			/// 任务队列
 			xgc_queue<task_base*> tasks;
-			// 同步
+			/// 同步
 			std::mutex m_task;
-			// 光栅
+			/// 光栅
 			std::condition_variable cv_task;
-			// 是否关闭提交
+			/// 是否关闭提交
 			std::atomic<bool> stop;
 
 		public:

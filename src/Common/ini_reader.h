@@ -9,9 +9,8 @@
 
 #ifndef _INI_H_
 #define _INI_H_
-#include "exports.h"
 #include "defines.h"
-#include <vector>
+#include "exports.h"
 
 namespace xgc 
 {

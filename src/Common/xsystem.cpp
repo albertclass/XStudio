@@ -138,7 +138,7 @@ namespace xgc
 	{
 		LARGE_INTEGER li;
 
-		assert(ftime);
+		XGC_ASSERT_RETURN(ftime,0);
 		li.LowPart = ftime->dwLowDateTime;
 		li.HighPart = ftime->dwHighDateTime;
 		return li.QuadPart;
@@ -183,10 +183,7 @@ namespace xgc
 		system_time_delta = system_time - last_system_time_;
 		time_delta = time - last_time_;
 
-		assert(time_delta != 0);
-
-		if (time_delta == 0)
-			return -1;
+		XGC_ASSERT_RETURN(time_delta != 0, -1);
 
 		// We add time_delta / 2 so the result is rounded.
 		cpu = (int)((system_time_delta * 100 + time_delta / 2) / time_delta);

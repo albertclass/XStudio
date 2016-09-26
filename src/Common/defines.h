@@ -4,7 +4,7 @@
 #if defined( _WINDOWS ) || defined( WIN32 ) || defined( WIN64 )
 #	pragma message( __FILE__ " using visual studio" )
 #elif defined( __GNUC__ )
-#	pragma message( "using gnuc" )
+#	pragma message( __FILE__ " using gnuc" )
 #	define __cdecl __attribute__((__cdecl__))
 #else
 #	pragma message( "using other" )
@@ -23,7 +23,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <inttypes.h>
+
+#include <set>
+#include <map>
+#include <list>
+#include <stack>
+#include <queue>
+#include <deque>
+#include <vector>
+#include <string>
+#include <array>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 
 #ifdef _DEBUG
 #	define XGC_NEW new ( _NORMAL_BLOCK, __FILE__, __LINE__ )
@@ -104,8 +118,6 @@
 #	define CPYSZ( pch1, pch2 )	( _mbccpy( pch1, pch2 ) )
 #	define DEFCH( ch )			( ( xgc_bytecptr )&ch[0] )
 
-#ifndef _NO_DEFINES
-#define _NO_DEFINES
 typedef void				xgc_void;
 typedef bool				xgc_bool;
 typedef char				xgc_char;
@@ -148,7 +160,6 @@ typedef xgc_uint32			xgc_time32;
 typedef xgc_uint64			xgc_time64;
 typedef time_t				xgc_time_t;
 typedef xgc_lpvoid			xgc_handle;
-#endif // _DEFINES
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 // XGC_ASSERT ¶¨Òå
@@ -241,9 +252,72 @@ typedef xgc_lpvoid			xgc_handle;
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #define XGC_NONE xgc_void( 0 )
 
-#define HeaderFromMember( TYPE, MEMBER_POINT, MEMBER_NAME ) ((TYPE *)( MEMBER_POINT - (((TYPE *)0)->MEMBER_NAME) ))
+#define XGC_HEADER_FROM_MEMBER( TYPE, MEMBER_POINT, MEMBER_NAME ) ((TYPE *)( MEMBER_POINT - (((TYPE *)0)->MEMBER_NAME) ))
 
-const static xgc_uint8 XCB_MAX_HASH_ID = 10;
+#if defined(XGC_ALLOCATOR)
+#	include "allocator.h"
+#	define xgc_allocator xgc::common::allocator
+#	define xgc_allocator_fast xgc::common::allocator
+#elif defined(BOOST_ALLOCATOR)
+#	include "boost/pool/pool_alloc.hpp"
+#	include "boost/pool/singleton_pool.hpp"
+#	include "boost/pool/detail/mutex.hpp"
+#	define xgc_allocator boost::pool_allocator
+#	define xgc_allocator_fast boost::fast_pool_allocator
+#else
+#	define xgc_allocator std::allocator
+#	define xgc_allocator_fast std::allocator
+#endif
 
-#include "allocator.h"
+#pragma warning( disable:4251 )
+using xgc_string = std::basic_string< char, std::char_traits<char>, xgc_allocator< char > >;
+
+template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
+using xgc_set = std::set< _Kty, _Pr, _Alloc >;
+
+template<class _Ty1, class _Ty2 >
+using xgc_pair = std::pair< _Ty1, _Ty2 >;
+
+template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
+using xgc_multiset = std::multiset< _Kty, _Pr, _Alloc >;
+
+template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+using xgc_map = std::map< _Kty, _Ty, _Pr, _Alloc >;
+
+template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+using xgc_multimap = std::multimap< _Kty, _Ty, _Pr, _Alloc >;
+
+template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+using xgc_unordered_map = std::unordered_map< _Kty, _Ty, _Hasher, _Keyeq, _Alloc >;
+
+template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
+using xgc_unordered_set = std::unordered_set< _Kty, _Hasher, _Keyeq, _Alloc > ;
+
+template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+using xgc_unordered_multimap = std::unordered_multimap < _Kty, _Ty, _Hasher, _Keyeq, _Alloc > ;
+
+template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
+using xgc_unordered_multiset = std::unordered_multiset < _Kty, _Hasher, _Keyeq, _Alloc > ;
+
+template<class _Ty, class _Ax = xgc_allocator< _Ty > >
+using xgc_list = std::list< _Ty, _Ax >;
+
+template<class _Ty, class _Ax = xgc_allocator< _Ty > >
+using xgc_deque = std::deque< _Ty, _Ax >;
+
+template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
+using xgc_queue = std::queue< _Ty, _Container >;
+
+template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
+using xgc_stack = std::stack< _Ty, _Container >;
+
+template< class _Ty, class _Ax = xgc_allocator_fast<_Ty> >
+using xgc_vector = std::vector< _Ty, _Ax >;
+
+template < class _Ty, size_t _Size >
+using xgc_array = std::array< _Ty, _Size >;
+
+template < class ... _Types >
+using xgc_tuple = std::tuple < _Types... >;
+
 #endif //_MACRO_DEFINE_H

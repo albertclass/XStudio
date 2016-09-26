@@ -1,6 +1,6 @@
 local scriptPath = _SCRIPT_PATH
 
-solution "xgcbase"
+solution "xgc"
     configurations { "Debug", "Release" }
     platforms {"Win32", "x64"}
     location "../prj"

@@ -53,7 +53,7 @@ namespace xgc
 		///
 		/// \brief 初始化文件监视器
 		///
-		/// \prarm thread_count 线程数量
+		/// \prarm thread_count 线程数量, 0 - 不启动守护线程，需手动调用do_filewatcher_notify
 		/// \param thread_interval 线程等待间隔，线程数为0时无效
 		///
 		/// \author albert.xu

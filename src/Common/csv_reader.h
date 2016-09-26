@@ -52,23 +52,23 @@ namespace xgc
 			///
 			/// 获取单元格内容 
 			/// [6/10/2014] create by albert.xu
-			/// @param nRow 文件的行号
-			/// @param nCol 表格的列号
+			/// @param row 文件的行号
+			/// @param col 表格的列号
 			///
 			xgc_lpcstr get_cell( xgc_size row, xgc_size col ) const throw();
 
 			///
 			/// 获取单元格内容 
 			/// [6/10/2014] create by albert.xu
-			/// @param nRow 文件的行号
-			/// @param nCol 表格的列号
+			/// @param row 文件的行号
+			/// @param col 表格的列号
 			///
 			xgc_lpcstr set_cell( xgc_size row, xgc_size col, xgc_lpstr str );
 
 			///
 			/// 获取标题所在的列 
 			/// [6/10/2014] create by albert.xu
-			/// @param pTitle 标题
+			/// @param title 标题
 			///
 			xgc_int32 get_col( xgc_lpcstr title ) const throw();
 
@@ -77,6 +77,7 @@ namespace xgc
 			/// [6/10/2014] create by albert.xu
 			/// @param buffer 缓冲区首地址
 			/// @param buffer_size 缓冲区大小
+			/// @param split 分隔符
 			///
 			xgc_bool parse( xgc_lpstr buffer, xgc_size buffer_size, xgc_char split );
 
@@ -89,7 +90,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2015/12/16 17:39
 			///
-			xgc_bool load( xgc_lpcstr pathname, xgc_char split = '\t', xgc_bool has_title = true );
+			xgc_bool load( xgc_lpcstr pathname, xgc_char split = ',', xgc_bool has_title = true );
 
 			///
 			/// \brief 读取单元格数据
