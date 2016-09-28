@@ -89,7 +89,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2015/12/16 17:39
 			///
-			xgc_bool load( xgc_lpcstr pathname, xgc_char split = '\t', xgc_bool has_title = true );
+			xgc_bool load( xgc_lpcstr pathname, xgc_char split = ',', xgc_bool has_title = true );
 
 			///
 			/// \brief 读取单元格数据

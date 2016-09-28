@@ -78,6 +78,21 @@ namespace xgc
 			}
 		};
 
+		template< class K, class V, class P, class A >
+		struct ContainerDestroyer< typename std::map< K, V, P, A >* >
+		{
+			XGC_INLINE static void Destroy( const std::map< K, V, P, A >* C )
+			{
+				for( auto iter = C->begin(); iter != C->end(); ++iter )
+				{
+					ContainerDestroyer< K >::Destroy( iter->first );
+					ContainerDestroyer< V >::Destroy( iter->second );
+				}
+
+				delete C;
+			}
+		};
+
 		template< class K, class V, class H, class P, class A >
 		struct ContainerDestroyer< typename std::unordered_map< K, V, H, P, A > >
 		{
@@ -91,6 +106,21 @@ namespace xgc
 			}
 		};
 
+		template< class K, class V, class H, class P, class A >
+		struct ContainerDestroyer< typename std::unordered_map< K, V, H, P, A >* >
+		{
+			XGC_INLINE static void Destroy( const std::unordered_map< K, V, H, P, A >* C )
+			{
+				for( auto iter = C->begin(); iter != C->end(); ++iter )
+				{
+					ContainerDestroyer< K >::Destroy( iter->first );
+					ContainerDestroyer< V >::Destroy( iter->second );
+				}
+
+				delete C;
+			}
+		};
+
 		template< class V, class P, class A >
 		struct ContainerDestroyer< typename std::set< V, P, A > >
 		{
@@ -100,60 +130,6 @@ namespace xgc
 				{
 					ContainerDestroyer< V >::Destroy( *iter );
 				}
-			}
-		};
-
-		template< class K, class H, class P, class A >
-		struct ContainerDestroyer< typename std::unordered_set< K, H, P, A > >
-		{
-			XGC_INLINE static void Destroy( const std::unordered_set< K, H, P, A >& C )
-			{
-				for( auto iter = C.begin(); iter != C.end(); ++iter )
-				{
-					ContainerDestroyer< K >::Destroy( *iter );
-				}
-			}
-		};
-
-		template< class V, class A >
-		struct ContainerDestroyer< typename std::list< V, A > >
-		{
-			XGC_INLINE static void Destroy( const std::list< V, A >& C )
-			{
-				for( auto iter = C.begin(); iter != C.end(); ++iter )
-				{
-					ContainerDestroyer< V >::Destroy( *iter );
-				}
-			}
-		};
-
-		template< class V, class A >
-		struct ContainerDestroyer< typename std::vector< V, A > >
-		{
-			XGC_INLINE static void Destroy( const std::vector< V, A >& C )
-			{
-				for( auto iter = C.begin(); iter != C.end(); ++iter )
-				{
-					ContainerDestroyer< V >::Destroy( *iter );
-				}
-			}
-		};
-
-		//////////////////////////////////////////////////////////////////////////
-		// Point version
-		//////////////////////////////////////////////////////////////////////////
-		template< class K, class V, class P, class A >
-		struct ContainerDestroyer< typename std::map< K, V, P, A >* >
-		{
-			XGC_INLINE static void Destroy( const std::map< K, V, P, A >* C )
-			{
-				for( auto iter = C->begin(); iter != C->end(); ++iter )
-				{
-					ContainerDestroyer< K >::Destroy( iter->first );
-					ContainerDestroyer< V >::Destroy( iter->second );
-				}
-
-				delete C;
 			}
 		};
 
@@ -171,6 +147,44 @@ namespace xgc
 			}
 		};
 
+		template< class K, class H, class P, class A >
+		struct ContainerDestroyer< typename std::unordered_set< K, H, P, A > >
+		{
+			XGC_INLINE static void Destroy( const std::unordered_set< K, H, P, A >& C )
+			{
+				for( auto iter = C.begin(); iter != C.end(); ++iter )
+				{
+					ContainerDestroyer< K >::Destroy( *iter );
+				}
+			}
+		};
+
+		template< class K, class H, class P, class A >
+		struct ContainerDestroyer< typename std::unordered_set< K, H, P, A >* >
+		{
+			XGC_INLINE static void Destroy( const std::unordered_set< K, H, P, A >* C )
+			{
+				for( auto iter = C->begin(); iter != C->end(); ++iter )
+				{
+					ContainerDestroyer< K >::Destroy( *iter );
+				}
+
+				delete C;
+			}
+		};
+
+		template< class V, class A >
+		struct ContainerDestroyer< typename std::list< V, A > >
+		{
+			XGC_INLINE static void Destroy( const std::list< V, A >& C )
+			{
+				for( auto iter = C.begin(); iter != C.end(); ++iter )
+				{
+					ContainerDestroyer< V >::Destroy( *iter );
+				}
+			}
+		};
+
 		template< class V, class A >
 		struct ContainerDestroyer< typename std::list< V, A >* >
 		{
@@ -182,6 +196,18 @@ namespace xgc
 				}
 
 				delete C;
+			}
+		};
+
+		template< class V, class A >
+		struct ContainerDestroyer< typename std::vector< V, A > >
+		{
+			XGC_INLINE static void Destroy( const std::vector< V, A >& C )
+			{
+				for( auto iter = C.begin(); iter != C.end(); ++iter )
+				{
+					ContainerDestroyer< V >::Destroy( *iter );
+				}
 			}
 		};
 

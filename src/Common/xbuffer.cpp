@@ -28,7 +28,7 @@ namespace xgc
 		shared_memory_buffer::shared_memory_buffer( const shared_memory_buffer& buffer ) 
 			: shared_memory_( INVALID_HANDLE_VALUE )
 		{
-			assert( DuplicateHandle( GetCurrentProcess(), buffer.shared_memory_,
+			XGC_ASSERT( DuplicateHandle( GetCurrentProcess(), buffer.shared_memory_,
 									 GetCurrentProcess(), &shared_memory_, FILE_MAP_ALL_ACCESS, false, 0 ) );
 		}
 

@@ -10,14 +10,17 @@ namespace xgc
 	namespace common
 	{
 		#define MAX_BUFF_SIZE (1024*4)
+		/// ×îºóÒ»´Î´íÎóµÄ´úÂë
 		static xgc_ulong  last_error = 0;
+		/// Íê³É¶Ë¿Ú¾ä±ú
 		static HANDLE iocp_handle = xgc_nullptr;
-
+		/// ÊØ»¤Ïß³ÌÊÇ·ñÈÔĞè¹¤×÷
 		static xgc_bool hardwork = true;
 		/// çº¿ç¨‹é”
 		static std::mutex thread_guard;
+		/// ¹¤×÷Ïß³ÌÊı×é
+		static xgc_vector< std::thread > work_threads;
 
-		static std::vector< std::thread > work_threads;
 		///
 		/// \brief äº‹ä»¶å¥æŸ„
 		///

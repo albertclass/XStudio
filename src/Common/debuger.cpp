@@ -14,7 +14,7 @@ namespace xgc
 {
 	static unsigned int __stdcall CheckThread( LPVOID lpParams );
 	static xgc_char gTimeLogPath[_MAX_PATH] = { 0 };
-	static xgc_time32 gTimeoutSeconds = 500;
+	static xgc_time64 gTimeoutSeconds = 500;
 
 	InvokeWatcherMgr::InvokeWatcherMgr()
 		: mFinished( false )
@@ -154,7 +154,7 @@ namespace xgc
 		++mCallDeep;
 	}
 
-	void InvokeWatcher::FunctionEnd( xgc_time32 nTimeOut )
+	void InvokeWatcher::FunctionEnd( xgc_time64 timeout )
 	{
 		if( true == mIsClose )
 			return;
@@ -169,7 +169,7 @@ namespace xgc
 				if( now > pre )
 				{
 					timespan spn = now - pre;
-					if( spn.to_millisecnods() > nTimeOut )
+					if( spn.to_millisecnods() > (xgc_int64)timeout )
 					{
 						mIsClose = true;
 						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].nLine, LOGLVL_SYS_WARNING, "函数执行超时%I64u毫秒", spn.to_millisecnods() );
@@ -246,7 +246,7 @@ namespace xgc
 	/// 设置超时日志
 	/// [12/3/2014] create by albert.xu
 	///
-	COMMON_API xgc_void SetDebugerTimeout( xgc_time32 millseconds )
+	COMMON_API xgc_void SetDebugerTimeout( xgc_time64 millseconds )
 	{
 		gTimeoutSeconds = millseconds;
 	}
