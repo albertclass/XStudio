@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file exception.h
-/// \date °ËÔÂ 2016
+/// \date å…«æœˆ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief windows Òì³£´¦ÀíÀà
+/// \brief windows å¼‚å¸¸å¤„ç†ç±»
 /// 
 
 #ifndef _EXCEPTION_H_
@@ -70,25 +70,25 @@ namespace xgc
 	COMMON_API xgc_void etc_exception_call( const char* file, int line );
 
 	///
-	/// ´òÓ¡µ±Ç°¶ÑÕ»ĞÅÏ¢
+	/// æ‰“å°å½“å‰å †æ ˆä¿¡æ¯
 	/// [9/2/2014] create by albert.xu
 	///
 	COMMON_API void DumpStackFrame();
 
 	///
-	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
+	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API void SetExceptionLog( xgc_lpcstr pathname );
 
 	///
-	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
+	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API void SetExceptionExt( xgc_lpcstr pathname );
 
 	///
-	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
+	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API void SetExceptionDmp( xgc_lpcstr pathname );

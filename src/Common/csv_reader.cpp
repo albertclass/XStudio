@@ -49,13 +49,13 @@ namespace xgc
 		{
 			XGC_ASSERT_RETURN( nCol < cols, false );
 
-			xgc_size idx = ( nRow >> 12 ); // ����12λ ÿ��4096,���·���һ���ڴ�
+			xgc_size idx = ( nRow >> 12 ); // 右移12位 每过4096,重新分配一次内存
 			XGC_ASSERT_RETURN( idx < XGC_COUNTOF( chunk ), false );
 
 			xgc_lpvoid chk = chunk[idx];
 			if( chk == xgc_nullptr )
 			{
-				// һ�η���4096��
+				// 一次分配4096行
 				chunk[idx] = chk = (xgc_lpvoid) malloc( 0x1000 * sizeof( xgc_lpvoid ) * cols );
 				if( chk == xgc_nullptr )
 					return false;
@@ -84,9 +84,9 @@ namespace xgc
 		xgc_bool csv_reader::parse( xgc_lpstr buffer, xgc_size buffer_size, xgc_char split )
 		{
 			xgc_bool	is_string = false;
-			xgc_size&	n = rows; // �к�
-			xgc_size	c = 0; // ��ǰ�ǵڼ���
-			xgc_size	i = 0; // ��ȡλ��
+			xgc_size&	n = rows; // 行号
+			xgc_size	c = 0; // 当前是第几列
+			xgc_size	i = 0; // 读取位置
 
 			set_cell( n, c, buffer );
 			while( i < buffer_size )
@@ -129,7 +129,7 @@ namespace xgc
 				++i;
 			}
 
-			// �ַ���δ���,����Ϊ����
+			// 字符串未完结,则认为错误
 			if( is_string )
 				return false;
 
@@ -141,7 +141,7 @@ namespace xgc
 
 		xgc_bool csv_reader::load( xgc_lpcstr pathname, xgc_char split, xgc_bool has_title )
 		{
-			// ��������
+			// 重入清理
 			cols = 0;
 			rows = 0;
 
@@ -156,7 +156,7 @@ namespace xgc
 				chunk[i] = xgc_nullptr;
 			}
 
-			// ��ȡ�ļ�����
+			// 读取文件数据
 			int fd = -1;
 			_sopen_s( &fd, pathname, O_RDONLY | O_BINARY, SH_DENYWR, S_IREAD );
 			if( fd == -1 )
@@ -176,25 +176,25 @@ namespace xgc
 			int rd = _read( fd, buffer, (unsigned int)buffer_size );
 			_close( fd );
 
-			// �ļ���ȡ�ֽ�������ȷ�򷵻ش���
+			// 文件读取字节数不正确则返回错误
 			if( rd != buffer_size )
 				return false;
 
-			// �����һ���ֽڷ��
+			// 将最后一个字节封闭
 			buffer[fst.st_size] = 0;
 
-			// �����ļ��²���뷽ʽ
+			// 根据文件猜测编码方式
 			encoding enc = guess_encoding( (xgc_lpvoid*)&buffer, buffer_size );
 
-			// ��UTF-8�ı������ת��
+			// 对UTF-8的编码进行转换
 			if( enc == encoding_utf8 )
 			{
-				// ����ת������Ҫ���ڴ�
+				// 计算转换后需要的内存
 				auto len = utf8tombs( buffer, xgc_nullptr, 0 );
 				if( len == -1 )
 					return false;
 
-				// ת������
+				// 转换编码
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
 				utf8tombs( buffer, ptr, len );
 
@@ -205,7 +205,7 @@ namespace xgc
 				free( palloc );
 			}
 
-			// ���ݵ�һ�м�������
+			// 根据第一行计算列数
 			for( xgc_size i = 0; i < buffer_size; ++i )
 			{
 				if( buffer[i] == split )
@@ -220,15 +220,15 @@ namespace xgc
 				}
 			}
 
-			// ����
+			// 解析
 			parse( buffer, buffer_size, split );
 			return true;
 		}
 
 		///
-		/// \brief ��ȡ��Ԫ������
-		/// \param row �к�
-		/// \param col �к�
+		/// \brief 读取单元格数据
+		/// \param row 行号
+		/// \param col 列号
 		///
 
 		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_size col, xgc_lpcstr default ) const throw()
@@ -241,9 +241,9 @@ namespace xgc
 		}
 
 		///
-		/// ��ȡ��Ԫ������
-		/// \param row �к�
-		/// \param title ��ͷ
+		/// 读取单元格数据
+		/// \param row 行号
+		/// \param title 表头
 		///
 
 		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr default ) const throw()

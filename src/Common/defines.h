@@ -1,16 +1,20 @@
 #ifndef _MACRO_DEFINE_H
 #define _MACRO_DEFINE_H
 
-#if defined( _WINDOWS ) || defined( WIN32 ) || defined( WIN64 )
+#if defined( WIN32 ) || defined( WIN64 )
+#	define WINDOWS
+#endif
+
+#ifdef _WINDOWS
 #	pragma message( __FILE__ " using visual studio" )
 #elif defined( __GNUC__ )
 #	pragma message( "using gnuc" )
-#	define __cdecl __attribute__((__cdecl__))
+#	define __cdecl
 #else
 #	pragma message( "using other" )
 #endif
 
-#if defined( _WINDOWS ) || defined( WIN32 ) || defined( WIN64 )
+#ifdef WINDOWS
 #	define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #	define NOMINMAX
 #	include <Windows.h>
@@ -25,15 +29,14 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#ifdef _DEBUG
+#if defined( _DEBUG ) && defined(WINDOWS)
 #	define XGC_NEW new ( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #else
 #	define XGC_NEW new
 #endif
 
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
-// ∞≤»´…æ≥˝∂®“Â
+// ÂÆâÂÖ®Âà†Èô§ÂÆö‰πâ
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #ifndef SAFE_DELETE
 #	define SAFE_DELETE( p )			do{delete(p);(p) = NULL;}while(false);
@@ -96,7 +99,7 @@
 #define XGC_HIBYTE(w) ((xgc_uint8)((((xgc_uintptr)(w)) >> 8) & 0xff))
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
-// ∂®“Â◊÷∑˚¥Æ¥¶¿Ì∫Í
+// ÂÆö‰πâÂ≠óÁ¨¶‰∏≤Â§ÑÁêÜÂÆè
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #	define INCSZ( pch )			( pch = (xgc_lpstr)_mbsinc( (xgc_byte const*)pch ) )
 #	define INCNSZ( pch, count )	( pch = _mbsninc( pch, count ) )
@@ -151,7 +154,7 @@ typedef xgc_lpvoid			xgc_handle;
 #endif // _DEFINES
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------//
-// XGC_ASSERT ∂®“Â
+// XGC_ASSERT ÂÆö‰πâ
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 #define XGC_STATIC_ASSERT(expr) \
 	do { xgc_char _static_assert[expr] = {0}; } while( false )
@@ -170,9 +173,9 @@ typedef xgc_lpvoid			xgc_handle;
 #endif
 
 // static warning
-#define attention( describe ) message( __FILE__ "(" XGC_TOSTRING(__LINE__) "): ◊¢“‚£∫" describe )
+#define attention( describe ) message( __FILE__ "(" XGC_TOSTRING(__LINE__) "): Ê≥®ÊÑèÔºö" describe )
 
-//  π”√æŸ¿˝
+// ‰ΩøÁî®‰∏æ‰æã
 // #pragma attention( "test todo" )
 
 #include "logger.h"

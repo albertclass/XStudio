@@ -104,7 +104,7 @@ namespace xgc
 			bRet &= ::InternetSetOption( xgc_nullptr, INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER, &nMaxConnect, sizeof( nMaxConnect ) );
 			if( !bRet )
 			{
-				USR_ERROR( "设置Wininet最大连接数失败[%u]", nMaxConnection );
+				USR_ERROR( "璁剧疆Wininet鏈�澶ц繛鎺ユ暟澶辫触[%u]", nMaxConnection );
 			}
 			return bRet != 0;
 		}

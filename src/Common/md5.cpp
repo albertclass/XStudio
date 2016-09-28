@@ -77,7 +77,7 @@ namespace xgc
 			return y ^ ( x | ( ~z ) );
 		}
 
-		static inline uint32_t Md5_S( uint32_t d, int n )		// 循环位移
+		static inline uint32_t Md5_S( uint32_t d, int n )		// 寰幆浣嶇Щ
 		{
 			return ( d << n ) | ( ( ( d & 0xFFFFFFFF ) >> ( 32 - n ) ) );
 		}
@@ -311,7 +311,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief 获取文件Md5摘要
+		/// \brief 鑾峰彇鏂囦欢Md5鎽樿
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:37

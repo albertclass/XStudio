@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file serialization.h
-/// \date °ËÔÂ 2016
+/// \date å…«æœˆ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief ĞòÁĞ»¯Àà£¬ ÓÃÓÚĞòÁĞ»¯Êı¾İµ½»º³å
+/// \brief åºåˆ—åŒ–ç±»ï¼Œ ç”¨äºåºåˆ—åŒ–æ•°æ®åˆ°ç¼“å†²
 /// 
 
 #pragma once
@@ -30,17 +30,17 @@ namespace xgc
 
 		template< serialization_types, class type >
 		serialization& operator <<( serialization& stream, type v );
-		// ²»ÊµÏÖ£¬ÒòÎªÆ¥Åäµ½ÕâÀï´ú±íÃ»ÓĞ¶ÔÓ¦µÄÌØ»¯
+		// ä¸å®ç°ï¼Œå› ä¸ºåŒ¹é…åˆ°è¿™é‡Œä»£è¡¨æ²¡æœ‰å¯¹åº”çš„ç‰¹åŒ–
 
 		template< serialization_types, class type >
 		serialization& operator >>( serialization& stream, type &v );
-		// ²»ÊµÏÖ£¬ÒòÎªÆ¥Åäµ½ÕâÀï´ú±íÃ»ÓĞ¶ÔÓ¦µÄÌØ»¯
+		// ä¸å®ç°ï¼Œå› ä¸ºåŒ¹é…åˆ°è¿™é‡Œä»£è¡¨æ²¡æœ‰å¯¹åº”çš„ç‰¹åŒ–
 
 		//////////////////////////////////////////////////////////////////////////
-		// º¯ÊıÀàĞÍÌØ»¯
+		// å‡½æ•°ç±»å‹ç‰¹åŒ–
 
 		//////////////////////////////////////////////////////////////////////////
-		// ÊıÖµÀàĞÍÌØ»¯
+		// æ•°å€¼ç±»å‹ç‰¹åŒ–
 		template< serialization_types >
 		serialization& operator << ( serialization& stream, serialization& ( __cdecl *_Pfn )( serialization& ) )
 		{
@@ -110,10 +110,10 @@ namespace xgc
 		serialization_basic_type_r( xgc_real64 );
 
 		//////////////////////////////////////////////////////////////////////////
-		// »º³åÀàĞÍÌØ»¯
+		// ç¼“å†²ç±»å‹ç‰¹åŒ–
 
 		///
-		/// \brief ¾²Ì¬»º³åÌØ»¯º¯Êı
+		/// \brief é™æ€ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -128,7 +128,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ¾²Ì¬»º³åÌØ»¯º¯Êı
+		/// \brief é™æ€ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -145,7 +145,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ÒıÓÃ»º³åÌØ»¯º¯Êı
+		/// \brief å¼•ç”¨ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -160,7 +160,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ÒıÓÃ»º³åÌØ»¯º¯Êı
+		/// \brief å¼•ç”¨ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -177,7 +177,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ÏßĞÔ»º³åÌØ»¯º¯Êı
+		/// \brief çº¿æ€§ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/09/18 16:48
@@ -194,7 +194,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ÏßĞÔ»º³åÌØ»¯º¯Êı
+		/// \brief çº¿æ€§ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -213,7 +213,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief »·»º³åÌØ»¯º¯Êı
+		/// \brief ç¯ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -235,7 +235,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief »·»º³åÌØ»¯º¯Êı
+		/// \brief ç¯ç¼“å†²ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/03/01 14:10
@@ -263,10 +263,10 @@ namespace xgc
 		}
 
 		//////////////////////////////////////////////////////////////////////////
-		// ×Ö·û´®ÀàĞÍÌØ»¯
+		// å­—ç¬¦ä¸²ç±»å‹ç‰¹åŒ–
 
 		///
-		/// \brief std::string ĞòÁĞ»¯ÌØ»¯º¯Êı
+		/// \brief std::string åºåˆ—åŒ–ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/09/18 16:22
@@ -287,7 +287,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief std::wstring ĞòÁĞ»¯ÌØ»¯º¯Êı
+		/// \brief std::wstring åºåˆ—åŒ–ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/09/18 16:23
@@ -308,7 +308,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ×Ö·û´®Ö¸ÕëĞòÁĞ»¯ÌØ»¯º¯Êı
+		/// \brief å­—ç¬¦ä¸²æŒ‡é’ˆåºåˆ—åŒ–ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/09/18 16:24
@@ -332,7 +332,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ¿í×Ö·û´®Ö¸ÕëĞòÁĞ»¯ÌØ»¯º¯Êı
+		/// \brief å®½å­—ç¬¦ä¸²æŒ‡é’ˆåºåˆ—åŒ–ç‰¹åŒ–å‡½æ•°
 		///
 		/// \author albert.xu
 		/// \date 2016/09/18 16:25
@@ -356,7 +356,7 @@ namespace xgc
 		}
 
 		//////////////////////////////////////////////////////////////////////////
-		// ÈİÆ÷ÀàĞÍÌØ»¯
+		// å®¹å™¨ç±»å‹ç‰¹åŒ–
 		template< serialization_types, class type, class alloc >
 		serialization& operator << ( serialization& stream, const std::vector< type, alloc >& c )
 		{
@@ -728,7 +728,7 @@ namespace xgc
 
 
 		//////////////////////////////////////////////////////////////////////////
-		// ½«»º³åÖĞµÄÊı¾İ×ªÎªĞèÒªµÄÊı¾İÀàĞÍ
+		// å°†ç¼“å†²ä¸­çš„æ•°æ®è½¬ä¸ºéœ€è¦çš„æ•°æ®ç±»å‹
 		//////////////////////////////////////////////////////////////////////////
 		template< typename ret >
 		struct buffer_cast_impl

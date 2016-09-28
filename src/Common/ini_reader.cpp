@@ -36,7 +36,7 @@ namespace xgc
 		}
 
 		///
-		/// ¼ÓÔØIniÎÄ¼ş
+		/// åŠ è½½Iniæ–‡ä»¶
 		/// [8/11/2014] create by albert.xu
 		///
 		xgc_bool ini_reader::load( xgc_lpcstr fpath, xgc_lpcstr fname )
@@ -45,7 +45,7 @@ namespace xgc
 			sprintf_s( path, "%s%s", fpath, fname );
 			xgc_lpstr path_name = _fullpath( path, path, sizeof( path ) );
 
-			// ´ò¿ªÖ¸¶¨ÎÄ¼ş
+			// æ‰“å¼€æŒ‡å®šæ–‡ä»¶
 			int fd = -1;
 			_sopen_s( &fd, path_name, O_BINARY | O_RDONLY, SH_DENYWR, S_IREAD );
 			if( fd == -1 )
@@ -54,16 +54,16 @@ namespace xgc
 				return false;
 			}
 
-			// »ñÈ¡ÎÄ¼ş´óĞ¡
+			// è·å–æ–‡ä»¶å¤§å°
 			xgc_lpstr buffer = xgc_nullptr;
 			struct _stat fst;
 			_fstat( fd, &fst );
 
-			// ·ÖÅäÎÄ¼ş»º³åÇø
+			// åˆ†é…æ–‡ä»¶ç¼“å†²åŒº
 			xgc_lpstr palloc = (xgc_lpstr) realloc( buffer, fst.st_size + 1 );
 			XGC_ASSERT_RETURN( palloc, false );
 
-			// ¶ÁÈ¡ÎÄ¼şÄÚÈİ
+			// è¯»å–æ–‡ä»¶å†…å®¹
 			buffer = palloc;
 			int buffer_size = _read( fd, palloc, (unsigned int) fst.st_size );
 			_close( fd );
@@ -74,21 +74,21 @@ namespace xgc
 			if( buffer_size != fst.st_size )
 				return false;
 
-			// ·â±Õ»º³åÇø
+			// å°é—­ç¼“å†²åŒº
 			buffer[buffer_size] = 0;
 
-			// ¸ù¾İÎÄ¼ş²Â²â±àÂë·½Ê½
+			// æ ¹æ®æ–‡ä»¶çŒœæµ‹ç¼–ç æ–¹å¼
 			encoding enc = guess_encoding( (xgc_lpvoid*)&buffer, buffer_size );
 
-			// ¶ÔUTF-8µÄ±àÂë½øĞĞ×ª»»
+			// å¯¹UTF-8çš„ç¼–ç è¿›è¡Œè½¬æ¢
 			if( enc == encoding_utf8 )
 			{
-				// ¼ÆËã×ª»»ºóĞèÒªµÄÄÚ´æ
+				// è®¡ç®—è½¬æ¢åéœ€è¦çš„å†…å­˜
 				auto len = utf8tombs( buffer, xgc_nullptr, 0 );
 				if( len == -1 )
 					return false;
 
-				// ×ª»»±àÂë
+				// è½¬æ¢ç¼–ç 
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
 				utf8tombs( buffer, ptr, len );
 
@@ -198,7 +198,7 @@ namespace xgc
 
 							if( _strnicmp( "Extern:", pMem, 7 ) == 0 )
 							{
-								// ´ò¿ªÎÄ¼ş, ·ÖÎöÎÄ¼şÄÚÈİ
+								// æ‰“å¼€æ–‡ä»¶, åˆ†ææ–‡ä»¶å†…å®¹
 								if( false == load( pFileInfo->file_path, pMem + 7 ) )
 									eType = eError;
 							}
@@ -324,7 +324,7 @@ namespace xgc
 								cpy = transform( trans_buffer + trans_offset, _msize( trans_buffer ) - trans_offset, keypair_ptr->val );
 							}
 
-							// Ôö¼Ó½áÊø·û
+							// å¢åŠ ç»“æŸç¬¦
 							trans_offset += cpy;
 							XGC_ASSERT_RETURN( trans_offset < _msize( trans_buffer ), false );
 
@@ -502,19 +502,19 @@ namespace xgc
 
 		xgc_long ini_reader::transform( xgc_lpstr lpBuffer, xgc_size nBufferSize, xgc_lpcstr lpValue )
 		{
-			// »º³å½áÊøÎ»ÖÃ
+			// ç¼“å†²ç»“æŸä½ç½®
 			xgc_lpstr lpCur = lpBuffer;
 			xgc_lpstr lpEnd = lpBuffer + nBufferSize;
 
-			// ¼ÇÂ¼µã
+			// è®°å½•ç‚¹
 			xgc_lpcstr lpMem = xgc_nullptr;
 			xgc_string loMem[4];
 
 			xgc_size nMem = 0;
 
-			// ÊÇ·ñËÑË÷ÖĞ
+			// æ˜¯å¦æœç´¢ä¸­
 			xgc_bool bSearch = false;
-			// ¿ªÊ¼¸´ÖÆ
+			// å¼€å§‹å¤åˆ¶
 			while( *lpValue )
 			{
 				if( lpCur == lpEnd )
@@ -522,7 +522,7 @@ namespace xgc
 
 				if( bSearch )
 				{
-					// ÕıÔÚËÑË÷Æ¥ÅäµÄ¹ı³ÌÖĞ·¢ÏÖ£¬ÔòÈÏÎªÒÑÕÒµ½Æ¥ÅäÏî
+					// æ­£åœ¨æœç´¢åŒ¹é…çš„è¿‡ç¨‹ä¸­å‘ç°ï¼Œåˆ™è®¤ä¸ºå·²æ‰¾åˆ°åŒ¹é…é¡¹
 					if( *lpValue == '%' && *( lpValue + 1 ) != '%' )
 					{
 						loMem[nMem].assign( lpMem, lpValue );
@@ -547,7 +547,7 @@ namespace xgc
 				{
 					if( *lpValue == '%' && *( lpValue + 1 ) == '%' )
 					{
-						// Ë«°Ù·ÖºÅÔòÈÏÎªÊÇ×ªÒå·û
+						// åŒç™¾åˆ†å·åˆ™è®¤ä¸ºæ˜¯è½¬ä¹‰ç¬¦
 						++lpValue;
 					}
 
@@ -571,7 +571,7 @@ namespace xgc
 		}
 
 		///
-		/// ÊÍ·ÅËùÓĞÎÄ¼ş
+		/// é‡Šæ”¾æ‰€æœ‰æ–‡ä»¶
 		/// [7/16/2015] create by albert.xu
 		///
 		xgc_void ini_reader::fini( file_info* &pFileInfo )

@@ -11,27 +11,27 @@ namespace xgc
 {
 	///
 	/// [12/16/2013 albert.xu]
-	/// »ñÈ¡Ö´ĞĞ³ÌĞòµÄÎÄ¼şÃû
+	/// è·å–æ‰§è¡Œç¨‹åºçš„æ–‡ä»¶å
 	///
 	COMMON_API xgc_lpcstr GetModuleName( HMODULE hModule = xgc_nullptr );
 
 	///
 	/// [12/16/2013 albert.xu]
-	/// »ñÈ¡Ö´ĞĞ³ÌĞòµÄÄ¿Â¼£¬Ä¿Â¼ÒÔ
+	/// è·å–æ‰§è¡Œç¨‹åºçš„ç›®å½•ï¼Œç›®å½•ä»¥
 	///
 	COMMON_API xgc_lpcstr GetModulePath( HMODULE hModule = xgc_nullptr );
 
 	///
 	/// [12/16/2013 albert.xu]
-	/// »ñÈ¡Ö¸¶¨ÎÄ¼şµÄÄ¿Â¼£¬Ä¿Â¼ÒÔ
-	/// @param pszRelativePath ÒÔÔËĞĞÎÄ¼şÎª¸ùÄ¿Â¼µÄÏà¶ÔÂ·¾¶
-	/// @param SplitWith Ä¿Â¼¼äµÄ·Ö¸î·û
-	/// @return ÈôÎÄ¼ş´æÔÚÔò·µ»ØÎÄ¼şµÄ¾ø¶ÔÂ·¾¶£¬·ñÔò·µ»Ø¿ÕÖ¸Õë
+	/// è·å–æŒ‡å®šæ–‡ä»¶çš„ç›®å½•ï¼Œç›®å½•ä»¥
+	/// @param pszRelativePath ä»¥è¿è¡Œæ–‡ä»¶ä¸ºæ ¹ç›®å½•çš„ç›¸å¯¹è·¯å¾„
+	/// @param SplitWith ç›®å½•é—´çš„åˆ†å‰²ç¬¦
+	/// @return è‹¥æ–‡ä»¶å­˜åœ¨åˆ™è¿”å›æ–‡ä»¶çš„ç»å¯¹è·¯å¾„ï¼Œå¦åˆ™è¿”å›ç©ºæŒ‡é’ˆ
 	///
 	COMMON_API xgc_lpcstr GetNormalPath( xgc_lpstr szOut, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
 
 	///
-	/// \brief »ñÈ¡½ø³ÌÄÚ´æÊ¹ÓÃÇé¿ö
+	/// \brief è·å–è¿›ç¨‹å†…å­˜ä½¿ç”¨æƒ…å†µ
 	///
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
@@ -39,7 +39,7 @@ namespace xgc
 	COMMON_API xgc_bool GetProcessMemoryUsage( xgc_handle h, xgc_uint64 *pnMem, xgc_uint64 *pnVMem );
 
 	///
-	/// \brief »ñÈ¡ÏµÍ³ÄÚ´æÊ¹ÓÃÇé¿ö
+	/// \brief è·å–ç³»ç»Ÿå†…å­˜ä½¿ç”¨æƒ…å†µ
 	///
 	/// \author albert.xu
 	/// \date 2016/08/08 15:22
@@ -47,7 +47,7 @@ namespace xgc
 	COMMON_API xgc_bool GetSystemMemoryUsage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint32 *pnLoadMem );
 
 	///
-	/// \brief »ñÈ¡µ±Ç°CPUÊ¹ÓÃÇé¿ö
+	/// \brief è·å–å½“å‰CPUä½¿ç”¨æƒ…å†µ
 	///
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
@@ -55,7 +55,7 @@ namespace xgc
 	COMMON_API xgc_int32 GetProcessCpuUsage( xgc_handle h );
 
 	///
-	/// \brief »ñÈ¡µ±Ç°ÏµÍ³µÄCPUÊ¹ÓÃÇé¿ö
+	/// \brief è·å–å½“å‰ç³»ç»Ÿçš„CPUä½¿ç”¨æƒ…å†µ
 	///
 	/// \author albert.xu
 	/// \date 2016/08/08 15:09
@@ -63,13 +63,13 @@ namespace xgc
 	COMMON_API xgc_int32 GetSystemCpuUsage();
 
 	///
-	/// »ñÈ¡Ëæ»úÊı·¢ÉúÒıÇæ
+	/// è·å–éšæœºæ•°å‘ç”Ÿå¼•æ“
 	/// [12/23/2014] create by albert.xu
 	///
 	COMMON_API std::mt19937& GetRandomDriver();
 
 	///
-	/// »ñÈ¡Ëæ»úÊı
+	/// è·å–éšæœºæ•°
 	/// [9/5/2014] create by albert.xu
 	///
 	template < class T1, class T2, typename std::enable_if< !std::is_floating_point< T1 >::value && !std::is_floating_point<T2>::value, xgc_bool >::type = true >
@@ -101,7 +101,7 @@ namespace xgc
 	}
 
 	///
-	/// \brief ÉèÖÃ½ø³ÌÈ¨ÏŞ
+	/// \brief è®¾ç½®è¿›ç¨‹æƒé™
 	///
 	/// \author albert.xu
 	/// \date 2016/08/10 15:52

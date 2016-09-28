@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file filewatcher.h
-/// \date °ËÔÂ 2016
+/// \date å…«æœˆ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief ÎÄ¼ş±ä¸ü¼àÊÓ¸¨Öú
+/// \brief æ–‡ä»¶å˜æ›´ç›‘è§†è¾…åŠ©
 /// 
 
 #pragma once
@@ -43,7 +43,7 @@ namespace xgc
 		#define FILE_WATCHER_ACTION_RENAMED_NEW_NAME (5)
 		
 		///
-		/// \brief ÎÄ¼ş¼àÊÓÍ¨Öª»Øµ÷£¬ÔÚdo_filewatcher_notifyÖĞ±»µ÷ÓÃ
+		/// \brief æ–‡ä»¶ç›‘è§†é€šçŸ¥å›è°ƒï¼Œåœ¨do_filewatcher_notifyä¸­è¢«è°ƒç”¨
 		///
 		/// \author albert.xu
 		/// \date 2016/08/23 11:05
@@ -51,10 +51,10 @@ namespace xgc
 		typedef std::function< xgc_void( xgc_lpcstr path, xgc_lpcstr filename, xgc_ulong action ) > filewatcher_notifier;
 
 		///
-		/// \brief ³õÊ¼»¯ÎÄ¼ş¼àÊÓÆ÷
+		/// \brief åˆå§‹åŒ–æ–‡ä»¶ç›‘è§†å™¨
 		///
-		/// \prarm thread_count Ïß³ÌÊıÁ¿
-		/// \param thread_interval Ïß³ÌµÈ´ı¼ä¸ô£¬Ïß³ÌÊıÎª0Ê±ÎŞĞ§
+		/// \prarm thread_count çº¿ç¨‹æ•°é‡
+		/// \param thread_interval çº¿ç¨‹ç­‰å¾…é—´éš”ï¼Œçº¿ç¨‹æ•°ä¸º0æ—¶æ— æ•ˆ
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:45
@@ -62,7 +62,7 @@ namespace xgc
 		COMMON_API xgc_bool init_filewatcher( xgc_ulong thread_count, xgc_ulong thread_interval = 0xffffffff );
 
 		///
-		/// \brief ÇåÀíÎÄ¼ş¼àÊÓÆ÷
+		/// \brief æ¸…ç†æ–‡ä»¶ç›‘è§†å™¨
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:45
@@ -70,7 +70,7 @@ namespace xgc
 		COMMON_API xgc_void fini_filewatcher();
 
 		///
-		/// \brief ĞÂÔöÒ»¸öÎÄ¼ş¼àÊÓÆ÷
+		/// \brief æ–°å¢ä¸€ä¸ªæ–‡ä»¶ç›‘è§†å™¨
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:46
@@ -78,7 +78,7 @@ namespace xgc
 		COMMON_API xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatcher_notifier &notify_fn, xgc_bool auto_merger = true );
 
 		///
-		/// \brief É¾³ıÒ»¸öÎÄ¼ş¼àÊÓÆ÷
+		/// \brief åˆ é™¤ä¸€ä¸ªæ–‡ä»¶ç›‘è§†å™¨
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:49
@@ -86,7 +86,7 @@ namespace xgc
 		COMMON_API xgc_void del_filewatcher( xgc_lpcstr path );
 
 		///
-		/// \brief ´¦ÀíÒÑÉÏ±¨µÄÍ¨Öª
+		/// \brief å¤„ç†å·²ä¸ŠæŠ¥çš„é€šçŸ¥
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 16:37

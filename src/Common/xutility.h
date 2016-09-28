@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////
-/// COPYRIGHT ´«ÊÀ¹¤×÷ÊÒ
-/// CopyRight  ? 2015 Ê¢´óÍøÂç
+/// COPYRIGHT ä¼ ä¸–å·¥ä½œå®¤
+/// CopyRight  ? 2015 ç››å¤§ç½‘ç»œ
 /// \file xutility.h
-/// \brief ÎÄ¼ş¼ò½é
+/// \brief æ–‡ä»¶ç®€ä»‹
 /// \author xufeng04
-/// \date ¶şÔÂ 2016
+/// \date äºŒæœˆ 2016
 ///
-/// Ò»Ğ©ÓĞÓÃµÄ¸¨Öúº¯Êı
+/// ä¸€äº›æœ‰ç”¨çš„è¾…åŠ©å‡½æ•°
 ///
 ///////////////////////////////////////////////////////////////
 #ifndef _XUTILITY_H_
@@ -18,7 +18,7 @@
 namespace xgc
 {
 	///
-	/// \brief ²»ÔÊĞí¸´ÖÆ¶ÔÏóµÄ»ùÀà
+	/// \brief ä¸å…è®¸å¤åˆ¶å¯¹è±¡çš„åŸºç±»
 	///
 	/// \author albert.xu
 	/// \date 2016/01/05 10:17
@@ -64,7 +64,7 @@ namespace xgc
 	};
 	
 	///
-	/// \brief ¸ù¾İ¸ø¶¨µÄÖµÏòÉÏ»ñÈ¡×î½üµÄ2µÄn´Î·½Öµ
+	/// \brief æ ¹æ®ç»™å®šçš„å€¼å‘ä¸Šè·å–æœ€è¿‘çš„2çš„næ¬¡æ–¹å€¼
 	///
 	/// \author albert.xu
 	/// \date 2015/12/31 12:21
@@ -72,7 +72,7 @@ namespace xgc
 	COMMON_API xgc_size nearest_power( xgc_size val, xgc_size pow );
 
 	///
-	/// Ë÷Òı£¬×Ö·û´®Ó³Éä±í
+	/// ç´¢å¼•ï¼Œå­—ç¬¦ä¸²æ˜ å°„è¡¨
 	/// [3/10/2014 albert.xu]
 	///
 	struct COMMON_API string_value 
@@ -82,7 +82,7 @@ namespace xgc
 	};
 
 	///
-	/// \brief ¸ù¾İË÷Òı»ñÈ¡×Ö·û´®
+	/// \brief æ ¹æ®ç´¢å¼•è·å–å­—ç¬¦ä¸²
 	///
 	/// \author albert.xu
 	/// \date 2015/12/16 16:58
@@ -101,7 +101,7 @@ namespace xgc
 	}
 
 	///
-	/// \brief ¸ù¾İ×Ö·û´®»ñÈ¡Ë÷Òı
+	/// \brief æ ¹æ®å­—ç¬¦ä¸²è·å–ç´¢å¼•
 	///
 	/// \author albert.xu
 	/// \date 2015/12/16 16:58
@@ -196,7 +196,7 @@ namespace xgc
 	}
 
 	///
-	/// \brief ×Ö·û´®¹şÏ£
+	/// \brief å­—ç¬¦ä¸²å“ˆå¸Œ
 	///
 	/// \author albert.xu
 	/// \date 2015/12/31 12:23
@@ -213,23 +213,23 @@ namespace xgc
 	}
 
 	/// 
-	/// \brief ×Ö·û·Ö¸î
-	/// \param src Òª·Ö¸îµÄ×Ö·û´®
-	/// \param tokens ·Ö¸ô·û
-	/// \return ÒÔÊı×éµÄĞÎÊ½·µ»Ø·Ö¸îºÃµÄ×Ö·û´®
+	/// \brief å­—ç¬¦åˆ†å‰²
+	/// \param src è¦åˆ†å‰²çš„å­—ç¬¦ä¸²
+	/// \param tokens åˆ†éš”ç¬¦
+	/// \return ä»¥æ•°ç»„çš„å½¢å¼è¿”å›åˆ†å‰²å¥½çš„å­—ç¬¦ä¸²
 	/// \date [5/30/2014]
 	/// 
 	COMMON_API xgc_vector<xgc_string> string_split( xgc_lpcstr src, xgc_lpcstr delim );
 
 	///
-	/// \brief ½«¶ş½øÖÆÊı¾İ×ªÎª16½øÖÆ×Ö·û´®
+	/// \brief å°†äºŒè¿›åˆ¶æ•°æ®è½¬ä¸º16è¿›åˆ¶å­—ç¬¦ä¸²
 	///
-	/// \param data	Êı¾İÊ×Ö·
-	/// \param size	Êı¾İ³¤¶È£¨°´×Ö·û¼Æ£©
-	/// \param out Êä³ö»º³åÊ×Ö·
-	/// \param out_size »º³åÇø³¤¶È£¨°´×Ö·û¼Æ£©
-	/// \param flags ±êÖ¾ £¨Î´¶¨Òå£©
-	/// \return ·µ»Ø×ª»»ÁË¶àÉÙ×Ö·û
+	/// \param data	æ•°æ®é¦–å€
+	/// \param size	æ•°æ®é•¿åº¦ï¼ˆæŒ‰å­—ç¬¦è®¡ï¼‰
+	/// \param out è¾“å‡ºç¼“å†²é¦–å€
+	/// \param out_size ç¼“å†²åŒºé•¿åº¦ï¼ˆæŒ‰å­—ç¬¦è®¡ï¼‰
+	/// \param flags æ ‡å¿— ï¼ˆæœªå®šä¹‰ï¼‰
+	/// \return è¿”å›è½¬æ¢äº†å¤šå°‘å­—ç¬¦
 	///
 	/// \author albert.xu
 	/// \date 2015/12/16 17:00
@@ -237,12 +237,12 @@ namespace xgc
 	COMMON_API xgc_size bin2hex( xgc_lpstr data, xgc_size size, xgc_lpstr out, xgc_size out_size, xgc_size flags );
 
 	///
-	/// \brief ½«Ê®Áù½øÖÆ×Ö·û´®×ª»»Îª¶ş½øÖÆÊı¾İ
+	/// \brief å°†åå…­è¿›åˆ¶å­—ç¬¦ä¸²è½¬æ¢ä¸ºäºŒè¿›åˆ¶æ•°æ®
 	///
-	/// \param data	Êı¾İÊ×Ö·
-	/// \param size	Êı¾İ³¤¶È£¨°´×Ö·û¼Æ£©
-	/// \param out Êä³ö»º³åÊ×Ö·
-	/// \param out_size »º³åÇø³¤¶È£¨°´×Ö·û¼Æ£©
+	/// \param data	æ•°æ®é¦–å€
+	/// \param size	æ•°æ®é•¿åº¦ï¼ˆæŒ‰å­—ç¬¦è®¡ï¼‰
+	/// \param out è¾“å‡ºç¼“å†²é¦–å€
+	/// \param out_size ç¼“å†²åŒºé•¿åº¦ï¼ˆæŒ‰å­—ç¬¦è®¡ï¼‰
 	///
 	/// \author albert.xu
 	/// \date 2015/12/16 17:00

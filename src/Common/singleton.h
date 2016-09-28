@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include <memory>
+#include <mutex>
 
 #include "defines.h"
 
@@ -722,63 +723,12 @@ namespace xgc
 		{
 		public:
 			typedef volatile H VolatileType;
-
-			class Mutex
-			{
-			public:
-				Mutex()
-				{
-					InitializeCriticalSection( &cri_ );
-				}
-
-				Mutex( Mutex& mux )
-				{
-					cri_ = mux.cri_;
-				}
-
-				Mutex( CRITICAL_SECTION& mux )
-				{
-					cri_ = mux;
-				}
-
-				~Mutex()
-				{
-					DeleteCriticalSection( &cri_ );
-				}
-
-				Mutex& operator =( Mutex& mux )
-				{
-				
-					cri_ = mux.cri_;
-					return *this;
-				}
-
-				Mutex& operator =( CRITICAL_SECTION& mux )
-				{
-					cri_ = mux;
-					return *this;
-				}
-
-				void lock()
-				{
-					EnterCriticalSection( &cri_ );
-				}
-
-				void free_lock( )
-				{
-					LeaveCriticalSection( &cri_ );
-				}
-
-				operator CRITICAL_SECTION&(){ return cri_; }
-
-			private:
-				CRITICAL_SECTION cri_;
-			};
+			typedef std::mutex Mutex;
 
 			class Lock
 			{
 			public:
-				explicit Lock( CRITICAL_SECTION& cri )
+				explicit Lock( Mutex& cri )
 					: ref_( cri )
 					, locked_( false )
 				{
@@ -794,7 +744,7 @@ namespace xgc
 				{ 
 					if( !locked_ )
 					{ 
-						EnterCriticalSection( &ref_ ); 
+						ref_.lock(); 
 						locked_ = true; 
 					} 
 				}
@@ -804,12 +754,12 @@ namespace xgc
 					if( locked_ )
 					{ 
 						locked_ = false; 
-						LeaveCriticalSection( &ref_ ); 
+						ref_.unlock(); 
 					}
 				}
 
 			protected:
-				CRITICAL_SECTION& ref_;
+				Mutex& ref_;
 				bool locked_;
 			};
 		};
@@ -841,7 +791,7 @@ namespace xgc
 
 			///  Type of the singleton object
 			typedef T ObjectType;
-			typedef typename ThreadingModel<T*> ThreadType;
+			typedef ThreadingModel<T*> ThreadType;
 
 			///  Returns a reference to singleton object
 			static T& Instance();

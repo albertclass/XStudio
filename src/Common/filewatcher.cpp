@@ -14,12 +14,12 @@ namespace xgc
 		static HANDLE iocp_handle = xgc_nullptr;
 
 		static xgc_bool hardwork = true;
-		/// Ïß³ÌËø
+		/// çº¿ç¨‹é”
 		static std::mutex thread_guard;
 
 		static std::vector< std::thread > work_threads;
 		///
-		/// \brief ÊÂ¼ş¾ä±ú
+		/// \brief äº‹ä»¶å¥æŸ„
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 16:27
@@ -27,32 +27,32 @@ namespace xgc
 		struct filewatcher_handler
 		{
 			OVERLAPPED	ol;
-			/// ÎÄ¼ş¾ä±ú
+			/// æ–‡ä»¶å¥æŸ„
 			HANDLE fh;
-			/// ÊÂ¼şÑÚÂë
+			/// äº‹ä»¶æ©ç 
 			xgc_uint32 events;
-			/// Â·¾¶µØÖ·
+			/// è·¯å¾„åœ°å€
 			xgc_char path[_MAX_PATH];
-			/// »º³åÎÄ¼ş
+			/// ç¼“å†²æ–‡ä»¶
 			xgc_char file[_MAX_FNAME];
-			/// ÏûÏ¢»º³å
-			/// ×¢Òâ£¬´Ë´¦»º³åÊ×µØÖ·Ò»¶¨Òª±£Ö¤ËÄ×Ö½Ú¶ÔÆë£¬·ñÔòÎŞ·¨ÊÕµ½Í¨ÖªÏûÏ¢
+			/// æ¶ˆæ¯ç¼“å†²
+			/// æ³¨æ„ï¼Œæ­¤å¤„ç¼“å†²é¦–åœ°å€ä¸€å®šè¦ä¿è¯å››å­—èŠ‚å¯¹é½ï¼Œå¦åˆ™æ— æ³•æ”¶åˆ°é€šçŸ¥æ¶ˆæ¯
 			xgc_char notify_infomation[MAX_BUFF_SIZE];
 
-			/// »Øµ÷µØÖ·
+			/// å›è°ƒåœ°å€
 			filewatcher_notifier invoke;
 
 			xgc_ulong actions;
-			/// ×îºóÒ»´ÎĞŞ¸ÄÊ±¼ä
+			/// æœ€åä¸€æ¬¡ä¿®æ”¹æ—¶é—´
 			xgc_time64 lasttick;
-			/// ÊÇ·ñ¼à¿ØÕû¸öÄ¿Â¼Ê÷
+			/// æ˜¯å¦ç›‘æ§æ•´ä¸ªç›®å½•æ ‘
 			xgc_bool watch_subtree;
 		};
 
-		/// ËùÓĞµÄÊÂ¼ş¾ä±ú¶¼ÔÚÕâÀï±£´æ
+		/// æ‰€æœ‰çš„äº‹ä»¶å¥æŸ„éƒ½åœ¨è¿™é‡Œä¿å­˜
 		static std::unordered_map< xgc_handle, filewatcher_handler* > event_handles;
 
-		/// ACTION Ó³Éä±í
+		/// ACTION æ˜ å°„è¡¨
 		static xgc_ulong filewatcher_action_map[] = 
 		{
 			#if defined( WIN32 ) || defined( WIN64 )
@@ -277,7 +277,7 @@ namespace xgc
 				size_t numberofconverted = 0;
 				auto err = wcstombs_s( &numberofconverted, file, info->FileName, _TRUNCATE );
 
-				// ÎÄ¼şÃû²»Ò»ÖÂÁË
+				// æ–‡ä»¶åä¸ä¸€è‡´äº†
 				if( e->actions >= 1 && _stricmp( file, e->file ) != 0 )
 				{
 					for( int i = 1; i < 6; ++i )

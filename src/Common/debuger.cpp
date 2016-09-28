@@ -40,7 +40,7 @@ namespace xgc
 	{
 		if( !mFinished )
 		{
-			// ´´½¨¼à¿ØÏß³Ì
+			// åˆ›å»ºç›‘æ§çº¿ç¨‹
 			mThread = (xgc_handle) _beginthreadex( xgc_nullptr, 0, CheckThread, xgc_nullptr, 0, xgc_nullptr );
 			mFinished = ( mThread == (xgc_handle) INVALID_HANDLE_VALUE );
 		}
@@ -172,7 +172,7 @@ namespace xgc
 					if( spn.to_millisecnods() > nTimeOut )
 					{
 						mIsClose = true;
-						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].nLine, LOGLVL_SYS_WARNING, "º¯ÊıÖ´ĞĞ³¬Ê±%I64uºÁÃë", spn.to_millisecnods() );
+						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].nLine, LOGLVL_SYS_WARNING, "å‡½æ•°æ‰§è¡Œè¶…æ—¶%I64uæ¯«ç§’", spn.to_millisecnods() );
 						mIsClose = false;
 					}
 				}
@@ -184,7 +184,7 @@ namespace xgc
 	{
 		datetime now = datetime::now();
 		auto deep = mCallDeep;
-		// ³¬Ê±ÔòĞ´ÈÕÖ¾
+		// è¶…æ—¶åˆ™å†™æ—¥å¿—
 		if( deep && mIsDirty && timespan( now - mLastUpdate ).to_seconds() >= (xgc_int64) uDelaySeconds )
 		{
 			char str[128];
@@ -234,7 +234,7 @@ namespace xgc
 	}
 
 	///
-	/// ÉèÖÃ³¬Ê±ÈÕÖ¾
+	/// è®¾ç½®è¶…æ—¶æ—¥å¿—
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API xgc_void SetDebugerLog( xgc_lpcstr pathname )
@@ -243,7 +243,7 @@ namespace xgc
 	}
 
 	///
-	/// ÉèÖÃ³¬Ê±ÈÕÖ¾
+	/// è®¾ç½®è¶…æ—¶æ—¥å¿—
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API xgc_void SetDebugerTimeout( xgc_time32 millseconds )
@@ -253,24 +253,24 @@ namespace xgc
 
 	struct MemStatus
 	{
-		xgc_size	index;	// ¶ÔÏóÎ»ÖÃ
+		xgc_size	index;	// å¯¹è±¡ä½ç½®
 
-		xgc_time32	time;	// Ê±¼ä
-		xgc_uint64	pmem;	// ÎïÀíÄÚ´æ
-		xgc_uint64	vmem;	// ĞéÄâÄÚ´æ
-		xgc_char	name[32];	// Ãû×Ö
+		xgc_time32	time;	// æ—¶é—´
+		xgc_uint64	pmem;	// ç‰©ç†å†…å­˜
+		xgc_uint64	vmem;	// è™šæ‹Ÿå†…å­˜
+		xgc_char	name[32];	// åå­—
 
-		xgc_size	parent;		// ¸¸¶ÔÏóÎ»ÖÃ
-		xgc_size	lastchild;	// ×îºóÒ»¸ö×Ó¶ÔÏóµÄÎ»ÖÃ
+		xgc_size	parent;		// çˆ¶å¯¹è±¡ä½ç½®
+		xgc_size	lastchild;	// æœ€åä¸€ä¸ªå­å¯¹è±¡çš„ä½ç½®
 	};
 
 	struct MemStatusHead
 	{
-		xgc_size	alloced;	// ÒÑ·ÖÅäÄÚ´æ
-		xgc_size	current;	// µ±Ç°Ö¸Ïò
-		xgc_lpcstr	pname;		// ¸¸¶ÔÏóÃû
-		xgc_size	parent;		// ¸¸¶ÔÏóÎ»ÖÃ
-		MemStatus	status[1];	// MemStatusÊı×é
+		xgc_size	alloced;	// å·²åˆ†é…å†…å­˜
+		xgc_size	current;	// å½“å‰æŒ‡å‘
+		xgc_lpcstr	pname;		// çˆ¶å¯¹è±¡å
+		xgc_size	parent;		// çˆ¶å¯¹è±¡ä½ç½®
+		MemStatus	status[1];	// MemStatusæ•°ç»„
 	};
 
 	__declspec( thread ) xgc_lpvoid gpMemStatus = xgc_nullptr;
@@ -278,7 +278,7 @@ namespace xgc
 	{
 		if( gpMemStatus == xgc_nullptr )
 		{
-			// Î´·ÖÅäÄÚ´æÊ±
+			// æœªåˆ†é…å†…å­˜æ—¶
 			gpMemStatus = malloc( sizeof(MemStatusHead) +sizeof(MemStatus) * 100 );
 			MemStatusHead* pHead = (MemStatusHead*) gpMemStatus;
 			pHead->alloced = 100;
@@ -290,7 +290,7 @@ namespace xgc
 		MemStatusHead* pHead = (MemStatusHead*) gpMemStatus;
 		if( pHead->current == pHead->alloced )
 		{
-			// ÄÚ´æ²»×ã
+			// å†…å­˜ä¸è¶³
 			xgc_lpvoid mem = realloc( gpMemStatus, sizeof(MemStatusHead) +sizeof(MemStatus) * ( pHead->alloced + 20 ) );
 			if( mem == xgc_nullptr )
 				return name;
@@ -300,7 +300,7 @@ namespace xgc
 			pHead->alloced += 20;
 		}
 
-		// »ñÈ¡ĞÅÏ¢
+		// è·å–ä¿¡æ¯
 		MemStatus& mMem = pHead->status[pHead->current];
 		mMem.index = pHead->current;
 
@@ -308,46 +308,46 @@ namespace xgc
 		mMem.time = (xgc_time32) clock();
 		strcpy_s( mMem.name, name ? name: "" );
 
-		// µÚÒ»¸ö,ÄÚ´æ¼ÇÂ¼¿ªÊ¼
+		// ç¬¬ä¸€ä¸ª,å†…å­˜è®°å½•å¼€å§‹
 		if( pHead->current == 0 || name == xgc_nullptr )
 		{
 			mMem.parent		= -1;
 			mMem.lastchild	= 0;
 		}
-		// ÉèÖÃÁË¸¸¶ÔÏóÃû
+		// è®¾ç½®äº†çˆ¶å¯¹è±¡å
 		else
 		{
-			// ÕÒµ½Ç°Ò»¸ö
+			// æ‰¾åˆ°å‰ä¸€ä¸ª
 			MemStatus& mParent = pHead->status[pHead->parent];
 			MemStatus& mLast = pHead->status[mParent.lastchild];
 
 			if( parent ? strcmp( parent, mParent.name ) == 0 : parent == xgc_nullptr )
 			{
-				// ÉèÖÃÁË¸¸µÄÃû×Ö,ÇÒÓëÇ°Ò»Ïî¸¸µÄÃû×ÖÏàÍ¬,ËµÃ÷ÊÇÍ¬¼¶µÄ.
+				// è®¾ç½®äº†çˆ¶çš„åå­—,ä¸”ä¸å‰ä¸€é¡¹çˆ¶çš„åå­—ç›¸åŒ,è¯´æ˜æ˜¯åŒçº§çš„.
 				mMem.parent		= pHead->parent;
-				mMem.lastchild	= pHead->current; // Ö¸Ïò×Ô¼º
+				mMem.lastchild	= pHead->current; // æŒ‡å‘è‡ªå·±
 
-				// ¸üĞÂ¸¸¶ÔÏó×îºóµÄ×Ó¶ÔÏó×ø±ê
+				// æ›´æ–°çˆ¶å¯¹è±¡æœ€åçš„å­å¯¹è±¡åæ ‡
 				mParent.lastchild = pHead->current;
 			}
 			else if( strcmp( parent, mLast.name ) == 0 )
 			{
-				// ÉèÖÃÁË¸¸µÄÃû×Ö,ÇÒÓëÇ°Ò»ÏîÏàÍ¬,ËµÃ÷ÊÇÇ°Ò»ÏîµÄ×ÓÏî
+				// è®¾ç½®äº†çˆ¶çš„åå­—,ä¸”ä¸å‰ä¸€é¡¹ç›¸åŒ,è¯´æ˜æ˜¯å‰ä¸€é¡¹çš„å­é¡¹
 				pHead->pname = mLast.name;
 				pHead->parent = mLast.index;
 
 				mMem.parent = mLast.index;
-				mMem.lastchild = pHead->current;	// Ö¸Ïò×Ô¼º
+				mMem.lastchild = pHead->current;	// æŒ‡å‘è‡ªå·±
 
-				// ¸üĞÂ¸¸¶ÔÏó×îºóµÄ×Ó¶ÔÏó×ø±ê
+				// æ›´æ–°çˆ¶å¯¹è±¡æœ€åçš„å­å¯¹è±¡åæ ‡
 				mLast.lastchild = mMem.index;
 			}
 			else
 			{
-				// ÉèÖÃÁË¸¸µÄÃû×Ö, Ôò»ØËİ, ²éÕÒµ½ÕıÈ·µÄ¸¸½Úµã
+				// è®¾ç½®äº†çˆ¶çš„åå­—, åˆ™å›æº¯, æŸ¥æ‰¾åˆ°æ­£ç¡®çš„çˆ¶èŠ‚ç‚¹
 				xgc_size pos = pHead->parent;
 
-				// ËÑË÷Æ¥ÅäµÄ¸¸¶ÔÏó
+				// æœç´¢åŒ¹é…çš„çˆ¶å¯¹è±¡
 				while( pos < pHead->alloced )
 				{
 					MemStatus& mParent = pHead->status[pos];

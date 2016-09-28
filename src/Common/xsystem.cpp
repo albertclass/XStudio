@@ -120,7 +120,7 @@ namespace xgc
 		return true;
 	}
 
-	/// »ñµÃCPUµÄºËÊı
+	/// è·å¾—CPUçš„æ ¸æ•°
 	static int get_processor_number()
 	{
 		SYSTEM_INFO info;
@@ -133,7 +133,7 @@ namespace xgc
 	static int64_t last_time_ = 0;
 	static int64_t last_system_time_ = 0;
 
-	/// Ê±¼ä×ª»»
+	/// æ—¶é—´è½¬æ¢
 	static uint64_t file_time_2_utc(const FILETIME* ftime)
 	{
 		LARGE_INTEGER li;

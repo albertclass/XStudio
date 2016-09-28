@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file ring.h
-/// \date °ËÔÂ 2016
+/// \date å…«æœˆ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief »·»º³å
+/// \brief ç¯ç¼“å†²
 /// 
 
 #pragma once
@@ -62,7 +62,7 @@ namespace xgc
 		};
 
 		///
-		/// \brief ¾²Ì¬»º³åÇø
+		/// \brief é™æ€ç¼“å†²åŒº
 		///
 		/// \author albert.xu
 		/// \date 2015/12/18 14:12
@@ -71,11 +71,11 @@ namespace xgc
 		class static_buffer
 		{
 		protected:
-			/// ¶ÔÆëÔ­Ôò£¬LEN¾¡Á¿ÊÇ_header´óĞ¡µÄ±¶Êı
+			/// å¯¹é½åŸåˆ™ï¼ŒLENå°½é‡æ˜¯_headerå¤§å°çš„å€æ•°
 			xgc_char data_[size_];
 		public:
 			///
-			/// \brief ¹¹Ôì
+			/// \brief æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -86,7 +86,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Í¨¹ıÖ¸ÕëºÍ³¤¶È¹¹Ôì
+			/// \brief é€šè¿‡æŒ‡é’ˆå’Œé•¿åº¦æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:27
@@ -102,7 +102,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Í¨¹ıÖ¸ÕëºÍ³¤¶È¹¹Ôì
+			/// \brief é€šè¿‡æŒ‡é’ˆå’Œé•¿åº¦æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:27
@@ -116,7 +116,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Í¨¹ıbuffer¶ÔÏó¹¹Ôì
+			/// \brief é€šè¿‡bufferå¯¹è±¡æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:14
@@ -149,7 +149,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -160,7 +160,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -171,7 +171,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³åÇø´óĞ¡
+			/// \brief è·å–ç¼“å†²åŒºå¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:10
@@ -197,7 +197,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »º³åÇø¹¹Ôì
+			/// \brief ç¼“å†²åŒºæ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/18 16:55
@@ -210,7 +210,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Êı×é¹¹Ôì
+			/// \brief æ•°ç»„æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/18 16:55
@@ -224,7 +224,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 14:05
@@ -237,7 +237,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -248,7 +248,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -259,7 +259,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³åÇø´óĞ¡
+			/// \brief è·å–ç¼“å†²åŒºå¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:10
@@ -273,15 +273,15 @@ namespace xgc
 		class COMMON_API shared_memory_buffer
 		{
 		private:
-			/// ¹²ÏíÄÚ´æ¾ä±ú
+			/// å…±äº«å†…å­˜å¥æŸ„
 			xgc_handle shared_memory_;
 			xgc_handle shared_file_;
 
-			/// »º³åÇøÊ×µØÖ·
+			/// ç¼“å†²åŒºé¦–åœ°å€
 			xgc_lpstr data_;
 		public:
 			///
-			/// \brief Ä¬ÈÏ¹¹Ôì
+			/// \brief é»˜è®¤æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 13:23
@@ -289,7 +289,7 @@ namespace xgc
 			shared_memory_buffer();
 
 			///
-			/// \brief ¹¹Ôì¹²ÏíÄÚ´æ
+			/// \brief æ„é€ å…±äº«å†…å­˜
 			///
 			/// \author albert.xu
 			/// \date 2016/09/12 12:06
@@ -297,7 +297,7 @@ namespace xgc
 			shared_memory_buffer( xgc_lpcstr shared_memory_name, xgc_size size );
 
 			///
-			/// \brief É¾³ı¿½±´¹¹Ôì
+			/// \brief åˆ é™¤æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:31
@@ -305,7 +305,7 @@ namespace xgc
 			shared_memory_buffer( const shared_memory_buffer& buffer );
 
 			///
-			/// \brief Îö¹¹º¯Êı
+			/// \brief ææ„å‡½æ•°
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:34
@@ -313,7 +313,7 @@ namespace xgc
 			~shared_memory_buffer();
 
 			///
-			/// \brief ´´½¨¹²ÏíÄÚ´æ
+			/// \brief åˆ›å»ºå…±äº«å†…å­˜
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:29
@@ -321,7 +321,7 @@ namespace xgc
 			xgc_long create( xgc_lpcstr shared_memory_name, xgc_size size, xgc_lpcstr file_path = xgc_nullptr );
 
 			///
-			/// \brief Ïú»Ù¹²ÏíÄÚ´æ¶ÔÏó
+			/// \brief é”€æ¯å…±äº«å†…å­˜å¯¹è±¡
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:35
@@ -329,7 +329,7 @@ namespace xgc
 			xgc_void destroy();
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -340,7 +340,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³å»ùµØÖ·
+			/// \brief è·å–ç¼“å†²åŸºåœ°å€
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -351,7 +351,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡»º³åÇø´óĞ¡
+			/// \brief è·å–ç¼“å†²åŒºå¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:10
@@ -363,7 +363,7 @@ namespace xgc
 		};
 
 		///
-		/// \brief ·ÖÀëµÄ»º³å¼ÇÂ¼Æ÷
+		/// \brief åˆ†ç¦»çš„ç¼“å†²è®°å½•å™¨
 		///
 		/// \author albert.xu
 		/// \date 2016/09/13 16:31
@@ -372,14 +372,14 @@ namespace xgc
 		class separate_buffer_recorder : public _Buf
 		{
 		protected:
-			/// Ğ´Ö¸ÕëÎ»ÖÃ
+			/// å†™æŒ‡é’ˆä½ç½®
 			xgc_size wd_;
-			/// ¶ÁÖ¸ÕëÎ»ÖÃ
+			/// è¯»æŒ‡é’ˆä½ç½®
 			xgc_size rd_;
 
 		public:
 			///
-			/// \brief Ä¬ÈÏ¹¹Ôì
+			/// \brief é»˜è®¤æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 20:14
@@ -393,7 +393,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/18 15:54
@@ -408,7 +408,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/18 15:54
@@ -423,7 +423,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -438,7 +438,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -453,7 +453,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -464,7 +464,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -475,7 +475,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -486,7 +486,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -497,7 +497,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ²Ù×÷µÄ»º³åÇø³¤¶È
+			/// \brief æ“ä½œçš„ç¼“å†²åŒºé•¿åº¦
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:03
@@ -508,7 +508,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¶ÁÆ«ÒÆ
+			/// \brief è¯»åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -519,7 +519,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Ğ´Æ«ÒÆ
+			/// \brief å†™åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -530,7 +530,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ÉèÖÃ¶ÁÆ«ÒÆ
+			/// \brief è®¾ç½®è¯»åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:12
@@ -541,7 +541,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ÉèÖÃĞ´Æ«ÒÆ
+			/// \brief è®¾ç½®å†™åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -553,7 +553,7 @@ namespace xgc
 		};
 
 		///
-		/// \brief Ò»ÌåµÄ»º³å¼ÇÂ¼Æ÷
+		/// \brief ä¸€ä½“çš„ç¼“å†²è®°å½•å™¨
 		///
 		/// \author albert.xu
 		/// \date 2016/09/13 16:31
@@ -564,15 +564,15 @@ namespace xgc
 		protected:
 			struct recorder
 			{
-				/// Ğ´Ö¸ÕëÎ»ÖÃ
+				/// å†™æŒ‡é’ˆä½ç½®
 				xgc_size wd_;
-				/// ¶ÁÖ¸ÕëÎ»ÖÃ
+				/// è¯»æŒ‡é’ˆä½ç½®
 				xgc_size rd_;
 			};
 
 		public:
 			///
-			/// \brief Ä¬ÈÏ¹¹Ôì
+			/// \brief é»˜è®¤æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 20:13
@@ -584,7 +584,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -596,7 +596,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -610,7 +610,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -621,7 +621,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -632,7 +632,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -643,7 +643,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿ªÊ¼Î»ÖÃ
+			/// \brief å¼€å§‹ä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:01
@@ -654,7 +654,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ²Ù×÷µÄ»º³åÇø³¤¶È
+			/// \brief æ“ä½œçš„ç¼“å†²åŒºé•¿åº¦
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 16:03
@@ -665,7 +665,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¶ÁÆ«ÒÆ
+			/// \brief è¯»åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -676,7 +676,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Ğ´Æ«ÒÆ
+			/// \brief å†™åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -687,7 +687,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ÉèÖÃĞ´Æ«ÒÆ
+			/// \brief è®¾ç½®å†™åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:11
@@ -698,7 +698,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ÉèÖÃ¶ÁÆ«ÒÆ
+			/// \brief è®¾ç½®è¯»åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:12
@@ -711,7 +711,7 @@ namespace xgc
 		};
 
 		///
-		/// \brief Ò»¸örecorderµÄÖĞ¼ä²ã
+		/// \brief ä¸€ä¸ªrecorderçš„ä¸­é—´å±‚
 		///
 		/// \author albert.xu
 		/// \date 2016/09/14 19:35
@@ -721,7 +721,7 @@ namespace xgc
 		{
 		public:
 			///
-			/// \brief Ä¬ÈÏ¹¹Ôì
+			/// \brief é»˜è®¤æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -732,7 +732,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -744,7 +744,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/13 15:46
@@ -757,7 +757,7 @@ namespace xgc
 
 
 			///
-			/// \brief »ñÈ¡¶ÁÖ¸ÕëÎ»ÖÃ
+			/// \brief è·å–è¯»æŒ‡é’ˆä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:09
@@ -768,7 +768,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief »ñÈ¡Ğ´Ö¸ÕëÎ»ÖÃ
+			/// \brief è·å–å†™æŒ‡é’ˆä½ç½®
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:10
@@ -779,7 +779,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Ôö¼Ó¶ÁÆ«ÒÆ
+			/// \brief å¢åŠ è¯»åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:12
@@ -790,7 +790,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Ôö¼ÓĞ´Æ«ÒÆ
+			/// \brief å¢åŠ å†™åç§»
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 14:12
@@ -802,7 +802,7 @@ namespace xgc
 
 
 			///
-			/// \brief ÖØÖÃ¶ÁĞ´Ö¸Õë
+			/// \brief é‡ç½®è¯»å†™æŒ‡é’ˆ
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 14:04
@@ -814,7 +814,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ÖØÖÃ¶ÁĞ´Ö¸Õë
+			/// \brief é‡ç½®è¯»å†™æŒ‡é’ˆ
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 14:04
@@ -837,7 +837,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 14:19
@@ -850,7 +850,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôì
+			/// \brief æ‹·è´æ„é€ 
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 14:19
@@ -863,7 +863,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ·µ»ØÎ´Ğ´Èë¿Õ¼ä´óĞ¡
+			/// \brief è¿”å›æœªå†™å…¥ç©ºé—´å¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 15:32
@@ -875,7 +875,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ·µ»ØÎ´¶ÁÈ¡¿Õ¼ä´óĞ¡
+			/// \brief è¿”å›æœªè¯»å–ç©ºé—´å¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 15:32
@@ -887,7 +887,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¶ÁÈ¡»º³åÈ¡Êı¾İ
+			/// \brief è¯»å–ç¼“å†²å–æ•°æ®
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 15:52
@@ -905,7 +905,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Ğ´Èë»º³åÊı¾İ
+			/// \brief å†™å…¥ç¼“å†²æ•°æ®
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 15:53
@@ -928,7 +928,7 @@ namespace xgc
 		{
 		public:
 			///
-			/// \brief Ä¬ÈÏ¹¹Ôìº¯Êı
+			/// \brief é»˜è®¤æ„é€ å‡½æ•°
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 17:42
@@ -939,7 +939,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôìº¯Êı
+			/// \brief æ‹·è´æ„é€ å‡½æ•°
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 17:42
@@ -951,7 +951,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ¿½±´¹¹Ôìº¯Êı
+			/// \brief æ‹·è´æ„é€ å‡½æ•°
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 17:42
@@ -963,7 +963,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief Îö¹¹º¯Êı
+			/// \brief ææ„å‡½æ•°
 			///
 			/// \author albert.xu
 			/// \date 2016/09/14 17:41
@@ -973,7 +973,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ·µ»ØÎ´Ğ´Èë¿Õ¼ä´óĞ¡
+			/// \brief è¿”å›æœªå†™å…¥ç©ºé—´å¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 15:32
@@ -991,7 +991,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief ·µ»ØÎ´¶ÁÈ¡¿Õ¼ä´óĞ¡
+			/// \brief è¿”å›æœªè¯»å–ç©ºé—´å¤§å°
 			///
 			/// \author albert.xu
 			/// \date 2016/03/01 15:32
@@ -1047,7 +1047,7 @@ namespace xgc
 				xgc_size copy_1 = 0;
 				xgc_size copy_2 = 0;
 
-				// ×¢Òâ£¬Ğ´Ö¸Õë²»ÄÜÔ½¹ı¶ÁÖ¸Õë
+				// æ³¨æ„ï¼Œå†™æŒ‡é’ˆä¸èƒ½è¶Šè¿‡è¯»æŒ‡é’ˆ
 				if( wd() >= rd() )
 				{
 					// <       r-------w       >

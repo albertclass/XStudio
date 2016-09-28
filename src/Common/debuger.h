@@ -1,6 +1,6 @@
 /*******************************************************************/
 //! \file debuger.h
-//! \brief µ÷ÊÔ¸¨ÖúµÄÏà¹Ø´úÂë
+//! \brief è°ƒè¯•è¾…åŠ©çš„ç›¸å…³ä»£ç 
 //! 2014/06/11 by Albert.xu
 /*******************************************************************/
 #ifndef _DEBUGER_H_
@@ -15,7 +15,7 @@
 
 #define WATCH_STACKFRAME_MAX (64)
 
-// µ¥Ïß³Ì¼ì²é£¬½«´ËºêĞ´ÔÚÖ»ÄÜµ¥Ïß³Ìµ÷ÓÃµÄº¯ÊıÖĞ¼´¿É£¬ÈôÓĞ¶àÏß³Ìµ÷ÓÃÔò»áÔÚ¿çÏß³ÌÊ±±¨¾¯¡£
+// å•çº¿ç¨‹æ£€æŸ¥ï¼Œå°†æ­¤å®å†™åœ¨åªèƒ½å•çº¿ç¨‹è°ƒç”¨çš„å‡½æ•°ä¸­å³å¯ï¼Œè‹¥æœ‰å¤šçº¿ç¨‹è°ƒç”¨åˆ™ä¼šåœ¨è·¨çº¿ç¨‹æ—¶æŠ¥è­¦ã€‚
 #define XGC_SINGLE_THREAD_CHECKER( FMT, ... )\
 	static DWORD __single_thread_checker__ = GetCurrentThreadId();\
 	if( __single_thread_checker__ != GetCurrentThreadId() )\
@@ -79,7 +79,7 @@ namespace xgc
 	struct COMMON_API InvokeWatcher;
 
 	///
-	/// µ÷ÓÃ¶ÑÕ»µÄ¹ÜÀíÀà
+	/// è°ƒç”¨å †æ ˆçš„ç®¡ç†ç±»
 	/// [6/11/2014] create by albert.xu
 	///
 	class COMMON_API InvokeWatcherMgr
@@ -91,19 +91,19 @@ namespace xgc
 		~InvokeWatcherMgr();
 
 		///
-		/// Æô¶¯³¬Ê±¼à¿ØÏß³Ì 
+		/// å¯åŠ¨è¶…æ—¶ç›‘æ§çº¿ç¨‹ 
 		/// [6/11/2014] create by albert.xu
 		///
 		xgc_bool Start();	// return true if start thread success
 
 		///
-		/// Í£Ö¹³¬Ê±¼à¿ØÏß³Ì 
+		/// åœæ­¢è¶…æ—¶ç›‘æ§çº¿ç¨‹ 
 		/// [6/11/2014] create by albert.xu
 		///
 		xgc_void Stop();
 
 		///
-		/// ³¬Ê±¼à¿ØÏß³ÌÊÇ·ñÒÑ¾­½áÊø 
+		/// è¶…æ—¶ç›‘æ§çº¿ç¨‹æ˜¯å¦å·²ç»ç»“æŸ 
 		/// [6/11/2014] create by albert.xu
 		///
 		xgc_bool IsFinish();
@@ -111,7 +111,7 @@ namespace xgc
 	private:
 		typedef std::unique_lock< std::mutex > autolock ;
 		///
-		/// ²åÈëÒ»¸ö¼àÊÓ¶ÔÏó£¬Ã¿Ïß³ÌÒ»¸ö¡£
+		/// æ’å…¥ä¸€ä¸ªç›‘è§†å¯¹è±¡ï¼Œæ¯çº¿ç¨‹ä¸€ä¸ªã€‚
 		/// [12/4/2014] create by albert.xu
 		///
 		xgc_void InsertInvokeWatcher( InvokeWatcher* pWatcher );
@@ -163,31 +163,31 @@ namespace xgc
 		xgc_uint32	mRef;
 		struct InvokeWatcher *mNext;
 		xgc_bool mIsDirty;	// flag that shows data was saved to file before
-		xgc_bool mIsClose;	// ÊÇ·ñ¹Ø±Õ¼ÇÂ¼, ÓÃÓÚ´¦ÀíLogÀïÃæµÄÒì³£¼à²â.
+		xgc_bool mIsClose;	// æ˜¯å¦å…³é—­è®°å½•, ç”¨äºå¤„ç†Logé‡Œé¢çš„å¼‚å¸¸ç›‘æµ‹.
 	};
 
 	struct COMMON_API InvokeWatcherWarp
 	{
 		///
-		/// ¹¹Ôì×Ô¶¯µ÷ÓÃFunctionBegin
+		/// æ„é€ è‡ªåŠ¨è°ƒç”¨FunctionBegin
 		/// [12/4/2014] create by albert.xu
 		///
 		InvokeWatcherWarp( InvokeWatcher* pWatcher, xgc_lpcstr pFile, xgc_uint32 nLine );
 
 		///
-		/// Îö¹¹×Ô¶¯µ÷ÓÃFunctionEnd
+		/// ææ„è‡ªåŠ¨è°ƒç”¨FunctionEnd
 		/// [12/4/2014] create by albert.xu
 		///
 		~InvokeWatcherWarp();
 
-		/// @var Ïß³ÌÏà¹ØµÄ¼àÊÓ¶ÔÏó
+		/// @var çº¿ç¨‹ç›¸å…³çš„ç›‘è§†å¯¹è±¡
 		InvokeWatcher* mWatcher;
 	};
 
 	COMMON_API InvokeWatcher* getInvokeWatcher();
 
 	///
-	/// ÖØÈë¼ì²é£¬ÓÃÓÚº¯ÊıÖØÈëÏŞÖÆ£¬µİ¹éÉî¶ÈµÄ¼ì²é
+	/// é‡å…¥æ£€æŸ¥ï¼Œç”¨äºå‡½æ•°é‡å…¥é™åˆ¶ï¼Œé€’å½’æ·±åº¦çš„æ£€æŸ¥
 	/// [11/20/2014] create by albert.xu
 	///
 	struct COMMON_API TwiceEnterGuard
@@ -236,31 +236,31 @@ namespace xgc
 	};
 
 	///
-	/// ÉèÖÃÈÕÖ¾Â·¾¶
+	/// è®¾ç½®æ—¥å¿—è·¯å¾„
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API xgc_void SetDebugerLog( xgc_lpcstr pathname );
 
 	///
-	/// ÉèÖÃ³¬Ê±ÈÕÖ¾
+	/// è®¾ç½®è¶…æ—¶æ—¥å¿—
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API xgc_void SetDebugerTimeout( xgc_time32 millseconds );
 
 	///
-	/// ¼ÇÂ¼ÄÚ´æÊ¹ÓÃĞÅÏ¢
+	/// è®°å½•å†…å­˜ä½¿ç”¨ä¿¡æ¯
 	/// [1/21/2014 albert.xu]
 	///
 	COMMON_API xgc_lpcstr MemMark( xgc_lpcstr name, xgc_lpcstr parent = xgc_nullptr, xgc_int32( *Report )( xgc_lpcstr fmt, ... ) = xgc_nullptr );
 
 	///
-	/// ±¨¸æÒÑ´æµÄÄÚ´æÊ¹ÓÃÇé¿ö
+	/// æŠ¥å‘Šå·²å­˜çš„å†…å­˜ä½¿ç”¨æƒ…å†µ
 	/// [1/21/2014 albert.xu]
 	///
 	COMMON_API xgc_void MemMarkReport( xgc_lpcstr name, xgc_int32( *Report )( xgc_lpcstr fmt, ... ) );
 
 	///
-	/// ÇåÀí±¨¸æÊı¾İ
+	/// æ¸…ç†æŠ¥å‘Šæ•°æ®
 	/// [1/21/2014 albert.xu]
 	///
 	COMMON_API xgc_void MemMarkClear();

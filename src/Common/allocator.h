@@ -310,7 +310,7 @@ namespace xgc
 		>
 		void AllocatorSingleton< T, C, M, O, L >::ClearExtraMemory( void )
 		{
-			typename MyThreadingModel::Lock lock(mutex_);
+			typename MyThreadingModel::Lock lock(AllocatorSingleton< T, C, M, O, L >::mutex_);
 			Instance().TrimExcessMemory();
 		}
 
@@ -324,7 +324,7 @@ namespace xgc
 		>
 		bool AllocatorSingleton< T, C, M, O, L >::IsCorrupted( void )
 		{
-			typename MyThreadingModel::Lock lock(mutex_);
+			typename MyThreadingModel::Lock lock(AllocatorSingleton< T, C, M, O, L >::mutex_);
 			return Instance().IsCorrupt();
 		}
 
@@ -446,7 +446,7 @@ namespace xgc
 		 */
 		template
 		<
-			template <class> class ThreadingModel = MutilThread,
+			template <class> class ThreadingModel,
 			std::size_t chunkSize,
 			std::size_t maxSmallObjectSize,
 			std::size_t objectAlignSize,
@@ -462,6 +462,8 @@ namespace xgc
 			/// to handle singleton lifetime dependencies.
 			typedef AllocatorSingleton< ThreadingModel, chunkSize, maxSmallObjectSize, objectAlignSize, LifetimePolicy > ObjAllocatorSingleton;
     
+			/// Defines type _Myt;
+			typedef SmallObjectBase< ThreadingModel, chunkSize, maxSmallObjectSize, objectAlignSize, LifetimePolicy > _Myt;
 		private:
 
 			/// Defines type for thread-safety locking mechanism.
@@ -480,14 +482,14 @@ namespace xgc
 			static void * operator new ( std::size_t size ) throw ( std::bad_alloc )
 	#endif
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				return MyAllocatorSingleton::Instance().Allocate( size, true );
 			}
 
 			/// Non-throwing single-object new returns NULL if allocation fails.
 			static void * operator new ( std::size_t size, const std::nothrow_t & ) throw ()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				return MyAllocatorSingleton::Instance().Allocate( size, false );
 			}
 
@@ -500,7 +502,7 @@ namespace xgc
 			/// Single-object delete.
 			static void operator delete ( void * p, std::size_t size ) throw ()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				MyAllocatorSingleton::Instance().Deallocate( p, size );
 			}
 
@@ -509,7 +511,7 @@ namespace xgc
 			 */
 			static void operator delete ( void * p, const std::nothrow_t & ) throw()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				MyAllocatorSingleton::Instance().Deallocate( p );
 			}
 
@@ -528,14 +530,14 @@ namespace xgc
 				throw ( std::bad_alloc )
 	#endif
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				return MyAllocatorSingleton::Instance().Allocate( size, true );
 			}
 
 			/// Non-throwing array-object new returns NULL if allocation fails.
 			static void * operator new [] ( std::size_t size, const std::nothrow_t & ) throw ()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				return MyAllocatorSingleton::Instance().Allocate( size, false );
 			}
 
@@ -548,7 +550,7 @@ namespace xgc
 			/// Array-object delete.
 			static void operator delete [] ( void * p, std::size_t size ) throw ()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				MyAllocatorSingleton::Instance().Deallocate( p, size );
 			}
 
@@ -557,7 +559,7 @@ namespace xgc
 			 */
 			static void operator delete [] ( void * p, const std::nothrow_t & ) throw()
 			{
-				typename MyThreadingModel::Lock lock( mutex_ );
+				typename MyThreadingModel::Lock lock( _Myt::mutex_ );
 				MyAllocatorSingleton::Instance().Deallocate( p );
 			}
 
