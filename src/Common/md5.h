@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file md5.h
-/// \date å…«æœˆ 2016
+/// \date °ËÔÂ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief MD5 æ‘˜è¦ç®—æ³•
+/// \brief MD5 ÕªÒªËã·¨
 /// 
 
 
@@ -18,16 +18,16 @@ namespace xgc
 {
 	namespace Encryption
 	{
-		//! MD5æ‘˜è¦
-		//! @param data è¾“å…¥æ•°æ®
-		//! @param data_len è¾“å…¥æ•°æ®é•¿åº¦
-		//! @param digest MD5æ‘˜è¦
+		//! MD5ÕªÒª
+		//! @param data ÊäÈëÊı¾İ
+		//! @param data_len ÊäÈëÊı¾İ³¤¶È
+		//! @param digest MD5ÕªÒª
 		//!
-		//! data å’Œ digest å¯ä»¥æŒ‡å‘åŒä¸€ç¼“å†²åŒº
+		//! data ºÍ digest ¿ÉÒÔÖ¸ÏòÍ¬Ò»»º³åÇø
 		COMMON_API xgc_void Md5( const char *data, int data_len, char* digest, bool output_hex = false, bool bCap = true );
 
 		///
-		/// \brief è·å–æ–‡ä»¶Md5æ‘˜è¦
+		/// \brief »ñÈ¡ÎÄ¼şMd5ÕªÒª
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:37
@@ -35,7 +35,7 @@ namespace xgc
 		COMMON_API xgc_bool Md5_file( const char *filename, char *result );
 
 		///
-		/// \brief è·å–MD5ç 
+		/// \brief »ñÈ¡MD5Âë
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:38

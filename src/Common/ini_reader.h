@@ -1,7 +1,7 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file ini_reader.h
-/// \date å…«æœˆ 2016
+/// \date °ËÔÂ 2016
 ///
 /// \author albert.xu windxu@126.com
 /// \brief ini file reader no write function
@@ -17,7 +17,7 @@ namespace xgc
 	namespace common
 	{
 		///
-		/// Iniæ–‡ä»¶è¯»å–ç±»
+		/// IniÎÄ¼ş¶ÁÈ¡Àà
 		/// [8/11/2014] create by albert.xu
 		///
 		class COMMON_API ini_reader
@@ -25,21 +25,21 @@ namespace xgc
 		private:
 			struct file_info
 			{
-				/// æ–‡ä»¶ç¼“å†²
+				/// ÎÄ¼ş»º³å
 				xgc_lpstr file_buffer;
-				/// æ–‡ä»¶ç¼“å†²é•¿åº¦
+				/// ÎÄ¼ş»º³å³¤¶È
 				xgc_size file_size;
-				/// æ–‡ä»¶è·¯å¾„
+				/// ÎÄ¼şÂ·¾¶
 				xgc_char file_path[_MAX_PATH];
-				/// æ–‡ä»¶å
+				/// ÎÄ¼şÃû
 				xgc_char file_name[_MAX_FNAME];
-				/// åŒ…å«çš„æ–‡ä»¶
+				/// °üº¬µÄÎÄ¼ş
 				xgc_list< file_info* > externs;
 			};
 			
-			/// @var æ–‡ä»¶ç¼“å†²
+			/// @var ÎÄ¼ş»º³å
 			file_info* root;
-			/// @var åˆ†æç¼“å†²
+			/// @var ·ÖÎö»º³å
 			xgc_lpstr storage;
 
 			struct section;
@@ -47,17 +47,17 @@ namespace xgc
 			struct key_val;
 			key_val *keypair_ptr;
 
-			/// @var ç¿»è¯‘ç¼“å†²
+			/// @var ·­Òë»º³å
 			xgc_lpstr trans_buffer;
-			/// @var å†™åç§»
+			/// @var Ğ´Æ«ÒÆ
 			xgc_size  trans_offset;
 
-			/// @var èŠ‚çš„ä¸ªæ•°
+			/// @var ½ÚµÄ¸öÊı
 			xgc_size  section_count;
 
 		public:
 			///
-			/// \brief æ„é€ å‡½æ•°
+			/// \brief ¹¹Ôìº¯Êı
 			///
 			/// \author albert.xu
 			/// \date 2015/12/17 15:51
@@ -65,7 +65,7 @@ namespace xgc
 			ini_reader();
 
 			///
-			/// \brief ææ„å‡½æ•°
+			/// \brief Îö¹¹º¯Êı
 			///
 			/// \author albert.xu
 			/// \date 2015/12/17 15:51
@@ -73,25 +73,25 @@ namespace xgc
 			~ini_reader();
 
 			///
-			/// \brief åŠ è½½Iniæ–‡ä»¶
+			/// \brief ¼ÓÔØIniÎÄ¼ş
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool load( xgc_lpcstr path );
 
 			///
-			/// \brief ç¡®è®¤æ®µæ˜¯å¦å­˜åœ¨
+			/// \brief È·ÈÏ¶ÎÊÇ·ñ´æÔÚ
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool is_exist_section( xgc_lpcstr lpSection )const;
 
 			///
-			/// ç¡®è®¤æ‰€éœ€çš„é¡¹æ˜¯å¦å­˜åœ¨
+			/// È·ÈÏËùĞèµÄÏîÊÇ·ñ´æÔÚ
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool is_exist_item( xgc_lpcstr lpSection, xgc_lpcstr lpItem )const;
 
 			///
-			/// \brief è·å–èŠ‚çš„ä¸ªæ•°
+			/// \brief »ñÈ¡½ÚµÄ¸öÊı
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_size get_section_count()const
@@ -100,33 +100,33 @@ namespace xgc
 			}
 
 			///
-			/// \brief è·å–å±æ€§ä¸ªæ•°
+			/// \brief »ñÈ¡ÊôĞÔ¸öÊı
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_size get_item_count( xgc_lpcstr lpSection, xgc_lpcstr lpItemName = xgc_nullptr )const;
 
 			///
-			/// \brief è·å–æŒ‡å®šçš„Sectionå
+			/// \brief »ñÈ¡Ö¸¶¨µÄSectionÃû
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_lpcstr get_section_name( xgc_size nSectionIdx )const;
 
 			///
-			/// \brief è·å–å±æ€§çš„åå­—
+			/// \brief »ñÈ¡ÊôĞÔµÄÃû×Ö
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_lpcstr get_item_name( xgc_lpcstr lpSection, xgc_size nIndex )const;
 
 			///
-			/// \brief è·å–æŒ‡å®šçš„æ•°æ®ã€‚
+			/// \brief »ñÈ¡Ö¸¶¨µÄÊı¾İ¡£
 			/// [8/11/2014] create by albert.xu
-			/// \param lpSection èŠ‚çš„åç§°
-			/// \param nIdx å±æ€§çš„ç´¢å¼•
+			/// \param lpSection ½ÚµÄÃû³Æ
+			/// \param nIdx ÊôĞÔµÄË÷Òı
 			///
 			xgc_lpcstr get_item_value( xgc_lpcstr lpSection, xgc_size nIndex, xgc_lpcstr lpDefault )const;
 
 			///
-			/// \brief è·å–æŒ‡å®šçš„æ•°æ®
+			/// \brief »ñÈ¡Ö¸¶¨µÄÊı¾İ
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 17:08
@@ -134,15 +134,15 @@ namespace xgc
 			xgc_lpcstr get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpItemName, xgc_size nIndex, xgc_lpcstr lpDefault )const;
 
 			///
-			/// \brief è·å–æŒ‡å®šçš„æ•°æ®ã€‚
+			/// \brief »ñÈ¡Ö¸¶¨µÄÊı¾İ¡£
 			/// [8/11/2014] create by albert.xu
-			/// \param lpSection èŠ‚çš„åç§°
-			/// \param lpName å±æ€§çš„åç§°
+			/// \param lpSection ½ÚµÄÃû³Æ
+			/// \param lpName ÊôĞÔµÄÃû³Æ
 			///
 			xgc_lpcstr get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpName, xgc_lpcstr lpDefault )const;
 
 			///
-			/// \brief è·å–æ•°å€¼ç±»å‹çš„å€¼
+			/// \brief »ñÈ¡ÊıÖµÀàĞÍµÄÖµ
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, xgc_bool bDefault )const
@@ -185,31 +185,31 @@ namespace xgc
 
 		private:
 			///
-			/// \brief é‡Šæ”¾æ‰€æœ‰æ–‡ä»¶
+			/// \brief ÊÍ·ÅËùÓĞÎÄ¼ş
 			/// [7/16/2015] create by albert.xu
 			///
 			xgc_void fini( file_info* &pFileInfo );
 
 			///
-			/// \brief åŠ è½½Iniæ–‡ä»¶
+			/// \brief ¼ÓÔØIniÎÄ¼ş
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool load( xgc_lpcstr lpFilePath, xgc_lpcstr lpFileName );
 
 			///
-			/// \brief æ–‡ä»¶åˆ†æ
+			/// \brief ÎÄ¼ş·ÖÎö
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_bool parse( file_info* pFileInfo );
 
 			///
-			/// \brief æŸ¥æ‰¾Section
+			/// \brief ²éÕÒSection
 			/// [8/11/2014] create by albert.xu
 			///
 			const section* find_section( xgc_lpcstr lpSection )const;
 
 			///
-			/// å¯¹é…ç½®ä¸²åšå˜æ¢
+			/// ¶ÔÅäÖÃ´®×ö±ä»»
 			/// [12/4/2014] create by albert.xu
 			///
 			xgc_long transform( xgc_lpstr lpBuffer, xgc_size nBufferSize, xgc_lpcstr lpValue );

@@ -11,7 +11,7 @@ namespace xgc
 	namespace common
 	{
 		///
-		/// \brief cvsè¡¨æ ¼è¯»å–ç±»
+		/// \brief cvs±í¸ñ¶ÁÈ¡Àà
 		///
 		/// \author albert.xu
 		/// \date 2016/01/26 18:12
@@ -19,22 +19,22 @@ namespace xgc
 		class COMMON_API csv_reader
 		{
 		protected:
-			/// æ¯ä¸€ä¸ªå—éƒ½æŒ‡å‘ä¸€å—å†…å­˜åŒºåŸŸï¼Œå…¶ä¸­ä¿å­˜äº†4096è¡Œæ•°æ®ã€‚
+			/// Ã¿Ò»¸ö¿é¶¼Ö¸ÏòÒ»¿éÄÚ´æÇøÓò£¬ÆäÖĞ±£´æÁË4096ĞĞÊı¾İ¡£
 			xgc_lpvoid		chunk[128];
-			/// ç¼“å†²åŒºæŒ‡é’ˆ
+			/// »º³åÇøÖ¸Õë
 			xgc_lpstr		buffer;
-			/// è¡¨æ ¼åˆ—æ•°é‡
+			/// ±í¸ñÁĞÊıÁ¿
 			xgc_size		cols;
-			/// è¡¨æ ¼è¡Œæ•°é‡
+			/// ±í¸ñĞĞÊıÁ¿
 			xgc_size		rows;
-			/// å½“å‰åˆ—æŒ‡é’ˆ
+			/// µ±Ç°ÁĞÖ¸Õë
 			mutable
 			xgc_int32		fetch;
-			/// æ˜¯å¦å­˜åœ¨æ ‡é¢˜æ 
+			/// ÊÇ·ñ´æÔÚ±êÌâÀ¸
 			xgc_bool		title;
 		public:
 			///
-			/// \brief æ„é€ 
+			/// \brief ¹¹Ôì
 			///
 			/// \author albert.xu
 			/// \date 2016/01/26 18:12
@@ -42,7 +42,7 @@ namespace xgc
 			csv_reader( xgc_void );
 
 			///
-			/// \brief ææ„ï¼Œé‡Šæ”¾èµ„æº
+			/// \brief Îö¹¹£¬ÊÍ·Å×ÊÔ´
 			///
 			/// \author albert.xu
 			/// \date 2016/01/26 18:12
@@ -50,41 +50,41 @@ namespace xgc
 			~csv_reader( xgc_void );
 		private:
 			///
-			/// è·å–å•å…ƒæ ¼å†…å®¹ 
+			/// »ñÈ¡µ¥Ôª¸ñÄÚÈİ 
 			/// [6/10/2014] create by albert.xu
-			/// @param nRow æ–‡ä»¶çš„è¡Œå·
-			/// @param nCol è¡¨æ ¼çš„åˆ—å·
+			/// @param nRow ÎÄ¼şµÄĞĞºÅ
+			/// @param nCol ±í¸ñµÄÁĞºÅ
 			///
 			xgc_lpcstr get_cell( xgc_size row, xgc_size col ) const throw();
 
 			///
-			/// è·å–å•å…ƒæ ¼å†…å®¹ 
+			/// »ñÈ¡µ¥Ôª¸ñÄÚÈİ 
 			/// [6/10/2014] create by albert.xu
-			/// @param nRow æ–‡ä»¶çš„è¡Œå·
-			/// @param nCol è¡¨æ ¼çš„åˆ—å·
+			/// @param nRow ÎÄ¼şµÄĞĞºÅ
+			/// @param nCol ±í¸ñµÄÁĞºÅ
 			///
 			xgc_lpcstr set_cell( xgc_size row, xgc_size col, xgc_lpstr str );
 
 			///
-			/// è·å–æ ‡é¢˜æ‰€åœ¨çš„åˆ— 
+			/// »ñÈ¡±êÌâËùÔÚµÄÁĞ 
 			/// [6/10/2014] create by albert.xu
-			/// @param pTitle æ ‡é¢˜
+			/// @param pTitle ±êÌâ
 			///
 			xgc_int32 get_col( xgc_lpcstr title ) const throw();
 
 			///
-			/// åˆ†ææ•´ä¸ªæ–‡ä»¶ 
+			/// ·ÖÎöÕû¸öÎÄ¼ş 
 			/// [6/10/2014] create by albert.xu
-			/// @param buffer ç¼“å†²åŒºé¦–åœ°å€
-			/// @param buffer_size ç¼“å†²åŒºå¤§å°
+			/// @param buffer »º³åÇøÊ×µØÖ·
+			/// @param buffer_size »º³åÇø´óĞ¡
 			///
 			xgc_bool parse( xgc_lpstr buffer, xgc_size buffer_size, xgc_char split );
 
 		public:
 			///
-			/// \brief è¯»å–æŒ‡å®šçš„è¡¨æ ¼æ–‡ä»¶
+			/// \brief ¶ÁÈ¡Ö¸¶¨µÄ±í¸ñÎÄ¼ş
 			///
-			/// \param pathname æ–‡ä»¶å
+			/// \param pathname ÎÄ¼şÃû
 			/// 
 			/// \author albert.xu
 			/// \date 2015/12/16 17:39
@@ -92,31 +92,31 @@ namespace xgc
 			xgc_bool load( xgc_lpcstr pathname, xgc_char split = ',', xgc_bool has_title = true );
 
 			///
-			/// \brief è¯»å–å•å…ƒæ ¼æ•°æ®
-			/// \param row è¡Œå·
-			/// \param col åˆ—å·
+			/// \brief ¶ÁÈ¡µ¥Ôª¸ñÊı¾İ
+			/// \param row ĞĞºÅ
+			/// \param col ÁĞºÅ
 			///
 			xgc_lpcstr get_value( xgc_size row, xgc_size col, xgc_lpcstr default ) const throw();
 
 			///
-			/// è¯»å–å•å…ƒæ ¼æ•°æ®
-			/// \param row è¡Œå·
-			/// \param title è¡¨å¤´
+			/// ¶ÁÈ¡µ¥Ôª¸ñÊı¾İ
+			/// \param row ĞĞºÅ
+			/// \param title ±íÍ·
 			///
 			xgc_lpcstr get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr default ) const throw();
 
 			///
-			/// \brief è·å–å•å…ƒæ ¼æ•°æ®ï¼Œboolç‰¹åŒ–
+			/// \brief »ñÈ¡µ¥Ôª¸ñÊı¾İ£¬boolÌØ»¯
 			///
-			/// \param row è¡Œå·
-			/// \param col åˆ—å·
+			/// \param row ĞĞºÅ
+			/// \param col ÁĞºÅ
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
 			///
 			xgc_bool get_value( xgc_size row, xgc_size col, xgc_bool default ) const throw();
 
 			///
-			/// \brief è·å–å•å…ƒæ ¼æ•°æ®ï¼Œboolç‰¹åŒ–
+			/// \brief »ñÈ¡µ¥Ôª¸ñÊı¾İ£¬boolÌØ»¯
 			///
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
@@ -128,7 +128,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief è·å–å•å…ƒæ ¼æ•°æ®ï¼Œæ•°ç»„ç‰¹åŒ–
+			/// \brief »ñÈ¡µ¥Ôª¸ñÊı¾İ£¬Êı×éÌØ»¯
 			///
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
@@ -160,7 +160,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief è·å–å•å…ƒæ ¼æ•°æ® æ•°å€¼ç±»å‹
+			/// \brief »ñÈ¡µ¥Ôª¸ñÊı¾İ ÊıÖµÀàĞÍ
 			///
 			/// \author albert.xu
 			/// \date 2015/12/16 18:03
@@ -186,7 +186,7 @@ namespace xgc
 			}
 
 			///
-			/// \brief è·å–åˆ—æ•°é‡
+			/// \brief »ñÈ¡ÁĞÊıÁ¿
 			///
 			/// \author albert.xu
 			/// \date 2015/12/16 18:03
@@ -194,7 +194,7 @@ namespace xgc
 			xgc_size get_cols() { return cols; }
 
 			///
-			/// \brief è·å–è¡Œæ•°
+			/// \brief »ñÈ¡ĞĞÊı
 			///
 			/// \author albert.xu
 			/// \date 2015/12/16 18:03

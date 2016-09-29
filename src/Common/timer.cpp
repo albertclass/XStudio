@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////////////////////
-/// COPYRIGHT ä¼ ä¸–å·¥ä½œå®¤
-/// CopyRight  ? 2015 ç››å¤§ç½‘ç»œ
+/// COPYRIGHT ´«ÊÀ¹¤×÷ÊÒ
+/// CopyRight  ? 2015 Ê¢´óÍøÂç
 /// \file timer.cpp
-/// \brief æ–‡ä»¶ç®€ä»‹
+/// \brief ÎÄ¼ş¼ò½é
 /// \author xufeng04
-/// \date åäºŒæœˆ 2015
+/// \date Ê®¶şÔÂ 2015
 ///
-/// å®šæ—¶å™¨ï¼Œä½¿ç”¨æ—¶é—´è½®ç®—æ³•ï¼Œè¯¥ç®—æ³•å…¼é¡¾æ€§èƒ½å’Œå¯ç”¨æ€§ï¼Œå¯é€‰æ‹©ä¸¤ç§ä¸åŒçš„æ—¶é—´ç”Ÿæˆç­–ç•¥
-/// 1. åŸºäºç³»ç»Ÿæ—¶é—´çš„
-/// 2. åŸºäºå›ºå®šæ—¶é—´çš„
+/// ¶¨Ê±Æ÷£¬Ê¹ÓÃÊ±¼äÂÖËã·¨£¬¸ÃËã·¨¼æ¹ËĞÔÄÜºÍ¿ÉÓÃĞÔ£¬¿ÉÑ¡ÔñÁ½ÖÖ²»Í¬µÄÊ±¼äÉú³É²ßÂÔ
+/// 1. »ùÓÚÏµÍ³Ê±¼äµÄ
+/// 2. »ùÓÚ¹Ì¶¨Ê±¼äµÄ
 ///
 ///////////////////////////////////////////////////////////////
 #include <numeric>
@@ -43,14 +43,14 @@ namespace xgc
 			//printf( "%08x - %s\n", h._handle, tname );
 		};
 
-		// é»˜è®¤çš„äº‹ä»¶åˆ†å‘
+		// Ä¬ÈÏµÄÊÂ¼ş·Ö·¢
 		xgc_void(*timer_event_dispatcher)( timer_t, en_event_t ) = event_dispatcher;
 
 		/// 
-		/// \brief è®¾ç½®äº‹ä»¶æ¥å£
+		/// \brief ÉèÖÃÊÂ¼ş½Ó¿Ú
 		/// 
 		/// \author xufeng04
-		/// \date åä¸€æœˆ 2015
+		/// \date Ê®Ò»ÔÂ 2015
 		/// 
 		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_t, en_event_t) )
 		{
@@ -58,17 +58,17 @@ namespace xgc
 		}
 
 		///
-		/// \brief æ—¶é—´è½®å®šä¹‰
-		/// ä½¿ç”¨è”åˆæ¥å°†ä¸€ä¸ª64ä½æ—¶é—´å€¼è½¬åŒ–ä¸º
+		/// \brief Ê±¼äÂÖ¶¨Òå
+		/// Ê¹ÓÃÁªºÏÀ´½«Ò»¸ö64Î»Ê±¼äÖµ×ª»¯Îª
 		///
 		/// \author albert.xu
 		/// \date 2015/12/04 14:44
 		///
 		union timer_clock
 		{
-			/// æ—¶é—´å€¼
+			/// Ê±¼äÖµ
 			xgc_time64 time;
-			/// æ—¶é—´è½®
+			/// Ê±¼äÂÖ
 			struct
 			{
 				xgc_uint64 m7 : 12;
@@ -82,15 +82,15 @@ namespace xgc
 			};
 		};
 
-		/// æ„é€ å‡½æ•°
+		/// ¹¹Ôìº¯Êı
 		timer::timer( xgc_time64 (*get_tickcount)() )
 			: tickcount_( 0 )
 			, get_tickcount_( get_tickcount )
 		{
-			// æ—¶é—´è½®ç®—æ³• ï¼š
-			// å°†æ—¶é—´åˆ†ä¸ºå¤šä¸ªæ¡¶ï¼Œæ¯ä¸ªæ¡¶çš„å¤§å°ä¸º2çš„æ¬¡å¹‚ï¼Œ
-			// è¿™æ ·ï¼Œåªè¦æŒ‰ä½å–å³å¯é€šè¿‡æ—¶é—´å€¼æ¥è·å¾—å¯¹åº”çš„ç´¢å¼•ã€‚
-			// è¿™é‡Œå°†æ¡¶åˆ†ä¸º16,64,64,256,256,1024,1024,4096å…±6800ä¸ª
+			// Ê±¼äÂÖËã·¨ £º
+			// ½«Ê±¼ä·ÖÎª¶à¸öÍ°£¬Ã¿¸öÍ°µÄ´óĞ¡Îª2µÄ´ÎÃİ£¬
+			// ÕâÑù£¬Ö»Òª°´Î»È¡¼´¿ÉÍ¨¹ıÊ±¼äÖµÀ´»ñµÃ¶ÔÓ¦µÄË÷Òı¡£
+			// ÕâÀï½«Í°·ÖÎª16,64,64,256,256,1024,1024,4096¹²6800¸ö
 			time_wheel_.resize( 0x1a90 );
 			tickcount_ = get_tickcount_() / TIMER_PRECISION;
 		}
@@ -100,17 +100,17 @@ namespace xgc
 			return datetime::from_milliseconds( tickcount_ * TIMER_PRECISION );
 		}
 
-		/// ææ„å‡½æ•°
+		/// Îö¹¹º¯Êı
 		timer::~timer( void )
 		{
 			time_wheel_.clear();
 		}
 
 		///
-		/// \brief åˆ é™¤å®šæ—¶å™¨äº‹ä»¶
+		/// \brief É¾³ı¶¨Ê±Æ÷ÊÂ¼ş
 		///
-		/// \param handle å®šæ—¶å™¨å¥æŸ„
-		/// \return ä¸‹æ¬¡æ‰§è¡Œçš„æ—¶é—´é—´éš”
+		/// \param handle ¶¨Ê±Æ÷¾ä±ú
+		/// \return ÏÂ´ÎÖ´ĞĞµÄÊ±¼ä¼ä¸ô
 		///
 		/// \author albert.xu
 		/// \date 2015/12/04 14:37
@@ -128,10 +128,10 @@ namespace xgc
 		}
 
 		/// 
-		/// \brief è·å–å‰©ä½™æ‰§è¡Œæ—¶é—´
+		/// \brief »ñÈ¡Ê£ÓàÖ´ĞĞÊ±¼ä
 		/// 
 		/// \author xufeng04
-		/// \date åä¸€æœˆ 2015
+		/// \date Ê®Ò»ÔÂ 2015
 		/// 
 		timespan timer::get_remain_over( timer_t handle )
 		{
@@ -145,10 +145,10 @@ namespace xgc
 		}
 
 		/// 
-		/// \brief è·å–ä¸‹æ¬¡æ‰§è¡Œæ—¶é—´
+		/// \brief »ñÈ¡ÏÂ´ÎÖ´ĞĞÊ±¼ä
 		/// 
 		/// \author xufeng04
-		/// \date åä¸€æœˆ 2015
+		/// \date Ê®Ò»ÔÂ 2015
 		/// 
 		timespan timer::get_remain_exec( timer_t handle )
 		{
@@ -162,7 +162,7 @@ namespace xgc
 		}
 		
 		///
-		/// \brief æš‚åœæ›´æ–° 
+		/// \brief ÔİÍ£¸üĞÂ 
 		///
 		xgc_void timer::pause( timer_t handle )
 		{
@@ -175,7 +175,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief æ¢å¤æ›´æ–° 
+		/// \brief »Ö¸´¸üĞÂ 
 		///
 		xgc_bool timer::resume( timer_t handle, timespan delay )
 		{
@@ -196,11 +196,11 @@ namespace xgc
 			{
 				timer_t handle = *iter;
 
-				// æœ‰æ•ˆæ€§æ£€æŸ¥
+				// ÓĞĞ§ĞÔ¼ì²é
 				timer_event* evtptr = timer_event::handle_exchange( handle );
 
 				xgc_bool adjust = false;
-				// åˆ°æ—¶é—´äº†åˆ™æ‰§è¡Œ
+				// µ½Ê±¼äÁËÔòÖ´ĞĞ
 				if( evtptr && evtptr->time_ == tickcount_ )
 				{
 					timer_event_dispatcher( handle, e_start );
@@ -210,7 +210,7 @@ namespace xgc
 					adjust = true;
 				}
 
-				// æ£€æŸ¥å¯¹è±¡æ˜¯å¦è¿˜æœ‰æ•ˆ
+				// ¼ì²é¶ÔÏóÊÇ·ñ»¹ÓĞĞ§
 				if( evtptr && evtptr == timer_event::handle_exchange( handle ) )
 				{
 					insert_once( evtptr, evtptr->time_, adjust );
@@ -269,7 +269,7 @@ namespace xgc
 		}
 
 		///
-		/// è·å–æŒ‡å®šæ—¶é—´æ‰§è¡Œçš„äº‹ä»¶
+		/// »ñÈ¡Ö¸¶¨Ê±¼äÖ´ĞĞµÄÊÂ¼ş
 		/// [9/7/2015] create by albert.xu
 		///
 		xgc_list< timer_t > timer::get_event_list( datetime stime )const
@@ -315,7 +315,7 @@ namespace xgc
 		}
 
 		///
-		/// è·å–æŒ‡å®šæ—¶é—´æ‰§è¡Œçš„äº‹ä»¶
+		/// »ñÈ¡Ö¸¶¨Ê±¼äÖ´ĞĞµÄÊÂ¼ş
 		/// [9/7/2015] create by albert.xu
 		///
 		xgc_list< timer_t > timer::get_event_list( xgc_lpcstr pname )const
@@ -336,25 +336,25 @@ namespace xgc
 		}
 
 		///
-		/// æ’å…¥å®šæ—¶å™¨
+		/// ²åÈë¶¨Ê±Æ÷
 		/// [12/9/2014] create by albert.xu
 		///
 		xgc_void timer::insert_once( timer_event* evtptr, xgc_time64 deadline, xgc_bool adjust )
 		{
-			// ä¸å…è®¸æ’å…¥åˆ°å½“å‰æ—¶é—´ç‚¹
+			// ²»ÔÊĞí²åÈëµ½µ±Ç°Ê±¼äµã
 			if( adjust )
 			{
-				// é‡æ–°æ ¡å‡†æ—¶é—´
+				// ÖØĞÂĞ£×¼Ê±¼ä
 				deadline = adjust_upper( 
 					datetime::from_milliseconds( deadline * TIMER_PRECISION ),
 					evtptr->type_,
 					evtptr->data_,
 					datetime::from_milliseconds( tickcount_ * TIMER_PRECISION ) ).to_milliseconds() / TIMER_PRECISION;
 
-				XGC_ASSERT_MESSAGE( deadline >= tickcount_, "æ’å…¥çš„æ—¶é—´å·²ç»è¿‡æ—¶ã€‚%I64u,%I64u", deadline, tickcount_ );
+				XGC_ASSERT_MESSAGE( deadline >= tickcount_, "²åÈëµÄÊ±¼äÒÑ¾­¹ıÊ±¡£%I64u,%I64u", deadline, tickcount_ );
 			}
 
-			// ä¸‹æ¬¡æ‰§è¡Œæ—¶é—´åœ¨æœ‰æ•ˆæ—¶é—´å†…çš„åˆ™æ’å…¥
+			// ÏÂ´ÎÖ´ĞĞÊ±¼äÔÚÓĞĞ§Ê±¼äÄÚµÄÔò²åÈë
 			if( deadline <= evtptr->over_ )
 			{
 				timer_clock t1 = { deadline };
@@ -397,7 +397,7 @@ namespace xgc
 
 				timer_event_dispatcher( evtptr->handle(), e_insert );
 			}
-			else // å¦åˆ™åˆ é™¤
+			else // ·ñÔòÉ¾³ı
 			{
 				delete evtptr;
 			}
@@ -413,7 +413,7 @@ namespace xgc
 			xgc_lpcstr cmdstr = args;
 			xgc_lpcstr params = strchr( args, ':' );
 
-			XGC_ASSERT_RETURN( params, false, "éæ³•çš„å‚æ•°æ ¼å¼" );
+			XGC_ASSERT_RETURN( params, false, "·Ç·¨µÄ²ÎÊı¸ñÊ½" );
 
 			xgc_size cmdlen = params - cmdstr;
 			++params;
@@ -421,7 +421,7 @@ namespace xgc
 			if( strncmp( "week", cmdstr, cmdlen ) == 0 )
 			{
 				type = timer_event::e_week;
-				// æ ¹æ®â€˜ï¼Œâ€™åˆ†å‰²ä¸è¿ç»­çš„æ®µ
+				// ¸ù¾İ¡®£¬¡¯·Ö¸î²»Á¬ĞøµÄ¶Î
 				xgc_lpcstr delim = " ,\t";
 				xgc_lpcstr token = params + strspn( params, delim );
 				while( *token )
@@ -432,7 +432,7 @@ namespace xgc
 					xgc_ulong min = strtoul( token, &end, 10 );
 					xgc_ulong max = min;
 
-					// æŸ¥æ‰¾èŒƒå›´æ ‡å¿—
+					// ²éÕÒ·¶Î§±êÖ¾
 					while( end < next )
 					{
 						if( *end == '-' )
@@ -443,13 +443,13 @@ namespace xgc
 					}
 
 					XGC_ASSERT( max >= min );
-					// è®¾ç½®ä½æ©ç 
+					// ÉèÖÃÎ»ÑÚÂë
 					for( xgc_ulong bit = min; bit <= max && bit <= 7; ++bit )
 					{
 						data = XGC_SETBIT( data, bit % 7 );
 					}
 
-					// å–ä¸‹ä¸€ä¸ªåˆ†æ®µ
+					// È¡ÏÂÒ»¸ö·Ö¶Î
 					token = next + strspn( next, delim );
 				}
 
@@ -459,7 +459,7 @@ namespace xgc
 			if( strncmp( "moon", cmdstr, cmdlen ) == 0 || strncmp( "month", cmdstr, cmdlen ) == 0 )
 			{
 				type = timer_event::e_moon;
-				// æ ¹æ®â€˜ï¼Œâ€™åˆ†å‰²ä¸è¿ç»­çš„æ®µ
+				// ¸ù¾İ¡®£¬¡¯·Ö¸î²»Á¬ĞøµÄ¶Î
 				xgc_lpcstr delim = " ,\t";
 				xgc_lpcstr token = params + strspn( params, delim );
 				while( *token )
@@ -470,7 +470,7 @@ namespace xgc
 					xgc_ulong min = strtoul( token, &end, 10 );
 					xgc_ulong max = min;
 
-					// æŸ¥æ‰¾èŒƒå›´æ ‡å¿—
+					// ²éÕÒ·¶Î§±êÖ¾
 					while( end < next )
 					{
 						if( *end == '-' )
@@ -481,13 +481,13 @@ namespace xgc
 					}
 
 					XGC_ASSERT( max >= min );
-					// è®¾ç½®ä½æ©ç 
+					// ÉèÖÃÎ»ÑÚÂë
 					for( xgc_ulong bit = min; bit <= max && bit <= 31; ++bit )
 					{
 						data = XGC_SETBIT( data, bit );
 					}
 
-					// å–ä¸‹ä¸€ä¸ªåˆ†æ®µ
+					// È¡ÏÂÒ»¸ö·Ö¶Î
 					token = next + strspn( next, delim );
 				}
 
@@ -497,7 +497,7 @@ namespace xgc
 			if( strncmp( "rept", cmdstr, cmdlen ) == 0 || strncmp( "repeat", cmdstr, cmdlen ) == 0 )
 			{
 				type = timer_event::e_rept;
-				// æ‰§è¡Œçš„é—´éš”æ—¶é—´
+				// Ö´ĞĞµÄ¼ä¸ôÊ±¼ä
 				if( duration )
 					data = duration / str2numeric< decltype( data + 0 ) >( params );
 				else
@@ -509,7 +509,7 @@ namespace xgc
 			if( strncmp( "intv", cmdstr, cmdlen ) == 0 || strncmp( "interval", cmdstr, cmdlen ) == 0 )
 			{
 				type = timer_event::e_rept;
-				// æ‰§è¡Œçš„é—´éš”æ—¶é—´
+				// Ö´ĞĞµÄ¼ä¸ôÊ±¼ä
 				data = str2numeric< decltype( data + 0 ) >( params );
 
 				return true;
@@ -668,8 +668,8 @@ namespace xgc
 		}
 
 		///
-		/// é‡æ–°æ ¡æ—¶
-		/// @return è¿”å›æ ¡å‡†è¿‡çš„æ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+		/// ÖØĞÂĞ£Ê±
+		/// @return ·µ»ØĞ£×¼¹ıµÄÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 		/// [1/21/2015] create by albert.xu
 		///
 		datetime timer::adjust_upper( datetime deadline, xgc_lpcstr args, datetime current, timespan duration )
@@ -685,11 +685,11 @@ namespace xgc
 		}
 
 		///
-		/// é‡æ–°æ ¡æ—¶ï¼Œå–å½“å‰æ—¶é—´çš„ä¸Šä¸€æ¬¡æ›´æ–°
-		/// @param deadline ç»“æŸæ—¶é—´
-		/// @param args äº‹ä»¶å‚æ•°
-		/// @param current æ—¶é—´åŸºå‡†ç‚¹
-		/// @return è¿”å›æ ¡å‡†è¿‡çš„æ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+		/// ÖØĞÂĞ£Ê±£¬È¡µ±Ç°Ê±¼äµÄÉÏÒ»´Î¸üĞÂ
+		/// @param deadline ½áÊøÊ±¼ä
+		/// @param args ÊÂ¼ş²ÎÊı
+		/// @param current Ê±¼ä»ù×¼µã
+		/// @return ·µ»ØĞ£×¼¹ıµÄÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 		/// [1/21/2015] create by albert.xu
 		///
 		datetime timer::adjust_lower( datetime deadline, xgc_lpcstr args, datetime current, timespan duration )

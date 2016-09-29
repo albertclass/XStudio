@@ -13,7 +13,7 @@ namespace xgc
 {
 	namespace common
 	{
-		// å®šæ—¶å™¨å¥æŸ„
+		// ¶¨Ê±Æ÷¾ä±ú
 		typedef pool_handle< pool_handle_base > timer_t;
 
 		# define INVALID_TIMER_HANDLE _my_invalid_handle_value_
@@ -21,10 +21,10 @@ namespace xgc
 
 		# define TIMER_PRECISION 100
 		/*!
-		 * \brief äº‹ä»¶IDï¼Œç”¨äºæ ‡è¯†å®šæ—¶å™¨äº‹ä»¶ç±»å‹
+		 * \brief ÊÂ¼şID£¬ÓÃÓÚ±êÊ¶¶¨Ê±Æ÷ÊÂ¼şÀàĞÍ
 		 *
 		 * \author xufeng04
-		 * \date åä¸€æœˆ 2015
+		 * \date Ê®Ò»ÔÂ 2015
 		 */
 		enum en_event_t
 		{
@@ -43,15 +43,15 @@ namespace xgc
 		extern xgc_void(*timer_event_dispatcher)( timer_t, en_event_t );
 
 		/// 
-		/// \brief è®¾ç½®äº‹ä»¶æ¥å£
+		/// \brief ÉèÖÃÊÂ¼ş½Ó¿Ú
 		/// 
 		/// \author xufeng04
-		/// \date åä¸€æœˆ 2015
+		/// \date Ê®Ò»ÔÂ 2015
 		/// 
 		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_t, en_event_t) );
 
 		//////////////////////////////////////////////////////////////////////////
-		/// å®šæ—¶å™¨äº‹ä»¶æ¥å£
+		/// ¶¨Ê±Æ÷ÊÂ¼ş½Ó¿Ú
 		//////////////////////////////////////////////////////////////////////////
 		struct COMMON_API timer_event : public auto_handle < timer_event >
 		{
@@ -66,7 +66,7 @@ namespace xgc
 			friend class timer;
 		public:
 			///
-			/// é»˜è®¤æ„é€ 
+			/// Ä¬ÈÏ¹¹Ôì
 			/// [1/21/2015] create by albert.xu
 			///
 			timer_event()
@@ -83,11 +83,11 @@ namespace xgc
 			
 			///
 			/// [7/28/2008] Write by Albert.xu
-			/// æ„é€ æ—¶é—´äº‹ä»¶å¯¹è±¡
-			/// @param eType ç±»å‹
-			/// @param cb å‡½æ•°æŒ‡é’ˆæˆ–è€…é‡è½½operator()çš„ç»“æ„ä½“
-			/// @param nRepeat é‡å¤æ¬¡æ•°, è‡³å°‘æ‰§è¡Œä¸€æ¬¡.
-			/// @param nParam å‚æ•°
+			/// ¹¹ÔìÊ±¼äÊÂ¼ş¶ÔÏó
+			/// @param eType ÀàĞÍ
+			/// @param cb º¯ÊıÖ¸Õë»òÕßÖØÔØoperator()µÄ½á¹¹Ìå
+			/// @param nRepeat ÖØ¸´´ÎÊı, ÖÁÉÙÖ´ĞĞÒ»´Î.
+			/// @param nParam ²ÎÊı
 			///
 			timer_event( xgc_uint16 type, const timer_cb &call, xgc_time64 over, xgc_uint64 data, xgc_intptr user = 0, xgc_lpcstr name = "noname" )
 				: auto_handle()
@@ -103,7 +103,7 @@ namespace xgc
 			};
 
 			///
-			/// ææ„
+			/// Îö¹¹
 			/// [1/21/2015] create by albert.xu
 			///
 			~timer_event()
@@ -119,28 +119,28 @@ namespace xgc
 			}
 
 			///
-			/// ç¦æ­¢æ‹·è´æ„é€ 
+			/// ½ûÖ¹¿½±´¹¹Ôì
 			/// [1/21/2015] create by albert.xu
 			///
 			timer_event( const timer_event &src ) = delete;
 
 			///
-			/// ç¦æ­¢å³å€¼å¼•ç”¨æ„é€ 
+			/// ½ûÖ¹ÓÒÖµÒıÓÃ¹¹Ôì
 			/// [1/21/2015] create by albert.xu
 			///
 			timer_event( timer_event &&src ) = delete;
 
 			///
-			/// ç¦æ­¢èµ‹å€¼æ“ä½œ
+			/// ½ûÖ¹¸³Öµ²Ù×÷
 			/// [1/21/2015] create by albert.xu
 			///
 			timer_event& operator=( const timer_event &src ) = delete;
 
 			/*!
-			 * \brief æ‰§è¡Œæ—¶é—´
+			 * \brief Ö´ĞĞÊ±¼ä
 			 *
 			 * \author xufeng04
-			 * \date åä¸€æœˆ 2015
+			 * \date Ê®Ò»ÔÂ 2015
 			 */
 			xgc_time64 get_time()const
 			{
@@ -148,10 +148,10 @@ namespace xgc
 			}
 
 			/*!
-			* \brief ç»“æŸæ—¶é—´
+			* \brief ½áÊøÊ±¼ä
 			*
 			* \author xufeng04
-			* \date åä¸€æœˆ 2015
+			* \date Ê®Ò»ÔÂ 2015
 			*/
 			xgc_time64 get_over()const
 			{
@@ -159,10 +159,10 @@ namespace xgc
 			}
 
 			/*!
-			 * \brief è·å–äº‹ä»¶å
+			 * \brief »ñÈ¡ÊÂ¼şÃû
 			 *
 			 * \author xufeng04
-			 * \date åä¸€æœˆ 2015
+			 * \date Ê®Ò»ÔÂ 2015
 			 */
 			xgc_lpcstr get_name()const
 			{
@@ -170,10 +170,10 @@ namespace xgc
 			}
 
 			/*!
-			 * \brief è·å–ç”¨æˆ·æ•°æ®
+			 * \brief »ñÈ¡ÓÃ»§Êı¾İ
 			 *
 			 * \author xufeng04
-			 * \date åä¸€æœˆ 2015
+			 * \date Ê®Ò»ÔÂ 2015
 			 */
 			xgc_intptr get_user()const
 			{
@@ -181,14 +181,14 @@ namespace xgc
 			}
 
 		private:
-			xgc_uint16 type_;	///< å®šæ—¶å™¨ç±»å‹
-			xgc_uint64 data_;	///< ç±»å‹å‚æ•°ï¼Œæ ¹æ®æ—¶é’Ÿç±»å‹ä¸åŒå«ä¹‰ä¸åŒ
-			xgc_time64 time_;	///< å®šæ—¶å™¨æ‰§è¡Œæ—¶é—´
-			xgc_time64 over_;	///< å®šæ—¶å™¨ç»“æŸæ—¶é—´
-			xgc_lpcstr name_;	///< äº‹ä»¶åï¼ˆç”¨äºè°ƒè¯•ï¼‰
-			xgc_intptr user_;	///< ç”¨æˆ·æ•°æ®
+			xgc_uint16 type_;	///< ¶¨Ê±Æ÷ÀàĞÍ
+			xgc_uint64 data_;	///< ÀàĞÍ²ÎÊı£¬¸ù¾İÊ±ÖÓÀàĞÍ²»Í¬º¬Òå²»Í¬
+			xgc_time64 time_;	///< ¶¨Ê±Æ÷Ö´ĞĞÊ±¼ä
+			xgc_time64 over_;	///< ¶¨Ê±Æ÷½áÊøÊ±¼ä
+			xgc_lpcstr name_;	///< ÊÂ¼şÃû£¨ÓÃÓÚµ÷ÊÔ£©
+			xgc_intptr user_;	///< ÓÃ»§Êı¾İ
 
-			timer_cb call_;	///< å›è°ƒå‡½æ•°
+			timer_cb call_;	///< »Øµ÷º¯Êı
 		};
 
 		template< class clock >
@@ -206,20 +206,20 @@ namespace xgc
 			typedef xgc_list< timer_t >		event_s;
 			typedef xgc_vector< event_s >	wheel_s;
 
-			///< æ—¶é—´è½®
+			///< Ê±¼äÂÖ
 			wheel_s	time_wheel_;
 
-			///< ä¸Šä¸€æ¬¡æ‰§è¡Œæ—¶çš„æ—¶é—´
+			///< ÉÏÒ»´ÎÖ´ĞĞÊ±µÄÊ±¼ä
 			xgc_time64 tickcount_;
 
-			///< è·å–å½“å‰æ—¶é—´
+			///< »ñÈ¡µ±Ç°Ê±¼ä
 			xgc_time64 (*get_tickcount_)();
 		public:
 			timer( xgc_time64 (*get_tickcount)() = system_tickcount );
 			~timer( xgc_void );
 
 			///
-			/// \brief å–å®šæ—¶å™¨å½“å‰æ—¶é—´
+			/// \brief È¡¶¨Ê±Æ÷µ±Ç°Ê±¼ä
 			///
 			/// \author albert.xu
 			/// \date 2015/12/04 16:40
@@ -227,128 +227,128 @@ namespace xgc
 			datetime now();
 
 			///
-			/// \brief æ’å…¥å®šæ—¶å™¨äº‹ä»¶
-			/// \param function äº‹ä»¶å›è°ƒ
-			/// \param deadline æ—¶é—´å‘ç”Ÿçš„æ—¶é—´
-			/// \param param äº‹ä»¶å‚æ•°,ç”¨äºæè¿°ç±»å‹åŠè¯¥ç±»å‹æ‰€éœ€è¦çš„å‚æ•°
+			/// \brief ²åÈë¶¨Ê±Æ÷ÊÂ¼ş
+			/// \param function ÊÂ¼ş»Øµ÷
+			/// \param deadline Ê±¼ä·¢ÉúµÄÊ±¼ä
+			/// \param param ÊÂ¼ş²ÎÊı,ÓÃÓÚÃèÊöÀàĞÍ¼°¸ÃÀàĞÍËùĞèÒªµÄ²ÎÊı
 			///
 			timer_t insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata = 0, xgc_lpcstr name = "noname" );
 
 			/// 
-			/// \brief é‡æ–°æ ¡æ—¶ï¼Œå–å½“å‰æ—¶é—´çš„ä¸‹ä¸€æ¬¡æ›´æ–°
-			/// \param deadline ç»“æŸæ—¶é—´
-			/// \param args å®šæ—¶å™¨å‚æ•°
-			/// \param current æ—¶é—´åŸºå‡†ç‚¹
-			/// \return è¿”å›æ ¡å‡†è¿‡çš„å®é™…æ‰§è¡Œæ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+			/// \brief ÖØĞÂĞ£Ê±£¬È¡µ±Ç°Ê±¼äµÄÏÂÒ»´Î¸üĞÂ
+			/// \param deadline ½áÊøÊ±¼ä
+			/// \param args ¶¨Ê±Æ÷²ÎÊı
+			/// \param current Ê±¼ä»ù×¼µã
+			/// \return ·µ»ØĞ£×¼¹ıµÄÊµ¼ÊÖ´ĞĞÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 			/// [1/21/2015] create by albert.xu
 			/// 
 			datetime adjust_upper( datetime deadline, xgc_lpcstr args, datetime current = datetime::from_ftime( 0 ), timespan duration = timespan( 0 ) );
 
 			/// 
-			/// \brief é‡æ–°æ ¡æ—¶ï¼Œå–å½“å‰æ—¶é—´çš„ä¸Šä¸€æ¬¡æ›´æ–°
-			/// \param deadline ç»“æŸæ—¶é—´
-			/// \param args å®šæ—¶å™¨å‚æ•°
-			/// \param current æ—¶é—´åŸºå‡†ç‚¹
-			/// \return è¿”å›æ ¡å‡†è¿‡çš„å®é™…æ‰§è¡Œæ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+			/// \brief ÖØĞÂĞ£Ê±£¬È¡µ±Ç°Ê±¼äµÄÉÏÒ»´Î¸üĞÂ
+			/// \param deadline ½áÊøÊ±¼ä
+			/// \param args ¶¨Ê±Æ÷²ÎÊı
+			/// \param current Ê±¼ä»ù×¼µã
+			/// \return ·µ»ØĞ£×¼¹ıµÄÊµ¼ÊÖ´ĞĞÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 			/// [1/21/2015] create by albert.xu
 			/// 
 			datetime adjust_lower( datetime deadline, xgc_lpcstr args, datetime current = datetime::from_ftime( 0 ), timespan duration = timespan( 0 ) );
 
 			///
-			/// \brief é—¹é’Ÿæ¿€æ´»
+			/// \brief ÄÖÖÓ¼¤»î
 			/// [7/17/2014] create by albert.xu
 			///
 			xgc_bool step( xgc_time64 froce = 0 );
 
 			///
-			/// \brief åˆ é™¤äº‹ä»¶
+			/// \brief É¾³ıÊÂ¼ş
 			/// [7/24/2008] Write by Albert.xu
-			/// @param handle äº‹ä»¶å¥æŸ„
+			/// @param handle ÊÂ¼ş¾ä±ú
 			///
 			timespan remove( timer_t handle );
 
 			/// 
-			/// \brief è·å–å‰©ä½™æŒç»­æ—¶é—´
+			/// \brief »ñÈ¡Ê£Óà³ÖĞøÊ±¼ä
 			/// 
 			/// \author xufeng04
-			/// \date åä¸€æœˆ 2015
+			/// \date Ê®Ò»ÔÂ 2015
 			/// 
 			timespan get_remain_over( timer_t handle );
 
 			/// 
-			/// \brief è·å–ä¸‹æ¬¡æ‰§è¡Œæ—¶é—´
+			/// \brief »ñÈ¡ÏÂ´ÎÖ´ĞĞÊ±¼ä
 			/// 
 			/// \author xufeng04
-			/// \date åä¸€æœˆ 2015
+			/// \date Ê®Ò»ÔÂ 2015
 			/// 
 			timespan get_remain_exec( timer_t handle );
 
 			///
-			/// \brief æš‚åœæ›´æ–° 
+			/// \brief ÔİÍ£¸üĞÂ 
 			/// \date [11/29/2010 Albert]
 			///
 			xgc_void pause( timer_t handle );
 
 			///
-			/// \brief æ¢å¤æ›´æ–° 
-			/// \param handle äº‹ä»¶å¥æŸ„
-			/// \param delay å»¶è¿Ÿæ¢å¤æ—¶é—´ï¼Œä»¥å½“å‰æ—¶é—´ä¸ºåŸºå‡†
-			/// \return æ˜¯å¦æ¢å¤æˆåŠŸ
+			/// \brief »Ö¸´¸üĞÂ 
+			/// \param handle ÊÂ¼ş¾ä±ú
+			/// \param delay ÑÓ³Ù»Ö¸´Ê±¼ä£¬ÒÔµ±Ç°Ê±¼äÎª»ù×¼
+			/// \return ÊÇ·ñ»Ö¸´³É¹¦
 			/// \date [11/29/2010 Albert]
 			///
 			xgc_bool resume( timer_t handle, timespan delay = timespan( 0 ) );
 
 			///
-			/// \brief è·å–æŒ‡å®šæ—¶é—´æ‰§è¡Œçš„äº‹ä»¶
+			/// \brief »ñÈ¡Ö¸¶¨Ê±¼äÖ´ĞĞµÄÊÂ¼ş
 			/// \date [9/7/2015] create by albert.xu
 			///
 			xgc_list< timer_t > get_event_list( datetime stime )const;
 
 			///
-			/// \brief è·å–æŒ‡å®šæ—¶é—´æ‰§è¡Œçš„äº‹ä»¶
+			/// \brief »ñÈ¡Ö¸¶¨Ê±¼äÖ´ĞĞµÄÊÂ¼ş
 			/// \date [9/7/2015] create by albert.xu
 			///
 			xgc_list< timer_t > get_event_list( xgc_lpcstr pname )const;
 
 		private:
 			/// 
-			/// \brief è§£é‡Šå‚æ•°
+			/// \brief ½âÊÍ²ÎÊı
 			/// 
 			/// \author xufeng04
-			/// \date åä¸€æœˆ 2015
+			/// \date Ê®Ò»ÔÂ 2015
 			/// 
 			xgc_bool parse( xgc_lpcstr args, xgc_uint16& type, xgc_uint64& data, xgc_time64 duration );
 
 			/// 
-			/// \brief é‡æ–°æ ¡æ—¶ï¼Œå–å½“å‰æ—¶é—´çš„ä¸‹ä¸€æ¬¡æ›´æ–°
-			/// \param deadline ç»“æŸæ—¶é—´
-			/// \param type å®šæ—¶å™¨ç±»å‹
-			/// \param data æºå¸¦æ•°æ®
-			/// \param current æ—¶é—´åŸºå‡†ç‚¹
-			/// \return è¿”å›æ ¡å‡†è¿‡çš„å®é™…æ‰§è¡Œæ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+			/// \brief ÖØĞÂĞ£Ê±£¬È¡µ±Ç°Ê±¼äµÄÏÂÒ»´Î¸üĞÂ
+			/// \param deadline ½áÊøÊ±¼ä
+			/// \param type ¶¨Ê±Æ÷ÀàĞÍ
+			/// \param data Ğ¯´øÊı¾İ
+			/// \param current Ê±¼ä»ù×¼µã
+			/// \return ·µ»ØĞ£×¼¹ıµÄÊµ¼ÊÖ´ĞĞÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 			/// \date [1/21/2015] create by albert.xu
 			/// 
 			datetime adjust_upper( datetime deadline, xgc_uint16 type, xgc_uint64 data, datetime current );
 
 			/// 
-			/// \brief é‡æ–°æ ¡æ—¶ï¼Œå–å½“å‰æ—¶é—´çš„ä¸Šä¸€æ¬¡æ›´æ–°
-			/// \param deadline ç»“æŸæ—¶é—´
-			/// \param type å®šæ—¶å™¨ç±»å‹
-			/// \param data æºå¸¦æ•°æ®
-			/// \param current æ—¶é—´åŸºå‡†ç‚¹
-			/// \return è¿”å›æ ¡å‡†è¿‡çš„å®é™…æ‰§è¡Œæ—¶é—´ï¼Œè¯¥æ—¶é—´é€šè¿‡clockçš„ç±»å‹å’Œå‚æ•°æ ¡å‡†
+			/// \brief ÖØĞÂĞ£Ê±£¬È¡µ±Ç°Ê±¼äµÄÉÏÒ»´Î¸üĞÂ
+			/// \param deadline ½áÊøÊ±¼ä
+			/// \param type ¶¨Ê±Æ÷ÀàĞÍ
+			/// \param data Ğ¯´øÊı¾İ
+			/// \param current Ê±¼ä»ù×¼µã
+			/// \return ·µ»ØĞ£×¼¹ıµÄÊµ¼ÊÖ´ĞĞÊ±¼ä£¬¸ÃÊ±¼äÍ¨¹ıclockµÄÀàĞÍºÍ²ÎÊıĞ£×¼
 			/// \date [1/21/2015] create by albert.xu
 			/// 
 			datetime adjust_lower( datetime deadline, xgc_uint16 type, xgc_uint64 data, datetime current );
 
 			///
-			/// \brief æ‰§è¡Œä¸€ä¸ªé“¾è¡¨å†…çš„äº‹ä»¶
+			/// \brief Ö´ĞĞÒ»¸öÁ´±íÄÚµÄÊÂ¼ş
 			/// [7/18/2014] create by albert.xu
 			///
 			xgc_void step_list( xgc_list< timer_t >& lst );
 
 			///
-			/// \brief æ’å…¥å¯¹è±¡åˆ°å®šæ—¶å™¨åˆ—è¡¨ä¸­
+			/// \brief ²åÈë¶ÔÏóµ½¶¨Ê±Æ÷ÁĞ±íÖĞ
 			/// [7/18/2014] create by albert.xu
 			///
 			xgc_void insert_once( timer_event* evtptr, xgc_time64 deadline, xgc_bool adjust = false );

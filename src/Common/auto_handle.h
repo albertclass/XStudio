@@ -1,6 +1,6 @@
 /*******************************************************************/
 //! \file autolist.h
-//! \brief è‡ªåŠ¨åˆ—è¡¨ï¼Œç”¨äºç®¡ç†å¯¹è±¡ID
+//! \brief ×Ô¶¯ÁĞ±í£¬ÓÃÓÚ¹ÜÀí¶ÔÏóID
 //! 2014/07/16 by Albert.xu
 /*******************************************************************/
 #pragma once
@@ -30,10 +30,10 @@ namespace xgc
 				xgc_uint32 _handle;
 				struct
 				{
-					xgc_uint32	position : mybase::pow_pos;	///< ä½ç½®ä½åŸŸ
-					xgc_uint32	chunk    : mybase::pow_chk;	///< åˆ†å—
-					xgc_uint32	round    : mybase::pow_rnd;	///< è½®è¯¢ä½åŸŸ
-					xgc_uint32	check    : mybase::pow_crc;	///< å¯¹è±¡ä½ç½®æ ‡å¿—
+					xgc_uint32	position : mybase::pow_pos;	///< Î»ÖÃÎ»Óò
+					xgc_uint32	chunk    : mybase::pow_chk;	///< ·Ö¿é
+					xgc_uint32	round    : mybase::pow_rnd;	///< ÂÖÑ¯Î»Óò
+					xgc_uint32	check    : mybase::pow_crc;	///< ¶ÔÏóÎ»ÖÃ±êÖ¾
 				};
 			};
 
@@ -93,37 +93,37 @@ namespace xgc
 			friend class auto_handle_pool < _type, _handle_type > ;
 		public:
 			///
-			/// è·å–å¥æŸ„
+			/// »ñÈ¡¾ä±ú
 			/// [7/16/2014] create by albert.xu
 			///
 			_handle_type handle()const { return *this; }
 
 			///
-			/// é€šè¿‡å¯¹è±¡IDè·å–å¯¹è±¡æŒ‡é’ˆ
+			/// Í¨¹ı¶ÔÏóID»ñÈ¡¶ÔÏóÖ¸Õë
 			/// [1/7/2014 albert.xu]
 			///
 			static _type* handle_exchange( _handle_type handle );
 
 			///
-			/// è·å–å¥æŸ„æ± å¯¹è±¡
+			/// »ñÈ¡¾ä±ú³Ø¶ÔÏó
 			/// [7/18/2014] create by albert.xu
 			///
 			static auto_handle_pool < _type, _handle_type >& pool();
 		protected:
 			///
-			/// åˆ†é…æ–°å¥æŸ„
+			/// ·ÖÅäĞÂ¾ä±ú
 			/// [7/16/2014] create by albert.xu
 			///
 			static xgc_void new_handle( auto_handle* ptr );
 
 			///
-			/// é‡Šæ”¾å¥æŸ„
+			/// ÊÍ·Å¾ä±ú
 			/// [7/16/2014] create by albert.xu
 			///
 			static xgc_void del_handle( auto_handle* ptr );
 
 			///
-			/// åˆ›å»ºå¯¹è±¡
+			/// ´´½¨¶ÔÏó
 			/// [7/16/2014] create by albert.xu
 			///
 			auto_handle()
@@ -132,7 +132,7 @@ namespace xgc
 			}
 
 			///
-			/// é”€æ¯å¯¹è±¡
+			/// Ïú»Ù¶ÔÏó
 			/// [7/16/2014] create by albert.xu
 			///
 			~auto_handle()
@@ -150,23 +150,23 @@ namespace xgc
 			friend xgc_void auto_handle< _type, _handle_type >::del_handle( auto_handle< _type, _handle_type >* ptr );
 
 			//////////////////////////////////////////////////////////////////////////
-			// ä¸ºé˜²æ­¢é™æ€åº“åŒæ—¶è¢«å¤šä¸ªåŠ¨æ€åº“æˆ–æ‰§è¡Œæ–‡ä»¶å…±äº«çš„é—®é¢˜ï¼Œè¿™é‡Œåªå£°æ˜è¯¥Staticå¯¹è±¡ã€‚
+			// Îª·ÀÖ¹¾²Ì¬¿âÍ¬Ê±±»¶à¸ö¶¯Ì¬¿â»òÖ´ĞĞÎÄ¼ş¹²ÏíµÄÎÊÌâ£¬ÕâÀïÖ»ÉùÃ÷¸ÃStatic¶ÔÏó¡£
 			static auto_handle_pool *pInstance;
 
 			typedef auto_handle< _type, _handle_type > *object_ptr;
 
 			struct chunk
 			{
-				xgc_uint16 index;	///< chunk çš„ç´¢å¼•
-				xgc_uint16 cursor;	///< æ¸¸æ ‡ä½ç½®ï¼Œæ°¸è¿œæŒ‡å‘ä¸€ä¸ªå¯ç”¨çš„ç©ºä½ã€‚é™¤éè¿™ä¸ªChunkæ»¡äº†ã€‚
-				xgc_uint16 alloca;	///< å·²åˆ†é…çš„ä¸ªæ•°
-				xgc_uint16 check;	///< æ£€æŸ¥å€¼
+				xgc_uint16 index;	///< chunk µÄË÷Òı
+				xgc_uint16 cursor;	///< ÓÎ±êÎ»ÖÃ£¬ÓÀÔ¶Ö¸ÏòÒ»¸ö¿ÉÓÃµÄ¿ÕÎ»¡£³ı·ÇÕâ¸öChunkÂúÁË¡£
+				xgc_uint16 alloca;	///< ÒÑ·ÖÅäµÄ¸öÊı
+				xgc_uint16 check;	///< ¼ì²éÖµ
 
-				object_ptr ptr[1 << _handle_type::mybase::pow_pos]; ///< æŒ‡é’ˆåˆ—è¡¨
+				object_ptr ptr[1 << _handle_type::mybase::pow_pos]; ///< Ö¸ÕëÁĞ±í
 			};
 
-			// æŒ‰å—å„¿æ¥åˆ†ï¼Œä¸€å…±æœ‰1024ä¸ªå—ï¼Œæ¯ä¸ªå—æœ‰16384ä¸ªå¯åˆ†é…ID
-			// è¯¥å€¼çš„å–æ³•ä¸º2çš„næ¬¡å¹‚ï¼Œè¿™ä¸ªå€¼åœ¨æ·»åŠ ç‰©å“çš„ç®—æ³•ä¸­ä¼šä½¿ç”¨åˆ°ï¼Œä¸æ‡‚çš„ä¸è¦ä¹±æ”¹ï¼Œä»¥å…å‡ºç°BUG
+			// °´¿é¶ùÀ´·Ö£¬Ò»¹²ÓĞ1024¸ö¿é£¬Ã¿¸ö¿éÓĞ16384¸ö¿É·ÖÅäID
+			// ¸ÃÖµµÄÈ¡·¨Îª2µÄn´ÎÃİ£¬Õâ¸öÖµÔÚÌí¼ÓÎïÆ·µÄËã·¨ÖĞ»áÊ¹ÓÃµ½£¬²»¶®µÄ²»ÒªÂÒ¸Ä£¬ÒÔÃâ³öÏÖBUG
 			chunk*		mChunk[1 << _handle_type::mybase::pow_chk];
 			chunk*		mCurrentChunk;
 
@@ -198,18 +198,18 @@ namespace xgc
 			}
 
 			///
-			/// è‡ªåŠ¨åˆ—è¡¨æ¨¡å¼ï¼Œå°†æ´¾ç”Ÿè‡ªXObjectçš„å¯¹è±¡éƒ½ç®¡ç†èµ·æ¥
+			/// ×Ô¶¯ÁĞ±íÄ£Ê½£¬½«ÅÉÉú×ÔXObjectµÄ¶ÔÏó¶¼¹ÜÀíÆğÀ´
 			/// [5/2/2014 albert.xu]
 			///
 			xgc_void new_handle( object_ptr ptr )
 			{
 				chunk* pChunk = mCurrentChunk;
 
-				// å…ˆç¡®å®šæ¸¸æ ‡æ˜¯å¦åˆæ³•
+				// ÏÈÈ·¶¨ÓÎ±êÊÇ·ñºÏ·¨
 				if( pChunk->cursor >= xgc_countof( pChunk->ptr ) )
 				{
 					pChunk->cursor = 0;
-					// å¼€å§‹æ¸¸å†Chunk
+					// ¿ªÊ¼ÓÎÀúChunk
 					do
 					{
 						pChunk = mChunk[( pChunk->index + 1 ) & ( ( 1 << _handle_type::mybase::pow_chk ) - 1 )];
@@ -222,12 +222,12 @@ namespace xgc
 						if( pChunk == mCurrentChunk )
 							pChunk = new_chunk( mChunkCount );
 
-						// å¦‚æœè¿™é‡Œå‡ºé—®é¢˜äº†ä¸å¦‚å´©æºƒæ‰ï¼Œè¿˜èƒ½çœ‹åˆ°å †æ ˆ
+						// Èç¹ûÕâÀï³öÎÊÌâÁË²»Èç±ÀÀ£µô£¬»¹ÄÜ¿´µ½¶ÑÕ»
 						assert( pChunk );
 					} while( pChunk->alloca >= XGC_COUNTOF( pChunk->ptr ) );
 				}
 
-				// æ‰¾ä¸€ä¸ªå¯ç”¨çš„ä½ç½®
+				// ÕÒÒ»¸ö¿ÉÓÃµÄÎ»ÖÃ
 				while( pChunk->ptr[pChunk->cursor] )
 				{
 					if( ++pChunk->cursor >= xgc_countof( pChunk->ptr ) )
@@ -245,7 +245,7 @@ namespace xgc
 							if( pChunk == mCurrentChunk )
 								pChunk = new_chunk( mChunkCount );
 
-							// å¦‚æœè¿™é‡Œå‡ºé—®é¢˜äº†ä¸å¦‚å´©æºƒæ‰ï¼Œè¿˜èƒ½çœ‹åˆ°å †æ ˆ
+							// Èç¹ûÕâÀï³öÎÊÌâÁË²»Èç±ÀÀ£µô£¬»¹ÄÜ¿´µ½¶ÑÕ»
 							assert( pChunk );
 						} while( pChunk->alloca >= XGC_COUNTOF( pChunk->ptr ) );
 					}
@@ -257,7 +257,7 @@ namespace xgc
 				ptr->chunk    = mCurrentChunk->index;
 				ptr->position = mCurrentChunk->cursor;
 
-				// å°†å¯¹è±¡æŒ‡é’ˆæ”¾åœ¨å¥æŸ„ç¼“å†²æ± ä¸­
+				// ½«¶ÔÏóÖ¸Õë·ÅÔÚ¾ä±ú»º³å³ØÖĞ
 				XGC_ASSERT( mCurrentChunk->ptr[mCurrentChunk->cursor] == xgc_nullptr );
 				mCurrentChunk->ptr[mCurrentChunk->cursor] = ptr;
 				mCurrentChunk->alloca++;
@@ -266,7 +266,7 @@ namespace xgc
 			}
 
 			///
-			/// è‡ªåŠ¨åˆ—è¡¨æ¨¡å¼ï¼Œå°†æ´¾ç”Ÿè‡ªXObjectçš„å¯¹è±¡éƒ½ç®¡ç†èµ·æ¥
+			/// ×Ô¶¯ÁĞ±íÄ£Ê½£¬½«ÅÉÉú×ÔXObjectµÄ¶ÔÏó¶¼¹ÜÀíÆğÀ´
 			/// [5/2/2014 albert.xu]
 			///
 			xgc_void del_handle( object_ptr ptr )
@@ -279,7 +279,7 @@ namespace xgc
 			}
 
 			///
-			/// é‡æ–°åˆ†é…ä¸€ä¸ªChunk
+			/// ÖØĞÂ·ÖÅäÒ»¸öChunk
 			/// [5/2/2014 albert.xu]
 			///
 			chunk* new_chunk( xgc_uint16 nChunkIndex )
@@ -305,15 +305,15 @@ namespace xgc
 
 		public:
 			///
-			///	é€šè¿‡å¥æŸ„è·å–å¯¹è±¡æŒ‡é’ˆ
-			/// @param handle äº¤æ¢çš„å¥æŸ„
+			///	Í¨¹ı¾ä±ú»ñÈ¡¶ÔÏóÖ¸Õë
+			/// @param handle ½»»»µÄ¾ä±ú
 			///
 			_type* exchange( _handle_type handle )
 			{
 				if( mChunk[handle.chunk] == xgc_nullptr )
 					return xgc_nullptr;
 
-				// æ•…æ„å°†ä¸‹æ ‡å†™è¿™ä¹ˆå¤§ï¼Œåæ­£ä¸ä¼šè®¿é—®é‡Œé¢çš„æ•°æ®
+				// ¹ÊÒâ½«ÏÂ±êĞ´ÕâÃ´´ó£¬·´Õı²»»á·ÃÎÊÀïÃæµÄÊı¾İ
 				if( handle.position >= ( 1 << _handle_type::mybase::pow_chk ) )
 					return xgc_nullptr;
 
@@ -322,7 +322,7 @@ namespace xgc
 			}
 
 			///
-			/// è·å–å·²åˆ†é…çš„å¥æŸ„æ•°
+			/// »ñÈ¡ÒÑ·ÖÅäµÄ¾ä±úÊı
 			/// [7/18/2014] create by albert.xu
 			///
 			xgc_size total_handle()const
@@ -332,7 +332,7 @@ namespace xgc
 		};
 
 		///
-		/// è·å–å¯¹è±¡æ± 
+		/// »ñÈ¡¶ÔÏó³Ø
 		/// [1/7/2014 albert.xu]
 		///
 		template< typename _type, typename _handle_type >
@@ -343,7 +343,7 @@ namespace xgc
 		}
 
 		///
-		/// é€šè¿‡å¯¹è±¡IDè·å–å¯¹è±¡æŒ‡é’ˆ
+		/// Í¨¹ı¶ÔÏóID»ñÈ¡¶ÔÏóÖ¸Õë
 		/// [1/7/2014 albert.xu]
 		///
 		template< typename _type, typename _handle_type >
@@ -353,7 +353,7 @@ namespace xgc
 		}
 
 		///
-		/// é€šè¿‡å¯¹è±¡IDè·å–å¯¹è±¡æŒ‡é’ˆ
+		/// Í¨¹ı¶ÔÏóID»ñÈ¡¶ÔÏóÖ¸Õë
 		/// [1/7/2014 albert.xu]
 		///
 		template< typename _type, typename _handle_type >
@@ -363,7 +363,7 @@ namespace xgc
 		}
 
 		///
-		/// åˆ†é…æ–°å¥æŸ„
+		/// ·ÖÅäĞÂ¾ä±ú
 		/// [7/16/2014] create by albert.xu
 		///
 		template< typename _type, typename _handle_type >
@@ -373,7 +373,7 @@ namespace xgc
 		}
 
 		///
-		/// é‡Šæ”¾å¥æŸ„
+		/// ÊÍ·Å¾ä±ú
 		/// [7/16/2014] create by albert.xu
 		///
 		template< typename _type, typename _handle_type >

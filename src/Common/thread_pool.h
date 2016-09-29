@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file thread_pool.h
-/// \date å…«æœˆ 2016
+/// \date °ËÔÂ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief çº¿ç¨‹æ± 
+/// \brief Ïß³Ì³Ø
 /// 
 
 #pragma once
@@ -18,7 +18,7 @@
 #include <future>
 #include <atomic>
 
-// å‘½åç©ºé—´
+// ÃüÃû¿Õ¼ä
 namespace xgc
 {
 	namespace common
@@ -83,19 +83,19 @@ namespace xgc
 		class thread_pool
 		{
 		private:
-			// çº¿ç¨‹æ± 
+			// Ïß³Ì³Ø
 			xgc_vector<std::thread> pool;
-			// ä»»åŠ¡é˜Ÿåˆ—
+			// ÈÎÎñ¶ÓÁĞ
 			xgc_queue<task_base*> tasks;
-			// åŒæ­¥
+			// Í¬²½
 			std::mutex m_task;
-			// å…‰æ …
+			// ¹âÕ¤
 			std::condition_variable cv_task;
-			// æ˜¯å¦å…³é—­æäº¤
+			// ÊÇ·ñ¹Ø±ÕÌá½»
 			std::atomic<bool> stop;
 
 		public:
-			// æ„é€ 
+			// ¹¹Ôì
 			thread_pool( size_t size = 4 ) : stop { false }
 			{
 				size = size < 1 ? 1 : size;
@@ -105,28 +105,28 @@ namespace xgc
 				}
 			}
 
-			// ææ„
+			// Îö¹¹
 			~thread_pool()
 			{
 				for( std::thread& thread : pool )
 				{
-					thread.join();        // ç­‰å¾…ä»»åŠ¡ç»“æŸï¼Œ å‰æï¼šçº¿ç¨‹ä¸€å®šä¼šæ‰§è¡Œå®Œ
+					thread.join();        // µÈ´ıÈÎÎñ½áÊø£¬ Ç°Ìá£ºÏß³ÌÒ»¶¨»áÖ´ĞĞÍê
 				}
 			}
 
-			// åœæ­¢ä»»åŠ¡æäº¤
+			// Í£Ö¹ÈÎÎñÌá½»
 			void shutdown()
 			{
 				stop.store( true );
 			}
 
-			// é‡å¯ä»»åŠ¡æäº¤
+			// ÖØÆôÈÎÎñÌá½»
 			void restart()
 			{
 				stop.store( false );
 			}
 
-			// æäº¤ä¸€ä¸ªä»»åŠ¡
+			// Ìá½»Ò»¸öÈÎÎñ
 			template< class _Fx, class... _Types >
 			auto commit( _Fx&& f, _Types&&... args ) ->_STD future< decltype(function_ret_t( std::forward< _Fx >( f ) )) >
 			{
@@ -143,27 +143,27 @@ namespace xgc
 
 				std::future< _Ret > future = task->get_future();
 
-				// æ·»åŠ ä»»åŠ¡åˆ°é˜Ÿåˆ—
+				// Ìí¼ÓÈÎÎñµ½¶ÓÁĞ
 				std::unique_lock<std::mutex> lock { m_task };
 				tasks.push( task );
 
-				cv_task.notify_all();    // å”¤é†’çº¿ç¨‹æ‰§è¡Œ
+				cv_task.notify_all();    // »½ĞÑÏß³ÌÖ´ĞĞ
 
 				return future;
 			}
 
 		private:
-			// è·å–ä¸€ä¸ªå¾…æ‰§è¡Œçš„ task
+			// »ñÈ¡Ò»¸ö´ıÖ´ĞĞµÄ task
 			task_base* get_one_task()
 			{
 				std::unique_lock<std::mutex> lock { m_task };
-				cv_task.wait( lock, [this](){ return !tasks.empty(); } ); // wait ç›´åˆ°æœ‰ task
-				auto t = tasks.front(); // å–ä¸€ä¸ª task
+				cv_task.wait( lock, [this](){ return !tasks.empty(); } ); // wait Ö±µ½ÓĞ task
+				auto t = tasks.front(); // È¡Ò»¸ö task
 				tasks.pop();
 				return t;
 			}
 
-			// ä»»åŠ¡è°ƒåº¦
+			// ÈÎÎñµ÷¶È
 			void schedual()
 			{
 				while( stop.load() )

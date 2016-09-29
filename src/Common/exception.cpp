@@ -25,7 +25,7 @@ namespace xgc
 
 	static HANDLE hProcess = INVALID_HANDLE_VALUE;
 	///
-	/// æ ˆå¸§ä¿¡æ¯
+	/// Õ»Ö¡ĞÅÏ¢
 	/// [9/2/2014] create by albert.xu
 	///
 	struct StackFrameSequence
@@ -41,7 +41,7 @@ namespace xgc
 
 	xgc_bool InitException()
 	{
-		// è·å–è¿›ç¨‹å¥æŸ„
+		// »ñÈ¡½ø³Ì¾ä±ú
 		hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId() );
 		if( hProcess == NULL )
 		{
@@ -57,7 +57,7 @@ namespace xgc
 		}
 
 		DumpStackFrame();
-		SYS_INFO( "å¼‚å¸¸æŠ¥å‘Šç”Ÿæˆ!" );
+		SYS_INFO( "Òì³£±¨¸æÉú³É!" );
 		return true;
 	}
 
@@ -283,7 +283,7 @@ namespace xgc
 	}
 
 	///
-	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
+	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
 	/// [12/3/2014] create by albert.xu
 	///
 	void SetExceptionLog( xgc_lpcstr pathname )
@@ -292,7 +292,7 @@ namespace xgc
 	}
 
 	///
-	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
+	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
 	/// [12/3/2014] create by albert.xu
 	///
 	void SetExceptionExt( xgc_lpcstr pathname )
@@ -301,7 +301,7 @@ namespace xgc
 	}
 
 	///
-	/// è®¾ç½®å¼‚å¸¸æ•è·æ–‡ä»¶çš„è·¯å¾„
+	/// ÉèÖÃÒì³£²¶»ñÎÄ¼şµÄÂ·¾¶
 	/// [12/3/2014] create by albert.xu
 	///
 	void SetExceptionDmp( xgc_lpcstr pathname )
@@ -1085,7 +1085,7 @@ namespace xgc
 			SYSTEMTIME time;
 			ZeroMemory( &time, sizeof( SYSTEMTIME ) );
 			GetLocalTime( &time );
-			fprintf( fp, "[%u-%02u-%02u %02u:%02u:%02u] å¼‚å¸¸å¼€å§‹\n",
+			fprintf( fp, "[%u-%02u-%02u %02u:%02u:%02u] Òì³£¿ªÊ¼\n",
 				time.wYear, time.wMonth, time.wDay,
 				time.wHour, time.wMinute, time.wSecond );
 
@@ -1132,8 +1132,8 @@ namespace xgc
 				}
 			}
 
-			fprintf( fp, "è®°å½•ç”¨æ—¶ï¼š%I64u æ¯«ç§’ \n", GetTickCount64() - dwTickCount );
-			fprintf( fp, "å¼‚å¸¸ç»“æŸ******************************\n\n" );
+			fprintf( fp, "¼ÇÂ¼ÓÃÊ±£º%I64u ºÁÃë \n", GetTickCount64() - dwTickCount );
+			fprintf( fp, "Òì³£½áÊø******************************\n\n" );
 
 			fclose( fp );
 		}

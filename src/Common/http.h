@@ -1,10 +1,10 @@
 ///
 /// CopyRight ? 2016 X Studio
 /// \file http.h
-/// \date å…«æœˆ 2016
+/// \date °ËÔÂ 2016
 ///
 /// \author albert.xu windxu@126.com
-/// \brief ä¸HTTPç›¸å…³çš„
+/// \brief ÓëHTTPÏà¹ØµÄ
 /// 
 
 #pragma once
@@ -18,25 +18,25 @@ namespace xgc
 	namespace http
 	{
 		///
-		/// ç¼–ç URLè¿æ¥
+		/// ±àÂëURLÁ¬½Ó
 		/// [7/23/2015] create by albert.xu
 		///
 		COMMON_API xgc_string EnCodeEscapeURL( xgc_lpcstr URL );
 
 		///
-		/// è§£ç URLè¿æ¥
+		/// ½âÂëURLÁ¬½Ó
 		/// [7/23/2015] create by albert.xu
 		///
 		COMMON_API xgc_string DeCodeEscapeURL( xgc_lpcstr URL );
 
 		///
-		/// HTTPè¯·æ±‚è®¾ç½®æœ€å¤§è¿æ¥æ•°
+		/// HTTPÇëÇóÉèÖÃ×î´óÁ¬½ÓÊı
 		/// [7/23/2015] create by albert.xu
 		///
 		COMMON_API xgc_bool SetWininetMaxConnection( xgc_uint32 nMaxConnection );
 
 		///
-		/// åŒæ­¥HTTPè¯·æ±‚
+		/// Í¬²½HTTPÇëÇó
 		/// [7/23/2015] create by albert.xu
 		///
 		COMMON_API xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc_string &result );

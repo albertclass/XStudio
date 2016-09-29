@@ -14,34 +14,34 @@ namespace xgc
 		typedef xgc_uint8	window_t;
 		typedef xgc_uint8	buffer_t;
 
-		/// è¾¹æ¡†
+		/// ±ß¿ò
 		#define WINDOW_STYLE_BORDER	0x0001
-		/// æ˜¯å¦æ”¶èµ·ï¼Œåªç•™æ ‡é¢˜æ 
+		/// ÊÇ·ñÊÕÆğ£¬Ö»Áô±êÌâÀ¸
 		#define WINDOW_STYLE_EXPAND	0x0002
-		/// æ˜¯å¦æœ‰èœå•ç›¸
+		/// ÊÇ·ñÓĞ²Ëµ¥Ïà
 		#define WINDOW_STYLE_MENU	0x0004
-		/// æ˜¯å¦æœ‰æ ‡é¢˜æ 
+		/// ÊÇ·ñÓĞ±êÌâÀ¸
 		#define WINDOW_STYLE_TITLE_BAR	0x0008
-		/// æ˜¯å¦æœ‰çŠ¶æ€æ 
+		/// ÊÇ·ñÓĞ×´Ì¬À¸
 		#define WINDOW_STYLE_STATUS_BAR	0x0010
-		/// æ˜¯å¦æœ‰æ»šåŠ¨æ¡
+		/// ÊÇ·ñÓĞ¹ö¶¯Ìõ
 		#define WINDOW_STYLE_SCROLL_BAR	0x0020
-		/// æ˜¯å¦è‡ªåŠ¨æ»šå±
+		/// ÊÇ·ñ×Ô¶¯¹öÆÁ
 		#define WINDOW_STYLE_AUTOSCROLL	0x0040
-		/// æ˜¯å¦èƒ½æ”¹å˜å¤§å°
+		/// ÊÇ·ñÄÜ¸Ä±ä´óĞ¡
 		#define WINDOW_STYLE_RESIZE	0x0080
-		/// æ˜¯å¦å¯ä»¥ç§»åŠ¨çª—å£
+		/// ÊÇ·ñ¿ÉÒÔÒÆ¶¯´°¿Ú
 		#define WINDOW_STYLE_MOVING 0x0100
-		/// æ˜¯å¦å¯ä»¥ç¼–è¾‘
+		/// ÊÇ·ñ¿ÉÒÔ±à¼­
 		#define WINDOW_STYLE_EDITOR	0x0200
-		/// é»˜è®¤çš„çª—å£é£æ ¼
+		/// Ä¬ÈÏµÄ´°¿Ú·ç¸ñ
 		#define WINDOW_STYLE_DEFAULT 0x01FB
 
 		///
-		/// \brief åˆå§‹åŒ–æ§åˆ¶å°
+		/// \brief ³õÊ¼»¯¿ØÖÆÌ¨
 		///
-		/// \param cols çª—å£å®½
-		/// \param rows çª—å£é«˜
+		/// \param cols ´°¿Ú¿í
+		/// \param rows ´°¿Ú¸ß
 		/// 
 		/// [12/24/2013 albert.xu]
 		///
@@ -50,13 +50,13 @@ namespace xgc
 
 		///
 		/// [12/24/2013 albert.xu]
-		/// é‡Šæ”¾æ§åˆ¶å°
+		/// ÊÍ·Å¿ØÖÆÌ¨
 		///
 
 		COMMON_API xgc_void	console_fini();
 
 		///
-		/// å±å¹•æ˜¯å¦è¢«åˆå§‹åŒ–äº†.
+		/// ÆÁÄ»ÊÇ·ñ±»³õÊ¼»¯ÁË.
 		/// [6/4/2015] create by albert.xu
 		///
 
@@ -64,18 +64,18 @@ namespace xgc
 
 		///
 		/// [3/4/2014 albert.xu]
-		/// é‡å®šå‘æ ‡å‡†è¾“å‡º
+		/// ÖØ¶¨Ïò±ê×¼Êä³ö
 		///
 
 		COMMON_API xgc_bool	redirect( FILE* stdfile, buffer_t buffer );
 
 		///
-		/// \brief è·å–æ§åˆ¶å°çª—å£å®½åº¦
+		/// \brief »ñÈ¡¿ØÖÆÌ¨´°¿Ú¿í¶È
 		///
 		COMMON_API xgc_bool get_console_size( xgc_int16 &cx, xgc_int16 &cy );
 
 		///
-		/// \brief æ˜¾ç¤ºå…‰æ ‡
+		/// \brief ÏÔÊ¾¹â±ê
 		///
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
@@ -83,7 +83,7 @@ namespace xgc
 		COMMON_API xgc_void	show_cursor( xgc_real32 percent = 0.1f );
 
 		///
-		/// \brief éšè—å…‰æ ‡
+		/// \brief Òş²Ø¹â±ê
 		///
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
@@ -91,8 +91,8 @@ namespace xgc
 		COMMON_API xgc_void	hide_cursor();
 
 		///
-		/// \brief å®šä½åˆ°åæ ‡
-		/// å±å¹•åæ ‡æœ€å°å€¼ä¸º 1
+		/// \brief ¶¨Î»µ½×ø±ê
+		/// ÆÁÄ»×ø±ê×îĞ¡ÖµÎª 1
 		///
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
@@ -101,11 +101,11 @@ namespace xgc
 		COMMON_API xgc_void gotoxy( xgc_int16 col, xgc_int16 row, window_t window = INVALID_WINDOW_INDEX );
 
 		///
-		/// \brief åˆ†é…ä¸€ä¸ªæ–‡æœ¬ç¼“å†²,å®½åº¦ä¸ºw, é«˜åº¦ä¸ºh
+		/// \brief ·ÖÅäÒ»¸öÎÄ±¾»º³å,¿í¶ÈÎªw, ¸ß¶ÈÎªh
 		///
-		/// \param w ç¼“å†²åŒºå®½
-		/// \param h ç¼“å†²åŒºé«˜
-		/// \return ç¼“å†²åŒºå¥æŸ„
+		/// \param w »º³åÇø¿í
+		/// \param h »º³åÇø¸ß
+		/// \return »º³åÇø¾ä±ú
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
 		///
@@ -113,12 +113,12 @@ namespace xgc
 		COMMON_API buffer_t buffer( xgc_uint16 w, xgc_uint16 h );
 
 		///
-		/// \brief åˆ†é…ä¸€ä¸ªçª—å£, å¹¶å’Œtextå…³è”èµ·æ¥
+		/// \brief ·ÖÅäÒ»¸ö´°¿Ú, ²¢ºÍtext¹ØÁªÆğÀ´
 		///
-		/// \param x, y çª—å£ä½ç½®(æœ€å°å€¼ä¸ºé›¶)
-		/// \param cols, rows çª—å£å¤§å°
-		/// \param t æ–‡æœ¬ç¼“å†²å¥æŸ„
-		/// \return çª—å£å¥æŸ„
+		/// \param x, y ´°¿ÚÎ»ÖÃ(×îĞ¡ÖµÎªÁã)
+		/// \param cols, rows ´°¿Ú´óĞ¡
+		/// \param t ÎÄ±¾»º³å¾ä±ú
+		/// \return ´°¿Ú¾ä±ú
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:35
@@ -128,13 +128,13 @@ namespace xgc
 
 		///
 		/// [1/12/2014 albert.xu]
-		/// è·å–çª—å£å…³è”çš„ç¼“å†²åŒºå¥æŸ„
+		/// »ñÈ¡´°¿Ú¹ØÁªµÄ»º³åÇø¾ä±ú
 		///
 
 		COMMON_API buffer_t	window_buffer( window_t window );
 
 		///
-		/// \brief è®¾ç½®çª—å£æ ·å¼
+		/// \brief ÉèÖÃ´°¿ÚÑùÊ½
 		///
 		/// \author albert.xu
 		/// \date 2015/12/14 10:35
@@ -143,7 +143,7 @@ namespace xgc
 		COMMON_API xgc_void window_style( window_t window, xgc_uint16 style );
 
 		///
-		/// \brief æ¿€æ´»çª—å£
+		/// \brief ¼¤»î´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2016/01/05 16:43
@@ -152,7 +152,7 @@ namespace xgc
 		COMMON_API xgc_void	active_window( window_t window );
 
 		///
-		/// \brief æ˜¯å¦æ´»åŠ¨çª—å£
+		/// \brief ÊÇ·ñ»î¶¯´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2016/01/05 16:43
@@ -161,7 +161,7 @@ namespace xgc
 		COMMON_API xgc_bool is_active_window( window_t window );
 
 		///
-		/// \breif ç»˜åˆ¶çª—å£(ä¸åŒ…å«çª—å£å†…å®¹)
+		/// \breif »æÖÆ´°¿Ú(²»°üº¬´°¿ÚÄÚÈİ)
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -170,7 +170,7 @@ namespace xgc
 		COMMON_API xgc_void	redraw_window( window_t window, xgc_handle output, xgc_bool border );
 
 		///
-		/// \breif æ»šåŠ¨çª—å£
+		/// \breif ¹ö¶¯´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -179,7 +179,7 @@ namespace xgc
 		COMMON_API xgc_void	scroll_window( window_t window, xgc_int16 row, xgc_int16 col );
 
 		///
-		/// \brief é‡Šæ”¾æ–‡æœ¬ç¼“å†²
+		/// \brief ÊÍ·ÅÎÄ±¾»º³å
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -188,7 +188,7 @@ namespace xgc
 		COMMON_API xgc_void	free_buffer( buffer_t );
 
 		///
-		/// \brief é‡Šæ”¾çª—å£
+		/// \brief ÊÍ·Å´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -197,7 +197,7 @@ namespace xgc
 		COMMON_API xgc_void	free_window( window_t );
 
 		///
-		/// \brief è¾“å‡ºæ–‡å­—åˆ°çª—å£
+		/// \brief Êä³öÎÄ×Öµ½´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -206,7 +206,7 @@ namespace xgc
 		COMMON_API xgc_int32 printf_text( buffer_t text, xgc_lpcstr fmt, ... );
 
 		///
-		/// \brief è¾“å‡ºæ–‡å­—åˆ°çª—å£
+		/// \brief Êä³öÎÄ×Öµ½´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -215,7 +215,7 @@ namespace xgc
 		COMMON_API xgc_int32 output_text( buffer_t text, xgc_lpcstr fmt, va_list ap );
 
 		///
-		/// \brief ä»ç¼“å†²è¯»å–ä¸€è¡Œ
+		/// \brief ´Ó»º³å¶ÁÈ¡Ò»ĞĞ
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31

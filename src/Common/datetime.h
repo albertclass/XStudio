@@ -134,7 +134,7 @@ namespace xgc
 			}
 
 			///
-			/// æŒ‰ç§’åˆå§‹åŒ–ä¸€ä¸ªtimespanå¯¹è±¡
+			/// °´Ãë³õÊ¼»¯Ò»¸ötimespan¶ÔÏó
 			/// [8/8/2014] create by albert.xu
 			///
 			static timespan from_days( xgc_int64 days )
@@ -142,7 +142,7 @@ namespace xgc
 				return timespan( days * ( 24 * 60 * 60 * 10000000ULL ) );
 			}
 			///
-			/// æŒ‰ç§’åˆå§‹åŒ–ä¸€ä¸ªtimespanå¯¹è±¡
+			/// °´Ãë³õÊ¼»¯Ò»¸ötimespan¶ÔÏó
 			/// [8/8/2014] create by albert.xu
 			///
 			static timespan from_hour( xgc_int64 hour )
@@ -150,7 +150,7 @@ namespace xgc
 				return timespan( hour * ( 60 * 60 * 10000000ULL ) );
 			}			
 			///
-			/// æŒ‰ç§’åˆå§‹åŒ–ä¸€ä¸ªtimespanå¯¹è±¡
+			/// °´Ãë³õÊ¼»¯Ò»¸ötimespan¶ÔÏó
 			/// [8/8/2014] create by albert.xu
 			///
 			static timespan from_minutes( xgc_int64 minutes )
@@ -159,7 +159,7 @@ namespace xgc
 			}
 
 			///
-			/// æŒ‰ç§’åˆå§‹åŒ–ä¸€ä¸ªtimespanå¯¹è±¡
+			/// °´Ãë³õÊ¼»¯Ò»¸ötimespan¶ÔÏó
 			/// [8/8/2014] create by albert.xu
 			///
 			static timespan from_seconds( xgc_int64 seconds )
@@ -168,7 +168,7 @@ namespace xgc
 			}
 
 			///
-			/// æŒ‰ç§’åˆå§‹åŒ–ä¸€ä¸ªtimespanå¯¹è±¡
+			/// °´Ãë³õÊ¼»¯Ò»¸ötimespan¶ÔÏó
 			/// [8/8/2014] create by albert.xu
 			///
 			static timespan from_milliseconds( xgc_int64 milliseconds )
@@ -177,7 +177,7 @@ namespace xgc
 			}
 
 			///
-			/// å°†å­—ç¬¦ä¸²æ—¶é—´è½¬æ¢ä¸ºæ—¶é—´ç‰‡
+			/// ½«×Ö·û´®Ê±¼ä×ª»»ÎªÊ±¼äÆ¬
 			/// [7/23/2014] create by albert.xu
 			///
 			static timespan convert( xgc_lpcstr str )
@@ -216,7 +216,7 @@ namespace xgc
 				return timespan( xgc_int64( ( ( ( ( time[3] * 60 + time[2] ) * 60 ) + time[1] ) * 1000 + time[0] ) * 10000ULL ) );
 			}
 
-			// æ—¶é—´ç‰‡æ®µè½¬ä¸ºå•ä½æ—¶é—´
+			// Ê±¼äÆ¬¶Î×ªÎªµ¥Î»Ê±¼ä
 			xgc_int32 to_days()const 
 			{ 
 				return xgc_int32( span / ( 24 * 60 * 60 * 10000000ULL ) ); 
@@ -249,7 +249,7 @@ namespace xgc
 
 			//////////////////////////////////////////////////////////////////////////
 			// [1/7/2014 jianglei.kinly]
-			// å½“å‰æ—¶é—´æ„é€ 
+			// µ±Ç°Ê±¼ä¹¹Ôì
 			//////////////////////////////////////////////////////////////////////////
 			datetime()
 				: mTime( { _Time_T_Diff } )
@@ -272,7 +272,7 @@ namespace xgc
 
 			//////////////////////////////////////////////////////////////////////////
 			// [1/7/2014 jianglei.kinly]
-			// æ‹·è´æ„é€ 
+			// ¿½±´¹¹Ôì
 			//////////////////////////////////////////////////////////////////////////
 			datetime( const datetime& _datetime )
 				: mTime( _datetime.mTime )
@@ -286,7 +286,7 @@ namespace xgc
 			}
 
 			///
-			/// è·å–å½“å‰æ—¶é—´å€¼
+			/// »ñÈ¡µ±Ç°Ê±¼äÖµ
 			/// [7/23/2014] create by albert.xu
 			///
 			xgc_time64 time()
@@ -295,7 +295,7 @@ namespace xgc
 			}
 
 			///
-			/// è·å–å½“å‰æ—¥æœŸå€¼
+			/// »ñÈ¡µ±Ç°ÈÕÆÚÖµ
 			/// [7/23/2014] create by albert.xu
 			///
 			xgc_time64 date()
@@ -304,7 +304,7 @@ namespace xgc
 			}
 
 			///
-			/// è®¾ç½®æ—¥æœŸï¼Œ ä¸æ”¹å˜æ—¶é—´
+			/// ÉèÖÃÈÕÆÚ£¬ ²»¸Ä±äÊ±¼ä
 			/// [7/23/2014] create by albert.xu
 			///
 			xgc_void setdate( datetime dt )
@@ -313,7 +313,7 @@ namespace xgc
 			}
 
 			///
-			/// è®¾ç½®æ—¶é—´ï¼Œ ä¸æ”¹å˜æ—¥æœŸ
+			/// ÉèÖÃÊ±¼ä£¬ ²»¸Ä±äÈÕÆÚ
 			/// [7/23/2014] create by albert.xu
 			///
 			xgc_void settime( datetime dt )
@@ -377,7 +377,7 @@ namespace xgc
 
 			//////////////////////////////////////////////////////////////////////////
 			// [1/7/2014 jianglei.kinly]
-			// æ“ä½œç¬¦ = é‡è½½
+			// ²Ù×÷·û = ÖØÔØ
 			//////////////////////////////////////////////////////////////////////////
 			XGC_INLINE xgc_bool operator == ( const datetime& rhs )const
 			{
@@ -410,7 +410,7 @@ namespace xgc
 			}
 
 			///
-			/// æ—¶é—´ + æ—¶é—´ç‰‡
+			/// Ê±¼ä + Ê±¼äÆ¬
 			/// [7/24/2014] create by albert.xu
 			///
 			XGC_INLINE datetime& operator += ( const timespan& rhs )
@@ -420,7 +420,7 @@ namespace xgc
 			}
 
 			///
-			/// æ—¶é—´ + æ—¶é—´ç‰‡
+			/// Ê±¼ä + Ê±¼äÆ¬
 			/// [7/24/2014] create by albert.xu
 			///
 			XGC_INLINE datetime& operator -= ( const timespan& rhs )
@@ -430,7 +430,7 @@ namespace xgc
 			}
 
 			///
-			/// å–å½“å‰æ—¶é—´
+			/// È¡µ±Ç°Ê±¼ä
 			/// [6/22/2014] create by albert.xu
 			///
 			XGC_INLINE systime to_systime() const
@@ -444,7 +444,7 @@ namespace xgc
 			}
 
 			///
-			/// å–å½“å‰æ—¶é—´
+			/// È¡µ±Ç°Ê±¼ä
 			/// [6/22/2014] create by albert.xu
 			///
 			XGC_INLINE systime to_utctime() const
@@ -457,7 +457,7 @@ namespace xgc
 			}
 
 			///
-			/// è½¬æ¢ä¸ºå­—ç¬¦ä¸²
+			/// ×ª»»Îª×Ö·û´®
 			/// [7/15/2015] create by albert.xu
 			///
 			xgc_lpcstr to_string( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" ) const
@@ -471,7 +471,7 @@ namespace xgc
 			}
 
 			///
-			/// è½¬æ¢ä¸ºå­—ç¬¦ä¸² - template
+			/// ×ª»»Îª×Ö·û´® - template
 			/// [7/15/2015] create by albert.xu
 			///
 			template< size_t S >
@@ -487,33 +487,33 @@ namespace xgc
 
 			//////////////////////////////////////////////////////////////////////////
 			// [1/7/2014 jianglei.kinly]
-			// è·å–å½“å‰æ—¶é—´çš„datetimeå¯¹è±¡
+			// »ñÈ¡µ±Ç°Ê±¼äµÄdatetime¶ÔÏó
 			//////////////////////////////////////////////////////////////////////////
 			static datetime now();
 
 			///
-			/// è·å–å½“å‰æ—¶é—´å­—ç¬¦ä¸²
+			/// »ñÈ¡µ±Ç°Ê±¼ä×Ö·û´®
 			/// [7/15/2015] create by albert.xu
 			///
 			static xgc_lpcstr now( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" );
 
 			///
-			/// è·å–å½“å‰æ—¶é—´å­—ç¬¦ä¸² - template 
+			/// »ñÈ¡µ±Ç°Ê±¼ä×Ö·û´® - template 
 			/// [7/15/2015] create by albert.xu
 			///
 			template< size_t S >
 			static xgc_lpcstr now( xgc_char (&output)[S], xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" );
 
 			///
-			/// è·å–å½“å‰æ—¶é—´çš„ç›¸å¯¹æ—¶é—´
+			/// »ñÈ¡µ±Ç°Ê±¼äµÄÏà¶ÔÊ±¼ä
 			/// [8/8/2014] create by albert.xu
 			///
 			static datetime relative_time( timespan span );
 
 			///
-			/// å°†å­—ç¬¦ä¸²è½¬åŒ–ä¸ºæ—¥æœŸæ—¶é—´
+			/// ½«×Ö·û´®×ª»¯ÎªÈÕÆÚÊ±¼ä
 			/// [7/23/2014] create by albert.xu
-			/// @param str æ—¥æœŸæ—¶é—´æ ¼å¼çš„å­—ç¬¦ä¸²ã€‚æ ¼å¼åŒ¹é…å¿…é¡»å³å¯¹é½ï¼ŒYYYY-MM-DD hh::mm::ss.ms
+			/// @param str ÈÕÆÚÊ±¼ä¸ñÊ½µÄ×Ö·û´®¡£¸ñÊ½Æ¥Åä±ØĞëÓÒ¶ÔÆë£¬YYYY-MM-DD hh::mm::ss.ms
 			///
 			static datetime convert( xgc_lpcstr str, datetime now = datetime::now() )
 			{

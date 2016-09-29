@@ -62,140 +62,140 @@ namespace xgc
 			eTextFlagCount,
 		};
 
-		/// æ–‡æœ¬ç¼“å†²åŒº
+		/// ÎÄ±¾»º³åÇø
 		struct text_buffer
 		{
-			/// ç¼“å†²åŒºå¤§å°
+			/// »º³åÇø´óĞ¡
 			xgc_int16	w, h;
-			/// è¾“å…¥ä½ç½®
+			/// ÊäÈëÎ»ÖÃ
 			xgc_uint16	position;
-			/// é¢œè‰²å±æ€§
+			/// ÑÕÉ«ÊôĞÔ
 			xgc_uint16  attr;
-			/// ç¼“å†²åŒºæ ‡å¿—
+			/// »º³åÇø±êÖ¾
 			xgc_uint16	flags;
-			/// ç¼“å†²åŒºæŒ‡é’ˆ
+			/// »º³åÇøÖ¸Õë
 			PCHAR_INFO	buffer;
 
-			/// äº’æ–¥é”ï¼Œç”¨äºçº¿ç¨‹åŒæ­¥
+			/// »¥³âËø£¬ÓÃÓÚÏß³ÌÍ¬²½
 			mutex mtx;
 
-			/// è¾“å…¥ç¼“å†²åŒº
+			/// ÊäÈë»º³åÇø
 			struct text_input_buffer
 			{
-				/// äº’æ–¥é”ï¼Œç”¨äºçº¿ç¨‹åŒæ­¥
+				/// »¥³âËø£¬ÓÃÓÚÏß³ÌÍ¬²½
 				mutex mtx;
-				/// è¾“å…¥æ•°æ®çš„äº’æ–¥é”
+				/// ÊäÈëÊı¾İµÄ»¥³âËø
 				event evt;
-				/// è¾“å…¥ç¼“å†²åŒº
+				/// ÊäÈë»º³åÇø
 				xgc_lpstr input_buf;
-				/// è¾“å…¥ç¼“å†²åŒºé•¿åº¦
+				/// ÊäÈë»º³åÇø³¤¶È
 				xgc_int16 input_len;
-				/// åˆ†é…ç¼“å†²åŒºé•¿åº¦
+				/// ·ÖÅä»º³åÇø³¤¶È
 				xgc_int16 input_alc;
-				/// è¾“å…¥ç¼“å†²å†™æŒ‡é’ˆ
+				/// ÊäÈë»º³åĞ´Ö¸Õë
 				xgc_int16 input_cur;
-				/// æ–‡æœ¬ç¼“å†²èµ·å§‹è¯»ä½ç½®
+				/// ÎÄ±¾»º³åÆğÊ¼¶ÁÎ»ÖÃ
 				xgc_int16 input_pos;
-				/// è¾“å…¥çŠ¶æ€
+				/// ÊäÈë×´Ì¬
 				xgc_bool input_complate;
 			} input;
 		};
 
 		struct text_window
 		{
-			/// çª—å£ä½ç½®
+			/// ´°¿ÚÎ»ÖÃ
 			xgc_int16 x, y;			
-			/// çª—å£å¤§å°
+			/// ´°¿Ú´óĞ¡
 			xgc_int16 cols, rows;
-			/// çª—å£æ»šåŠ¨ä½ç½®
+			/// ´°¿Ú¹ö¶¯Î»ÖÃ
 			xgc_int16 sx, sy;
-			/// å…‰æ ‡ä½ç½®
+			/// ¹â±êÎ»ÖÃ
 			xgc_int16 cx, cy;
-			/// çª—å£æ ‡é¢˜
+			/// ´°¿Ú±êÌâ
 			xgc_lpcstr title;
 			union
 			{
 				struct
 				{
-					/// è¾¹æ¡†
+					/// ±ß¿ò
 					xgc_uint16 border : 1;
-					/// æ˜¯å¦æ”¶èµ·ï¼Œåªç•™æ ‡é¢˜æ 
+					/// ÊÇ·ñÊÕÆğ£¬Ö»Áô±êÌâÀ¸
 					xgc_uint16 expand : 1;
-					/// æ˜¯å¦æœ‰èœå•ç›¸
+					/// ÊÇ·ñÓĞ²Ëµ¥Ïà
 					xgc_uint16 menu : 1;
-					/// æ˜¯å¦æœ‰çŠ¶æ€æ 
+					/// ÊÇ·ñÓĞ×´Ì¬À¸
 					xgc_uint16 title_bar : 1;
-					/// æ˜¯å¦æœ‰çŠ¶æ€æ 
+					/// ÊÇ·ñÓĞ×´Ì¬À¸
 					xgc_uint16 status_bar : 1;
-					/// æ˜¯å¦æœ‰æ»šåŠ¨æ¡
+					/// ÊÇ·ñÓĞ¹ö¶¯Ìõ
 					xgc_uint16 scroll_bar : 1;
-					/// æ˜¯å¦è‡ªåŠ¨æ»šå±
+					/// ÊÇ·ñ×Ô¶¯¹öÆÁ
 					xgc_uint16 autoscroll : 1;
-					/// æ˜¯å¦æ”¹å˜çª—å£å°ºå¯¸
+					/// ÊÇ·ñ¸Ä±ä´°¿Ú³ß´ç
 					xgc_uint16 resize : 1;
-					/// æ˜¯å¦å¯ä»¥ç§»åŠ¨çª—å£
+					/// ÊÇ·ñ¿ÉÒÔÒÆ¶¯´°¿Ú
 					xgc_uint16 moving : 1;
-					/// æ˜¯å¦å¯ä»¥ç¼–è¾‘
+					/// ÊÇ·ñ¿ÉÒÔ±à¼­
 					xgc_uint16 editor : 1;
 				};
 				xgc_uint16 mask;
 			}style;
 
-			/// å½“å‰çª—å£çŠ¶æ€ 0 - æ­£å¸¸ï¼Œ 1 - ç§»åŠ¨çª—å£ï¼Œ 2 - è°ƒæ•´å¤§å°
+			/// µ±Ç°´°¿Ú×´Ì¬ 0 - Õı³££¬ 1 - ÒÆ¶¯´°¿Ú£¬ 2 - µ÷Õû´óĞ¡
 			xgc_uint16 status;
-			/// çª—å£æ˜¯å¦æ‰©å±•
+			/// ´°¿ÚÊÇ·ñÀ©Õ¹
 			xgc_bool expand;
-			/// æ»‘åŠ¨æ¡
+			/// »¬¶¯Ìõ
 			struct
 			{
-				/// æ»‘åŠ¨æ¡ - å‚ç›´é•¿åº¦
+				/// »¬¶¯Ìõ - ´¹Ö±³¤¶È
 				xgc_int16 v_len;
-				/// æ»‘åŠ¨æ¡ - æ°´å¹³é•¿åº¦
+				/// »¬¶¯Ìõ - Ë®Æ½³¤¶È
 				xgc_int16 h_len;
-				/// æ»‘åŠ¨æ¡ - å‚ç›´ä½ç½®
+				/// »¬¶¯Ìõ - ´¹Ö±Î»ÖÃ
 				xgc_int16 v_pos;
-				/// æ»‘åŠ¨æ¡ - æ°´å¹³ä½ç½®
+				/// »¬¶¯Ìõ - Ë®Æ½Î»ÖÃ
 				xgc_int16 h_pos;
 			}scroll;
 
-			/// å…³è”ç¼“å†²åŒº
+			/// ¹ØÁª»º³åÇø
 			buffer_t buffer;
-			/// ç¼“å†²çª—å£ä½ç½®
+			/// »º³å´°¿ÚÎ»ÖÃ
 			xgc_int16 tx, ty;
-			/// ç¼“å†²çª—å£å¤§å°
+			/// »º³å´°¿Ú´óĞ¡
 			xgc_int16 tw, th;
-			/// ç¼“å†²å¤§å°
+			/// »º³å´óĞ¡
 			xgc_int16 bw, bh;
-			/// äº’æ–¥é”ï¼Œç”¨äºçº¿ç¨‹åŒæ­¥
+			/// »¥³âËø£¬ÓÃÓÚÏß³ÌÍ¬²½
 			mutex	mtx;
 		};
 
-		/// çª—å£å¯¹è±¡æ•°ç»„
+		/// ´°¿Ú¶ÔÏóÊı×é
 		static std::atomic< text_window* > _text_window[0xFF];
-		/// ç¼“å†²å¯¹è±¡æ•°ç»„
+		/// »º³å¶ÔÏóÊı×é
 		static std::atomic< text_buffer* > _text_buffer[0xFF];
-		/// çª—å£æ’åºæ•°ç»„ - ç¬¬ä¸€ä¸ªå…ƒç´ å­˜å‚¨çª—å£ä¸ªæ•°
+		/// ´°¿ÚÅÅĞòÊı×é - µÚÒ»¸öÔªËØ´æ´¢´°¿Ú¸öÊı
 		static std::atomic< window_t > _sort_window[0xFF];
-		/// çª—å£è®¡æ•°
+		/// ´°¿Ú¼ÆÊı
 		static std::atomic< window_t > _text_window_count = 0;
-		/// æ–‡æœ¬åŒç¼“å†²
+		/// ÎÄ±¾Ë«»º³å
 		static xgc_handle	active_buffer[2];
 		static xgc_lpvoid	active_buffer_exchange = xgc_nullptr;
 
-		/// é‡å®šå‘ä¿¡æ¯
+		/// ÖØ¶¨ÏòĞÅÏ¢
 		struct redirect
 		{
-			/// é‡å®šå‘å¥æŸ„
+			/// ÖØ¶¨Ïò¾ä±ú
 			int fd[2];
-			/// è€çš„å¥æŸ„
+			/// ÀÏµÄ¾ä±ú
 			int old;
-			/// é‡å®šå‘ç¼“å†²åŒº
+			/// ÖØ¶¨Ïò»º³åÇø
 			buffer_t buffer;
-			/// æ˜¾ç¤ºçš„é¢œè‰²
+			/// ÏÔÊ¾µÄÑÕÉ«
 			xgc_word color;
 		};
 
-		/// æ ‡å‡†é‡å®šå‘
+		/// ±ê×¼ÖØ¶¨Ïò
 		static struct redirect gstdio[3] =
 		{
 			{ { -1, -1 }, -1, INVALID_BUFFER_INDEX },
@@ -203,21 +203,21 @@ namespace xgc
 			{ { -1, -1 }, -1, INVALID_BUFFER_INDEX },
 		};
 
-		/// åº“åˆå§‹åŒ–å­˜å‚¨
+		/// ¿â³õÊ¼»¯´æ´¢
 		static std::atomic< xgc_bool > g_console_library = 0;
 		static xgc_handle g_console_thread = 0;
 
-		/// é¼ æ ‡ä½ç½®
+		/// Êó±êÎ»ÖÃ
 		static xgc_int16 mouse_x = 0;
 		static xgc_int16 mouse_y = 0;
 
-		/// æŒ‰é’®çŠ¶æ€
+		/// °´Å¥×´Ì¬
 		static xgc_int16 mouse_s = 0;
 
-		/// å½“å‰çš„ç„¦ç‚¹çª—å£
+		/// µ±Ç°µÄ½¹µã´°¿Ú
 		static window_t focus_window = INVALID_WINDOW_INDEX;
 
-		/// æ ¹æ®ç¼“å†²åŒºå…‰æ ‡ä½ç½®ï¼Œé‡æ–°è®¡ç®—çª—å£åç§»
+		/// ¸ù¾İ»º³åÇø¹â±êÎ»ÖÃ£¬ÖØĞÂ¼ÆËã´°¿ÚÆ«ÒÆ
 		static xgc_void adjust_window( text_window* w, xgc_bool update )
 		{
 			text_buffer *t = _text_buffer[w->buffer];
@@ -226,32 +226,32 @@ namespace xgc
 
 			XGC_ASSERT_RETURN( t->buffer, XGC_NONE );
 
-			// æ ¹æ®ç¼“å†²ä¸­çš„å…‰æ ‡ä½ç½®è®¡ç®—çª—å£å…‰æ ‡ä½ç½®å’Œæ»šè½´ä½ç½®
+			// ¸ù¾İ»º³åÖĞµÄ¹â±êÎ»ÖÃ¼ÆËã´°¿Ú¹â±êÎ»ÖÃºÍ¹öÖáÎ»ÖÃ
 			if( update )
 			{
-				// è®¡ç®—ç¼“å†²åŒºä¸­çš„å…‰æ ‡ä½ç½®
+				// ¼ÆËã»º³åÇøÖĞµÄ¹â±êÎ»ÖÃ
 				xgc_int16 x = t->position % t->w;
 				xgc_int16 y = t->position / t->w;
 
-				// è®¡ç®—æ»šè½´çš„ä½ç½® - å…‰æ ‡åº”åœ¨å³ä¸‹ä½ç½®
+				// ¼ÆËã¹öÖáµÄÎ»ÖÃ - ¹â±êÓ¦ÔÚÓÒÏÂÎ»ÖÃ
 				w->sx = x > w->tw - 1 ? x - (w->tw - 1) : 0;
 				w->sy = y > w->th - 1 ? y - (w->th - 1) : 0;
 
-				// è®¡ç®—å…‰æ ‡ä½ç½®
+				// ¼ÆËã¹â±êÎ»ÖÃ
 				w->cx = x - w->sx;
 				w->cy = y - w->sy;
 			}
-			// æ ¹æ®çª—å£å…‰æ ‡ä½ç½®è®¡ç®—ç¼“å†²å…‰æ ‡ä½ç½®ã€‚
+			// ¸ù¾İ´°¿Ú¹â±êÎ»ÖÃ¼ÆËã»º³å¹â±êÎ»ÖÃ¡£
 			else
 			{
-				// ä¸èƒ½è¶…å‡ºç¼“å†²åŒºæœ€å¤§å€¼
+				// ²»ÄÜ³¬³ö»º³åÇø×î´óÖµ
 				xgc_int16 y = w->cy + w->sy;
 				xgc_int16 x = w->cx + w->sx;
 
 				y = XGC_RNG( y, 0, t->h );
 				x = XGC_RNG( x, 0, t->w );
 
-				// è®¾ç½®ç¼“å†²åŒºå…‰æ ‡ä½ç½®
+				// ÉèÖÃ»º³åÇø¹â±êÎ»ÖÃ
 				t->position = ( w->cy + w->sy ) * t->w + ( w->cx + w->sx );
 			}
 		}
@@ -261,10 +261,10 @@ namespace xgc
 			SetConsoleCursorPosition( active_buffer[0], { w->x + w->tx + w->cx, w->y + w->ty + w->cy } );
 		}
 
-		/// é‡ç»˜çª—å£
+		/// ÖØ»æ´°¿Ú
 		static xgc_void redraw_window()
 		{
-			// çª—å£é‡ç»˜
+			// ´°¿ÚÖØ»æ
 			DWORD  nNum = 0;
 
 
@@ -297,18 +297,18 @@ namespace xgc
 			if( focus_window == INVALID_WINDOW_INDEX )
 				return false;
 
-			// è·å–çª—å£å¯¹è±¡
+			// »ñÈ¡´°¿Ú¶ÔÏó
 			text_window *w = _text_window[focus_window];
 			XGC_ASSERT_RETURN( w, false );
-			// é”å®šçª—å£
+			// Ëø¶¨´°¿Ú
 			guard lock( w->mtx );
 
 			if( w->style.editor && Input.bKeyDown )
 			{
-				// æ˜¯å¦æ§åˆ¶å­—ç¬¦
+				// ÊÇ·ñ¿ØÖÆ×Ö·û
 				if( !iscntrl( Input.uChar.AsciiChar ) )
 				{
-					// å¯ç¼–è¾‘çš„çª—å£
+					// ¿É±à¼­µÄ´°¿Ú
 					printf_text( w->buffer, "%c", Input.uChar.AsciiChar );
 				}
 				else switch( Input.uChar.AsciiChar )
@@ -331,7 +331,7 @@ namespace xgc
 			return false;
 		}
 
-		// å¤„ç†é¼ æ ‡äº‹ä»¶
+		// ´¦ÀíÊó±êÊÂ¼ş
 		static xgc_bool process_mouse_event( MOUSE_EVENT_RECORD &Input )
 		{
 			//printf( "mouse event status=%04x flags=%04x pos_x=%d, pos_y=%d\n"
@@ -340,17 +340,17 @@ namespace xgc
 			//		, Input.dwMousePosition.X
 			//		, Input.dwMousePosition.Y );
 
-			// è®¾ç½®æŒ‰é’®çŠ¶æ€
+			// ÉèÖÃ°´Å¥×´Ì¬
 			mouse_s = Input.dwButtonState & 0xFFFF;
 
 			xgc_bool bBusy = false;
 			switch( Input.dwEventFlags )
 			{
-			case 0: // æŒ‰é”®æ¶ˆæ¯
+			case 0: // °´¼üÏûÏ¢
 				if( mouse_s & FROM_LEFT_1ST_BUTTON_PRESSED )
 				{
 					window_t found = INVALID_WINDOW_INDEX;
-					// æŒ‰ä¸‹é¼ æ ‡å·¦é”®ï¼Œåˆ™æ¿€æ´»å¯å¯»å¾—çš„çª—å£
+					// °´ÏÂÊó±ê×ó¼ü£¬Ôò¼¤»î¿ÉÑ°µÃµÄ´°¿Ú
 					for( int i = 0; _sort_window[i] != INVALID_WINDOW_INDEX; ++i )
 					{
 						text_window *w = _text_window[_sort_window[i]];
@@ -358,7 +358,7 @@ namespace xgc
 						if( xgc_nullptr == w )
 							continue;
 
-						// è®¾ç½®çª—å£çŠ¶æ€ï¼Œ1 - ç‚¹å‡»åœ¨æ ‡é¢˜æ ï¼Œ 2 - ç‚¹å‡»åœ¨Sizer
+						// ÉèÖÃ´°¿Ú×´Ì¬£¬1 - µã»÷ÔÚ±êÌâÀ¸£¬ 2 - µã»÷ÔÚSizer
 						guard lock( w->mtx );
 
 						if( Input.dwMousePosition.X >= w->x && Input.dwMousePosition.X < w->x + w->cols )
@@ -367,15 +367,15 @@ namespace xgc
 								continue;
 							
 							if( w->expand && Input.dwMousePosition.Y == w->y + w->rows - 1 )
-								w->status = 2; // ç‚¹å‡»åœ¨Sizerä¸Š
+								w->status = 2; // µã»÷ÔÚSizerÉÏ
 							else
-								w->status = 1; // å…¶ä»–ä½ç½®ï¼Œç§»åŠ¨çª—å£
+								w->status = 1; // ÆäËûÎ»ÖÃ£¬ÒÆ¶¯´°¿Ú
 
 							found = _sort_window[i];
 						}
 					}
 
-					// æ‰¾åˆ°åˆé€‚çš„åˆ™æ¿€æ´»è¯¥çª—å£
+					// ÕÒµ½ºÏÊÊµÄÔò¼¤»î¸Ã´°¿Ú
 					active_window( found );
 					hide_cursor();
 
@@ -388,25 +388,25 @@ namespace xgc
 					{
 						guard lock( w->mtx );
 
-						// é‡æ–°è®¾ç½®å…‰æ ‡ä½ç½®
+						// ÖØĞÂÉèÖÃ¹â±êÎ»ÖÃ
 						adjust_cursor( w );
 
-						// æ²¡æœ‰ç§»åŠ¨çª—å£
+						// Ã»ÓĞÒÆ¶¯´°¿Ú
 						if( !(w->status & 0x8000) )
 						{
-							// æ‰©å±•çŠ¶æ€
+							// À©Õ¹×´Ì¬
 							if( w->expand )
 							{
 								if( w->cx >= w->tw || w->cy >= w->th )
-									// å…³é—­å…‰æ ‡æ˜¾ç¤º
+									// ¹Ø±Õ¹â±êÏÔÊ¾
 									hide_cursor();
 								else
-									// æ‰“å¼€å…‰æ ‡æ˜¾ç¤º
+									// ´ò¿ª¹â±êÏÔÊ¾
 									show_cursor();
 							}
 							else
 							{
-								// å…³é—­å…‰æ ‡æ˜¾ç¤º
+								// ¹Ø±Õ¹â±êÏÔÊ¾
 								hide_cursor();
 							}
 						}
@@ -434,34 +434,34 @@ namespace xgc
 
 							switch( w->status & 0x7fff )
 							{
-							case 1: // ç§»åŠ¨çª—å£ä½ç½®
+							case 1: // ÒÆ¶¯´°¿ÚÎ»ÖÃ
 								if( w->style.moving )
 								{
 									w->x += offset_x;
 									w->y += offset_y;
 
-									// è®¾ç½®ç§»åŠ¨æ ‡å¿—
+									// ÉèÖÃÒÆ¶¯±êÖ¾
 									w->status |= 0x8000;
 								}
 								break;
-							case 2: // æ”¹å˜çª—å£å¤§å°
+							case 2: // ¸Ä±ä´°¿Ú´óĞ¡
 								if( w->style.resize )
 								{
-									// è®¡ç®—çª—å£åŒºåŸŸ
+									// ¼ÆËã´°¿ÚÇøÓò
 									w->cols = w->cols + offset_x;
 									w->rows = w->rows + offset_y;
 									
 									w->cols = XGC_RNG( w->cols, 8, w->bw + w->style.border * 2 );
 									w->rows = XGC_RNG( w->rows, 8, w->bh + w->style.title_bar + w->style.status_bar + w->style.menu );
 
-									// è®¡ç®—æ–‡æœ¬åŒºåŸŸ
+									// ¼ÆËãÎÄ±¾ÇøÓò
 									w->tw = w->cols - w->style.border * 2;
 									w->th = w->rows - w->style.title_bar - w->style.menu - w->style.status_bar;
 
 									w->tw = XGC_RNG( w->tw, 1, w->bw );
 									w->th = XGC_RNG( w->th, 1, w->bh );
 
-									// è®¾ç½®ç§»åŠ¨æ ‡å¿—
+									// ÉèÖÃÒÆ¶¯±êÖ¾
 									w->status |= 0x8000;
 								}
 								break;
@@ -553,14 +553,14 @@ namespace xgc
 
 			if( bBusy )
 			{
-				// é‡ç»˜çª—å£
+				// ÖØ»æ´°¿Ú
 				redraw_window();
 			}
 
 			return bBusy;
 		}
 
-		/// æ§åˆ¶å°æ›´æ–°çº¿ç¨‹
+		/// ¿ØÖÆÌ¨¸üĞÂÏß³Ì
 		static unsigned int _stdcall console_update_thread( xgc_lpvoid _param )
 		{
 			char buf[4096];
@@ -568,10 +568,10 @@ namespace xgc
 			clock_t tick = clock();
 			while( g_console_library )
 			{
-				// å¤„ç†äº‹ä»¶æ¶ˆæ¯
+				// ´¦ÀíÊÂ¼şÏûÏ¢
 				process_event();
 
-				// å¤„ç†é‡å®šå‘
+				// ´¦ÀíÖØ¶¨Ïò
 				for( int i = 0; i < 3; ++i )
 				{
 					if( gstdio[i].fd[0] == -1 )
@@ -595,10 +595,10 @@ namespace xgc
 		}
 
 		///
-		/// \brief åˆå§‹åŒ–æ§åˆ¶å°
+		/// \brief ³õÊ¼»¯¿ØÖÆÌ¨
 		///
-		/// \param cols çª—å£å®½
-		/// \param rows çª—å£é«˜
+		/// \param cols ´°¿Ú¿í
+		/// \param rows ´°¿Ú¸ß
 		/// 
 		/// [12/24/2013 albert.xu]
 		///
@@ -622,7 +622,7 @@ namespace xgc
 			SMALL_RECT rcWindow = { 0, 0, cols - 1, rows - 1 };
 
 			BOOL bRet = FALSE;
-			// åˆ›å»ºåŒç¼“å†²
+			// ´´½¨Ë«»º³å
 			active_buffer[0] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
 			XGC_ASSERT_RETURN( active_buffer[0] != INVALID_HANDLE_VALUE, false );
 			active_buffer[1] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
@@ -651,7 +651,7 @@ namespace xgc
 
 		xgc_void console_fini()
 		{
-			// é€€å‡º
+			// ÍË³ö
 			g_console_library = 0UL;
 
 			for( xgc_size i = 0; i < XGC_COUNTOF( gstdio ); ++i )
@@ -703,7 +703,7 @@ namespace xgc
 		}
 
 		///
-		/// å±å¹•æ˜¯å¦è¢«åˆå§‹åŒ–äº†.
+		/// ÆÁÄ»ÊÇ·ñ±»³õÊ¼»¯ÁË.
 		/// [6/4/2015] create by albert.xu
 		///
 		xgc_bool console_is_init()
@@ -711,7 +711,7 @@ namespace xgc
 			return g_console_library != 0;
 		}
 
-		/// é‡å®šå‘æ ‡å‡†è¾“å‡º
+		/// ÖØ¶¨Ïò±ê×¼Êä³ö
 		xgc_bool redirect( FILE* file, buffer_t buffer )
 		{
 			int stdfd = _fileno( file );
@@ -738,7 +738,7 @@ namespace xgc
 			return true;
 		}
 
-		/// è·å–æ§åˆ¶å°çª—å£å®½åº¦
+		/// »ñÈ¡¿ØÖÆÌ¨´°¿Ú¿í¶È
 		xgc_bool get_console_size( xgc_int16 &cx, xgc_int16 &cy )
 		{
 			CONSOLE_SCREEN_BUFFER_INFOEX ConsoleInfo;
@@ -753,7 +753,7 @@ namespace xgc
 			return bRet == TRUE;
 		}
 
-		// éšè—å…‰æ ‡
+		// Òş²Ø¹â±ê
 		xgc_void show_cursor( xgc_real32 percent )
 		{
 			CONSOLE_CURSOR_INFO CursorInfo;
@@ -787,7 +787,7 @@ namespace xgc
 				w->cx = col;
 				w->cy = row;
 
-				// æ ¹æ®å…‰æ ‡ä½ç½®å¯¹é½çª—å£
+				// ¸ù¾İ¹â±êÎ»ÖÃ¶ÔÆë´°¿Ú
 				adjust_window( w, false );
 
 				if( window == focus_window )
@@ -839,7 +839,7 @@ namespace xgc
 		{
 			window_t idx = 0;
 
-			// å¦‚æœæ˜¯ä¸€ä¸ªæ— æ•ˆçš„ç¼“å†²å¥æŸ„ï¼Œåˆ™åˆ›å»ºä¸€ä¸ªã€‚
+			// Èç¹ûÊÇÒ»¸öÎŞĞ§µÄ»º³å¾ä±ú£¬Ôò´´½¨Ò»¸ö¡£
 			if( t == INVALID_BUFFER_INDEX )
 			{
 				xgc_int16 cx = cols;
@@ -864,7 +864,7 @@ namespace xgc
 				XGC_ASSERT_RETURN( t != INVALID_BUFFER_INDEX, INVALID_WINDOW_INDEX );
 			}
 
-			// æŸ¥æ‰¾ä¸€ä¸ªç©ºçš„ä½ç½®
+			// ²éÕÒÒ»¸ö¿ÕµÄÎ»ÖÃ
 			while( idx < XGC_COUNTOF( _text_window ) )
 			{
 				if( _text_window[idx].load() == xgc_nullptr )
@@ -875,53 +875,53 @@ namespace xgc
 					text_buffer *b = _text_buffer[t];
 					guard lock_buffer( b->mtx );
 
-					// åˆå§‹åŒ–çª—å£ä½ç½®
+					// ³õÊ¼»¯´°¿ÚÎ»ÖÃ
 					w->x = x;
 					w->y = y;
 
-					// åˆå§‹åŒ–çª—å£å¤§å°
+					// ³õÊ¼»¯´°¿Ú´óĞ¡
 					w->cols = cols;
 					w->rows = rows;
 
-					// åˆå§‹åŒ–æ»šè½´ä½ç½®
+					// ³õÊ¼»¯¹öÖáÎ»ÖÃ
 					w->sx = 0;
 					w->sy = 0;
 
-					// åˆå§‹åŒ–å…‰æ ‡ä½ç½®
+					// ³õÊ¼»¯¹â±êÎ»ÖÃ
 					w->cx = 0;
 					w->cy = 0;
 
 					w->title = _strdup( title );
-					// çª—å£é£æ ¼
+					// ´°¿Ú·ç¸ñ
 					w->style.mask = style;
-					// å½“å‰çª—å£çŠ¶æ€ 0 - æ­£å¸¸ï¼Œ 1 - ç§»åŠ¨çª—å£ï¼Œ 2 - è°ƒæ•´å¤§å°
+					// µ±Ç°´°¿Ú×´Ì¬ 0 - Õı³££¬ 1 - ÒÆ¶¯´°¿Ú£¬ 2 - µ÷Õû´óĞ¡
 					w->status = 0;
-					// çª—å£æ˜¯å¦æ‰©å±•
+					// ´°¿ÚÊÇ·ñÀ©Õ¹
 					w->expand = true;
 
-					// æ»‘åŠ¨æ¡ - å‚ç›´é•¿åº¦
+					// »¬¶¯Ìõ - ´¹Ö±³¤¶È
 					w->scroll.v_len = 0;
-					// æ»‘åŠ¨æ¡ - æ°´å¹³é•¿åº¦
+					// »¬¶¯Ìõ - Ë®Æ½³¤¶È
 					w->scroll.h_len = 0;
-					// æ»‘åŠ¨æ¡ - å‚ç›´ä½ç½®
+					// »¬¶¯Ìõ - ´¹Ö±Î»ÖÃ
 					w->scroll.v_pos = 0;
-					// æ»‘åŠ¨æ¡ - æ°´å¹³ä½ç½®
+					// »¬¶¯Ìõ - Ë®Æ½Î»ÖÃ
 					w->scroll.h_pos = 0;
 
 					w->buffer = t;
 					
-					// è®¡ç®—çª—å£è¡Œåˆ—æ•°
+					// ¼ÆËã´°¿ÚĞĞÁĞÊı
 					w->tw = w->cols - w->style.border * 2;
 					w->th = w->rows - w->style.title_bar - w->style.menu - w->style.status_bar;
 
-					// è®¾ç½®ç¼“å†²å¤§å°
+					// ÉèÖÃ»º³å´óĞ¡
 					w->bw = b->w;
 					w->bh = b->h;
 
-					// è®¡ç®—çª—å£ä½ç½®
+					// ¼ÆËã´°¿ÚÎ»ÖÃ
 					w->tx = w->style.border;
 					w->ty = w->style.title_bar + w->style.menu;
-					// å°†æ–°å»ºçš„çª—å£åŠ å…¥åˆ°çª—å£åˆ—è¡¨ä¸­
+					// ½«ĞÂ½¨µÄ´°¿Ú¼ÓÈëµ½´°¿ÚÁĞ±íÖĞ
 					active_window( idx );
 
 					++_text_window_count;
@@ -956,7 +956,7 @@ namespace xgc
 			{
 				xgc_bool found = false;
 
-				// çª—å£æ¿€æ´»ç®—æ³•ï¼Œ çª—å£åœ¨_sort_windowæ•°ç»„ä¸­æœ€åä¸€ä¸ªä¼šæ˜¾ç¤ºåœ¨æœ€ä¸Šå±‚
+				// ´°¿Ú¼¤»îËã·¨£¬ ´°¿ÚÔÚ_sort_windowÊı×éÖĞ×îºóÒ»¸ö»áÏÔÊ¾ÔÚ×îÉÏ²ã
 				for( int i = 0; i < xgc_countof( _sort_window ); ++i )
 				{
 					if( found )
@@ -964,12 +964,12 @@ namespace xgc
 						if( _sort_window[i] == INVALID_WINDOW_INDEX )
 							break;
 
-						// äº¤æ›¿å¾€å¤ï¼Œå°†çª—å£ç§»åˆ°æœ€åä¸€ä¸ªå…ƒç´ ï¼Œæ³¨æ„ï¼Œè¿™é‡Œéœ€è¦ä½¿ç”¨exchangeï¼Œç”¨äºç¡®ä¿å¤šçº¿ç¯å¢ƒä¸‹æ•°æ®å®‰å…¨ã€‚
+						// ½»ÌæÍù¸´£¬½«´°¿ÚÒÆµ½×îºóÒ»¸öÔªËØ£¬×¢Òâ£¬ÕâÀïĞèÒªÊ¹ÓÃexchange£¬ÓÃÓÚÈ·±£¶àÏß»·¾³ÏÂÊı¾İ°²È«¡£
 						_sort_window[i - 1] = _sort_window[i].exchange( _sort_window[i - 1] );
 					}
 					else
 					{
-						// ä»…æŸ¥æ‰¾
+						// ½ö²éÕÒ
 						if( _sort_window[i] == INVALID_WINDOW_INDEX )
 							_sort_window[i] = window;
 
@@ -983,7 +983,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief æ˜¯å¦æ´»åŠ¨çª—å£
+		/// \brief ÊÇ·ñ»î¶¯´°¿Ú
 		///
 		/// \author albert.xu
 		/// \date 2016/01/05 16:43
@@ -1006,7 +1006,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief é‡Šæ”¾æ–‡æœ¬ç¼“å†²
+		/// \brief ÊÍ·ÅÎÄ±¾»º³å
 		///
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
@@ -1064,13 +1064,13 @@ namespace xgc
 			SAFE_DELETE( w );
 		}
 
-		/// é‡ç»˜æŒ‡å®šçª—å£
+		/// ÖØ»æÖ¸¶¨´°¿Ú
 		xgc_void redraw_window( window_t window, xgc_handle output, xgc_bool border )
 		{
 			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, XGC_NONE );
 			XGC_ASSERT_RETURN( _text_window_count, XGC_NONE );
 
-			// å–å½“å‰éœ€è¦ç»˜åˆ¶çš„çª—å£
+			// È¡µ±Ç°ĞèÒª»æÖÆµÄ´°¿Ú
 			text_window *w = _text_window[window];
 			if( xgc_nullptr == w )
 				return;
@@ -1125,16 +1125,16 @@ namespace xgc
 			xgc_uint16 COLOR_STATUS_BAR = BACKGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | ( focus_window == window ? FOREGROUND_INTENSITY : 0 );
 			xgc_uint16 COLOR_SCROLL_BAR = w->style.scroll_bar ? (BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_BLUE) : FOREGROUND_RED;
 
-			// è®¡ç®—ç»˜åˆ¶çš„åŒºåŸŸ
+			// ¼ÆËã»æÖÆµÄÇøÓò
 			xgc_int16 cols, rows;
 			get_console_size( cols, rows );
 
 			xgc_int16 x0 = XGC_MAX( w->x, 0 );
 			xgc_int16 x1 = XGC_MIN( w->x + w->cols, cols );
 
-			// å½“å‰ç»˜åˆ¶çš„è¡Œ
+			// µ±Ç°»æÖÆµÄĞĞ
 			xgc_int16 y0 = w->y;
-			// æœ€åç»˜åˆ¶çš„è¡Œ
+			// ×îºó»æÖÆµÄĞĞ
 			xgc_int16 y1 = w->y + w->rows - w->style.status_bar;
 			
 			// draw title border
@@ -1287,7 +1287,7 @@ namespace xgc
 			}
 		}
 
-		/// æ»šåŠ¨çª—å£
+		/// ¹ö¶¯´°¿Ú
 		xgc_void scroll_window( window_t window, xgc_int16 row, xgc_int16 col )
 		{
 			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, XGC_NONE );
@@ -1313,8 +1313,8 @@ namespace xgc
 			redraw_window( window, active_buffer[0], true );
 		}
 
-		/// å‘ä¸Šæ»šåŠ¨çª—å£rowè¡Œ
-		/// å¯è¿›è¡Œç¯å½¢ç¼“å†²çš„ä¼˜åŒ–
+		/// ÏòÉÏ¹ö¶¯´°¿ÚrowĞĞ
+		/// ¿É½øĞĞ»·ĞÎ»º³åµÄÓÅ»¯
 		static xgc_void scroll_buffer( text_buffer* t, xgc_uint16 row )
 		{
 			if( row == 0 )
@@ -1341,7 +1341,7 @@ namespace xgc
 
 		static xgc_int32 output_buffer( text_buffer* t, xgc_lpcstr str )
 		{
-			// è®¾ç½®è„æ ‡å¿—
+			// ÉèÖÃÔà±êÖ¾
 			t->flags |= eTextDirty;
 			
 			xgc_lpcstr current  = str;
@@ -1350,10 +1350,10 @@ namespace xgc
 
 			guard lock( t->input.mtx, std::try_to_lock );
 
-			// å¤„ç†è¾“å…¥ä¸²
+			// ´¦ÀíÊäÈë´®
 			while( *current )
 			{
-				// è®¾ç½®æ˜¾ç¤ºé¢œè‰²
+				// ÉèÖÃÏÔÊ¾ÑÕÉ«
 				if( setcolor )
 				{
 					getcolor = ( getcolor & ( 0xf0 >> (setcolor-1)*4 ) ) | ( (*current % 0x10) << (setcolor-1)*4 );
@@ -1361,7 +1361,7 @@ namespace xgc
 				}
 				else switch( *current )
 				{
-				case '\n': // æ¢è¡Œç¬¦
+				case '\n': // »»ĞĞ·û
 					t->buffer[t->position].Attributes = 0;
 					t->buffer[t->position].Char.AsciiChar = '\n';
 					++t->position;
@@ -1373,7 +1373,7 @@ namespace xgc
 						++t->position;
 					}
 
-					// å¤„ç†è¾“å…¥
+					// ´¦ÀíÊäÈë
 					if( false == lock.owns_lock() )
 					{
 						if( t->input.input_cur < t->input.input_len )
@@ -1381,18 +1381,18 @@ namespace xgc
 
 						t->input.input_pos = 0;
 						t->input.input_complate = true;
-						// é€šçŸ¥å®Œæˆè¾“å…¥
+						// Í¨ÖªÍê³ÉÊäÈë
 						t->input.evt.notify_one();
 					}
 					break;
 				case '\b':
-					// å¤„ç†è¾“å…¥
+					// ´¦ÀíÊäÈë
 					if( false == lock.owns_lock() )
 					{
 						if( t->input.input_cur > 0 )
 							t->input.input_buf[--t->input.input_cur] = 0;
 
-						// å›å†™è¾“å…¥ç¼“å†²
+						// »ØĞ´ÊäÈë»º³å
 						if( t->position == 0 && t->input.input_cur != 0 )
 						{
 							xgc_int16 len = XGC_MIN( t->w, t->input.input_cur );
@@ -1402,12 +1402,12 @@ namespace xgc
 								t->buffer[i].Char.AsciiChar = t->input.input_buf[i];
 							}
 
-							// åé¢ä¼šåˆ é™¤ä¸€ä¸ªå­—ç¬¦ï¼Œè¿™é‡Œä¸éœ€è¦äº†ã€‚
+							// ºóÃæ»áÉ¾³ıÒ»¸ö×Ö·û£¬ÕâÀï²»ĞèÒªÁË¡£
 							break;
 						}
 					}
 
-					// æ¸…é™¤å ä½ç¬¦
+					// Çå³ıÕ¼Î»·û
 					while( t->position > t->input.input_pos )
 					{
 						--t->position;
@@ -1416,14 +1416,14 @@ namespace xgc
 							break;
 					}
 
-					// æ¸…é™¤ä¸€ä¸ªå­—ç¬¦
+					// Çå³ıÒ»¸ö×Ö·û
 					if( t->position >= t->input.input_pos )
 					{
 						t->buffer[t->position].Attributes = 0;
 						t->buffer[t->position].Char.AsciiChar = 0;
 					}
 					break;
-				case '\t': // åˆ¶è¡¨ç¬¦
+				case '\t': // ÖÆ±í·û
 					if( lock.owns_lock() )
 					{
 						t->buffer[t->position].Attributes = getcolor;
@@ -1441,16 +1441,16 @@ namespace xgc
 						}
 					}
 					break;
-				case '\x1': // å‰æ™¯è‰²
+				case '\x1': // Ç°¾°É«
 					setcolor = 1;
 					break;
-				case '\x2': // èƒŒæ™¯è‰²
+				case '\x2': // ±³¾°É«
 					setcolor = 2;
 					break;
-				default: // æ­£å¸¸å­—ç¬¦
+				default: // Õı³£×Ö·û
 					if( false == lock.owns_lock() )
 					{
-						// ä¸èƒ½è¶…å‡ºç¼“å†²å¤§å°
+						// ²»ÄÜ³¬³ö»º³å´óĞ¡
 						if( t->input.input_cur >= t->input.input_len )
 							break;
 
@@ -1464,7 +1464,7 @@ namespace xgc
 					break;
 				}
 				
-				// åˆ¤å®šæ˜¯å¦éœ€è¦æ»šå±
+				// ÅĞ¶¨ÊÇ·ñĞèÒª¹öÆÁ
 				if( t->position / t->w >= t->h )
 				{
 					scroll_buffer( t, t->position / t->w - t->h + 1 );
@@ -1501,7 +1501,7 @@ namespace xgc
 			return len;
 		}
 
-		/// ç¼“å†²è¾“å…¥å¯¹è±¡ï¼Œæ¯çº¿ç¨‹ä¸€ä¸ª
+		/// »º³åÊäÈë¶ÔÏó£¬Ã¿Ïß³ÌÒ»¸ö
 		xgc_int32 buffer_read( buffer_t text, xgc_lpstr buf, xgc_int16 len, xgc_bool wait )
 		{
 			memset( buf, 0, len );
@@ -1509,19 +1509,19 @@ namespace xgc
 			text_buffer *t = _text_buffer[text];
 			XGC_ASSERT_RETURN( t, -1 );
 
-			// é”è¾“å…¥ï¼Œä¸å…è®¸åŒæ—¶å¯¹ä¸€ä¸ªç¼“å†²åšè¾“å…¥æ“ä½œ
+			// ËøÊäÈë£¬²»ÔÊĞíÍ¬Ê±¶ÔÒ»¸ö»º³å×öÊäÈë²Ù×÷
 			guard lock_input( t->input.mtx );
 
-			// é”ç¼“å†²
+			// Ëø»º³å
 			guard lock_event( t->mtx );
 
 			if( wait )
 			{
-				// é‡Šæ”¾ç§æœ‰å†…å­˜
+				// ÊÍ·ÅË½ÓĞÄÚ´æ
 				if( t->input.input_alc )
 					free( t->input.input_buf );
 
-				// åˆå§‹åŒ–è¾“å…¥å‚æ•°
+				// ³õÊ¼»¯ÊäÈë²ÎÊı
 				t->input.input_buf = buf;
 				t->input.input_len = len;
 				t->input.input_alc = 0;
@@ -1529,10 +1529,10 @@ namespace xgc
 				t->input.input_pos = t->position;
 				t->input.input_complate = false;
 
-				// ç­‰å¾…è¾“å…¥å®Œæˆ
+				// µÈ´ıÊäÈëÍê³É
 				t->input.evt.wait( lock_event );
 
-				// è¿”å›è¾“å…¥çš„é•¿åº¦
+				// ·µ»ØÊäÈëµÄ³¤¶È
 				return t->input.input_cur;
 			}
 			else
@@ -1565,7 +1565,7 @@ namespace xgc
 				{
 					t->input.mtx.lock();
 
-					// åˆå§‹åŒ–è¾“å…¥ç¼“å†²
+					// ³õÊ¼»¯ÊäÈë»º³å
 					if( t->input.input_alc == 0 )
 					{
 						t->input.input_buf = (xgc_lpstr) malloc( len );

@@ -44,11 +44,11 @@ namespace xgc
 		// [8/30/2013 Albert.xu]
 		//----------------------------------------//
 		///
-		/// \brief sha1 鎽樿绠楁硶
+		/// \brief sha1 摘要算法
 		///
-		/// \param _data sha1 鏁版嵁
-		/// \param _key sha1 瀵嗛挜
-		/// \param diges 褰揾ex涓簍rue鏃讹紝璇ュ�艰澶熷ぇ
+		/// \param _data sha1 数据
+		/// \param _key sha1 密钥
+		/// \param diges 当hex为true时，该值要够大
 
 		/// \author albert.xu
 		/// \date 2016/08/10 14:27

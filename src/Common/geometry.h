@@ -697,53 +697,53 @@ namespace xgc
 	typedef xPoint	< xgc_real32 >	fPoint;
 
 	///
-	/// ç¢°æ’åˆ†ç»„
+	/// Åö×²·Ö×é
 	/// [11/21/2014] create by albert.xu
 	///
 	union CollisionFilter64
 	{
-		/// @var å€¼
+		/// @var Öµ
 		xgc_uint64 value;
 
 		struct
 		{
-			/// @var è¢«æ’æ©ç 
+			/// @var ±»×²ÑÚÂë
 			xgc_uint16	category;
-			/// @var ç¢°æ’æ©ç 
+			/// @var Åö×²ÑÚÂë
 			xgc_uint16	mask;
-			/// @var ç»„ç¼–å·
+			/// @var ×é±àºÅ
 			xgc_int32	group;
 		};
 	};
 
 	///
-	/// ç¢°æ’åˆ†ç»„
+	/// Åö×²·Ö×é
 	/// [11/21/2014] create by albert.xu
 	///
 	union CollisionFilter32
 	{
-		/// @var å€¼
+		/// @var Öµ
 		xgc_uint32 value;
 
 		struct
 		{
-			/// @var è¢«æ’æ©ç 
+			/// @var ±»×²ÑÚÂë
 			xgc_uint8	category;
-			/// @var ç¢°æ’æ©ç 
+			/// @var Åö×²ÑÚÂë
 			xgc_uint8	mask;
-			/// @var ç»„ç¼–å·
+			/// @var ×é±àºÅ
 			xgc_int16	group;
 		};
 	};
 
 	///
-	/// ç¢°æ’æ£€æµ‹å‡½æ•°
-	/// A,Bçš„ç»„IDç›¸ç­‰ä¸”å¤§äº0æ—¶ï¼Œä¸¤ç‰©ä½“ä¸€å®šç¢°æ’
-	/// A,Bçš„ç»„IDç›¸ç­‰ä¸”å°äº0æ—¶ï¼Œä¸¤ç‰©ä½“ä¸€å®šä¸æ’
-	/// A,Bçš„ç»„IDä¸ç­‰åˆ™
-	/// åˆ¤å®šAçš„maskæ˜¯å¦å’ŒBçš„categoryæœ‰ç›¸åŒçš„ä½
-	/// å¹¶ä¸”
-	///	åˆ¤å®šBçš„maskæ˜¯å¦å’ŒAçš„categoryæœ‰ç›¸åŒçš„ä½
+	/// Åö×²¼ì²âº¯Êı
+	/// A,BµÄ×éIDÏàµÈÇÒ´óÓÚ0Ê±£¬Á½ÎïÌåÒ»¶¨Åö×²
+	/// A,BµÄ×éIDÏàµÈÇÒĞ¡ÓÚ0Ê±£¬Á½ÎïÌåÒ»¶¨²»×²
+	/// A,BµÄ×éID²»µÈÔò
+	/// ÅĞ¶¨AµÄmaskÊÇ·ñºÍBµÄcategoryÓĞÏàÍ¬µÄÎ»
+	/// ²¢ÇÒ
+	///	ÅĞ¶¨BµÄmaskÊÇ·ñºÍAµÄcategoryÓĞÏàÍ¬µÄÎ»
 	///
 	template< class T >
 	xgc_bool CollisionTest( const T &A, const T &B )

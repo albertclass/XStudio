@@ -4,7 +4,7 @@
 namespace xgc
 {
 	///
-	/// \brief è§£æBOM
+	/// \brief ½âÎöBOM
 	///
 	/// \author albert.xu
 	/// \date 2015/12/31 16:58
@@ -51,7 +51,7 @@ namespace xgc
 	}
 
 	///
-	/// \brief éªŒè¯æ˜¯å¦UTF-8ç¼–ç 
+	/// \brief ÑéÖ¤ÊÇ·ñUTF-8±àÂë
 	///
 	/// \author albert.xu
 	/// \date 2016/01/05 10:20
@@ -93,7 +93,7 @@ namespace xgc
 				chk = 5;
 			}
 
-			// é˜²æ­¢è¶…ç•Œ
+			// ·ÀÖ¹³¬½ç
 			if( str + chk + 1 > (xgc_byte*) ptr + len )
 				return false;
 
@@ -116,7 +116,7 @@ namespace xgc
 	}
 
 	///
-	/// \brief æ¢æµ‹å­—ç¬¦ä¸²ç¼–ç ç±»å‹
+	/// \brief Ì½²â×Ö·û´®±àÂëÀàĞÍ
 	///
 	/// \author albert.xu
 	/// \date 2015/12/31 12:25
@@ -131,7 +131,7 @@ namespace xgc
 		if( enc != encoding_auto )
 			return enc;
 
-		// ç¼–ç è‡ªåŠ¨æ¢æµ‹
+		// ±àÂë×Ô¶¯Ì½²â
 		if( guess_encoding_utf8( *str, len ) )
 			return encoding_utf8;
 
@@ -139,14 +139,14 @@ namespace xgc
 	}
 
 	///
-	/// \brief ç¼–ç è½¬æ¢ä¸ºutf8
+	/// \brief ±àÂë×ª»»Îªutf8
 	///
-	/// \param dst è½¬ç åçš„å­˜å‚¨ä½ç½®
-	/// \param dst_size è½¬ç ç¼“å†²åŒºé•¿åº¦
-	/// \param src åŸå§‹ä¸²èµ·å§‹ä½ç½®
-	/// \param encoding åŸå§‹ä¸²ç¼–ç æ–¹å¼
+	/// \param dst ×ªÂëºóµÄ´æ´¢Î»ÖÃ
+	/// \param dst_size ×ªÂë»º³åÇø³¤¶È
+	/// \param src Ô­Ê¼´®ÆğÊ¼Î»ÖÃ
+	/// \param encoding Ô­Ê¼´®±àÂë·½Ê½
 	///
-	/// \return è½¬ç æ˜¯å¦æˆåŠŸ -1 - å¤±è´¥ï¼Œå¦åˆ™è¿”å›ç›®æ ‡ç¼“å†²çš„å¡«å……é•¿åº¦
+	/// \return ×ªÂëÊÇ·ñ³É¹¦ -1 - Ê§°Ü£¬·ñÔò·µ»ØÄ¿±ê»º³åµÄÌî³ä³¤¶È
 	/// \author albert.xu
 	/// \date 2015/12/31 12:26
 	///
@@ -186,14 +186,14 @@ namespace xgc
 	}
 
 	///
-	/// \brief ç¼–ç è½¬æ¢mbsc
+	/// \brief ±àÂë×ª»»mbsc
 	///
-	/// \param dst è½¬ç åçš„å­˜å‚¨ä½ç½®
-	/// \param dst_size è½¬ç ç¼“å†²åŒºé•¿åº¦
-	/// \param src åŸå§‹ä¸²èµ·å§‹ä½ç½®
-	/// \param encoding åŸå§‹ä¸²ç¼–ç æ–¹å¼
+	/// \param dst ×ªÂëºóµÄ´æ´¢Î»ÖÃ
+	/// \param dst_size ×ªÂë»º³åÇø³¤¶È
+	/// \param src Ô­Ê¼´®ÆğÊ¼Î»ÖÃ
+	/// \param encoding Ô­Ê¼´®±àÂë·½Ê½
 	///
-	/// \return è½¬ç æ˜¯å¦æˆåŠŸ -1 - å¤±è´¥ï¼Œå¦åˆ™è¿”å›ç›®æ ‡ç¼“å†²çš„å¡«å……é•¿åº¦
+	/// \return ×ªÂëÊÇ·ñ³É¹¦ -1 - Ê§°Ü£¬·ñÔò·µ»ØÄ¿±ê»º³åµÄÌî³ä³¤¶È
 	/// \author albert.xu
 	/// \date 2015/12/31 12:26
 	///

@@ -7,7 +7,7 @@ namespace xgc
 	namespace common
 	{
 		///
-		/// \brief é»˜è®¤æ„é€ 
+		/// \brief Ä¬ÈÏ¹¹Ôì
 		///
 		/// \author albert.xu
 		/// \date 2016/09/14 13:23
@@ -33,7 +33,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief ææ„å‡½æ•°
+		/// \brief Îö¹¹º¯Êı
 		///
 		/// \author albert.xu
 		/// \date 2015/12/18 16:34
@@ -44,7 +44,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief åˆ›å»ºå…±äº«å†…å­˜
+		/// \brief ´´½¨¹²ÏíÄÚ´æ
 		///
 		/// \author albert.xu
 		/// \date 2015/12/18 16:29
@@ -101,7 +101,7 @@ namespace xgc
 
 			xgc_bool is_created = GetLastError() != ERROR_ALREADY_EXISTS;
 
-			/// è£…è½½å†…å­˜æ˜ å°„ \///
+			/// ×°ÔØÄÚ´æÓ³Éä \///
 			data_ = (xgc_lpstr) MapViewOfFile( shared_memory_,   // handle to map object
 											   FILE_MAP_ALL_ACCESS,                  // read/write permission
 											   0,
@@ -127,7 +127,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief é”€æ¯å…±äº«å†…å­˜å¯¹è±¡
+		/// \brief Ïú»Ù¹²ÏíÄÚ´æ¶ÔÏó
 		///
 		/// \author albert.xu
 		/// \date 2015/12/18 16:35
