@@ -38,7 +38,7 @@ static xgc_void parse_environment( xgc_lpcstr environment )
 	{
 		xgc_lpstr variable_delimiter = " =\t\r\n";
 		xgc_lpstr variable_next = xgc_nullptr;
-		
+
 		_environment_variables[_environment_variable_count][variable_key] = strtok_s( environment_token, variable_delimiter, &variable_next );
 		_environment_variables[_environment_variable_count][variable_val] = strtok_s( xgc_nullptr, variable_delimiter, &variable_next );
 
@@ -78,7 +78,7 @@ static xgc_lpstr replace_environment_variable( xgc_lpstr buffer, xgc_lpcstr sear
 	xgc_size len_r = strlen( replace );
 
 	xgc_lpstr str = strstr( buffer, search );
-	
+
 	while( str )
 	{
 		void* new_buffer = buffer;
@@ -133,7 +133,7 @@ xgc_lpstr get_environment( xgc_lpcstr key )
 {
 	for( xgc_ulong i = 0; i < _environment_variable_count; ++i )
 	{
-		if( _stricmp( _environment_variables[i][variable_key], key ) == 0 )
+		if( strcasecmp( _environment_variables[i][variable_key], key ) == 0 )
 			return _environment_variables[i][variable_val];
 	}
 

@@ -62,7 +62,7 @@ namespace xgc
 		enum { _Val = V };
 		typedef T Type;
 	};
-	
+
 	///
 	/// \brief 根据给定的值向上获取最近的2的n次方值
 	///
@@ -75,8 +75,8 @@ namespace xgc
 	/// 索引，字符串映射表
 	/// [3/10/2014 albert.xu]
 	///
-	struct COMMON_API string_value 
-	{ 
+	struct COMMON_API string_value
+	{
 		xgc_uint32	idx;
 		xgc_lpcstr	str;
 	};
@@ -147,8 +147,8 @@ namespace xgc
 	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
 		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
-		errno_t err = _i64toa_s( _value, _buffer, _size, 10 );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIi64, (xgc_int64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
@@ -156,17 +156,17 @@ namespace xgc
 	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
 		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
-		errno_t err = _ui64toa_s( _value, _buffer, _size, 10 );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIu64, (xgc_uint64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
 	template< class T, typename std::enable_if< std::is_floating_point< T >::value, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
+	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size, xgc_int32 _num_of_dec = 4 )
 	{
 		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
-		errno_t err = _fcvt_s( _buffer, _size, _value, 5, xgc_nullptr, xgc_nullptr );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%.*lf", _num_of_dec, (xgc_real64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
@@ -174,24 +174,24 @@ namespace xgc
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
-		errno_t err = _i64toa_s( _value, _buffer, _size, 10 );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIi64, (xgc_int64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == true, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
-		errno_t err = _ui64toa_s( _value, _buffer, _size, 10 );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIu64, (xgc_uint64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
 	template< class T, size_t _size, typename std::enable_if< std::is_floating_point< T >::value, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size], xgc_int32 _num_of_dec = 4 )
 	{
-		errno_t err = _fcvt_s( _buffer, _size, _value, _num_of_dec, xgc_nullptr, xgc_nullptr );
-		XGC_ASSERT_RETURN( err == 0, xgc_nullptr );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%.*lf", _num_of_dec, (xgc_real64)_value );
+		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
 
@@ -212,13 +212,13 @@ namespace xgc
 		return h;
 	}
 
-	/// 
+	///
 	/// \brief 字符分割
 	/// \param src 要分割的字符串
 	/// \param tokens 分隔符
 	/// \return 以数组的形式返回分割好的字符串
 	/// \date [5/30/2014]
-	/// 
+	///
 	COMMON_API xgc_vector<xgc_string> string_split( xgc_lpcstr src, xgc_lpcstr delim );
 
 	///

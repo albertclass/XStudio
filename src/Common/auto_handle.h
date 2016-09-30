@@ -13,12 +13,12 @@ namespace xgc
 {
 	namespace common
 	{
-		enum COMMON_API pool_handle_base 
+		enum COMMON_API pool_handle_base
 		{
 			pow_pos = 10,
 			pow_chk = 12,
 			pow_rnd = 6,
-			pow_crc = 4 
+			pow_crc = 4
 		};
 
 		template< typename base = pool_handle_base >
@@ -81,7 +81,7 @@ namespace xgc
 			return lhs._handle < rhs._handle;
 		}
 
-		template< typename _type, typename _handle_type = pool_handle >
+		template< typename _type, typename _handle_type = pool_handle<> >
 		class auto_handle_pool;
 
 		template< typename _type, typename _handle_type >
@@ -191,7 +191,7 @@ namespace xgc
 
 			~auto_handle_pool()
 			{
-				for each( auto pChunk in mChunk )
+				for( auto pChunk : mChunk )
 				{
 					SAFE_DELETE( pChunk );
 				}

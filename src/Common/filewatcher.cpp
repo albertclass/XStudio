@@ -16,7 +16,7 @@ namespace xgc
 		static HANDLE iocp_handle = xgc_nullptr;
 		/// �ػ��߳��Ƿ����蹤��
 		static xgc_bool hardwork = true;
-		/// 线程锁
+		/// 线程�?
 		static std::mutex thread_guard;
 		/// �����߳�����
 		static xgc_vector< std::thread > work_threads;
@@ -34,29 +34,29 @@ namespace xgc
 			HANDLE fh;
 			/// 事件掩码
 			xgc_uint32 events;
-			/// 路径地址
+			/// �?径地址
 			xgc_char path[_MAX_PATH];
 			/// 缓冲文件
 			xgc_char file[_MAX_FNAME];
 			/// 消息缓冲
-			/// 注意，此处缓冲首地址一定要保证四字节对齐，否则无法收到通知消息
+			/// 注意，�?��?�缓冲�?�地址一定�?�保证四字节对齐，否则无法收到通知消息
 			xgc_char notify_infomation[MAX_BUFF_SIZE];
 
 			/// 回调地址
 			filewatcher_notifier invoke;
 
 			xgc_ulong actions;
-			/// 最后一次修改时间
+			/// 最后一次修改时�?
 			xgc_time64 lasttick;
-			/// 是否监控整个目录树
+			/// �?否监控整�?�?录树
 			xgc_bool watch_subtree;
 		};
 
 		/// 所有的事件句柄都在这里保存
 		static std::unordered_map< xgc_handle, filewatcher_handler* > event_handles;
 
-		/// ACTION 映射表
-		static xgc_ulong filewatcher_action_map[] = 
+		/// ACTION 映射�?
+		static xgc_ulong filewatcher_action_map[] =
 		{
 			#if defined( WIN32 ) || defined( WIN64 )
 			0,
@@ -98,7 +98,7 @@ namespace xgc
 			}
 
 			for( xgc_ulong i = 0; i < thread_count; ++i )
-				work_threads.push_back( std::thread( [interval](){ 
+				work_threads.push_back( std::thread( [interval](){
 					while( hardwork ){
 						do_filewatcher_notify( interval );
 					}
@@ -213,7 +213,7 @@ namespace xgc
 			std::unique_lock< std::mutex > locker( thread_guard );
 
 			auto it = std::find_if( event_handles.begin(), event_handles.end(), [path]( const std::pair< xgc_handle, filewatcher_handler* > &o )->bool{
-				return _stricmp( o.second->path, path ) == 0;
+				return strcasecmp( o.second->path, path ) == 0;
 			} );
 
 			if( it != event_handles.end() )
@@ -281,7 +281,7 @@ namespace xgc
 				auto err = wcstombs_s( &numberofconverted, file, info->FileName, _TRUNCATE );
 
 				// 文件名不一致了
-				if( e->actions >= 1 && _stricmp( file, e->file ) != 0 )
+				if( e->actions >= 1 && strcasecmp( file, e->file ) != 0 )
 				{
 					for( int i = 1; i < 6; ++i )
 					{

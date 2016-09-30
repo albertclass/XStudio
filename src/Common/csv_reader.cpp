@@ -1,15 +1,19 @@
 #include "csv_reader.h"
+#include "encoding.h"
+
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+
+#ifdef WINDOWS
 #include <io.h>
-#include <map>
-#include "encoding.h"
+#endif
 
 namespace xgc
 {
 	namespace common
 	{
-		csv_reader::csv_reader( xgc_void )
+		csv_reader::csv_reader()
 			: buffer( xgc_nullptr )
 			, rows( 0 )
 			, cols( 0 )
@@ -18,10 +22,10 @@ namespace xgc
 			memset( chunk, 0, sizeof( chunk ) );
 		}
 
-		csv_reader::~csv_reader( xgc_void )
+		csv_reader::~csv_reader()
 		{
 			free( buffer );
-			for each( auto pChunk in chunk )
+			for( auto pChunk : chunk )
 				free( pChunk );
 		}
 
@@ -47,10 +51,10 @@ namespace xgc
 
 		xgc_lpcstr csv_reader::set_cell( xgc_size nRow, xgc_size nCol, xgc_lpstr pStr )
 		{
-			XGC_ASSERT_RETURN( nCol < cols, false );
+			XGC_ASSERT_RETURN( nCol < cols, xgc_nullptr );
 
 			xgc_size idx = ( nRow >> 12 ); // 右移12位 每过4096,重新分配一次内存
-			XGC_ASSERT_RETURN( idx < XGC_COUNTOF( chunk ), false );
+			XGC_ASSERT_RETURN( idx < XGC_COUNTOF( chunk ), xgc_nullptr );
 
 			xgc_lpvoid chk = chunk[idx];
 			if( chk == xgc_nullptr )
@@ -58,7 +62,7 @@ namespace xgc
 				// 一次分配4096行
 				chunk[idx] = chk = (xgc_lpvoid) malloc( 0x1000 * sizeof( xgc_lpvoid ) * cols );
 				if( chk == xgc_nullptr )
-					return false;
+					return xgc_nullptr;
 				memset( chk, 0, _msize( chk ) );
 			}
 			xgc_size offset = ( nRow & 0x0fff );
@@ -73,7 +77,7 @@ namespace xgc
 			for( xgc_size i = 0; this->title && i < cols; ++i )
 			{
 				xgc_lpcstr str = get_cell( 0, fetch % cols );
-				if( str && _stricmp( title, str ) == 0 )
+				if( str && strcasecmp( title, str ) == 0 )
 					return fetch++ % cols;
 				++fetch;
 			}
@@ -215,7 +219,7 @@ namespace xgc
 
 				if( buffer[i] == '\n' )
 				{
-					++cols; 
+					++cols;
 					break;
 				}
 			}
@@ -231,13 +235,13 @@ namespace xgc
 		/// \param col 列号
 		///
 
-		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_size col, xgc_lpcstr default ) const throw()
+		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_size col, xgc_lpcstr value ) const throw()
 		{
 			xgc_lpcstr val = get_cell( title ? row + 1 : row, col );
 			if( val )
 				return val;
 
-			return default;
+			return value;
 		}
 
 		///
@@ -246,29 +250,29 @@ namespace xgc
 		/// \param title 表头
 		///
 
-		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr default ) const throw()
+		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr value ) const throw()
 		{
 			XGC_ASSERT_RETURN( title, xgc_nullptr );
-			return get_value( row, get_col( title ), default );
+			return get_value( row, get_col( title ), value );
 		}
 
 
-		xgc_bool csv_reader::get_value( xgc_size row, xgc_size col, xgc_bool default ) const throw()
+		xgc_bool csv_reader::get_value( xgc_size row, xgc_size col, xgc_bool value ) const throw()
 		{
 			xgc_lpcstr val = get_cell( title ? row + 1 : row, col );
 			if( xgc_nullptr == val )
-				return default;
+				return value;
 
-			if( _stricmp( val, "0" ) == 0 )
+			if( strcasecmp( val, "0" ) == 0 )
 				return false;
-			else if( _stricmp( val, "1" ) == 0 )
+			else if( strcasecmp( val, "1" ) == 0 )
 				return true;
-			else if( _stricmp( val, "false" ) == 0 )
+			else if( strcasecmp( val, "false" ) == 0 )
 				return false;
-			else if( _stricmp( val, "true" ) == 0 )
+			else if( strcasecmp( val, "true" ) == 0 )
 				return true;
 			else
-				return default;
+				return value;
 		}
 
 	}

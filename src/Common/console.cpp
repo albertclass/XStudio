@@ -1,3 +1,4 @@
+#ifdef WINDOWS
 #include <stdio.h>
 #include <conio.h>
 #include <fcntl.h>
@@ -7,6 +8,7 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
+
 #include "console.h"
 #include "logger.h"
 #include "geometry.h"
@@ -19,7 +21,7 @@ namespace xgc
 		using guard = std::unique_lock< mutex >;
 		using event = std::condition_variable_any;
 
-		template<class _Ty> 
+		template<class _Ty>
 		using atomic = std::atomic< _Ty >;
 
 		using sRect	= xgc::xRect< xgc_int16 >;
@@ -40,7 +42,7 @@ namespace xgc
 			e_border_count,
 		};
 
-		static xgc_word border_attr[e_border_count] = 
+		static xgc_word border_attr[e_border_count] =
 		{
 			COMMON_LVB_GRID_HORIZONTAL,
 			COMMON_LVB_GRID_LVERTICAL,
@@ -104,7 +106,7 @@ namespace xgc
 		struct text_window
 		{
 			/// 窗口位置
-			xgc_int16 x, y;			
+			xgc_int16 x, y;
 			/// 窗口大小
 			xgc_int16 cols, rows;
 			/// 窗口滚动位置
@@ -268,7 +270,7 @@ namespace xgc
 			DWORD  nNum = 0;
 
 
-			xgc_int16 cols = 0; 
+			xgc_int16 cols = 0;
 			xgc_int16 rows = 0;
 			get_console_size( cols, rows );
 
@@ -280,7 +282,7 @@ namespace xgc
 			}
 
 			SMALL_RECT rc = { 0, 0, cols-1, rows-1 };
-			
+
 			if( ReadConsoleOutput( active_buffer[1], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc ) )
 			{
 				WriteConsoleOutput( active_buffer[0], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc );
@@ -365,7 +367,7 @@ namespace xgc
 						{
 							if( Input.dwMousePosition.Y < w->y || Input.dwMousePosition.Y >= w->y + ( w->expand ? w->rows : w->style.title_bar ) )
 								continue;
-							
+
 							if( w->expand && Input.dwMousePosition.Y == w->y + w->rows - 1 )
 								w->status = 2; // 点击在Sizer上
 							else
@@ -450,7 +452,7 @@ namespace xgc
 									// 计算窗口区域
 									w->cols = w->cols + offset_x;
 									w->rows = w->rows + offset_y;
-									
+
 									w->cols = XGC_RNG( w->cols, 8, w->bw + w->style.border * 2 );
 									w->rows = XGC_RNG( w->rows, 8, w->bh + w->style.title_bar + w->style.status_bar + w->style.menu );
 
@@ -599,7 +601,7 @@ namespace xgc
 		///
 		/// \param cols 窗口宽
 		/// \param rows 窗口高
-		/// 
+		///
 		/// [12/24/2013 albert.xu]
 		///
 
@@ -716,7 +718,7 @@ namespace xgc
 		{
 			int stdfd = _fileno( file );
 			XGC_ASSERT_RETURN( stdfd >= 0 && stdfd < 3, false );
-			
+
 			int fd = _dup( stdfd );
 			if( -1 == fd )
 				return false;
@@ -909,7 +911,7 @@ namespace xgc
 					w->scroll.h_pos = 0;
 
 					w->buffer = t;
-					
+
 					// 计算窗口行列数
 					w->tw = w->cols - w->style.border * 2;
 					w->th = w->rows - w->style.title_bar - w->style.menu - w->style.status_bar;
@@ -992,7 +994,7 @@ namespace xgc
 		COMMON_API xgc_bool is_active_window( window_t window )
 		{
 			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, false );
-			
+
 			if( _text_window_count == 0 )
 				return false;
 
@@ -1101,11 +1103,11 @@ namespace xgc
 				COORD BufferSize  = { t->w,  t->h  };
 				COORD BufferCoord = { w->sx, w->sy };
 
-				SMALL_RECT rc = 
-				{ 
-					w->x + w->tx, 
-					w->y + w->ty, 
-					w->x + w->tx + w->tw - 1, 
+				SMALL_RECT rc =
+				{
+					w->x + w->tx,
+					w->y + w->ty,
+					w->x + w->tx + w->tw - 1,
 					w->y + w->ty + w->th - 1,
 				};
 
@@ -1136,7 +1138,7 @@ namespace xgc
 			xgc_int16 y0 = w->y;
 			// 最后绘制的行
 			xgc_int16 y1 = w->y + w->rows - w->style.status_bar;
-			
+
 			// draw title border
 			if( w->style.title_bar && y0 >= 0 && y0 < rows )
 			{
@@ -1168,8 +1170,8 @@ namespace xgc
 
 				++y0;
 			}
-			
-			// draw expand 
+
+			// draw expand
 			if( w->expand )
 			{
 				// set grid attribute on first line
@@ -1249,7 +1251,7 @@ namespace xgc
 					FillConsoleOutputAttribute( output, border_attr[e_border_b] | COLOR_TITLE_BAR, x1 - x0, COORD { x0, y0 }, &dwNum );
 					FillConsoleOutputCharacter( output, ' ', x1 - x0, COORD { x0, y0 }, &dwNum );
 
-					// draw left bottom corner 
+					// draw left bottom corner
 					if( w->x >= 0 && w->x < cols )
 						FillConsoleOutputAttribute( output, border_attr[e_border_lb] | COLOR_TITLE_BAR, 1, COORD { w->x, y0 }, &dwNum );
 
@@ -1343,7 +1345,7 @@ namespace xgc
 		{
 			// 设置脏标志
 			t->flags |= eTextDirty;
-			
+
 			xgc_lpcstr current  = str;
 			xgc_uint16 setcolor = 0;
 			xgc_uint16 getcolor = t->attr;
@@ -1463,7 +1465,7 @@ namespace xgc
 
 					break;
 				}
-				
+
 				// 判定是否需要滚屏
 				if( t->position / t->w >= t->h )
 				{
@@ -1557,7 +1559,7 @@ namespace xgc
 
 						if( err == 0 )
 							return ret;
-						else 
+						else
 							return -1;
 					}
 				}
@@ -1601,3 +1603,4 @@ namespace xgc
 		}
 	}
 }
+#endif // WINDOWS

@@ -1,10 +1,10 @@
 #pragma once
 #ifndef _EXCEL_H_
 #define _EXCEL_H_
-#include <fcntl.h>
 
 #include "defines.h"
 #include "exports.h"
+#include "xutility.h"
 
 namespace xgc
 {
@@ -39,7 +39,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/01/26 18:12
 			///
-			csv_reader( xgc_void );
+			csv_reader();
 
 			///
 			/// \brief 析构，释放资源
@@ -47,10 +47,10 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/01/26 18:12
 			///
-			~csv_reader( xgc_void );
+			~csv_reader();
 		private:
 			///
-			/// 获取单元格内容 
+			/// 获取单元格内容
 			/// [6/10/2014] create by albert.xu
 			/// @param nRow 文件的行号
 			/// @param nCol 表格的列号
@@ -58,7 +58,7 @@ namespace xgc
 			xgc_lpcstr get_cell( xgc_size row, xgc_size col ) const throw();
 
 			///
-			/// 获取单元格内容 
+			/// 获取单元格内容
 			/// [6/10/2014] create by albert.xu
 			/// @param nRow 文件的行号
 			/// @param nCol 表格的列号
@@ -66,14 +66,14 @@ namespace xgc
 			xgc_lpcstr set_cell( xgc_size row, xgc_size col, xgc_lpstr str );
 
 			///
-			/// 获取标题所在的列 
+			/// 获取标题所在的列
 			/// [6/10/2014] create by albert.xu
 			/// @param pTitle 标题
 			///
 			xgc_int32 get_col( xgc_lpcstr title ) const throw();
 
 			///
-			/// 分析整个文件 
+			/// 分析整个文件
 			/// [6/10/2014] create by albert.xu
 			/// @param buffer 缓冲区首地址
 			/// @param buffer_size 缓冲区大小
@@ -85,7 +85,7 @@ namespace xgc
 			/// \brief 读取指定的表格文件
 			///
 			/// \param pathname 文件名
-			/// 
+			///
 			/// \author albert.xu
 			/// \date 2015/12/16 17:39
 			///
@@ -96,14 +96,14 @@ namespace xgc
 			/// \param row 行号
 			/// \param col 列号
 			///
-			xgc_lpcstr get_value( xgc_size row, xgc_size col, xgc_lpcstr default ) const throw();
+			xgc_lpcstr get_value( xgc_size row, xgc_size col, xgc_lpcstr value ) const throw();
 
 			///
 			/// 读取单元格数据
 			/// \param row 行号
 			/// \param title 表头
 			///
-			xgc_lpcstr get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr default ) const throw();
+			xgc_lpcstr get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr value ) const throw();
 
 			///
 			/// \brief 获取单元格数据，bool特化
@@ -113,7 +113,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
 			///
-			xgc_bool get_value( xgc_size row, xgc_size col, xgc_bool default ) const throw();
+			xgc_bool get_value( xgc_size row, xgc_size col, xgc_bool value ) const throw();
 
 			///
 			/// \brief 获取单元格数据，bool特化
@@ -121,10 +121,10 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
 			///
-			xgc_bool get_value( xgc_size row, xgc_lpcstr title, xgc_bool default ) const throw()
+			xgc_bool get_value( xgc_size row, xgc_lpcstr title, xgc_bool value ) const throw()
 			{
 				XGC_ASSERT_RETURN( title, false );
-				return get_value( row, get_col(title), default );
+				return get_value( row, get_col(title), value );
 			}
 
 			///
@@ -136,7 +136,7 @@ namespace xgc
 			template< size_t S >
 			xgc_bool get_value( xgc_size row, xgc_lpcstr title, xgc_char( &ret )[S] ) const throw()
 			{
-				xgc_lpcstr pValue = get_value( row, title );
+				xgc_lpcstr pValue = get_value( row, title, xgc_nullptr );
 				if( pValue )
 				{
 					strcpy_s( ret, S, pValue );
@@ -149,10 +149,10 @@ namespace xgc
 			template< size_t S >
 			xgc_bool get_value( xgc_size row, xgc_size col, xgc_char( &ret )[S] ) const throw()
 			{
-				xgc_lpcstr pValue = get_value( row, col );
+				xgc_lpcstr pValue = get_value( row, col, xgc_nullptr );
 				if( pValue )
 				{
-					strcpy_s( ret, S, pstrValue );
+					strcpy_s( ret, S, pValue );
 					return true;
 				}
 
@@ -166,23 +166,23 @@ namespace xgc
 			/// \date 2015/12/16 18:03
 			///
 			template< class T, typename std::enable_if< std::is_integral< T >::value || std::is_floating_point< T >::value, xgc_bool >::type = true >
-			T get_value( xgc_size row, xgc_size col, T default = 0 ) const throw()
+			T get_value( xgc_size row, xgc_size col, T value = 0 ) const throw()
 			{
 				xgc_lpcstr val = get_value( row, col, xgc_nullptr );
 				if( xgc_nullptr == val )
-					return default;
+					return value;
 
 				if( val[0] == 0 )
-					return default;
+					return value;
 
 				return str2numeric< T >( val );
 			}
 
 			template< class T, typename std::enable_if< std::is_integral< T >::value || std::is_floating_point< T >::value, xgc_bool >::type = true >
-			T get_value( xgc_size row, xgc_lpcstr title, T default = 0 ) const throw()
+			T get_value( xgc_size row, xgc_lpcstr title, T value = 0 ) const throw()
 			{
 				XGC_ASSERT_RETURN( title, false );
-				return get_value( row, get_col(title), default );
+				return get_value( row, get_col(title), value );
 			}
 
 			///

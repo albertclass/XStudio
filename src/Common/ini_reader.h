@@ -5,14 +5,14 @@
 ///
 /// \author albert.xu windxu@126.com
 /// \brief ini file reader no write function
-/// 
+///
 
 #ifndef _INI_H_
 #define _INI_H_
 #include "defines.h"
 #include "exports.h"
 
-namespace xgc 
+namespace xgc
 {
 	namespace common
 	{
@@ -36,7 +36,7 @@ namespace xgc
 				/// 包含的文件
 				xgc_list< file_info* > externs;
 			};
-			
+
 			/// @var 文件缓冲
 			file_info* root;
 			/// @var 分析缓冲
@@ -150,7 +150,7 @@ namespace xgc
 				xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
 				if( pValue )
 				{
-					if( _stricmp( "true", pValue ) == 0 )
+					if( strcasecmp( "true", pValue ) == 0 )
 						return true;
 					else
 						return atoi( pValue ) != 0;

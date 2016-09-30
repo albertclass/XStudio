@@ -5,17 +5,17 @@ namespace XGC
 {
 	xgc_bool XSchema::IsEnumsByType( const xgc_string& str )
 	{
-		if( _stricmp( str.c_str(), "I8" ) == 0
-			|| _stricmp( str.c_str(), "U8" ) == 0
-			|| _stricmp( str.c_str(), "I16" ) == 0
-			|| _stricmp( str.c_str(), "U16" ) == 0
-			|| _stricmp( str.c_str(), "I32" ) == 0
-			|| _stricmp( str.c_str(), "U32" ) == 0
-			|| _stricmp( str.c_str(), "I64" ) == 0
-			|| _stricmp( str.c_str(), "U64" ) == 0
-			|| _stricmp( str.c_str(), "Real" ) == 0
-			|| _stricmp( str.c_str(), "String" ) == 0
-			|| _stricmp( str.c_str(), "Attr" ) == 0 )
+		if( strcasecmp( str.c_str(), "I8" ) == 0
+			|| strcasecmp( str.c_str(), "U8" ) == 0
+			|| strcasecmp( str.c_str(), "I16" ) == 0
+			|| strcasecmp( str.c_str(), "U16" ) == 0
+			|| strcasecmp( str.c_str(), "I32" ) == 0
+			|| strcasecmp( str.c_str(), "U32" ) == 0
+			|| strcasecmp( str.c_str(), "I64" ) == 0
+			|| strcasecmp( str.c_str(), "U64" ) == 0
+			|| strcasecmp( str.c_str(), "Real" ) == 0
+			|| strcasecmp( str.c_str(), "String" ) == 0
+			|| strcasecmp( str.c_str(), "Attr" ) == 0 )
 		{
 			return false;
 		}
@@ -53,33 +53,33 @@ namespace XGC
 	{
 		auto FnGetESchemaType = []( xgc_lpcstr strType )->eSchemaType
 		{
-			if( _stricmp( strType, "I8" ) == 0 )
+			if( strcasecmp( strType, "I8" ) == 0 )
 				return eI8;
-			else if( _stricmp( strType, "U8" ) == 0 )
+			else if( strcasecmp( strType, "U8" ) == 0 )
 				return eU8;
-			else if( _stricmp( strType, "I16" ) == 0 )
+			else if( strcasecmp( strType, "I16" ) == 0 )
 				return eI16;
-			else if( _stricmp( strType, "U16" ) == 0 )
+			else if( strcasecmp( strType, "U16" ) == 0 )
 				return eU16;
-			else if( _stricmp( strType, "I32" ) == 0 )
+			else if( strcasecmp( strType, "I32" ) == 0 )
 				return eI32;
-			else if( _stricmp( strType, "U32" ) == 0 )
+			else if( strcasecmp( strType, "U32" ) == 0 )
 				return eU32;
-			else if( _stricmp( strType, "I64" ) == 0 )
+			else if( strcasecmp( strType, "I64" ) == 0 )
 				return eI64;
-			else if( _stricmp( strType, "U64" ) == 0 )
+			else if( strcasecmp( strType, "U64" ) == 0 )
 				return eU64;
-			else if( _stricmp( strType, "Real" ) == 0 )
+			else if( strcasecmp( strType, "Real" ) == 0 )
 				return eReal;
-			else if( _stricmp( strType, "String" ) == 0 )
+			else if( strcasecmp( strType, "String" ) == 0 )
 				return eString;
-			else if( _stricmp( strType, "Attr" ) == 0 )
+			else if( strcasecmp( strType, "Attr" ) == 0 )
 				return eAttr;
 			return eUnknow;
 		};
 		if( !IsEnumsByType( str ) )
 		{
-			isEnum = false; 
+			isEnum = false;
 			return FnGetESchemaType( str.c_str() );
 		}
 		else

@@ -1,40 +1,7 @@
 #ifndef _MACRO_DEFINE_H
 #define _MACRO_DEFINE_H
 
-#if defined( WIN32 ) || defined( WIN64 )
-#	define WINDOWS
-#endif
-
-#ifdef _WINDOWS
-#	pragma message( __FILE__ " using visual studio" )
-#elif defined( __GNUC__ )
-#	pragma message( "using gnuc" )
-#	define __cdecl
-#else
-#	pragma message( "using other" )
-#endif
-
-#ifdef WINDOWS
-#	define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#	define NOMINMAX
-#	include <Windows.h>
-#	include <crtdefs.h>
-
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <inttypes.h>
-
-#if defined( _DEBUG ) && defined(WINDOWS)
-#	define XGC_NEW new ( _NORMAL_BLOCK, __FILE__, __LINE__ )
-#else
-#	define XGC_NEW new
-#endif
+#include "config.h"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 // 安全删除定义
@@ -49,7 +16,7 @@
 
 #ifndef SAFE_DELETE_ARRAY
 #	define SAFE_DELETE_ARRAY( p )	do{delete[] (p); (p) = NULL;}while(false);
-#endif 
+#endif
 
 #ifndef SAFE_RELEASE
 #	define SAFE_RELEASE( p )		do{if(p){ (p)->Release(); (p) = NULL; }}while(false);
@@ -58,12 +25,7 @@
 #define SUB(x,y) ((x)=(x)>(y)? ((x)-(y)): 0)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
-
-#ifndef XGC_INLINE
-#	define XGC_INLINE	__inline
-#endif
-
-#define XGC_UNREFERENCED_PARAMETER(P)          (P)
+#define XGC_UNREFERENCED_PARAMETER(P) (P)
 
 #if defined( _MSC_VER )
 #	if _MSC_VER >= 1600
@@ -79,17 +41,6 @@
 #	endif
 #endif
 
-#define xgc_invalid_handle INVALID_HANDLE_VALUE
-#if defined( _WINDOWS )
-#	ifndef MAKEWORD
-#		define MAKEWORD(a, b)      ((WORD)(((BYTE)(((DWORD_PTR)(a)) & 0xff)) | ((WORD)((BYTE)(((DWORD_PTR)(b)) & 0xff))) << 8))
-#	endif
-
-#	ifndef MAKELONG
-#		define MAKELONG(a, b)      ((LONG)(((WORD)(((DWORD_PTR)(a)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(b)) & 0xffff))) << 16))
-#	endif
-#endif
-
 #define XGC_MAKESW(a, b) ( ( (xgc_uint16(a) ) & 0xff)       | ( ( xgc_uint16(b) & 0xff ) << 8 ) )
 #define XGC_MAKEDW(a, b) ( ( (xgc_uint32(a) ) & 0xffff)     | ( ( xgc_uint32(b) & 0xffff) << 16 ) )
 #define XGC_MAKEQW(a, b) ( ( (xgc_uint64(a) ) & 0xffffffff) | ( ( xgc_uint64(b) & 0xffffffff) << 32 ) )
@@ -102,11 +53,11 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 // 定义字符串处理宏
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
-#	define INCSZ( pch )			( pch = (xgc_lpstr)_mbsinc( (xgc_byte const*)pch ) )
-#	define INCNSZ( pch, count )	( pch = _mbsninc( pch, count ) )
-#	define CMPSZ( pch1, pch2 )	( _mbccmp( pch1, ( xgc_lpcwstr )pch2 ) == 0 )
-#	define CPYSZ( pch1, pch2 )	( _mbccpy( pch1, pch2 ) )
-#	define DEFCH( ch )			( ( xgc_bytecptr )&ch[0] )
+#define INCSZ( pch )			( pch = (xgc_lpstr)_mbsinc( (xgc_byte const*)pch ) )
+#define INCNSZ( pch, count )	( pch = _mbsninc( pch, count ) )
+#define CMPSZ( pch1, pch2 )		( _mbccmp( pch1, ( xgc_lpcwstr )pch2 ) == 0 )
+#define CPYSZ( pch1, pch2 )		( _mbccpy( pch1, pch2 ) )
+#define DEFCH( ch )				( ( xgc_bytecptr )&ch[0] )
 
 typedef void				xgc_void;
 typedef bool				xgc_bool;
@@ -157,29 +108,14 @@ typedef xgc_lpvoid			xgc_handle;
 #define XGC_STATIC_ASSERT(expr) \
 	do { xgc_char _static_assert[expr] = {0}; } while( false )
 
-#if defined( _WINDOWS ) || defined( WIN32 ) || defined( WIN64 )
-	#define XGC_ASSERT_MSG(expr, msg, ...) \
-		(void)( ( !!( expr ) ) || \
-		( 1 != _CrtDbgReport( _CRT_ASSERT, __FILE__, __LINE__, NULL, msg, __VA_ARGS__ ) ) || \
-		( _CrtDbgBreak(), 0 ) )
-#elif __GNUC__
-	#define XGC_ASSERT_MSG(expr, msg, ...) \
-		if( !expr ) \
-		{\
-			fprintf( stderr, "%s:%d:" ##msg "\n", , __FILE__, __LINE__, __VA_ARGS__ );\
-		}
-#endif
-
 // static warning
 #define attention( describe ) message( __FILE__ "(" XGC_TOSTRING(__LINE__) "): 注意：" describe )
 
 // 使用举例
 // #pragma attention( "test todo" )
 
-#include "logger.h"
-
 #ifdef _DEBUG
-#	define XGC_ASSERT(expr)						XGC_ASSERT_MSG(expr,#expr,)
+#	define XGC_ASSERT(expr)						XGC_ASSERT_MSG(expr,#expr,0)
 #	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); return ret; }
 #	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); throw( ret ); }
 #	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); break; }
@@ -229,12 +165,10 @@ typedef xgc_lpvoid			xgc_handle;
 #define XGC_ADD_FLAGS(v,flags)	(((v)|(flags)))
 #define XGC_CLR_FLAGS(v,flags)	(((v)&(~(flags))))
 
-#define XGC_ALIGNMENT(size, alignment) (((size) + (alignment) - 1) & ~((alignment)-1))
+#define XGC_ALIGNOF(_Size, _Alignment) (((_Size) + (_Alignment) - 1) & ~((_Alignment)-1))
+#define XGC_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
 
-#define XGC_COUNTOF _countof
-#define xgc_countof _countof
-
-#define XGC_CHECK_ARRAY_INDEX( ARRAY_NAME, ARRAY_INDEX ) (ARRAY_INDEX < XGC_COUNTOF(ARRAY_NAME) && ARRAY_INDEX >= 0)
+#define XGC_CHECK_ARRAY_INDEX( _Array, _Index ) (_Index < XGC_COUNTOF(_Array) && _Index >= 0)
 
 #define XGC_MIN( a, b )	((a)>(b)?(b):(a))
 #define XGC_MAX( a, b )	((a)<(b)?(b):(a))

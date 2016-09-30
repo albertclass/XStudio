@@ -2,6 +2,10 @@
 #include "allocator.h"
 #include <bitset>
 
+#ifndef UCHAR_MAX
+#	define UCHAR_MAX 255
+#endif
+
 namespace xgc
 {
 	namespace common
@@ -822,8 +826,8 @@ namespace xgc
 				}
 			}
 			else if( allocChunk_ == emptyChunk_ )
-				// detach emptyChunk_ from allocChunk_, because after 
-				// calling allocChunk_->Allocate(blockSize_); the chunk 
+				// detach emptyChunk_ from allocChunk_, because after
+				// calling allocChunk_->Allocate(blockSize_); the chunk
 				// is no longer empty.
 				emptyChunk_ = NULL;
 
