@@ -1,9 +1,12 @@
+#include "defines.h"
+#include "exports.h"
+#include <functional>
+#include <mutex>
+#include <thread>
+
 #include "filewatcher.h"
 #include "xsystem.h"
 #include "datetime.h"
-
-#include <mutex>
-#include <thread>
 
 namespace xgc
 {

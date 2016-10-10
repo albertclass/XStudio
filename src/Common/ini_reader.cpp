@@ -535,7 +535,7 @@ namespace xgc
 
 						bSearch = false;
 					}
-					else if( *lpValue == '.' && nMem < xgc_countof( loMem ) )
+					else if( *lpValue == '.' && nMem < XGC_COUNTOF( loMem ) )
 					{
 						loMem[nMem++].assign( lpMem, lpValue );
 						lpMem = lpValue + 1;

@@ -32,9 +32,6 @@
 #ifndef ___SHA1_HDR___
 #define ___SHA1_HDR___
 
-#include "exports.h"
-#define STRING_TYPE_LEN (-1)
-
 namespace xgc
 {
 	namespace Encryption

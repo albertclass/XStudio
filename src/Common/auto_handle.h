@@ -206,7 +206,7 @@ namespace xgc
 				chunk* pChunk = mCurrentChunk;
 
 				// 先确定游标是否合法
-				if( pChunk->cursor >= xgc_countof( pChunk->ptr ) )
+				if( pChunk->cursor >= XGC_COUNTOF( pChunk->ptr ) )
 				{
 					pChunk->cursor = 0;
 					// 开始游历Chunk
@@ -230,7 +230,7 @@ namespace xgc
 				// 找一个可用的位置
 				while( pChunk->ptr[pChunk->cursor] )
 				{
-					if( ++pChunk->cursor >= xgc_countof( pChunk->ptr ) )
+					if( ++pChunk->cursor >= XGC_COUNTOF( pChunk->ptr ) )
 					{
 						pChunk->cursor = 0;
 						do

@@ -1,4 +1,6 @@
 #include "xbuffer.h"
+
+#include "logger.h"
 #include "datetime.h"
 #include "xutility.h"
 

@@ -6,7 +6,7 @@
 #	define _WINDOWS
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #	pragma message( __FILE__ " using visual studio" )
 #elif defined( __GNUC__ )
 #	pragma message( "using gnuc" )
@@ -15,14 +15,15 @@
 #	pragma message( "using other" )
 #endif
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #	define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #	define NOMINMAX
 #	include <Windows.h>
-#	include <crtdefs.h>
+#endif
 
+#ifdef _MSC_VER
+#	include <crtdefs.h>
 #	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
 #	include <crtdbg.h>
 #endif
 
@@ -33,13 +34,13 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#if defined( _DEBUG ) && defined(_WINDOWS)
+#if defined( _DEBUG ) && defined(_MSC_VER)
 #	define XGC_NEW new ( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #else
 #	define XGC_NEW new
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #	define XGC_INLINE __inline
 #elif __GNUC__
 #	define XGC_INLINE inline
@@ -51,7 +52,7 @@
 #	define xgc_invalid_handle (-1)
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #	define XGC_ASSERT_MSG(expr, msg, ...) \
 		(void)( ( !!( expr ) ) || \
 		( 1 != _CrtDbgReport( _CRT_ASSERT, __FILE__, __LINE__, NULL, msg, ##__VA_ARGS__ ) ) || \
@@ -144,5 +145,16 @@ XGC_INLINE int snprintf_s( char (&buffer)[size], size_t count, const char * form
 	va_end( args );
 	return write;
 }
-#endif
+
+// low level file function
+#define _open open
+#define _read read
+#define _write write
+#define _close close
+
+#define _fstat fstat
+#define _stat stat
+
+#endif //__GNUC__
+
 #endif //_CONFIG_H_

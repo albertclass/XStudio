@@ -208,7 +208,7 @@ namespace xgc
 					--cursor;
 				}
 
-				if( it < xgc_countof( time ) )
+				if( it < XGC_COUNTOF( time ) )
 				{
 					time[it] = (xgc_uint16) strtoul( cursor, xgc_nullptr, 10 );
 				}

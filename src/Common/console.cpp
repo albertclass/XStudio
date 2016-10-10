@@ -276,7 +276,7 @@ namespace xgc
 
 			FillConsoleOutputAttribute( active_buffer[1], 0, cols * rows, COORD { 0, 0 }, &nNum );
 
-			for( window_t i = 0; _sort_window[i] != INVALID_WINDOW_INDEX && i < xgc_countof( _sort_window ); ++i )
+			for( window_t i = 0; _sort_window[i] != INVALID_WINDOW_INDEX && i < XGC_COUNTOF( _sort_window ); ++i )
 			{
 				redraw_window( _sort_window[i], active_buffer[1], true );
 			}
@@ -959,7 +959,7 @@ namespace xgc
 				xgc_bool found = false;
 
 				// 窗口激活算法， 窗口在_sort_window数组中最后一个会显示在最上层
-				for( int i = 0; i < xgc_countof( _sort_window ); ++i )
+				for( int i = 0; i < XGC_COUNTOF( _sort_window ); ++i )
 				{
 					if( found )
 					{
@@ -998,7 +998,7 @@ namespace xgc
 			if( _text_window_count == 0 )
 				return false;
 
-			if( _text_window_count > xgc_countof( _sort_window ) )
+			if( _text_window_count > XGC_COUNTOF( _sort_window ) )
 				return false;
 
 			if( window != _sort_window[_text_window_count - 1] )

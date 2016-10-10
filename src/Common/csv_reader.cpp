@@ -5,8 +5,11 @@
 #include <fcntl.h>
 #include <string.h>
 
-#ifdef WINDOWS
+#if defined( _WINDOWS )
 #include <io.h>
+#elif defined( __GNUC__ )
+#include <malloc.h>
+#include <unistd.h>
 #endif
 
 namespace xgc
@@ -63,8 +66,13 @@ namespace xgc
 				chunk[idx] = chk = (xgc_lpvoid) malloc( 0x1000 * sizeof( xgc_lpvoid ) * cols );
 				if( chk == xgc_nullptr )
 					return xgc_nullptr;
+				#if defined(__GNUC__)
+				memset( chk, 0, malloc_usable_size( chk ) );
+				#elif defined(_WINDOWS)
 				memset( chk, 0, _msize( chk ) );
+				#endif
 			}
+
 			xgc_size offset = ( nRow & 0x0fff );
 			xgc_lpstr* cell = (xgc_lpstr*) chk;
 
@@ -162,12 +170,13 @@ namespace xgc
 
 			// 读取文件数据
 			int fd = -1;
+			#if defined(_WINDOWS)
 			_sopen_s( &fd, pathname, O_RDONLY | O_BINARY, SH_DENYWR, S_IREAD );
-			if( fd == -1 )
-			{
-				DWORD dwErr = GetLastError();
-				return false;
-			}
+			#elif defined( __GNUC__ )
+			fd = _open( pathname, O_RDONLY, S_IREAD );
+			#endif
+
+			XGC_ASSERT_RETURN( fd != -1, false );
 
 			struct _stat fst;
 			_fstat( fd, &fst );

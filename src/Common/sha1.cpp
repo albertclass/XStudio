@@ -29,9 +29,12 @@
 		34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
 */
 #pragma warning( disable:4996 )
+#include "defines.h"
+#include "exports.h"
+
+#define STRING_TYPE_LEN (-1)
 
 #include "sha1.h"
-#include "defines.h"
 #include "allocator.h"
 
 #include <memory.h> // Needed for memset and memcpy

@@ -1,4 +1,5 @@
 #include "defines.h"
+#include "exports.h"
 #include "encoding.h"
 
 namespace xgc

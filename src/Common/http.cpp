@@ -1,6 +1,11 @@
-#include "http.h"
+#include "defines.h"
+#include "exports.h"
+#include "logger.h"
+
 #include <wininet.h>
 #pragma comment(lib, "wininet.lib")
+
+#include "http.h"
 
 namespace xgc
 {

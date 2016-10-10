@@ -120,12 +120,12 @@ namespace xgc
 		return true;
 	}
 
-	/// è·å¾—CPUçš„æ ¸æ•°
-	static int get_processor_number()
+	/// »ñµÃCPUµÄºËÊı
+	static int32_t get_processor_number()
 	{
 		SYSTEM_INFO info;
 		GetSystemInfo(&info);
-		return (int)info.dwNumberOfProcessors;
+		return (int32_t)info.dwNumberOfProcessors;
 	}
 
 	static int32_t processor_count = get_processor_number();
@@ -133,7 +133,7 @@ namespace xgc
 	static int64_t last_time_ = 0;
 	static int64_t last_system_time_ = 0;
 
-	/// æ—¶é—´è½¬æ¢
+	/// Ê±¼ä×ª»»
 	static uint64_t file_time_2_utc(const FILETIME* ftime)
 	{
 		LARGE_INTEGER li;
