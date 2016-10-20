@@ -4,6 +4,8 @@
 #if defined( WIN32 ) || defined( WIN64 )
 #	define WINDOWS
 #	define _WINDOWS
+#elif defined( LINUX32 ) || defined( LINUX64 )
+#	define _LINUX
 #endif
 
 #ifdef _MSC_VER
@@ -21,6 +23,10 @@
 #	include <Windows.h>
 #endif
 
+#ifdef _LINUX
+#	include <sys/time.h>
+#endif
+
 #ifdef _MSC_VER
 #	include <crtdefs.h>
 #	define _CRTDBG_MAP_ALLOC
@@ -32,6 +38,15 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+
+
+#if defined( __GNUC__ )
+#	define __STDC_FORMAT_MACROS
+#	include <linux/limits.h>
+#	define _MAX_PATH 	PATH_MAX
+#	define _MAX_FNAME 	NAME_MAX
+#endif
+
 #include <inttypes.h>
 
 #if defined( _DEBUG ) && defined(_MSC_VER)
@@ -41,14 +56,16 @@
 #endif
 
 #ifdef _MSC_VER
-#	define XGC_INLINE __inline
-#elif __GNUC__
 #	define XGC_INLINE inline
+#	define XGC_DECLSPEC_THREAD __declspec( thread )
+#elif __GNUC__
+#	define XGC_INLINE __inline
+#	define XGC_DECLSPEC_THREAD __thread
 #endif
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 #	define xgc_invalid_handle INVALID_HANDLE_VALUE
-#elif defined( __GNUC__ )
+#elif defined(_LINUX)
 #	define xgc_invalid_handle (-1)
 #endif
 
@@ -63,6 +80,10 @@
 		{\
 			fprintf( stderr, "%s:%d:" msg "\n", __FILE__, __LINE__, ##__VA_ARGS__ );\
 		}
+#endif
+
+#ifdef _LINUX
+typedef int errno_t;
 #endif
 
 ///////////////////////////////////////////////////////////
@@ -144,6 +165,41 @@ XGC_INLINE int snprintf_s( char (&buffer)[size], size_t count, const char * form
 	int write = vsnprintf( buffer, count, format, args );
 	va_end( args );
 	return write;
+}
+
+XGC_INLINE errno_t strcpy_s( char *destination, size_t count, const char *source )
+{
+	if( nullptr == source )
+		return -1;
+
+	size_t i = 0;
+	while( i < count - 1 && source[i] )
+	{
+		destination[i] = source[i];
+		++i;
+	}	
+
+	destination[i] = 0;
+
+	return 0;
+}
+
+template< size_t count >
+XGC_INLINE errno_t strcpy_s( char (&destnation)[count], const char *source )
+{
+	return strcpy_s( destnation, count, source );
+}
+///////////////////////////////////////////////////////////////////////////
+/// file operator
+///////////////////////////////////////////////////////////////////////////
+XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
+{
+	FILE *file = fopen( filename, mode );
+	if( file == nullptr )
+		return -1;
+	
+	*fp = file;
+	return 0;
 }
 
 // low level file function

@@ -9,12 +9,12 @@ solution "xgc"
         flags { "NoIncrementalLink", "LinkTimeOptimization" }
 
 project "Common"
-    kind "StaticLib"
+    kind "SharedLib"
     language "C++"
     location "../prj/Common"
     objdir "../obj"
 
-    flags { "C++14", "MultiProcessorCompile" }
+    flags { "C++11", "MultiProcessorCompile" }
 
     files {
         "Common/**.h",
@@ -29,27 +29,24 @@ project "Common"
     }
 
     filter "configurations:Debug"
-        kind "SharedLib"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
         flags {"Symbols"}
 
     filter "configurations:Release"
-        kind "SharedLib"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
 
     filter "system:windows"
-        system "Windows"
         architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
 	    targetdir "../lib/$(Configuration)"
 
-    filter { "system:linux", "configurations:Debug" }
-        system "Linux"
+    filter "system:linux"
         architecture "x64"
+        defines { "LINUX64" }
+
+    filter { "system:linux", "configurations:Debug" }
         targetdir "../lib/debug"
 
     filter { "system:linux", "configurations:Release" }
-        system "Linux"
-        architecture "x64"
         targetdir "../lib/release"

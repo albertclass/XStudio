@@ -7,23 +7,21 @@
 #define _DEBUGER_H_
 #include "defines.h"
 #include "exports.h"
-
 #include "datetime.h"
-#include "exception.h"
 
+#include <thread>
 #include <mutex>
 
 #define WATCH_STACKFRAME_MAX (64)
 
 // 单线程检查，将此宏写在只能单线程调用的函数中即可，若有多线程调用则会在跨线程时报警。
 #define XGC_SINGLE_THREAD_CHECKER( FMT, ... )\
-	static DWORD __single_thread_checker__ = GetCurrentThreadId();\
-	if( __single_thread_checker__ != GetCurrentThreadId() )\
+	static thread::id __single_thread_checker__ = this_thread::get_id();\
+	if( __single_thread_checker__ != this_thread::get_id() )\
 	{\
-		SYS_WARNING( "Current Thread %u Previous Thread %u >" FMT, \
-		__single_thread_checker__, \
-		GetCurrentThreadId(), \
-		__VA_ARGS__ );\
+		std::string_stream ss; \
+		ss<<"Current Thread "<<__single_thread_checker__<<"Previous Thread "<<this_thread::get_id(); \\
+		SYS_WARNING( "%s" FMT, ss.str().c_str(), __VA_ARGS__ ); \
 		DumpStackFrame();\
 	}\
 
@@ -84,7 +82,6 @@ namespace xgc
 	///
 	class COMMON_API InvokeWatcherMgr
 	{
-		friend static unsigned int __stdcall CheckThread( LPVOID lpParams );
 		friend COMMON_API InvokeWatcher* getInvokeWatcher();
 	public:
 		InvokeWatcherMgr();
@@ -108,6 +105,9 @@ namespace xgc
 		///
 		xgc_bool IsFinish();
 
+	protected:
+		void checkThread();
+
 	private:
 		typedef std::unique_lock< std::mutex > autolock ;
 		///
@@ -116,10 +116,10 @@ namespace xgc
 		///
 		xgc_void InsertInvokeWatcher( InvokeWatcher* pWatcher );
 
-		xgc_handle		mThread;
-		InvokeWatcher	*pInvokeWatcherHead;
+		std::thread		mThread;
 		std::mutex		mSection;
 
+		InvokeWatcher	*pInvokeWatcherHead;
 		xgc_bool		mFinished;
 	};
 
@@ -138,10 +138,9 @@ namespace xgc
 		InvokeWatcher *Next() { return mNext; }
 		void FroceWrite( xgc_lpcstr file, xgc_uint32 uDelaySeconds );
 
-		friend class COMMON_API InvokeWatcherMgr;
-		friend struct COMMON_API InvokeWatcherWarp;
+		friend class InvokeWatcherMgr;
+		friend struct InvokeWatcherWarp;
 		friend COMMON_API InvokeWatcher* getInvokeWatcher();
-		friend static unsigned int __stdcall CheckThread( LPVOID lpParams );
 
 		xgc_uint32 AddRef() { ++mRef; return mRef; }
 		xgc_uint32 Release() { --mRef; return mRef; }
@@ -156,7 +155,6 @@ namespace xgc
 			volatile xgc_time64 nTime;
 			xgc_uint32 nLine;
 		}mStack[WATCH_STACKFRAME_MAX];
-
 
 		datetime	mLastUpdate;
 		xgc_uint32	mCallDeep;
@@ -245,7 +243,7 @@ namespace xgc
 	/// 设置超时日志
 	/// [12/3/2014] create by albert.xu
 	///
-	COMMON_API xgc_void SetDebugerTimeout( xgc_time32 millseconds );
+	COMMON_API xgc_void SetDebugerTimeout( xgc_time64 millseconds );
 
 	///
 	/// 记录内存使用信息

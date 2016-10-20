@@ -1,51 +1,78 @@
-#pragma once
 #ifndef _DATETIME_H_
 #define _DATETIME_H_
 
-#include <time.h>
-#include <ratio>
+#pragma once
 
 #include "defines.h"
 #include "exports.h"
+#include "xutility.h"
+
+#include <time.h>
 
 namespace xgc
 {
 	namespace common
 	{
-		const xgc_uint64 _Time_T_Diff = 116444736000000000i64;
+		const uint64_t _Time_T_Diff = 116444736000000000ULL;
 		struct COMMON_API systime
 		{
-			xgc_uint16 year;
-			xgc_uint16 month;
-			xgc_uint16 dayofweak;
-			xgc_uint16 day;
-			xgc_uint16 hour;
-			xgc_uint16 minute;
-			xgc_uint16 seconds;
-			xgc_uint16 milliseconds;
+			uint16_t year;
+			uint16_t month;
+			uint16_t dayofweak;
+			uint16_t day;
+			uint16_t hour;
+			uint16_t minute;
+			uint16_t seconds;
+			uint16_t milliseconds;
 		};
 
 		union COMMON_API filetime
 		{
-			volatile xgc_uint64 qwDateTime;
+			volatile uint64_t dt;
 			
-			struct _
+			struct
 			{
-				volatile xgc_uint32 loDateTime;
-				volatile xgc_uint32 hiDateTime;
+				volatile uint32_t lo;
+				volatile uint32_t hi;
 			};
 		};
 
+		#ifdef __GNUC__
+		error_t localtime_s( struct tm *tt, const time_t *t )
+		{
+			auto ptt = localtime( t );
+			if( tt && ptt )
+			{
+				*tt = *ptt;
+				return 0;
+			}
+
+			return -1;
+		}
+
+		error_t gmtime_s( struct tm *tt, const time_t *t )
+		{
+			auto ptt = gmtime( t );
+			if( tt && ptt )
+			{
+				*tt = *ptt;
+				return 0;
+			}
+
+			return -1;
+		}
+		#endif
+
 		struct timespan
 		{
-			volatile xgc_int64 span;
+			volatile int64_t span;
 
 			timespan()
 				: span( 0 )
 			{
 			}
 
-			explicit timespan( xgc_int64 _span )
+			explicit timespan( int64_t _span )
 				: span( _span )
 			{
 			}
@@ -61,7 +88,7 @@ namespace xgc
 				return *this;
 			}
 
-			timespan& operator = ( xgc_int64 _span )
+			timespan& operator = ( int64_t _span )
 			{
 				span = _span;
 				return *this;
@@ -109,25 +136,25 @@ namespace xgc
 				return *this;
 			}
 
-			timespan& operator *= ( xgc_real64 scale )
+			timespan& operator *= ( double scale )
 			{
-				span = xgc_int64( span * scale );
+				span = int64_t( span * scale );
 				return *this;
 			}
 
-			timespan& operator /= ( xgc_real64 scale )
+			timespan& operator /= ( double scale )
 			{
-				span = xgc_int64( span / scale );
+				span = int64_t( span / scale );
 				return *this;
 			}
 
-			timespan& operator *= ( xgc_int64 scale )
+			timespan& operator *= ( int64_t scale )
 			{
 				span *= scale;
 				return *this;
 			}
 
-			timespan& operator /= ( xgc_int64 scale )
+			timespan& operator /= ( int64_t scale )
 			{
 				span /= scale;
 				return *this;
@@ -137,23 +164,25 @@ namespace xgc
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_days( xgc_int64 days )
+			static timespan from_days( int64_t days )
 			{ 
 				return timespan( days * ( 24 * 60 * 60 * 10000000ULL ) );
 			}
+
 			///
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_hour( xgc_int64 hour )
+			static timespan from_hour( int64_t hour )
 			{ 
 				return timespan( hour * ( 60 * 60 * 10000000ULL ) );
 			}			
+
 			///
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_minutes( xgc_int64 minutes )
+			static timespan from_minutes( int64_t minutes )
 			{ 
 				return timespan( minutes * ( 60 * 10000000ULL ) );
 			}
@@ -162,7 +191,7 @@ namespace xgc
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_seconds( xgc_int64 seconds )
+			static timespan from_seconds( int64_t seconds )
 			{
 				return timespan( seconds * 10000000ULL );
 			}
@@ -171,7 +200,7 @@ namespace xgc
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_milliseconds( xgc_int64 milliseconds )
+			static timespan from_milliseconds( int64_t milliseconds )
 			{
 				return timespan( milliseconds * 10000ULL );
 			}
@@ -182,7 +211,7 @@ namespace xgc
 			///
 			static timespan convert( xgc_lpcstr str )
 			{
-				xgc_uint16 time[] = { 0, 0, 0, 0 };
+				uint16_t time[] = { 0, 0, 0, 0 };
 				xgc_lpcstr cursor = str + strlen( str );
 				xgc_lpcstr splitc = ":. ";
 
@@ -195,13 +224,13 @@ namespace xgc
 					{
 						case '.':
 						it = XGC_RNG( it, 0, 0 );
-						time[it++] = (xgc_uint16) strtoul( cursor + 1, xgc_nullptr, 10 );
+						time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );
 						break;
 						case ' ':
 						it = 3;
 						case ':':
 						it = XGC_RNG( it, 1, 3 );
-						time[it++] = (xgc_uint16) strtoul( cursor + 1, xgc_nullptr, 10 );
+						time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );
 						break;
 					}
 
@@ -210,10 +239,10 @@ namespace xgc
 
 				if( it < XGC_COUNTOF( time ) )
 				{
-					time[it] = (xgc_uint16) strtoul( cursor, xgc_nullptr, 10 );
+					time[it] = str2numeric<uint16_t>( cursor, xgc_nullptr, 10 );
 				}
 
-				return timespan( xgc_int64( ( ( ( ( time[3] * 60 + time[2] ) * 60 ) + time[1] ) * 1000 + time[0] ) * 10000ULL ) );
+				return timespan( int64_t( ( ( ( ( time[3] * 60 + time[2] ) * 60 ) + time[1] ) * 1000 + time[0] ) * 10000ULL ) );
 			}
 
 			// 时间片段转为单位时间
@@ -237,51 +266,67 @@ namespace xgc
 				return xgc_int32( span / 10000000ULL ); 
 			}
 
-			xgc_int64 to_millisecnods()const 
+			int64_t to_millisecnods()const 
 			{ 
-				return xgc_int64( span / 10000ULL );
+				return int64_t( span / 10000ULL );
 			}
 		};
 
 		struct datetime
 		{
-			filetime mTime; // is mill seconds
+			filetime storage; // is mill seconds
 
-			//////////////////////////////////////////////////////////////////////////
-			// [1/7/2014 jianglei.kinly]
-			// 当前时间构造
-			//////////////////////////////////////////////////////////////////////////
+			///
+			/// [1/7/2014 jianglei.kinly]
+			/// \brief 当前时间构造
+			///
 			datetime()
-				: mTime( { _Time_T_Diff } )
+				: storage( { _Time_T_Diff } )
 			{
 			}
 
 			datetime( filetime ft )
-				: mTime( ft )
+				: storage( ft )
 			{
 			}
 
 			datetime( systime st )
 			{
-				BOOL bRet = 0;
-				bRet = SystemTimeToFileTime( (LPSYSTEMTIME) &st, (LPFILETIME) &mTime );
-				XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
-				bRet = LocalFileTimeToFileTime( (LPFILETIME) &mTime, (LPFILETIME) &mTime );
-				XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
+				#ifdef _WINDOWS
+					BOOL bRet = 0;
+					bRet = SystemTimeToFileTime( (LPSYSTEMTIME) &st, (LPFILETIME) &storage );
+					XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
+					bRet = LocalFileTimeToFileTime( (LPFILETIME) &storage, (LPFILETIME) &storage );
+					XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
+				#elif defined( _LINUX )
+					struct tm gtime = {
+						st.seconds,
+						st.minute,
+						st.hour,
+						st.day,
+						st.month - 1,
+						st.year - 1900,
+						st.dayofweak,
+						0,
+						0
+					};
+
+					storage.dt = (uint64_t) mktime( &gtime ) * 10000000ULL + st.milliseconds * 10000ULL;
+				#endif
 			}
 
-			//////////////////////////////////////////////////////////////////////////
-			// [1/7/2014 jianglei.kinly]
-			// 拷贝构造
-			//////////////////////////////////////////////////////////////////////////
+			///
+			/// [1/7/2014 jianglei.kinly]
+			/// \brief 拷贝构造
+			///
 			datetime( const datetime& _datetime )
-				: mTime( _datetime.mTime )
+				: storage( _datetime.storage )
 			{
 			}
 
 			datetime& operator = ( const datetime& _datetime )
 			{
-				mTime = _datetime.mTime;
+				storage = _datetime.storage;
 				return *this;
 			}
 
@@ -291,7 +336,7 @@ namespace xgc
 			///
 			xgc_time64 time()
 			{
-				return mTime.qwDateTime % ( 24 * 60 * 60 * 10000000ULL );
+				return storage.dt % ( 24 * 60 * 60 * 10000000ULL );
 			}
 
 			///
@@ -300,7 +345,7 @@ namespace xgc
 			///
 			xgc_time64 date()
 			{
-				return mTime.qwDateTime / ( 24 * 60 * 60 * 10000000ULL ) * ( 24 * 60 * 60 * 10000000ULL );
+				return storage.dt / ( 24 * 60 * 60 * 10000000ULL ) * ( 24 * 60 * 60 * 10000000ULL );
 			}
 
 			///
@@ -309,7 +354,7 @@ namespace xgc
 			///
 			xgc_void setdate( datetime dt )
 			{
-				mTime.qwDateTime = time() + dt.date();
+				storage.dt = time() + dt.date();
 			}
 
 			///
@@ -318,34 +363,34 @@ namespace xgc
 			///
 			xgc_void settime( datetime dt )
 			{
-				mTime.qwDateTime = date() + dt.time();
+				storage.dt = date() + dt.time();
 			}
 
 			xgc_time64 to_ctime() const
 			{
-				if( mTime.qwDateTime >= _Time_T_Diff )
-					return ( mTime.qwDateTime - _Time_T_Diff ) / 10000000ULL;
+				if( storage.dt >= _Time_T_Diff )
+					return ( storage.dt - _Time_T_Diff ) / 10000000ULL;
 				
 				return 0;
 			}
 
 			xgc_time64 to_ftime() const
 			{
-				return mTime.qwDateTime;
+				return storage.dt;
 			}
 
 			xgc_time64 to_milliseconds() const
 			{
-				if( mTime.qwDateTime >= _Time_T_Diff )
-					return ( mTime.qwDateTime - _Time_T_Diff ) / 10000ULL;
+				if( storage.dt >= _Time_T_Diff )
+					return ( storage.dt - _Time_T_Diff ) / 10000ULL;
 
 				return 0;
 			}
 
 			xgc_time64 to_microseconds() const
 			{
-				if( mTime.qwDateTime >= _Time_T_Diff )
-					return ( mTime.qwDateTime - _Time_T_Diff ) / 10ULL;
+				if( storage.dt >= _Time_T_Diff )
+					return ( storage.dt - _Time_T_Diff ) / 10ULL;
 
 				return 0;
 			}
@@ -359,7 +404,7 @@ namespace xgc
 			static datetime from_ftime( xgc_time64 ftime )
 			{
 				filetime ft;
-				ft.qwDateTime = ftime;
+				ft.dt = ftime;
 				return datetime( ft );
 			}
 
@@ -369,7 +414,7 @@ namespace xgc
 				return datetime( ft );
 			}
 
-			static datetime from_milliseconds( xgc_uint64 millseconds )
+			static datetime from_milliseconds( uint64_t millseconds )
 			{
 				filetime ft = { millseconds * 10000ULL + _Time_T_Diff };
 				return datetime( ft );
@@ -381,7 +426,7 @@ namespace xgc
 			//////////////////////////////////////////////////////////////////////////
 			XGC_INLINE xgc_bool operator == ( const datetime& rhs )const
 			{
-				return CompareFileTime( (LPFILETIME) &mTime, (LPFILETIME) &rhs.mTime ) == 0;
+				return storage.dt == rhs.storage.dt;
 			}
 
 			XGC_INLINE xgc_bool operator != ( const datetime& rhs )const
@@ -391,7 +436,7 @@ namespace xgc
 
 			XGC_INLINE xgc_bool operator < ( const datetime& rhs )const
 			{
-				return CompareFileTime( (LPFILETIME) &mTime, (LPFILETIME) &rhs.mTime ) < 0;
+				return storage.dt < rhs.storage.dt;
 			}
 
 			XGC_INLINE xgc_bool operator <= ( const datetime& rhs )const
@@ -401,7 +446,7 @@ namespace xgc
 
 			XGC_INLINE xgc_bool operator >( const datetime& rhs )const
 			{
-				return CompareFileTime( (LPFILETIME) &mTime, (LPFILETIME) &rhs.mTime ) > 0;
+				return storage.dt > rhs.storage.dt;
 			}
 
 			XGC_INLINE xgc_bool operator >= ( const datetime& rhs )const
@@ -415,7 +460,7 @@ namespace xgc
 			///
 			XGC_INLINE datetime& operator += ( const timespan& rhs )
 			{
-				mTime.qwDateTime += rhs.span;
+				storage.dt += rhs.span;
 				return *this;
 			}
 
@@ -425,7 +470,7 @@ namespace xgc
 			///
 			XGC_INLINE datetime& operator -= ( const timespan& rhs )
 			{
-				mTime.qwDateTime -= rhs.span;
+				storage.dt -= rhs.span;
 				return *this;
 			}
 
@@ -435,12 +480,23 @@ namespace xgc
 			///
 			XGC_INLINE systime to_systime() const
 			{
-				systime st = { 0, 0, 0, 0, 0, 0, 0, 0 };
-				filetime ft = { 0 };
-				FileTimeToLocalFileTime( (LPFILETIME) &mTime, (LPFILETIME) &ft );
-				FileTimeToSystemTime( (LPFILETIME) &ft, (LPSYSTEMTIME) &st );
+				time_t t = to_ctime();
 
-				return st;
+				tm gtime = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+				
+				if( 0 != localtime_s( &gtime, &t ) )
+					return { 0,0,0,0,0,0,0,0 };
+
+				return { 
+					uint16_t(gtime.tm_year + 1900),
+					uint16_t(gtime.tm_mon + 1),
+					uint16_t(gtime.tm_wday), 
+					uint16_t(gtime.tm_mday), 
+					uint16_t(gtime.tm_hour), 
+					uint16_t(gtime.tm_min), 
+					uint16_t(gtime.tm_sec), 
+					uint16_t(to_milliseconds() - t * 1000)
+				};
 			}
 
 			///
@@ -449,11 +505,23 @@ namespace xgc
 			///
 			XGC_INLINE systime to_utctime() const
 			{
-				systime st = { 0, 0, 0, 0, 0, 0, 0, 0 };
-				filetime ft = { 0 };
-				FileTimeToSystemTime( (LPFILETIME) &ft, (LPSYSTEMTIME) &st );
+				time_t t = to_ctime();
 
-				return st;
+				tm gtime = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+				if( 0 != gmtime_s( &gtime, &t ) )
+					return { 0,0,0,0,0,0,0,0 };
+				
+				return {
+					uint16_t(gtime.tm_year + 1900),
+					uint16_t(gtime.tm_mon + 1),
+					uint16_t(gtime.tm_wday), 
+					uint16_t(gtime.tm_mday), 
+					uint16_t(gtime.tm_hour), 
+					uint16_t(gtime.tm_min), 
+					uint16_t(gtime.tm_sec), 
+					uint16_t(to_milliseconds() - t * 1000)
+				};
 			}
 
 			///
@@ -524,7 +592,7 @@ namespace xgc
 					xgc_lpcstr cursor = str + strlen( str );
 					xgc_lpcstr splitc = "-:. ";
 
-					xgc_uint16 *ptr[] = { &st.milliseconds, &st.seconds, &st.minute, &st.hour, &st.day, &st.month, &st.year };
+					uint16_t *ptr[] = { &st.milliseconds, &st.seconds, &st.minute, &st.hour, &st.day, &st.month, &st.year };
 					xgc_size idt = 0;
 					while( cursor > str )
 					{
@@ -534,17 +602,17 @@ namespace xgc
 						{
 							case '.':
 							idt = XGC_RNG( idt, 0, 0 );
-							*ptr[idt++] = (xgc_uint16) strtoul( cursor + 1, xgc_nullptr, 10 );
+							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
 							break;
 							case ' ':
 							idt = 3;
 							case ':':
 							idt = XGC_RNG( idt, 1, 3 );
-							*ptr[idt++] = (xgc_uint16) strtoul( cursor + 1, xgc_nullptr, 10 );
+							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
 							break;
 							case '-':
 							idt = XGC_RNG( idt, 4, 6 );
-							*ptr[idt++] = (xgc_uint16) strtoul( cursor + 1, xgc_nullptr, 10 );
+							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
 							break;
 						}
 
@@ -553,7 +621,7 @@ namespace xgc
 
 					if( idt < XGC_COUNTOF( ptr ) )
 					{
-						*ptr[idt] = (xgc_uint16) strtoul( cursor, xgc_nullptr, 10 );
+						*ptr[idt] = (uint16_t) strtoul( cursor, xgc_nullptr, 10 );
 					}
 				}
 				return datetime( st );
@@ -562,19 +630,19 @@ namespace xgc
 
 		XGC_INLINE datetime operator + ( const datetime& dt, const timespan& sp )
 		{
-			filetime ft = { dt.mTime.qwDateTime + sp.span };
+			filetime ft = { dt.storage.dt + sp.span };
 			return datetime( ft );
 		}
 
 		XGC_INLINE datetime operator - ( const datetime& dt, const timespan& sp )
 		{
-			filetime ft = { dt.mTime.qwDateTime - sp.span };
+			filetime ft = { dt.storage.dt - sp.span };
 			return datetime( ft );
 		}
 
 		XGC_INLINE timespan operator - ( const datetime& lhs, const datetime& rhs )
 		{
-			return timespan( lhs.mTime.qwDateTime - rhs.mTime.qwDateTime );
+			return timespan( lhs.storage.dt - rhs.storage.dt );
 		}
 
 		XGC_INLINE timespan operator * ( const timespan& lhs, xgc_real64 rhs )
@@ -600,7 +668,14 @@ namespace xgc
 		XGC_INLINE datetime datetime::now()
 		{
 			filetime ft;
+			#if defined(_WINDOWS)
 			GetSystemTimeAsFileTime( (LPFILETIME) &ft );
+			#elif defined(_LINUX)
+			struct timeval v;
+			gettimeofday( &v, xgc_nullptr );
+			ft.dt = v.tv_sec * 10000000ULL + v.tv_usec * 10ULL + _Time_T_Diff;
+			#endif
+
 			return ft;
 		}
 

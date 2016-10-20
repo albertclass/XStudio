@@ -15,6 +15,8 @@
 #include "defines.h"
 #include "exports.h"
 
+#include <random>
+
 namespace xgc
 {
 	///
@@ -119,9 +121,9 @@ namespace xgc
 		return -1;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// string convert to numeric
-	//////////////////////////////////////////////////////////////////////////
+	///
+	/// \brief string convert to numeric
+	///
 	template< class R, typename std::enable_if< std::is_integral< R >::value && std::is_unsigned< R >::value == false, xgc_bool >::type = true >
 	R str2numeric( xgc_lpcstr _value, xgc_lpstr *_next = xgc_nullptr, int _Radix = 10 )
 	{
@@ -140,9 +142,9 @@ namespace xgc
 		return (R) strtod( _value, _next );
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// numeric convert to string
-	//////////////////////////////////////////////////////////////////////////
+	///
+	/// \brief numeric convert to string
+	///
 	template< class T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
@@ -248,5 +250,45 @@ namespace xgc
 	/// \date 2015/12/16 17:00
 	///
 	COMMON_API xgc_bool hex2bin( xgc_lpstr data, xgc_size size, xgc_lpstr out, xgc_size out_size );
+
+	///
+	/// \brief 获取随机数发生引擎
+	/// \author create by albert.xu
+	/// \date 2015/12/16 17:00
+	///
+	COMMON_API std::mt19937& get_random_driver();
+
+	///
+	/// 获取随机数
+	/// \author create by albert.xu
+	/// \date 2015/12/16 17:00
+	///
+	template < class T1, class T2, typename std::enable_if< !std::is_floating_point< T1 >::value && !std::is_floating_point<T2>::value, xgc_bool >::type = true >
+	auto random_range( T1 Min, T2 Max )->decltype( Min + Max )
+	{
+		if( Min == Max )
+			return Min;
+
+		using NewT = decltype( Min + Max );
+
+		if( Min > Max )
+			std::swap( Min, Max );
+
+		return std::uniform_int_distribution<NewT>( Min, Max )( get_random_driver() );
+	}
+
+	template< class T1, class T2, typename std::enable_if< std::is_floating_point< T1 >::value && std::is_floating_point<T2>::value, xgc_bool >::type = true>
+	auto random_range( T1 Min, T2 Max )->decltype( Min + Max )
+	{
+		if( Min == Max ) 
+			return Min;
+
+		using NewT = decltype( Min + Max );
+
+		if( Min > Max ) 
+			std::swap( Min, Max );
+
+		return std::uniform_real_distribution<NewT>( Min, std::nextafter( Max, std::numeric_limits<NewT>::max() ) )(get_random_driver());
+	}
 }
 #endif // _XUTILITY_H_

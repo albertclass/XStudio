@@ -10,6 +10,7 @@
 ///
 ///////////////////////////////////////////////////////////////
 #include "xutility.h"
+#include "time.h"
 
 namespace xgc
 {
@@ -177,6 +178,12 @@ namespace xgc
 			++data;
 		}
 		return true;
+	}
+
+	std::mt19937& get_random_driver()
+	{
+		static std::default_random_engine mt( (xgc_int32) time( xgc_nullptr ) );
+		return mt;
 	}
 
 }

@@ -1,24 +1,18 @@
-#include <process.h>
-#include <time.h>
-#include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include "debuger.h"
 #include "logger.h"
-#include "datetime.h"
-
 #include "xsystem.h"
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 namespace xgc
 {
-	static unsigned int __stdcall CheckThread( LPVOID lpParams );
 	static xgc_char gTimeLogPath[_MAX_PATH] = { 0 };
 	static xgc_time64 gTimeoutSeconds = 500;
 
 	InvokeWatcherMgr::InvokeWatcherMgr()
 		: mFinished( false )
-		, mThread( (xgc_handle) INVALID_HANDLE_VALUE )
 		, pInvokeWatcherHead( xgc_nullptr )
 	{
 	}
@@ -41,9 +35,11 @@ namespace xgc
 		if( !mFinished )
 		{
 			// 创建监控线程
-			mThread = (xgc_handle) _beginthreadex( xgc_nullptr, 0, CheckThread, xgc_nullptr, 0, xgc_nullptr );
-			mFinished = ( mThread == (xgc_handle) INVALID_HANDLE_VALUE );
+			mThread = std::move( std::thread( std::bind( &InvokeWatcherMgr::checkThread, this ) ) );
+
+			mFinished = mThread.native_handle() == 0;
 		}
+
 		return mFinished;
 	}
 
@@ -52,11 +48,7 @@ namespace xgc
 		if( !mFinished )
 		{
 			mFinished = true;
-			if( mThread != INVALID_HANDLE_VALUE )
-			{
-				WaitForSingleObject( (HANDLE) mThread, INFINITE );
-				mThread = xgc_nullptr;
-			}
+			mThread.join();
 		}
 	}
 
@@ -73,42 +65,35 @@ namespace xgc
 	}
 
 	static InvokeWatcherMgr* gpInvokeWatcherMgr = XGC_NEW InvokeWatcherMgr();
-	static xgc_void DeleteInvokeWatcherMgr( xgc_void )
+	static xgc_void DeleteInvokeWatcherMgr()
 	{
 		SAFE_DELETE( gpInvokeWatcherMgr );
 	}
-	static int gpInvokeWatcherMgrExit = atexit( DeleteInvokeWatcherMgr );
+
+	static int gpInvokeWatcherMgrExit = atexit( &DeleteInvokeWatcherMgr );
 
 	InvokeWatcherMgr& getInvokeWatcherMgr()
 	{
 		return *gpInvokeWatcherMgr;
 	}
 
-	static unsigned int __stdcall CheckThread( LPVOID lpParams )
+	xgc_void InvokeWatcherMgr::checkThread()
 	{
-		XGC_UNREFERENCED_PARAMETER( lpParams );
-// 		int fd = -1;
-// 		_sopen_s( &fd, gTimeLogPath, O_TEXT | O_WRONLY | O_APPEND | _O_CREAT, SH_DENYWR, S_IWRITE );
-// 		if( fd != -1 )
+		while( !getInvokeWatcherMgr().IsFinish() )
 		{
-			while( !getInvokeWatcherMgr().IsFinish() )
+			InvokeWatcherMgr::autolock lock( getInvokeWatcherMgr().mSection );
+			InvokeWatcher* pWatcher = (InvokeWatcher*) getInvokeWatcherMgr().pInvokeWatcherHead;
+			while( pWatcher )
 			{
-				InvokeWatcherMgr::autolock lock( getInvokeWatcherMgr().mSection );
-				InvokeWatcher* pWatcher = (InvokeWatcher*) getInvokeWatcherMgr().pInvokeWatcherHead;
-				while( pWatcher )
-				{
-					pWatcher->FroceWrite( gTimeLogPath, 1 );
-					pWatcher = pWatcher->Next();
-				}
-				Sleep( 1000 );
+				pWatcher->FroceWrite( gTimeLogPath, 1 );
+				pWatcher = pWatcher->Next();
 			}
-/*			_close( fd );*/
-		}
 
-		return 0;
+			std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+		}
 	}
 
-	__declspec( thread ) InvokeWatcher *gpInvokeWatcher = xgc_nullptr;
+	XGC_DECLSPEC_THREAD InvokeWatcher *gpInvokeWatcher = xgc_nullptr;
 
 	InvokeWatcher* getInvokeWatcher()
 	{
@@ -273,7 +258,7 @@ namespace xgc
 		MemStatus	status[1];	// MemStatus数组
 	};
 
-	__declspec( thread ) xgc_lpvoid gpMemStatus = xgc_nullptr;
+	XGC_DECLSPEC_THREAD xgc_lpvoid gpMemStatus = xgc_nullptr;
 	xgc_lpcstr MemMark( xgc_lpcstr name, xgc_lpcstr parent/* = xgc_nullptr*/, xgc_int32( *Report )( xgc_lpcstr fmt, ... )/* = xgc_nullptr*/ )
 	{
 		if( gpMemStatus == xgc_nullptr )
@@ -304,7 +289,7 @@ namespace xgc
 		MemStatus& mMem = pHead->status[pHead->current];
 		mMem.index = pHead->current;
 
-		GetProcessMemoryUsage( xgc_nullptr, &mMem.pmem, &mMem.vmem );
+		get_process_memory_usage( xgc_nullptr, &mMem.pmem, &mMem.vmem );
 		mMem.time = (xgc_time32) clock();
 		strcpy_s( mMem.name, name ? name: "" );
 

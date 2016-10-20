@@ -70,7 +70,7 @@ namespace xgc
 			/// [6/10/2014] create by albert.xu
 			/// @param pTitle 标题
 			///
-			xgc_int32 get_col( xgc_lpcstr title ) const throw();
+			xgc_size get_col( xgc_lpcstr title ) const throw();
 
 			///
 			/// 分析整个文件

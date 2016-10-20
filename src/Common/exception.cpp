@@ -80,8 +80,8 @@ namespace xgc
 			m_se_translator = ::_set_se_translator( SEHException_translate );
 
 			# endif
-			GetNormalPath( g_exception_log, sizeof( g_exception_log ), "%s", "exception.log" );
-			GetNormalPath( g_exception_ext, sizeof( g_exception_ext ), "%s", "exception.dump.log" );
+			get_normal_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception.log" );
+			get_normal_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "exception.dump.log" );
 		}
 
 		~SEH_ExceptionHandler()

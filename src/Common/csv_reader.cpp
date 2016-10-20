@@ -80,7 +80,7 @@ namespace xgc
 			return cell[offset*cols + nCol];
 		}
 
-		xgc_int32 csv_reader::get_col( xgc_lpcstr title ) const throw()
+		xgc_size csv_reader::get_col( xgc_lpcstr title ) const throw()
 		{
 			for( xgc_size i = 0; this->title && i < cols; ++i )
 			{

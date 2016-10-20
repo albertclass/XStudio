@@ -93,7 +93,7 @@ namespace xgc
 
 		xgc_bool loadcfg()
 		{
-			SYS_INFO( "Module %s Begin Load Log Config File %s", GetModuleName(), gConfigPath );
+			SYS_INFO( "Module %s Begin Load Log Config File %s", get_module_name(), gConfigPath );
 
 			pugi::xml_document doc;
 			if( !doc.load_file( gConfigPath ) )
@@ -265,7 +265,7 @@ namespace xgc
 
 			datetime::now( szDateTime );
 
-			GetNormalPath( szFilePath, sizeof( szFilePath )
+			get_normal_path( szFilePath, sizeof( szFilePath )
 						   , "%s\\shm_%s_%03d.%s"
 						   , lpPath
 						   , szDateTime
