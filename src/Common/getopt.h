@@ -54,48 +54,21 @@ namespace xgc
 			extern COMMON_API int optopt;
 
 			// Ansi
-			struct COMMON_API option_a
+			struct COMMON_API option
 			{
 				const char* name;
 				int has_arg;
 				int *flag;
 				char val;
 			};
-			extern COMMON_API char *optarg_a;
-			extern COMMON_API int getopt_a( int argc, char *const *argv, const char *optstring );
-			extern COMMON_API int getopt_long_a( int argc, char *const *argv, const char *options, const struct option_a *long_options, int *opt_index );
-			extern COMMON_API int getopt_long_only_a( int argc, char *const *argv, const char *options, const struct option_a *long_options, int *opt_index );
+			extern COMMON_API char *optarg;
+			extern COMMON_API int getopt( int argc, char *const *argv, const char *optstring );
+			extern COMMON_API int getopt_long( int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index );
+			extern COMMON_API int getopt_long_only( int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index );
 
 			extern COMMON_API void getopt_clear();
-
-			// Unicode
-			struct option_w
-			{
-				const wchar_t* name;
-				int has_arg;
-				int *flag;
-				wchar_t val;
-			};
-			extern COMMON_API wchar_t *optarg_w;
-			extern COMMON_API int getopt_w( int argc, wchar_t *const *argv, const wchar_t *optstring );
-			extern COMMON_API int getopt_long_w( int argc, wchar_t *const *argv, const wchar_t *options, const struct option_w *long_options, int *opt_index );
-			extern COMMON_API int getopt_long_only_w( int argc, wchar_t *const *argv, const wchar_t *options, const struct option_w *long_options, int *opt_index );
-
 		}
 	}
 }
 
-// #ifdef _UNICODE
-// #define getopt getopt_w
-// #define getopt_long getopt_long_w
-// #define getopt_long_only getopt_long_only_w
-// #define option option_w
-// #define optarg optarg_w
-// #else
-#define getopt getopt_a
-#define getopt_long getopt_long_a
-#define getopt_long_only getopt_long_only_a
-#define option option_a
-#define optarg optarg_a
-/*#endif*/
 #endif  // __GETOPT_H_

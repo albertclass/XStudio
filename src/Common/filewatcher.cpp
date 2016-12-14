@@ -8,6 +8,7 @@
 #include "xsystem.h"
 #include "datetime.h"
 
+#if defined(_WINDOWS)
 namespace xgc
 {
 	namespace common
@@ -343,3 +344,5 @@ namespace xgc
 		}
 	}
 }
+
+#endif // _WINDOWS

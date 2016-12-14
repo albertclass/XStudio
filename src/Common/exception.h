@@ -7,8 +7,11 @@
 /// \brief windows 异常处理类
 /// 
 
+#pragma  once
+
 #ifndef _EXCEPTION_H_
 #define _EXCEPTION_H_
+
 #include "defines.h"
 #include "exports.h"
 #include "debuger.h"
@@ -16,6 +19,7 @@
 #include "allocator.h"
 #include "xsystem.h"
 
+#if defined(_WINDOWS)
 namespace xgc
 {
 	class COMMON_API std::exception;
@@ -76,13 +80,13 @@ namespace xgc
 	COMMON_API void DumpStackFrame();
 
 	///
-	/// 设置异常捕获文件的路径
+	/// 设置异常日志文件的路径
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API void SetExceptionLog( xgc_lpcstr pathname );
 
 	///
-	/// 设置异常捕获文件的路径
+	/// 设置异常日志文件的后缀名
 	/// [12/3/2014] create by albert.xu
 	///
 	COMMON_API void SetExceptionExt( xgc_lpcstr pathname );
@@ -94,5 +98,5 @@ namespace xgc
 	COMMON_API void SetExceptionDmp( xgc_lpcstr pathname );
 
 }; // end of namespace xgc
-
+#endif // _WINDOWS
 #endif // _EXCEPTION_H_

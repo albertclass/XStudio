@@ -5,13 +5,6 @@
 #include <fcntl.h>
 #include <string.h>
 
-#if defined( _WINDOWS )
-#include <io.h>
-#elif defined( __GNUC__ )
-#include <malloc.h>
-#include <unistd.h>
-#endif
-
 namespace xgc
 {
 	namespace common
@@ -66,11 +59,8 @@ namespace xgc
 				chunk[idx] = chk = (xgc_lpvoid) malloc( 0x1000 * sizeof( xgc_lpvoid ) * cols );
 				if( chk == xgc_nullptr )
 					return xgc_nullptr;
-				#if defined(__GNUC__)
-				memset( chk, 0, malloc_usable_size( chk ) );
-				#elif defined(_WINDOWS)
-				memset( chk, 0, _msize( chk ) );
-				#endif
+			
+				memset( chk, 0, memsize( chk ) );
 			}
 
 			xgc_size offset = ( nRow & 0x0fff );
@@ -141,7 +131,7 @@ namespace xgc
 				++i;
 			}
 
-			// 字符串未完结,则认为错误
+			// 字符串未完结, 则认为错误
 			if( is_string )
 				return false;
 
@@ -203,13 +193,13 @@ namespace xgc
 			if( enc == encoding_utf8 )
 			{
 				// 计算转换后需要的内存
-				auto len = utf8tombs( buffer, xgc_nullptr, 0 );
+				auto len = utf8_to_mbs( buffer, xgc_nullptr, 0 );
 				if( len == -1 )
 					return false;
 
 				// 转换编码
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
-				utf8tombs( buffer, ptr, len );
+				utf8_to_mbs( buffer, ptr, len );
 
 				buffer = ptr;
 				buffer_size = len;

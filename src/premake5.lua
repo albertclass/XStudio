@@ -14,7 +14,7 @@ project "Common"
     location "../prj/Common"
     objdir "../obj"
 
-    flags { "C++11", "MultiProcessorCompile" }
+    flags { "C++1y", "MultiProcessorCompile" }
 
     files {
         "Common/**.h",

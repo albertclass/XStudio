@@ -11,7 +11,7 @@ namespace xgc
 	enum COMMON_API encoding
 	{
 		/// Auto-detect input encoding using BOM or < / <? detection; use UTF8 if BOM is not found
-		encoding_auto,		
+		encoding_auto,
 		/// UTF8 encoding
 		encoding_utf8,		
 		/// Little-endian UTF16
@@ -38,7 +38,32 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2015/12/31 12:25
 	///
-	encoding guess_encoding( xgc_lpvoid *str, xgc_size len );
+	COMMON_API encoding guess_encoding( xgc_lpvoid *str, xgc_size len );
+
+	///
+	/// \brief utf8编码转换为unicode
+	///
+	/// \param utf8 要转的编码
+	/// \param ucs  存储为unicode编码
+	///
+	/// \return 转换的utf8编码字节数
+	/// \author albert.xu
+	/// \date 2016/10/20 18:23
+	///
+	COMMON_API xgc_size utf8_to_ucs( xgc_lpcvoid utf8, xgc_ulong *ucs );
+
+	///
+	/// \brief unicode编码转换为utf8
+	///
+	/// \param ucs  准备转换的unicode编码
+	/// \param utf8 utf8接收缓冲区地址
+	/// \param size utf8接收缓冲区长度
+	///
+	/// \return 转换的utf8编码字节数
+	/// \author albert.xu
+	/// \date 2016/10/20 18:23
+	///
+	COMMON_API xgc_size ucs_to_utf8( xgc_ulong ucs, xgc_lpvoid utf8, xgc_size size );
 
 	///
 	/// \brief 编码转换为utf8
@@ -53,7 +78,7 @@ namespace xgc
 	/// \date 2015/12/31 12:26
 	///
 
-	COMMON_API xgc_int32 mbstoutf8( xgc_lpvoid src, xgc_lpstr dst, xgc_size dst_size );
+	COMMON_API xgc_size mbs_to_utf8( xgc_lpcvoid mbsc, xgc_lpvoid utf8, xgc_size size );
 
 	///
 	/// \brief 编码转换mbsc
@@ -68,7 +93,7 @@ namespace xgc
 	/// \date 2015/12/31 12:26
 	///
 
-	COMMON_API xgc_int32 utf8tombs( xgc_lpvoid src, xgc_lpstr dst, xgc_size dst_size );
+	COMMON_API xgc_size utf8_to_mbs( xgc_lpcvoid utf8, xgc_lpvoid mbsc, xgc_size size );
 
 }
 #endif // !_ENCODEING_H_

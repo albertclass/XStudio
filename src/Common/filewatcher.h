@@ -11,6 +11,7 @@
 #ifndef _FILEWATCHER_H_
 #define _FILEWATCHER_H_
 
+#if defined(_WINDOWS)
 namespace xgc
 {
 	namespace common
@@ -90,7 +91,8 @@ namespace xgc
 		/// \date 2016/08/10 16:37
 		///
 		COMMON_API xgc_long do_filewatcher_notify( xgc_ulong timeout = 0 );
-
 	}
 }
+
+#endif // _WINDOWS
 #endif // _FILEWATCHER_H_

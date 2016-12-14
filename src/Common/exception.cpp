@@ -1,22 +1,22 @@
-#pragma  once
-#include <io.h>
-#include <direct.h>
-
 #include "exception.h"
 #include "logger.h"
 #include "datetime.h"
 #include "xsystem.h"
 
-#define _NO_CVCONST_H
-#include "dbghelp.h"
-#include "debuger.h"
-
-#pragma comment( lib, "dbghelp.lib")
-#pragma comment (lib, "version.lib")
+#if defined(_WINDOWS)
+#	include <io.h>
+#	include <direct.h>
+#	define _NO_CVCONST_H
+#	include "dbghelp.h"
+#	include "debuger.h"
+#	pragma comment( lib, "dbghelp.lib")
+#	pragma comment (lib, "version.lib")
+#endif
 
 #define MAX_FRAME_SIZE	(128)
 #define MAX_FRAME_SAVE	(16)
 
+#if defined(_WINDOWS)
 namespace xgc
 {
 	static xgc_char g_exception_log[_MAX_PATH] = { 0 };
@@ -24,6 +24,7 @@ namespace xgc
 	static xgc_char g_exception_dmp[_MAX_PATH] = { 0 };
 
 	static HANDLE hProcess = INVALID_HANDLE_VALUE;
+
 	///
 	/// ’ª÷°–≈œ¢
 	/// [9/2/2014] create by albert.xu
@@ -1154,3 +1155,4 @@ namespace xgc
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
 }// end of namespace xgc
+#endif // _WINDOWS

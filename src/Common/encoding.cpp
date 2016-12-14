@@ -2,6 +2,7 @@
 #include "exports.h"
 #include "encoding.h"
 
+#pragma warning( disable : 4996 )
 namespace xgc
 {
 	///
@@ -139,6 +140,127 @@ namespace xgc
 		return encoding_latin1;
 	}
 
+	xgc_size utf8_to_ucs( xgc_lpcvoid utf8, xgc_ulong *ucs )
+	{
+		xgc_lpcstr str = (xgc_lpcstr)utf8;
+		
+		if( (str[0] & 0x80) == 0 )
+		{
+			// 1 byte
+			if( ucs ) *ucs = str[0];
+			return 1;
+		}
+		else if( (str[0] & 0xC0) == 0xC0 )
+		{
+			// 2 bytes
+			if( ucs ) *ucs = ( (str[0] & 0x1f) << 6 ) | ( str[1] & 0x3f );
+			return 2;
+		}
+		else if( (str[0] & 0xE0) == 0xE0 )
+		{
+			// 3 bytes
+			if( ucs ) *ucs = ( (str[0] & 0x0f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
+			return 3;
+		}
+		else if( (str[0] & 0xF0) == 0xF0 )
+		{
+			// 4 bytes
+			if( ucs ) *ucs = ( (str[0] & 0x07) << 18 ) | ( (str[1] & 0x3f) << 12 ) | ( ( str[2] & 0x3f ) << 6 ) | ( str[3] & 0x3f );
+			return 4;
+		}
+		else if( (str[0] & 0xF8) == 0xF8 )
+		{
+			// 5 bytes
+			if( ucs ) *ucs = ( (str[0] & 0x03) << 24 ) | ( (str[1] & 0x3f) << 18 ) | ( (str[2] & 0x3f) << 12 ) | ( ( str[3] & 0x3f ) << 6 ) | ( str[4] & 0x3f );
+			return 5;
+		}
+		else if( (str[0] & 0xFC) == 0xFC )
+		{
+			// 6 bytes
+			if( ucs ) *ucs = ( (str[0] & 0x01) << 30 ) | ( (str[1] & 0x3f) << 24 ) | ( (str[2] & 0x3f) << 18 ) | ( ( str[3] & 0x3f ) << 12 ) | ( ( str[3] & 0x3f ) << 6 ) | ( str[5] & 0x3f );
+			return 6;
+		}
+
+		return 0;
+	}
+
+	xgc_size ucs_to_utf8( xgc_ulong ucs, xgc_lpvoid utf8, xgc_size size )
+	{
+		xgc_byte *dst = (xgc_byte*)utf8;
+
+		if ( ucs <= 0x0000007F && size >= 1 )  
+		{  
+			// * U-00000000 - U-0000007F:  0xxxxxxx  
+			if( dst )
+			{
+				dst[0] = (ucs & 0x7F);  
+			}
+			return 1;  
+		}
+		else if ( ucs >= 0x00000080 && ucs <= 0x000007FF && size >= 2 )  
+		{  
+			// * U-00000080 - U-000007FF:  110xxxxx 10xxxxxx  
+			if( dst )
+			{
+				dst[1] = (ucs & 0x3F) | 0x80;
+				dst[0] = ((ucs >> 6) & 0x1F) | 0xC0;
+			}
+			return 2;  
+		}  
+		else if ( ucs >= 0x00000800 && ucs <= 0x0000FFFF && size >= 3 )  
+		{  
+			// * U-00000800 - U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx  
+			if( dst )
+			{
+				dst[2] = (ucs & 0x3F) | 0x80;
+				dst[1] = ((ucs >> 6) & 0x3F) | 0x80;
+				dst[0] = ((ucs >> 12) & 0x0F) | 0xE0;
+			}
+			return 3;  
+		}  
+		else if ( ucs >= 0x00010000 && ucs <= 0x001FFFFF && size >= 4 )  
+		{  
+			// * U-00010000 - U-001FFFFF:  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  
+			if( dst )
+			{
+				dst[3] = (ucs & 0x3F) | 0x80;
+				dst[2] = ((ucs >> 6) & 0x3F) | 0x80;
+				dst[1] = ((ucs >> 12) & 0x3F) | 0x80;
+				dst[0] = ((ucs >> 18) & 0x07) | 0xF0;
+			}
+			return 4;  
+		}  
+		else if ( ucs >= 0x00200000 && ucs <= 0x03FFFFFF && size >= 5 )  
+		{  
+			// * U-00200000 - U-03FFFFFF:  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
+			if( dst )
+			{
+				dst[4] = (ucs & 0x3F) | 0x80;
+				dst[3] = ((ucs >> 6) & 0x3F) | 0x80;
+				dst[2] = ((ucs >> 12) & 0x3F) | 0x80;
+				dst[1] = ((ucs >> 18) & 0x3F) | 0x80;
+				dst[0] = ((ucs >> 24) & 0x03) | 0xF8;
+			}
+			return 5;  
+		}  
+		else if ( ucs >= 0x04000000 && ucs <= 0x7FFFFFFF && size >= 6 )  
+		{  
+			// * U-04000000 - U-7FFFFFFF:  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
+			if( dst )
+			{
+				dst[5] = (ucs & 0x3F) | 0x80;
+				dst[4] = ((ucs >> 6) & 0x3F) | 0x80;
+				dst[3] = ((ucs >> 12) & 0x3F) | 0x80;
+				dst[2] = ((ucs >> 18) & 0x3F) | 0x80;
+				dst[1] = ((ucs >> 24) & 0x3F) | 0x80;
+				dst[0] = ((ucs >> 30) & 0x01) | 0xFC;
+			}
+			return 6;
+		}
+
+		return 0;  
+	}
+
 	///
 	/// \brief ±àÂë×ª»»Îªutf8
 	///
@@ -152,30 +274,40 @@ namespace xgc
 	/// \date 2015/12/31 12:26
 	///
 
-	xgc_int32 mbstoutf8( xgc_lpvoid src, xgc_lpstr dst, xgc_size dst_size )
+	xgc_size mbs_to_utf8( xgc_lpcvoid mbs, xgc_lpvoid utf8, xgc_size size )
 	{
 		xgc_wchar ucs;
-		xgc_lpstr poi = dst;
-		xgc_lpstr mbs = (xgc_lpstr)src;
+		xgc_lpstr  poi = (xgc_lpstr )utf8;
+		xgc_lpcstr ptr = (xgc_lpcstr)mbs;
 
-		int cch = 0;
-		while( *mbs )
+		xgc_size cch = 0;
+		
+		#if defined(_LINUX)
+		mbstate_t mbstat;
+		memset(&mbstat, 0, sizeof(mbstat));
+		#endif
+
+		while( *ptr )
 		{
-			int i = mbtowc( &ucs, mbs, MB_CUR_MAX );
+			#if defined(_LINUX)
+			int i = mbrtowc( &ucs, ptr, MB_CUR_MAX, &mbstat );
+			#else
+			int i = mbtowc( &ucs, ptr, MB_CUR_MAX );
+			#endif
 			if( i < 0 )
 				return -1;
 
-			mbs += i;
+			ptr += i;
 
-			if( dst )
+			if( utf8 )
 			{
-				cch = ::WideCharToMultiByte( CP_UTF8, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
+				cch = ucs_to_utf8( ucs, poi, (xgc_lpstr)utf8 + size - poi );
 				if( cch == 0 )
 					return -1;
 			}
 			else
 			{
-				cch = ::WideCharToMultiByte( CP_UTF8, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
+				cch = ucs_to_utf8( ucs, xgc_nullptr, 0 );
 				if( cch == 0 )
 					return -1;
 			}
@@ -183,7 +315,7 @@ namespace xgc
 			poi += cch;
 		}
 
-		return (xgc_int32)(poi - dst);
+		return poi - (xgc_lpstr)utf8;
 	}
 
 	///
@@ -199,139 +331,51 @@ namespace xgc
 	/// \date 2015/12/31 12:26
 	///
 
-	xgc_int32 utf8tombs( xgc_lpvoid src, xgc_lpstr dst, xgc_size dst_size )
+	xgc_size utf8_to_mbs( xgc_lpcvoid utf8, xgc_lpvoid mbs, xgc_size size )
 	{
-		xgc_wchar ucs;
-		xgc_lpstr poi = dst;
-		xgc_byte* str = (xgc_byte*)src;
+		xgc_ulong ucs;
+		xgc_lpstr poi = (xgc_lpstr)mbs;
+		xgc_byte* str = (xgc_byte*)utf8;
 
-		int cch = 0;
-		int chk = 0;
+		xgc_size cch = 0;
+		xgc_size add = 0;
 
-		while( str[0] )
+		#if defined(_LINUX)
+		mbstate_t mbstat;
+		memset(&mbstat, 0, sizeof(mbstat));
+		#endif
+
+		while( *str )
 		{
-			if( str[0] < 0xC0 )
-			{
-				// 1 byte
-				if( dst )
-					*poi = *str;
+			add = utf8_to_ucs( str, &ucs );
+			if( add == 0 )
+				return -1;
 
-				poi += 1;
-				str += 1;
-			}
-			else if( str[0] < 0xE0 )
-			{
-				// 2 bytes
-				ucs = 0;
-				ucs = ucs | ( (str[0] & 0x1f) << 6 ) | ( str[1] & 0x3f );
+			if( mbs && (xgc_lpstr)mbs + size - poi < MB_CUR_MAX )
+				return -1;
 
-				if( dst )
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-				else
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
+			#if defined(_LINUX)
+			cch = wcrtomb( poi, (xgc_wchar)ucs, &mbstat );
+			if( cch == -1 )
+				return -1;
+			#elif defined(_WINDOWS)
+			int ich = 0;
+			wctomb_s( &ich, poi, size - (poi-(xgc_lpstr)mbs), (xgc_wchar)ucs );
+			if( ich == -1 )
+				return -1;
+			cch = ich;
+			#else
+			// wctomb not thread safety
+			cch = wctomb( poi, (xgc_wchar)ucs );
+			if( cch == -1 )
+				return -1;
+			#endif
 
-				poi += cch;
-				str += 2;
-			}
-			else if( str[0] < 0xF0 )
-			{
-				// 3 bytes
-				ucs = 0;
-				ucs = ucs | ( (str[0] & 0x0f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
-
-				if( dst )
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-				else
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-
-				poi += cch;
-				str += 3;
-			}
-			else if( str[0] < 0xF8 )
-			{
-				// 4 bytes
-				ucs = 0;
-				ucs = ucs | ( (str[0] & 0x07) << 18 ) | ( (str[0] & 0x3f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
-
-				if( dst )
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-				else
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-
-				poi += cch;
-				str += 4;
-			}
-			else if( str[0] < 0xFC )
-			{
-				// 4 bytes
-				ucs = 0;
-				ucs = ucs | ( (str[0] & 0x03) << 24 ) | ( (str[0] & 0x3f) << 18 ) | ( (str[0] & 0x3f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
-
-				if( dst )
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-				else
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-
-				poi += cch;
-				str += 4;
-			}
-			else
-			{
-				// 4 bytes
-				ucs = 0;
-				ucs = ucs | ( (str[0] & 0x01) << 18 ) | ( (str[0] & 0x3f) << 18 ) | ( (str[0] & 0x3f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
-
-				if( dst )
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, poi, (int) (dst + dst_size - poi), NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-				else
-				{
-					cch = ::WideCharToMultiByte( CP_ACP, 0, &ucs, 1, xgc_nullptr, 0, NULL, NULL );
-					if( cch == 0 )
-						return -1;
-				}
-
-				poi += cch;
-				str += 4;
-			}
+			poi += cch;
+			str += add;
 		}
 
-		return (xgc_int32)(poi - dst);
+		return poi - (xgc_lpstr)mbs;
 	}
 
 }

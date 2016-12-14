@@ -2,8 +2,10 @@
 #include "exports.h"
 #include "logger.h"
 
+#if defined(_WINDOWS)
 #include <wininet.h>
 #pragma comment(lib, "wininet.lib")
+#endif
 
 #include "http.h"
 
@@ -104,18 +106,25 @@ namespace xgc
 
 		xgc_bool SetWininetMaxConnection( xgc_uint32 nMaxConnection )
 		{
+			#if defined(_WINDOWS)
 			ULONG nMaxConnect = nMaxConnection;
 			BOOL bRet = ::InternetSetOption( xgc_nullptr, INTERNET_OPTION_MAX_CONNS_PER_SERVER, &nMaxConnect, sizeof( nMaxConnect ) );
 			bRet &= ::InternetSetOption( xgc_nullptr, INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER, &nMaxConnect, sizeof( nMaxConnect ) );
 			if( !bRet )
 			{
 				USR_ERROR( "设置Wininet最大连接数失败[%u]", nMaxConnection );
+				return false;
 			}
-			return bRet != 0;
+
+			return true;
+			#endif
+
+			return true;
 		}
 
 		xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc_string &result )
 		{
+			#if defined(_WINDOWS)
 			HINTERNET hInternetSession = InternetOpen( "Microsoft Internet Explorer", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0 );
 
 			if( hInternetSession == NULL )
@@ -155,6 +164,7 @@ namespace xgc
 			DBG_INFO( "InternetReadFile total read %u ", result.size() );
 			InternetCloseHandle( hURL );
 			InternetCloseHandle( hInternetSession );
+			#endif // _WINDOWS
 
 			return true;
 		}

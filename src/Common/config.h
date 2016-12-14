@@ -28,9 +28,10 @@
 #endif
 
 #ifdef _MSC_VER
-#	include <crtdefs.h>
 #	define _CRTDBG_MAP_ALLOC
+#	include <crtdefs.h>
 #	include <crtdbg.h>
+#	include <io.h>
 #endif
 
 #include <stdio.h>
@@ -39,10 +40,11 @@
 #include <string.h>
 #include <assert.h>
 
-
 #if defined( __GNUC__ )
 #	define __STDC_FORMAT_MACROS
 #	include <linux/limits.h>
+#	include <malloc.h>
+#	include <unistd.h>
 #	define _MAX_PATH 	PATH_MAX
 #	define _MAX_FNAME 	NAME_MAX
 #endif
@@ -90,6 +92,8 @@ typedef int errno_t;
 // adpater linux to windows
 #ifdef _WINDOWS
 #	define strcasecmp _stricmp
+#	define strncasecmp _strnicmp
+#	define memsize	_msize
 #endif
 
 #if defined( __GNUC__ )
@@ -189,6 +193,7 @@ XGC_INLINE errno_t strcpy_s( char (&destnation)[count], const char *source )
 {
 	return strcpy_s( destnation, count, source );
 }
+
 ///////////////////////////////////////////////////////////////////////////
 /// file operator
 ///////////////////////////////////////////////////////////////////////////
@@ -211,6 +216,7 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 #define _fstat fstat
 #define _stat stat
 
+#define memsize	malloc_usable_size
 #endif //__GNUC__
 
 #endif //_CONFIG_H_

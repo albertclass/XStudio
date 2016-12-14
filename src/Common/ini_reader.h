@@ -11,6 +11,7 @@
 #define _INI_H_
 #include "defines.h"
 #include "exports.h"
+#include "xutility.h"
 
 namespace xgc
 {
@@ -100,16 +101,16 @@ namespace xgc
 			}
 
 			///
-			/// \brief 获取属性个数
-			/// [8/11/2014] create by albert.xu
-			///
-			xgc_size get_item_count( xgc_lpcstr lpSection, xgc_lpcstr lpItemName = xgc_nullptr )const;
-
-			///
 			/// \brief 获取指定的Section名
 			/// [8/11/2014] create by albert.xu
 			///
 			xgc_lpcstr get_section_name( xgc_size nSectionIdx )const;
+
+			///
+			/// \brief 获取属性个数
+			/// [8/11/2014] create by albert.xu
+			///
+			xgc_size get_item_count( xgc_lpcstr lpSection, xgc_lpcstr lpItemName = xgc_nullptr )const;
 
 			///
 			/// \brief 获取属性的名字
@@ -145,42 +146,18 @@ namespace xgc
 			/// \brief 获取数值类型的值
 			/// [8/11/2014] create by albert.xu
 			///
-			xgc_bool get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, xgc_bool bDefault )const
-			{
-				xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
-				if( pValue )
-				{
-					if( strcasecmp( "true", pValue ) == 0 )
-						return true;
-					else
-						return atoi( pValue ) != 0;
-				}
+			xgc_bool get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, xgc_bool bDefault )const;
 
-				return bDefault;
-			}
-
-			template< class T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
+			///
+			/// \brief 获取数值类型的值
+			/// [8/11/2014] create by albert.xu
+			///
+			template< class T, typename std::enable_if< is_numeric<T>::value >::type >
 			T get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, T Default )const
 			{
 				xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
 
-				return pValue ? (T) strtol( pValue, xgc_nullptr, 10 ) : Default;
-			}
-
-			template< class T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value != false, xgc_bool >::type = true >
-			T get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, T Default )const
-			{
-				xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
-
-				return pValue ? (T) strtoul( pValue, xgc_nullptr, 10 ) : Default;
-			}
-
-			template< class T, typename std::enable_if< std::is_floating_point< T >::value, xgc_bool >::type = true >
-			T get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, T Default )const
-			{
-				xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
-
-				return pValue ? (T) strtod( pValue, xgc_nullptr ) : Default;
+				return pValue ? str2numeric<T>( pValue, xgc_nullptr ) : Default;
 			}
 
 		private:
