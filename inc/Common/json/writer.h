@@ -1,8 +1,8 @@
 #ifndef JSON_WRITER_H_INCLUDED
 # define JSON_WRITER_H_INCLUDED
-# include "..\exports.h"
+# include "exports.h"
 
-# include "value.h"
+# include "json/value.h"
 # include <vector>
 # include <string>
 # include <iostream>

@@ -179,13 +179,13 @@ namespace xgc
 			{
 				fputs( "--------------------------------------------------------------\n", fp );
 				fputs( "invoke watcher log\n", fp );
-				fprintf( fp, "%s.%u timeout %llu millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods() );
+				fprintf( fp, "%s.%u timeout %lld millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods());
 				fputs( "-----------------------------CALL STACK-----------------------\n", fp );
 
 				xgc_size length = 0;
 				for( xgc_uint32 i = 0; i < deep; ++i )
 				{
-					fprintf( fp, "%I64u : %s(%u)\n",
+					fprintf( fp, "%llu : %s(%u)\n",
 						mStack[deep - i - 1].nTime,
 						mStack[deep - i - 1].lpFileName,
 						mStack[deep - i - 1].nLine );

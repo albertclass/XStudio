@@ -1,6 +1,6 @@
 #include <iostream>
-#include "value.h"
-#include "writer.h"
+#include "json/value.h"
+#include "json/writer.h"
 #include <utility>
 #include <stdexcept>
 #include <cstring>
@@ -10,7 +10,7 @@
 #endif
 #include <cstddef>    // size_t
 #ifndef JSON_USE_SIMPLE_INTERNAL_ALLOCATOR
-# include "json_batchallocator.h"
+# include "json/json_batchallocator.h"
 #endif // #ifndef JSON_USE_SIMPLE_INTERNAL_ALLOCATOR
 
 #define JSON_ASSERT_UNREACHABLE assert( false )

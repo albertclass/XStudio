@@ -29,8 +29,8 @@ namespace xgc
 			{
 			}
 
-			buffer_exception(char const* const _Message, int _Code)
-				: exception( _Message, _Code )
+			buffer_exception(char const* const _Message, int _Code) noexcept
+				: exception() 
 			{
 			}
 
@@ -44,21 +44,23 @@ namespace xgc
 				if (this == &_Other)
 					return *this;
 
-				__super::operator =( _Other );
-
 				return *this;
 			}
 
 			virtual ~buffer_exception() throw()
 			{
+				
 			}
 
 			virtual char const* what() const
 			{
-				return __super::what();
-			}	
+				return std::exception::what();
+			}
 		private:
+			// ´íÎóÂë
 			int code;
+			xgc_string message;
+
 		};
 
 		///
@@ -559,7 +561,7 @@ namespace xgc
 		/// \date 2016/09/13 16:31
 		///
 		template< class _Buf >
-		class unite_buffer_recorder : public _Buf
+		class union_buffer_recorder : public _Buf
 		{
 		protected:
 			struct recorder
@@ -577,7 +579,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/09/14 20:13
 			///
-			unite_buffer_recorder()
+			union_buffer_recorder()
 				: _Buf()
 			{
 				memset( (xgc_lpvoid)base(), 0, sizeof( recorder ) );
@@ -590,7 +592,7 @@ namespace xgc
 			/// \date 2016/09/13 15:46
 			///
 			template< class _Buf_Other >
-			unite_buffer_recorder( const _Buf_Other &buffer )
+			union_buffer_recorder( const _Buf_Other &buffer )
 				: _Buf( buffer )
 			{
 			}
@@ -602,7 +604,7 @@ namespace xgc
 			/// \date 2016/09/13 15:46
 			///
 			template< class _Buf_Other >
-			unite_buffer_recorder( const _Buf_Other &buffer, xgc_size wd, xgc_size rd )
+			union_buffer_recorder( const _Buf_Other &buffer, xgc_size wd, xgc_size rd )
 				: _Buf( buffer )
 			{
 				set_wd( wd );
@@ -797,7 +799,7 @@ namespace xgc
 			///
 			xgc_void plus_wd( xgc_long add )
 			{
-				set_wd( wd() + add );
+				this->set_wd( wd() + add );
 			}
 
 
@@ -1055,7 +1057,7 @@ namespace xgc
 					copy_1 = size < part_1 ? size : rd() ? part_1 : part_1 - 1;
 
 					memcpy( (xgc_lpvoid)wd_ptr(), data, copy_1 );
-					set_wd( ( wd() + copy_1 ) % len() );
+					this->set_wd( ( wd() + copy_1 ) % len() );
 				}
 
 				if( size == copy_1 )
@@ -1068,7 +1070,7 @@ namespace xgc
 					copy_2 = XGC_MIN( part_2 - 1, size - copy_1 );
 
 					memcpy( (xgc_lpvoid)wd_ptr(), (xgc_byte*)data + copy_1, copy_2 );
-					plus_wd( (xgc_long)copy_2 );
+					this->plus_wd( (xgc_long)copy_2 );
 				}
 
 				return copy_1 + copy_2;

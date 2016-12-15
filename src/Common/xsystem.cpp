@@ -93,6 +93,26 @@ namespace xgc
 		return _fullpath( szOut, szOut, nSize );
 	}
 
+	xgc_ulong get_process_id()
+	{
+		#if defined(_WINDOWS)
+			return (xgc_ulong)GetCurrentProcessId();
+		#elif defined(_LINUX)
+			return (xgc_ulong)getpid();
+		#endif
+	}
+
+	xgc_ulong get_thread_id()
+	{
+		#if defined(_WINDOWS)
+			return (xgc_ulong)GetCurrentThreadId();
+		#elif defined(_LINUX)
+			return (xgc_ulong)gettid();
+		#endif
+
+		return -1;
+	}
+	
 	xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnPMem, xgc_uint64 *pnVMem )
 	{
 		XGC_ASSERT_RETURN( pnPMem != pnVMem, false );

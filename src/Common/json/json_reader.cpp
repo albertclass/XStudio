@@ -1,5 +1,6 @@
-#include "reader.h"
-#include "value.h"
+#include "defines.h"
+#include "json/reader.h"
+#include "json/value.h"
 #include <utility>
 #include <cstdio>
 #include <cassert>
@@ -694,7 +695,7 @@ namespace Json {
 		if ( length <= bufferSize )
 		{
 			Char buffer[bufferSize];
-			memcpy_s( buffer, sizeof(buffer), token.start_, length );
+			memcpy( buffer, token.start_, length );
 			buffer[length-1] = 0;
 			count = sscanf( buffer, "%lf", &value );
 		}

@@ -29,6 +29,18 @@ namespace xgc
 	COMMON_API xgc_lpcstr get_normal_path( xgc_lpstr szOut, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
 
 	///
+	/// [12/16/2013 albert.xu]
+	/// 获取进程ID
+	///
+	COMMON_API xgc_ulong get_process_id();
+
+	///
+	/// [12/16/2013 albert.xu]
+	/// 获取线程ID
+	///
+	COMMON_API xgc_ulong get_thread_id();
+
+	///
 	/// \brief 获取进程内存使用情况
 	///
 	/// \author albert.xu

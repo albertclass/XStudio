@@ -4,7 +4,7 @@
 #include "defines.h"
 #include "exports.h"
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #define INVALID_WINDOW_INDEX xgc_uint8(0xffU)
 #define INVALID_BUFFER_INDEX xgc_uint8(0xffU)
 
@@ -225,5 +225,5 @@ namespace xgc
 		COMMON_API xgc_int32 buffer_read( buffer_t text, xgc_lpstr buf, xgc_int16 len, xgc_bool wait = true );
 	}
 }
-#endif //WINDOWS
+#endif //_WINDOWS
 #endif //_CONSOLE_H_

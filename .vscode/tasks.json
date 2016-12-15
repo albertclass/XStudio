@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "make",
+    "isShellCommand": true,
+    "showOutput": "silent",
+    "suppressTaskName": true,
+    "linux": {
+        "tasks": [{
+            "taskName": "build all",
+            "args": ["--directory=${workspaceRoot}/prj"],
+            "isBuildCommand": true,
+            "echoCommand": true,
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceRoot}/prj/Common"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+\\w*\\s*(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        }]
+    }
+}

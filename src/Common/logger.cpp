@@ -1,4 +1,4 @@
-﻿#include "logger.h"
+#include "logger.h"
 #include "xbuffer.h"
 #include "xsystem.h"
 #include "pugixml.hpp"
@@ -13,7 +13,7 @@ namespace xgc
 	using common::ring_buffer;
 	using common::reference_buffer;
 	using common::shared_memory_buffer;
-	using common::unite_buffer_recorder;
+	using common::union_buffer_recorder;
 
 	namespace logger
 	{
@@ -288,7 +288,7 @@ namespace xgc
 		xgc_bool _LogToShm( xgc_lpcstr pStrLogMsg )
 		{
 			xgc_char szSyncLog[ShmLogLineWidth] = { 0 };
-			DWORD tid = GetCurrentThreadId();
+			xgc_long tid = get_thread_id();
 
 			char szDateTime[64];
 			datetime::now( szDateTime );
@@ -301,7 +301,7 @@ namespace xgc
 			if( cpy > 0 )
 			{
 				szSyncLog[ShmLogLineWidth - 1] = 0;
-				ring_buffer< reference_buffer, unite_buffer_recorder > shm( gspLoggerShm );
+				ring_buffer< reference_buffer, union_buffer_recorder > shm( gspLoggerShm );
 				shm.write_some( szSyncLog, cpy );
 
 				return true;

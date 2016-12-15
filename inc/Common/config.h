@@ -2,19 +2,27 @@
 #define _CONFIG_H_
 
 #if defined( WIN32 ) || defined( WIN64 )
-#	define WINDOWS
 #	define _WINDOWS
 #elif defined( LINUX32 ) || defined( LINUX64 )
 #	define _LINUX
 #endif
 
-#ifdef _MSC_VER
-#	pragma message( __FILE__ " using visual studio" )
-#elif defined( __GNUC__ )
-#	pragma message( "using gnuc" )
-#	define __cdecl
-#else
-#	pragma message( "using other" )
+#ifndef _MESSAGE_TIPS
+#	ifdef _LINUX
+#		pragma message( "system using linux" )
+#	endif
+#
+#	ifdef _WINDOWS
+#		pragma message( "system using windows" )
+#	endif
+#	ifdef _MSC_VER
+#		pragma message( __FILE__ " using visual studio" )
+#	elif defined( __GNUC__ )
+#		pragma message( "using gnuc" )
+#	else
+#		pragma message( "using other" )
+#	endif
+#	define _MESSAGE_TIPS
 #endif
 
 #ifdef _WINDOWS
@@ -25,31 +33,62 @@
 
 #ifdef _LINUX
 #	include <sys/time.h>
-#endif
+#	include <sys/types.h>
+#endif // _LINUX
 
-#ifdef _MSC_VER
+
+#if defined(_MSC_VER)
 #	define _CRTDBG_MAP_ALLOC
 #	include <crtdefs.h>
 #	include <crtdbg.h>
 #	include <io.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <assert.h>
-
 #if defined( __GNUC__ )
 #	define __STDC_FORMAT_MACROS
 #	include <linux/limits.h>
 #	include <malloc.h>
 #	include <unistd.h>
+#endif
+
+#if defined(__GNUC__)
+#	define __cdecl
+#endif
+
+#if defined(__GNUC__)
 #	define _MAX_PATH 	PATH_MAX
 #	define _MAX_FNAME 	NAME_MAX
 #endif
 
+
+#if defined(_MSC_VER)
+#	if (_MSC_VER < 1900)
+#		//About std.experimental.filesystem.
+#		//Through VC2013 has provided <filesystem>, but all the names are given in namespace std. It's hard to alias these names into std::experimental,
+#		//So Nana use nana.filesystem implement instead for VC2013
+#
+#		//Nana defines some macros for lack of support of keywords
+#		define _ALLOW_KEYWORD_MACROS
+#
+#		define CXX_NO_INLINE_NAMESPACE //no support of C++11 inline namespace until Visual C++ 2015
+#		define noexcept		//no support of noexcept until Visual C++ 2015
+
+#		define constexpr const	//no support of constexpr until Visual C++ 2015 ? const ??
+#	else
+#		undef STD_FILESYSTEM_NOT_SUPPORTED
+#	endif
+#elif defined(__GNUC__)
+#	if (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
+#		define noexcept		//no support of noexcept until GCC 4.6
+#	endif
+#endif
+
 #include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <assert.h>
 
 #if defined( _DEBUG ) && defined(_MSC_VER)
 #	define XGC_NEW new ( _NORMAL_BLOCK, __FILE__, __LINE__ )
@@ -181,7 +220,7 @@ XGC_INLINE errno_t strcpy_s( char *destination, size_t count, const char *source
 	{
 		destination[i] = source[i];
 		++i;
-	}	
+	}
 
 	destination[i] = 0;
 
@@ -194,6 +233,31 @@ XGC_INLINE errno_t strcpy_s( char (&destnation)[count], const char *source )
 	return strcpy_s( destnation, count, source );
 }
 
+XGC_INLINE errno_t strcat_s( char *destination, size_t count, const char *source )
+{
+	if( nullptr == source )
+		return -1;
+
+	size_t i = strlen(destination);
+	size_t p = 0;
+	while( i < count - 1 && source[p] )
+	{
+		destination[i] = source[p];
+		++i;
+		++p;
+	}
+
+	destination[i] = 0;
+
+	return 0;
+}
+
+template< size_t count >
+XGC_INLINE errno_t strcat_s( char (&destnation)[count], const char *source )
+{
+	return strcat_s( destnation, count, source );
+}
+
 ///////////////////////////////////////////////////////////////////////////
 /// file operator
 ///////////////////////////////////////////////////////////////////////////
@@ -202,7 +266,7 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 	FILE *file = fopen( filename, mode );
 	if( file == nullptr )
 		return -1;
-	
+
 	*fp = file;
 	return 0;
 }

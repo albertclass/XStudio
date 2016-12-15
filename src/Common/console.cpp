@@ -1,4 +1,4 @@
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <stdio.h>
 #include <conio.h>
 #include <fcntl.h>
@@ -1603,4 +1603,4 @@ namespace xgc
 		}
 	}
 }
-#endif // WINDOWS
+#endif // _WINDOWS
