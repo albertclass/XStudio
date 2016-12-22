@@ -1,6 +1,5 @@
 #include "md5.h"
-#include <io.h>
-#include <stdint.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
 
@@ -76,7 +75,7 @@ namespace xgc
 			return y ^ ( x | ( ~z ) );
 		}
 
-		static inline uint32_t Md5_S( uint32_t d, int n )		// 循环位移
+		static inline uint32_t Md5_S( uint32_t d, int n )		// �?�?位移
 		{
 			return ( d << n ) | ( ( ( d & 0xFFFFFFFF ) >> ( 32 - n ) ) );
 		}
@@ -296,7 +295,7 @@ namespace xgc
 			const char* pHex = bCap ? hexCap : hex;
 			if( output_hex )
 			{
-				for( int i = 0; i < _countof( md5 ); ++i )
+				for( int i = 0; i < XGC_COUNTOF( md5 ); ++i )
 				{
 					*digest++ = pHex[( md5[i] & 0xf0 ) >> 4];
 					*digest++ = pHex[( md5[i] & 0x0f )];
@@ -310,7 +309,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief 获取文件Md5摘要
+		/// \brief 获取文件Md5摘�??
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:37
@@ -322,7 +321,7 @@ namespace xgc
 			unsigned long file_size, read_bytes;
 			char* file_buffer;
 
-			fd = _open(filename, O_RDONLY | O_BINARY);
+			fd = _open(filename, O_RDONLY | S_IREAD);
 			if(fd < 0) 
 				return false;
 

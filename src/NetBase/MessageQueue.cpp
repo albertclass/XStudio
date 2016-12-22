@@ -22,7 +22,7 @@ namespace xgc
 		CMessageQueue::~CMessageQueue(xgc_void)
 		{
 			// 清除所有消息
-			for each( auto it in mPacketList )
+			for( auto it : mPacketList )
 				it->release();
 		}
 

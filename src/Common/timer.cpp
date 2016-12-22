@@ -22,7 +22,7 @@ namespace xgc
 	{
 		typedef timer_event _type;
 		typedef pool_handle< pool_handle_base > _handle_type;
-		auto_handle_pool< _type, _handle_type > *
+		template<> auto_handle_pool< _type, _handle_type > * 
 		auto_handle_pool< _type, _handle_type >::pInstance = xgc_nullptr;
 
 		COMMON_API xgc_time64 (*steady_tickcount)(void) = timer_tickcount< std::chrono::steady_clock >;
@@ -321,9 +321,9 @@ namespace xgc
 		xgc_list< timer_t > timer::get_event_list( xgc_lpcstr pname )const
 		{
 			xgc_list< timer_t > lst;
-			for each( auto &wheel in time_wheel_ )
+			for( auto &wheel : time_wheel_ )
 			{
-				for each( auto &it in wheel )
+				for( auto &it : wheel )
 				{
 					auto evt = timer_event::handle_exchange( it );
 

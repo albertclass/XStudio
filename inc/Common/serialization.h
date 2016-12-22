@@ -42,13 +42,13 @@ namespace xgc
 		//////////////////////////////////////////////////////////////////////////
 		// 数值类型特化
 		template< serialization_types >
-		serialization& operator << ( serialization& stream, serialization& ( __cdecl *_Pfn )( serialization& ) )
+		serialization& operator << ( serialization& stream, serialization& ( XGC_CDECL_CALL *_Pfn )( serialization& ) )
 		{
 			return _Pfn( stream );
 		}
 
 		template< serialization_types >
-		serialization& __cdecl endl( serialization& stream )
+		serialization& XGC_CDECL_CALL endl( serialization& stream )
 		{
 			stream << '\n';
 			return stream;

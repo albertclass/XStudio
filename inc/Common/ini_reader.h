@@ -31,9 +31,9 @@ namespace xgc
 				/// 文件缓冲长度
 				xgc_size file_size;
 				/// 文件路径
-				xgc_char file_path[_MAX_PATH];
+				xgc_char file_path[XGC_MAX_PATH];
 				/// 文件名
-				xgc_char file_name[_MAX_FNAME];
+				xgc_char file_name[XGC_MAX_FNAME];
 				/// 包含的文件
 				xgc_list< file_info* > externs;
 			};

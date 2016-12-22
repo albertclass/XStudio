@@ -149,7 +149,7 @@ namespace xgc
 	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
 		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
-		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIi64, (xgc_int64)_value );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%lld", (xgc_int64)_value );
 		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
@@ -158,7 +158,7 @@ namespace xgc
 	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
 		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
-		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIu64, (xgc_uint64)_value );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%llu", (xgc_uint64)_value );
 		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
@@ -176,7 +176,7 @@ namespace xgc
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
-		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIi64, (xgc_int64)_value );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%lld", (xgc_int64)_value );
 		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}
@@ -184,7 +184,7 @@ namespace xgc
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == true, xgc_bool >::type = true >
 	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
-		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%" PRIu64, (xgc_uint64)_value );
+		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%llu", (xgc_uint64)_value );
 		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
 		return _buffer;
 	}

@@ -8,9 +8,17 @@
 #include "defines.h"
 #include "exports.h"
 #include "datetime.h"
+#include "exception.h"
+#include "logger.h"
 
 #include <thread>
 #include <mutex>
+
+#if defined _LINUX
+#	include <signal.h>
+#	include <setjmp.h>
+#	include <execinfo.h> 
+#endif // _LINUX
 
 #define WATCH_STACKFRAME_MAX (64)
 
@@ -28,38 +36,94 @@
 #define XGC_CHECK_REENTER_CALL( V ) \
 	TwiceEnterChecker __FUNCTION__##_CHECKER( __FILE__, __LINE__, V );\
 
-#define FUNCTION_BEGIN\
-	try\
-	{\
-		xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __FILE__, __LINE__ ); \
+#if defined(_WINDOWS)
+	#define FUNCTION_BEGIN\
+		try\
+		{\
+			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __FILE__, __LINE__ ); \
 
-#define FUNCTION_CATCH( ... )\
-	}\
-	catch( __VA_ARGS__ )\
-	{\
+	#define FUNCTION_CATCH( ... )\
+		}\
+		catch( ##__VA_ARGS__ )\
+		{\
 
-#define FUNCTION_END\
-	}\
-	catch( xgc::CSEHexception& e )\
-	{\
-		SYS_INFO( "SEH Exception throw." );\
-		XGC_DEBUG_MESSAGE( "SEH Exception. %s", e.what() ); \
-		xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
-	}\
-	catch( std::exception e )\
-	{\
-		SYS_INFO( "STD Exception throw. %s", e.what() ); \
-		XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
-		xgc::std_exception_call( e, __FILE__, __LINE__ ); \
-		xgc::DumpStackFrame();\
-	}\
-	catch( ... ) \
-	{\
-		SYS_INFO( "Other Exception throw." ); \
-		XGC_DEBUG_MESSAGE( "THR Exception. Unknowe" ); \
-		xgc::etc_exception_call( __FILE__, __LINE__ ); \
-		xgc::DumpStackFrame();\
-	}\
+	#define FUNCTION_END\
+		}\
+		catch( xgc::seh_exception &e )\
+		{\
+			SYS_INFO( "SEH Exception throw." );\
+			XGC_DEBUG_MESSAGE( "SEH Exception. %s", e.what() ); \
+			xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
+		}\
+		catch( std::exception &e )\
+		{\
+			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
+			xgc::std_exception_call( e, __FILE__, __LINE__ ); \
+			xgc::DumpStackFrame();\
+		}\
+		catch( ... ) \
+		{\
+			SYS_INFO( "Other Exception throw." ); \
+			XGC_DEBUG_MESSAGE( "THR Exception. Unknowe" ); \
+			xgc::etc_exception_call( __FILE__, __LINE__ ); \
+			xgc::DumpStackFrame();\
+		}
+
+#elif defined(_LINUX)
+	extern __thread sigjmp_buf sigjmp_env;
+	class sigjmp_buf_stack
+	{
+	public:
+		sigjmp_buf_stack()
+		{
+			memcpy( &sav, &sigjmp_env, sizeof(sigjmp_buf) );
+		}
+
+		~sigjmp_buf_stack()
+		{
+			memcpy( &sigjmp_env, &sav, sizeof(sigjmp_buf) );
+		}
+	private:
+		sigjmp_buf sav;
+	};
+
+	#define FUNCTION_BEGIN\
+		try\
+		{\
+			sigjmp_buf_stack _save_point_##__LINE__();\
+			if( int sig = sigsetjmp(sigjmp_env, 1) != 0 )\
+			{\
+				throw seh_exception(0, NULL);\
+			}\
+			else\
+			{\
+
+	#define FUNCTION_END\
+			}\
+		}\
+		catch( seh_exception &e )\
+		{\
+			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
+			xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
+		}\
+		catch( std::exception &e )\
+		{\
+			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
+			xgc::std_exception_call( e, __FILE__, __LINE__ ); \
+			xgc::DumpStackFrame();\
+		}\
+		catch( ... ) \
+		{\
+			SYS_INFO( "Other Exception throw." ); \
+			XGC_DEBUG_MESSAGE( "THR Exception. Unknowe" ); \
+			xgc::etc_exception_call( __FILE__, __LINE__ ); \
+			xgc::DumpStackFrame();\
+		}
+
+#endif // _LINUX
 
 #define SEGMENT_BEGIN( TITLE, ... )		FUNCTION_BEGIN
 #define SEGMENT_FINAL()					FUNCTION_END

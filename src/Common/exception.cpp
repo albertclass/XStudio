@@ -1,4 +1,5 @@
 #include "exception.h"
+#include "debuger.h"
 #include "logger.h"
 #include "datetime.h"
 #include "xsystem.h"
@@ -8,22 +9,18 @@
 #	include <direct.h>
 #	define _NO_CVCONST_H
 #	include "dbghelp.h"
-#	include "debuger.h"
 #	pragma comment( lib, "dbghelp.lib")
 #	pragma comment (lib, "version.lib")
 #endif
 
 #define MAX_FRAME_SIZE	(128)
-#define MAX_FRAME_SAVE	(16)
+#define MAX_FRAME_SAVE	(32)
 
-#if defined(_WINDOWS)
 namespace xgc
 {
-	static xgc_char g_exception_log[_MAX_PATH] = { 0 };
-	static xgc_char g_exception_ext[_MAX_PATH] = { 0 };
-	static xgc_char g_exception_dmp[_MAX_PATH] = { 0 };
-
-	static HANDLE hProcess = INVALID_HANDLE_VALUE;
+	static xgc_char g_exception_log[XGC_MAX_PATH] = { 0 };
+	static xgc_char g_exception_ext[XGC_MAX_PATH] = { 0 };
+	static xgc_char g_exception_dmp[XGC_MAX_PATH] = { 0 };
 
 	///
 	/// 栈帧信息
@@ -31,17 +28,33 @@ namespace xgc
 	///
 	struct StackFrameSequence
 	{
-		UINT_PTR	Frame[MAX_FRAME_SAVE];
-		UINT		Count;
+		void*		Frame[MAX_FRAME_SAVE];
+		uint32_t	Count;
 	};
+
+	#if defined(_WINDOWS)
+	static HANDLE hProcess = INVALID_HANDLE_VALUE;
+	static _se_translator_function g_exception_translator;
+	static LPTOP_LEVEL_EXCEPTION_FILTER g_exception_filter;
+
+	LONG WINAPI exception_filter( LPEXCEPTION_POINTERS lpEP );
 
 	xgc_void SEHException_translate( UINT nErr, LPEXCEPTION_POINTERS pExceptionPoint )
 	{
 		throw CSEHexception( nErr, pExceptionPoint );
 	}
-
+	
 	xgc_bool InitException()
 	{
+		# ifndef _DEBUG
+		g_exception_filter = ::SetUnhandledExceptionFilter( exception_filter );
+		g_exception_translator = ::_set_se_translator( SEHException_translate );
+		# endif
+
+		get_normal_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception" );
+		get_normal_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "log" );
+		get_normal_path( g_exception_ext, sizeof( g_exception_dmp ), "%s", "dmp" );
+
 		// 获取进程句柄
 		hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId() );
 		if( hProcess == NULL )
@@ -64,111 +77,32 @@ namespace xgc
 
 	xgc_void FiniException()
 	{
+		# ifndef _DEBUG
+		
+		if( m_exception_filter )
+		{
+			::SetUnhandledExceptionFilter( g_exception_filter );
+		}
+
+		if( m_exception_translator )
+		{
+			::_set_se_translator( g_exception_translator );
+		}
+
+		# endif
+
 		SymCleanup( hProcess );
 		CloseHandle( hProcess );
 	}
 
-	LONG WINAPI exception_filter( LPEXCEPTION_POINTERS lpEP );
-
-	class SEH_ExceptionHandler
+	xgc_void GetStackTrace( StackFrameSequence& FrameSequence )
 	{
-	public:
-		SEH_ExceptionHandler()
-		{
-			# ifndef _DEBUG
-			
-			m_exception_filter = ::SetUnhandledExceptionFilter( exception_filter );
-			m_se_translator = ::_set_se_translator( SEHException_translate );
+		UINT_PTR* fp = (UINT_PTR*) _AddressOfReturnAddress();
+		UINT_PTR* framePointer = (UINT_PTR*) fp - 1;
 
-			# endif
-			get_normal_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception.log" );
-			get_normal_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "exception.dump.log" );
-		}
-
-		~SEH_ExceptionHandler()
-		{
-			# ifndef _DEBUG
-			
-			if( m_exception_filter )
-			{
-				::SetUnhandledExceptionFilter( m_exception_filter );
-			}
-
-			if( m_se_translator )
-			{
-				::_set_se_translator( m_se_translator );
-			}
-
-			# endif
-		}
-
-		_se_translator_function m_se_translator;
-		LPTOP_LEVEL_EXCEPTION_FILTER m_exception_filter;
-	};
-
-	static SEH_ExceptionHandler __seh_exception_handler__;
-
-	static bool FrameLessCompare( const StackFrameSequence& FrameSequence_lhs, const StackFrameSequence& FrameSequence_rhs )
-	{
-		for( int i = 0; i < XGC_COUNTOF( FrameSequence_lhs.Frame ); ++i )
-		{
-			if( FrameSequence_lhs.Frame[i] < FrameSequence_rhs.Frame[i] )
-				continue;
-			else if( FrameSequence_lhs.Frame[i] == FrameSequence_rhs.Frame[i] )
-				continue;
-			else
-				return false;
-		}
-
-		return true;
-	}
-
-	void seh_exception_call( CSEHexception& e, const char* file, int line )
-	{
-		FILE * fp = xgc_nullptr;
-		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
-		{
-			datetime now = datetime::now();
-			xgc_char szDateTime[64];
-			now.to_string( szDateTime, sizeof( szDateTime ) );
-			fprintf( fp, "[%s] SEH %s:%d:%s\n", szDateTime, file, line, e.what() );
-			fclose( fp );
-		}
-		exception_filter( e.GetSEHInfo() );
-	}
-
-	void std_exception_call( std::exception& e, const char* file, int line )
-	{
-		FILE * fp = xgc_nullptr;
-		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
-		{
-			datetime now = datetime::now();
-			xgc_char szDateTime[64];
-			now.to_string( szDateTime, sizeof( szDateTime ) );
-			fprintf( fp, "[%s] STD %s:%d:%s\n", szDateTime, file, line, e.what() );
-			fclose( fp );
-		}
-	}
-
-	void etc_exception_call( const char* file, int line )
-	{
-		FILE * fp = xgc_nullptr;
-		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
-		{
-			datetime now = datetime::now();
-			xgc_char szDateTime[64];
-			now.to_string( szDateTime, sizeof( szDateTime ) );
-			fprintf( fp, "[%s] ETC %s:%d\n", szDateTime, file, line );
-			fclose( fp );
-		}
-	}
-
-	xgc_void getStackTraceFast( UINT_PTR* fp, StackFrameSequence& FrameSequence )
-	{
 		FrameSequence.Count = 0;
-		UINT_PTR* framePointer = (UINT_PTR*) fp;
 
-#if defined(_M_IX86)
+	#if defined(_M_IX86)
 		while ( FrameSequence.Count < MAX_FRAME_SAVE) {
 			if (*framePointer < (UINT_PTR)framePointer) {
 				if (*framePointer == NULL) {
@@ -198,7 +132,7 @@ namespace xgc
 			FrameSequence.Count += 1;
 			framePointer = (UINT_PTR*)*framePointer;
 		}
-#elif defined(_M_X64)
+	#elif defined(_M_X64)
 		xgc_uint32 maxframes = XGC_MIN( 62, MAX_FRAME_SAVE + 10 );
 		static USHORT( WINAPI *s_pfnCaptureStackBackTrace )( ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash ) = 0;
 		if( s_pfnCaptureStackBackTrace == 0 )
@@ -234,16 +168,13 @@ namespace xgc
 			FrameSequence.Count += 1;
 		}
 		delete[] myFrames;
-#endif
+	#endif
 	}
 
 	xgc_void DumpStackFrame()
 	{
-		//LPEXCEPTION_POINTERS lpExceptionPointer = GetExceptionInformation();
-
 		StackFrameSequence FrameSequence;
-		UINT_PTR* pAddressReturn = (UINT_PTR*) _AddressOfReturnAddress();
-		getStackTraceFast( pAddressReturn - 1, FrameSequence );
+		GetStackTrace( FrameSequence );
 
 		xgc_char szSymbol[sizeof( SYMBOL_INFO ) + 1024];
 		SYS_INFO( "---------------stack frame begin--------------" );
@@ -282,110 +213,6 @@ namespace xgc
 		}
 		SYS_INFO( "---------------stack frame end--------------" );
 	}
-
-	///
-	/// 设置异常捕获文件的路径
-	/// [12/3/2014] create by albert.xu
-	///
-	void SetExceptionLog( xgc_lpcstr pathname )
-	{
-		strcpy_s( g_exception_log, pathname );
-	}
-
-	///
-	/// 设置异常捕获文件的路径
-	/// [12/3/2014] create by albert.xu
-	///
-	void SetExceptionExt( xgc_lpcstr pathname )
-	{
-		strcpy_s( g_exception_ext, pathname );
-	}
-
-	///
-	/// 设置异常捕获文件的路径
-	/// [12/3/2014] create by albert.xu
-	///
-	void SetExceptionDmp( xgc_lpcstr pathname )
-	{
-		strcpy_s( g_exception_dmp, pathname );
-	}
-
-	struct StackFrameRecoder
-	{
-	private:
-		StackFrameSequence StackFrame[MAX_FRAME_SIZE];
-		LONG dwSaveFrameCount;
-	public:
-		StackFrameRecoder()
-			: dwSaveFrameCount( 0 )
-		{
-			memset( StackFrame, 0, sizeof( StackFrame ) );
-		}
-
-		~StackFrameRecoder()
-		{
-		}
-
-		// getStackTrace - Traces the stack as far back as possible, or until 'maxdepth'
-		//   frames have been traced. Populates the CallStack with one entry for each
-		//   stack frame traced.
-		//
-		//   Note: This function uses a very efficient method to walk the stack from
-		//     frame to frame, so it is quite fast. However, unconventional stack frames
-		//     (such as those created when frame pointer omission optimization is used)
-		//     will not be successfully walked by this function and will cause the
-		//     stack trace to terminate prematurely.
-		//
-		//  - maxdepth (IN): Maximum number of frames to trace back.
-		//
-		//  - framepointer (IN): Frame (base) pointer at which to begin the stack trace.
-		//      If NULL, then the stack trace will begin at this function.
-		//
-		//  Return Value:
-		//
-		//    None.
-		//
-		StackFrameSequence* IsFrameExist( const StackFrameSequence& FrameSequence )
-		{
-			StackFrameSequence* pFrame
-				= std::lower_bound( StackFrame, StackFrame + dwSaveFrameCount, FrameSequence, FrameLessCompare );
-
-			if( pFrame == StackFrame + dwSaveFrameCount )
-				return xgc_nullptr;
-
-			if( memcmp( &FrameSequence, pFrame, sizeof( FrameSequence ) ) == 0 )
-				return pFrame;
-
-			return xgc_nullptr;
-		}
-
-		bool InsertFrame( UINT_PTR *fp, UINT* pnCount )
-		{
-			if( dwSaveFrameCount >= MAX_FRAME_SIZE )
-				return false;
-
-			getStackTraceFast( fp, StackFrame[dwSaveFrameCount] );
-			StackFrameSequence* pFrame = IsFrameExist( StackFrame[dwSaveFrameCount] );
-			if( pFrame == NULL )
-			{
-				++dwSaveFrameCount;
-				std::sort( &StackFrame[0], &StackFrame[dwSaveFrameCount], FrameLessCompare );
-				if( pnCount )
-					*pnCount = 0;
-				return true;
-			}
-			else
-			{
-				pFrame->Count++;
-				if( pnCount )
-					*pnCount = pFrame->Count;
-			}
-
-			return false;
-		}
-	};
-
-	static StackFrameRecoder g_StackFrameRecoder;
 
 #if defined(_WIN64)
 	static DWORD64 __stdcall GetModBase( HANDLE hProcess, DWORD64 dwAddr )
@@ -438,7 +265,7 @@ namespace xgc
 
 		SYSTEMTIME tm;
 		GetLocalTime( &tm );
-		xgc_char dumpName[_MAX_PATH] = { 0 };
+		xgc_char dumpName[XGC_MAX_PATH] = { 0 };
 		sprintf_s( dumpName, "%s\\dump_%04d-%02d-%02d_%02d%02d%02d.%03d.dmp"
 			, g_exception_dmp
 			, tm.wYear
@@ -499,87 +326,6 @@ namespace xgc
 		}
 	}
 
-	const char* CSEHexception::what()
-	{
-		if( lpEP )
-		{
-			xgc_lpcstr info = "";
-			EXCEPTION_RECORD * pERec = lpEP->ExceptionRecord;
-			switch( pERec->ExceptionCode )
-			{
-				case EXCEPTION_ACCESS_VIOLATION:
-				info = "EXCEPTION_ACCESS_VIOLATION";
-				break;
-				case EXCEPTION_DATATYPE_MISALIGNMENT:
-				info = "EXCEPTION_DATATYPE_MISALIGNMENT";
-				break;
-				case EXCEPTION_BREAKPOINT:
-				info = "EXCEPTION_BREAKPOINT";
-				break;
-				case EXCEPTION_SINGLE_STEP:
-				info = "EXCEPTION_SINGLE_STEP";
-				break;
-				case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-				info = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
-				break;
-				case EXCEPTION_FLT_DENORMAL_OPERAND:
-				info = "EXCEPTION_FLT_DENORMAL_OPERAND";
-				break;
-				case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-				info = "EXCEPTION_FLT_DIVIDE_BY_ZERO";
-				break;
-				case EXCEPTION_FLT_INEXACT_RESULT:
-				info = "EXCEPTION_FLT_INEXACT_RESULT";
-				break;
-				case EXCEPTION_FLT_INVALID_OPERATION:
-				info = "EXCEPTION_FLT_INVALID_OPERATION";
-				break;
-				case EXCEPTION_FLT_OVERFLOW:
-				info = "EXCEPTION_FLT_OVERFLOW";
-				break;
-				case EXCEPTION_FLT_STACK_CHECK:
-				info = "EXCEPTION_FLT_STACK_CHECK";
-				break;
-				case EXCEPTION_FLT_UNDERFLOW:
-				info = "EXCEPTION_FLT_UNDERFLOW";
-				break;
-				case EXCEPTION_INT_DIVIDE_BY_ZERO:
-				info = "EXCEPTION_INT_DIVIDE_BY_ZERO";
-				break;
-				case EXCEPTION_INT_OVERFLOW:
-				info = "EXCEPTION_INT_OVERFLOW";
-				break;
-				case EXCEPTION_PRIV_INSTRUCTION:
-				info = "EXCEPTION_PRIV_INSTRUCTION";
-				break;
-				case EXCEPTION_IN_PAGE_ERROR:
-				info = "EXCEPTION_IN_PAGE_ERROR";
-				break;
-				case EXCEPTION_ILLEGAL_INSTRUCTION:
-				info = "EXCEPTION_ILLEGAL_INSTRUCTION";
-				break;
-				case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-				info = "EXCEPTION_NONCONTINUABLE_EXCEPTION";
-				break;
-				case EXCEPTION_STACK_OVERFLOW:
-				info = "EXCEPTION_STACK_OVERFLOW";
-				break;
-				case EXCEPTION_INVALID_DISPOSITION:
-				info = "EXCEPTION_INVALID_DISPOSITION";
-				break;
-				case EXCEPTION_GUARD_PAGE:
-				info = "EXCEPTION_GUARD_PAGE";
-				break;
-				case EXCEPTION_INVALID_HANDLE:
-				info = "EXCEPTION_INVALID_HANDLE";
-				break;
-			}
-			return info;
-		}
-
-		return std::exception::what();
-	}
-
 	struct LocalVariablesReport
 	{
 		enum BasicType  // Stolen from CVCONST.H in the DIA 2.0 SDK
@@ -620,12 +366,12 @@ namespace xgc
 		// Helper function that writes to the report file, and allows the user to use 
 		// printf style formating                                                     
 		//============================================================================
-		void __cdecl _putc( CHAR szCh )
+		void XGC_CDECL_CALL _putc( CHAR szCh )
 		{
 			fputc( szCh, m_pFileHandle );
 		}
 
-		void __cdecl _putw( WCHAR szCh )
+		void XGC_CDECL_CALL _putw( WCHAR szCh )
 		{
 			fputwc( szCh, m_pFileHandle );
 		}
@@ -634,7 +380,7 @@ namespace xgc
 		// Helper function that writes to the report file, and allows the user to use 
 		// printf style formating                                                     
 		//============================================================================
-		int __cdecl _printf( xgc_lpcstr format, ... )
+		int XGC_CDECL_CALL _printf( xgc_lpcstr format, ... )
 		{
 			va_list args;
 			va_start( args, format );
@@ -1041,8 +787,6 @@ namespace xgc
 		return TRUE;
 	}
 
-	static char buf[1024 * 256] = { 0 };
-
 	void __stdcall  dump_callstack( CONTEXT *pCtx )
 	{
 		FILE * fp = xgc_nullptr;
@@ -1115,16 +859,6 @@ namespace xgc
 					{
 						fprintf( fp, "%s(%d):%s\n", lineInfo.FileName, lineInfo.LineNumber, pSymbol->Name );
 					}
-
-					//// Use SymSetContext to get just the locals/params for this frame
-					//IMAGEHLP_STACK_FRAME imagehlpStackFrame;
-					//ZeroMemory( &imagehlpStackFrame, sizeof( imagehlpStackFrame ) );
-					//imagehlpStackFrame.InstructionOffset = stFrame.AddrPC.Offset;
-					//SymSetContext( hProcess, &imagehlpStackFrame, 0 );
-
-					//// Enumerate the locals/parameters
-					//LocalVariablesReport VariablesReport( hProcess, &stFrame, fp );
-					//SymEnumSymbols( hProcess, 0, 0, EnumerateSymbolsCallback, &VariablesReport );
 				}
 				else
 				{
@@ -1154,5 +888,233 @@ namespace xgc
 
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
+
+	const char* seh_exception::what() const throw()
+	{
+		if( _pcontext )
+		{
+			LPEXCEPTION_POINTERS *lpEP = (LPEXCEPTION_POINTERS)_pcontext;
+			xgc_lpcstr info = "";
+			EXCEPTION_RECORD * pERec = lpEP->ExceptionRecord;
+			switch( pERec->ExceptionCode )
+			{
+				case EXCEPTION_ACCESS_VIOLATION:
+				info = "EXCEPTION_ACCESS_VIOLATION";
+				break;
+				case EXCEPTION_DATATYPE_MISALIGNMENT:
+				info = "EXCEPTION_DATATYPE_MISALIGNMENT";
+				break;
+				case EXCEPTION_BREAKPOINT:
+				info = "EXCEPTION_BREAKPOINT";
+				break;
+				case EXCEPTION_SINGLE_STEP:
+				info = "EXCEPTION_SINGLE_STEP";
+				break;
+				case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+				info = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+				break;
+				case EXCEPTION_FLT_DENORMAL_OPERAND:
+				info = "EXCEPTION_FLT_DENORMAL_OPERAND";
+				break;
+				case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+				info = "EXCEPTION_FLT_DIVIDE_BY_ZERO";
+				break;
+				case EXCEPTION_FLT_INEXACT_RESULT:
+				info = "EXCEPTION_FLT_INEXACT_RESULT";
+				break;
+				case EXCEPTION_FLT_INVALID_OPERATION:
+				info = "EXCEPTION_FLT_INVALID_OPERATION";
+				break;
+				case EXCEPTION_FLT_OVERFLOW:
+				info = "EXCEPTION_FLT_OVERFLOW";
+				break;
+				case EXCEPTION_FLT_STACK_CHECK:
+				info = "EXCEPTION_FLT_STACK_CHECK";
+				break;
+				case EXCEPTION_FLT_UNDERFLOW:
+				info = "EXCEPTION_FLT_UNDERFLOW";
+				break;
+				case EXCEPTION_INT_DIVIDE_BY_ZERO:
+				info = "EXCEPTION_INT_DIVIDE_BY_ZERO";
+				break;
+				case EXCEPTION_INT_OVERFLOW:
+				info = "EXCEPTION_INT_OVERFLOW";
+				break;
+				case EXCEPTION_PRIV_INSTRUCTION:
+				info = "EXCEPTION_PRIV_INSTRUCTION";
+				break;
+				case EXCEPTION_IN_PAGE_ERROR:
+				info = "EXCEPTION_IN_PAGE_ERROR";
+				break;
+				case EXCEPTION_ILLEGAL_INSTRUCTION:
+				info = "EXCEPTION_ILLEGAL_INSTRUCTION";
+				break;
+				case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+				info = "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+				break;
+				case EXCEPTION_STACK_OVERFLOW:
+				info = "EXCEPTION_STACK_OVERFLOW";
+				break;
+				case EXCEPTION_INVALID_DISPOSITION:
+				info = "EXCEPTION_INVALID_DISPOSITION";
+				break;
+				case EXCEPTION_GUARD_PAGE:
+				info = "EXCEPTION_GUARD_PAGE";
+				break;
+				case EXCEPTION_INVALID_HANDLE:
+				info = "EXCEPTION_INVALID_HANDLE";
+				break;
+			}
+			return info;
+		}
+
+		return std::exception::what();
+	}
+	#elif defined _LINUX
+	const char* seh_exception::what() const throw()
+	{
+		return std::exception::what();
+	}
+
+	xgc_void GetStackTrace( StackFrameSequence& FrameSequence )
+	{
+		FrameSequence.Count = backtrace( FrameSequence.Frame, XGC_COUNTOF(FrameSequence.Frame) );
+	}
+
+	xgc_void DumpStackFrame()
+	{
+		StackFrameSequence FrameSequence;
+		GetStackTrace( FrameSequence );
+
+		SYS_INFO( "---------------stack frame begin--------------" );
+
+		char **messages = backtrace_symbols(FrameSequence.Frame, FrameSequence.Count);
+		for( xgc_uint32 i = 0; i < FrameSequence.Count; ++i )
+		{
+			SYS_INFO("[bt] #%2d:%s", i, messages[i]);
+		}
+
+		SYS_INFO( "---------------stack frame end--------------" );
+	}
+
+	#endif // _WINDOWS
+
+	void seh_exception_call( seh_exception& e, const char* file, int line )
+	{
+		FILE * fp = xgc_nullptr;
+		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
+		{
+			datetime now = datetime::now();
+			xgc_char szDateTime[64];
+			now.to_string( szDateTime, sizeof( szDateTime ) );
+			fprintf( fp, "[%s] SEH %s:%d:%s\n", szDateTime, file, line, e.what() );
+			fclose( fp );
+		}
+	}
+
+	void std_exception_call( std::exception& e, const char* file, int line )
+	{
+		FILE * fp = xgc_nullptr;
+		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
+		{
+			datetime now = datetime::now();
+			xgc_char szDateTime[64];
+			now.to_string( szDateTime, sizeof( szDateTime ) );
+			fprintf( fp, "[%s] STD %s:%d:%s\n", szDateTime, file, line, e.what() );
+			fclose( fp );
+		}
+	}
+
+	void etc_exception_call( const char* file, int line )
+	{
+		FILE * fp = xgc_nullptr;
+		if( fopen_s( &fp, g_exception_log, "a+" ) == 0 && fp )
+		{
+			datetime now = datetime::now();
+			xgc_char szDateTime[64];
+			now.to_string( szDateTime, sizeof( szDateTime ) );
+			fprintf( fp, "[%s] ETC %s:%d\n", szDateTime, file, line );
+			fclose( fp );
+		}
+	}
+
+	///
+	/// 设置异常捕获文件的路径
+	/// [12/3/2014] create by albert.xu
+	///
+	void SetExceptionLog( xgc_lpcstr pathname )
+	{
+		strcpy_s( g_exception_log, pathname );
+	}
+
+	///
+	/// 设置异常捕获文件的路径
+	/// [12/3/2014] create by albert.xu
+	///
+	void SetExceptionExt( xgc_lpcstr pathname )
+	{
+		strcpy_s( g_exception_ext, pathname );
+	}
+
+	///
+	/// 设置异常捕获文件的路径
+	/// [12/3/2014] create by albert.xu
+	///
+	void SetExceptionDmp( xgc_lpcstr pathname )
+	{
+		strcpy_s( g_exception_dmp, pathname );
+	}
+
+	struct StackFrameRecoder
+	{
+	private:
+		StackFrameSequence StackFrame[MAX_FRAME_SIZE];
+		xgc_ulong dwSaveFramePoint;
+	public:
+		StackFrameRecoder()
+			: dwSaveFramePoint( 0 )
+		{
+			memset( StackFrame, 0, sizeof( StackFrame ) );
+		}
+
+		~StackFrameRecoder()
+		{
+		}
+
+		StackFrameSequence* IsFrameExist( const StackFrameSequence& FrameSequence )
+		{
+			for( auto i = 0; i < MAX_FRAME_SAVE; ++i )
+			{
+				StackFrameSequence &backtrace = StackFrame[i];
+				if( backtrace.Count != FrameSequence.Count )
+					continue;
+				
+				uint32_t c = 0;;
+				while( backtrace.Count > c )
+				{
+					if( FrameSequence.Frame[c] != backtrace.Frame[c] )
+						break;
+
+					--c;
+				}
+
+				if( c == backtrace.Count )
+					return StackFrame + i;
+			}
+
+			return xgc_nullptr;
+		}
+
+		bool InsertFrame( StackFrameSequence &backtrace )
+		{
+			if( dwSaveFramePoint >= MAX_FRAME_SIZE )
+				dwSaveFramePoint = 0;
+
+			GetStackTrace( StackFrame[dwSaveFramePoint] );
+
+			++dwSaveFramePoint;
+		}
+	};
+
+	static StackFrameRecoder g_StackFrameRecoder;
 }// end of namespace xgc
-#endif // _WINDOWS

@@ -38,7 +38,7 @@ namespace xgc
 		};
 
 		#ifdef __GNUC__
-		error_t localtime_s( struct tm *tt, const time_t *t )
+		XGC_INLINE error_t localtime_s( struct tm *tt, const time_t *t )
 		{
 			auto ptt = localtime( t );
 			if( tt && ptt )
@@ -50,7 +50,7 @@ namespace xgc
 			return -1;
 		}
 
-		error_t gmtime_s( struct tm *tt, const time_t *t )
+		XGC_INLINE error_t gmtime_s( struct tm *tt, const time_t *t )
 		{
 			auto ptt = gmtime( t );
 			if( tt && ptt )

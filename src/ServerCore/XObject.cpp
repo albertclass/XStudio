@@ -108,7 +108,7 @@ namespace XGC
 
 	xgc_bool XObject::QueryChild( const std::function< xgc_bool( xObject ) >& fnFilter )const
 	{
-		for each( auto it in mChildList )
+		for( auto it : mChildList )
 			if( fnFilter( it ) )
 				return true;
 

@@ -61,7 +61,7 @@ namespace xgc
 			"[SRT_INF]",	//LOGLVL_SCRIPT_INFO
 		};
 
-		xgc_char gConfigPath[_MAX_PATH] = "";
+		xgc_char gConfigPath[XGC_MAX_PATH] = "";
 
 		const char* ELEM_CONFIG = "config";
 		const char* ELEM_LOG = "log";
@@ -260,7 +260,7 @@ namespace xgc
 				
 			}
 
-			char szFilePath[_MAX_PATH] = { 0 };
+			char szFilePath[XGC_MAX_PATH] = { 0 };
 			char szDateTime[64] = { 0 };
 
 			datetime::now( szDateTime );
@@ -331,7 +331,7 @@ namespace xgc
 			if( LogSwitch[nLevel] == false ) return;
 
 			char szMsg[LoggerBufSize];
-			int cpy1 = _snprintf_s( szMsg, sizeof( szMsg ), "%s %s(%d): ", LogPrefix[nLevel], pszFunction, nLine );
+			int cpy1 = snprintf_s( szMsg, sizeof( szMsg ), "%s %s(%d): ", LogPrefix[nLevel], pszFunction, nLine );
 			if( cpy1 < 0 )
 				return;
 
@@ -342,7 +342,7 @@ namespace xgc
 
 			va_list args;
 			va_start( args, format );
-			int cpy2 = _vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, _TRUNCATE, format, args );
+			int cpy2 = vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, _TRUNCATE, format, args );
 			va_end( args );
 
 			if( cpy2 < 0 )
@@ -356,11 +356,13 @@ namespace xgc
 			_LogToFile( szMsg );
 			_LogToShm( szMsg );
 
+			#if defined(_WINDOWS)
 			if( IsDebuggerPresent() )
 			{
 				_snprintf_s( szMsg, cpy1, "%s(%d): %s#", pszFunction, nLine, LogPrefix[nLevel] );
 				_LogToDebugger( szMsg );
 			}
+			#endif
 		}
 
 		void write( EExeLogLvl nLevel, xgc_lpcstr format, ... )
@@ -369,7 +371,7 @@ namespace xgc
 			if( LogSwitch[nLevel] == false ) return;
 
 			char szMsg[LoggerBufSize];
-			int cpy1 = _snprintf_s( szMsg, sizeof( szMsg ), "%s : ", LogPrefix[nLevel] );
+			int cpy1 = snprintf_s( szMsg, sizeof( szMsg ), "%s : ", LogPrefix[nLevel] );
 			if( cpy1 < 0 )
 				return;
 
@@ -378,7 +380,7 @@ namespace xgc
 
 			va_list args;
 			va_start( args, format );
-			int cpy2 = _vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, _TRUNCATE, format, args );
+			int cpy2 = vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, _TRUNCATE, format, args );
 			va_end( args );
 
 			if( cpy2 < 0 )
@@ -390,17 +392,19 @@ namespace xgc
 			_LogToFile( szMsg );
 			_LogToShm( szMsg );
 
+			#if defined(_WINDOWS)
 			if( IsDebuggerPresent() )
 			{
 				_snprintf_s( szMsg, cpy1, ": %s#", LogPrefix[nLevel] );
 				_LogToDebugger( szMsg );
 			}
+			#endif
 		}
 
 		xgc_void write_shared( xgc_lpcstr pszFunction, xgc_int32 nLine, xgc_lpcstr format, ... )
 		{
 			char szMsg[LoggerBufSize];
-			int cpy1 = _snprintf_s( szMsg, sizeof( szMsg ), "%s %s(%d): ", "[SHM_LOG]", pszFunction, nLine );
+			int cpy1 = snprintf_s( szMsg, sizeof( szMsg ), "%s %s(%d): ", "[SHM_LOG]", pszFunction, nLine );
 			if( cpy1 < 0 )
 				return;
 
@@ -409,7 +413,7 @@ namespace xgc
 
 			va_list args;
 			va_start( args, format );
-			int cpy2 = _vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, sizeof( szMsg ) - cpy1, format, args );
+			int cpy2 = vsnprintf_s( szMsg + cpy1, sizeof( szMsg ) - cpy1, sizeof( szMsg ) - cpy1, format, args );
 			va_end( args );
 
 			if( cpy2 < 0 )

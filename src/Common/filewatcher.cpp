@@ -39,9 +39,9 @@ namespace xgc
 			/// 事件掩码
 			xgc_uint32 events;
 			/// �?径地址
-			xgc_char path[_MAX_PATH];
+			xgc_char path[XGC_MAX_PATH];
 			/// 缓冲文件
-			xgc_char file[_MAX_FNAME];
+			xgc_char file[XGC_MAX_FNAME];
 			/// 消息缓冲
 			/// 注意，�?��?�缓冲�?�地址一定�?�保证四字节对齐，否则无法收到通知消息
 			xgc_char notify_infomation[MAX_BUFF_SIZE];

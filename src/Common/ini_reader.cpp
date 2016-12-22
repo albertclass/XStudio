@@ -43,7 +43,7 @@ namespace xgc
 		///
 		xgc_bool ini_reader::load( xgc_lpcstr fpath, xgc_lpcstr fname )
 		{
-			xgc_char path[_MAX_PATH] = { 0 };
+			xgc_char path[XGC_MAX_PATH] = { 0 };
 			xgc_lpcstr pathname = get_normal_path( path, sizeof( path ), "%s", fpath );
 
 			// 打开指定文件

@@ -8,7 +8,10 @@
 
 namespace xgc
 {
-	static xgc_char gTimeLogPath[_MAX_PATH] = { 0 };
+	#if defined _LINUX
+	__thread sigjmp_buf sigjmp_env;
+	#endif
+	static xgc_char gTimeLogPath[XGC_MAX_PATH] = { 0 };
 	static xgc_time64 gTimeoutSeconds = 500;
 
 	InvokeWatcherMgr::InvokeWatcherMgr()

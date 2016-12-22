@@ -28,10 +28,12 @@ namespace xgc
 		}
 
 		shared_memory_buffer::shared_memory_buffer( const shared_memory_buffer& buffer ) 
-			: shared_memory_( INVALID_HANDLE_VALUE )
+			: shared_memory_( xgc_invalid_handle )
 		{
+			#if defined _WINDOWS
 			XGC_ASSERT( DuplicateHandle( GetCurrentProcess(), buffer.shared_memory_,
 									 GetCurrentProcess(), &shared_memory_, FILE_MAP_ALL_ACCESS, false, 0 ) );
+			#endif
 		}
 
 		///
@@ -45,6 +47,7 @@ namespace xgc
 			destroy();
 		}
 
+		#if defined _WINDOWS
 		///
 		/// \brief 创建共享内存
 		///
@@ -68,7 +71,7 @@ namespace xgc
 				xgc_char szDate[128] = { 0 };
 				datetime::now( szDate, "%Y_%m_%d_%H%M%S" );
 
-				xgc_char szPath[_MAX_PATH] = { 0 };
+				xgc_char szPath[XGC_MAX_PATH] = { 0 };
 				sprintf_s( szPath, sizeof( szPath ), "%s%s_%s.log", file_path, shared_memory_name, szDate );
 				hFileHandle = CreateFileA(
 					szPath,
@@ -149,5 +152,23 @@ namespace xgc
 
 			shared_memory_ = xgc_invalid_handle;
 		}
+		#elif defined _LINUX
+		xgc_long shared_memory_buffer::create( xgc_lpcstr shared_memory_name, xgc_size size, xgc_lpcstr file_path )
+		{
+
+		}
+
+		///
+		/// \brief 销毁共享内存对
+		///
+		/// \author albert.xu
+		/// \date 2015/12/18 16:35
+		///
+
+		xgc_void shared_memory_buffer::destroy()
+		{
+
+		}
+		#endif // _WINDOWS
 	}
 }

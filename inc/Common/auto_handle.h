@@ -142,9 +142,14 @@ namespace xgc
 		};
 
 		//----------------------------------------------------------------------//
-		template< typename _type, typename _handle_type >
+		template< typename _ty, typename _handle_type >
 		class auto_handle_pool
 		{
+			typedef _ty _type;
+			typedef _handle_type _htype;
+			typedef auto_handle_pool< _ty, _htype > _myt;
+			typedef auto_handle< _ty, _htype > *object_ptr;
+
 			friend auto_handle_pool& get_handle_pool< _type, _handle_type >();
 			friend xgc_void auto_handle< _type, _handle_type >::new_handle( auto_handle< _type, _handle_type >* ptr );
 			friend xgc_void auto_handle< _type, _handle_type >::del_handle( auto_handle< _type, _handle_type >* ptr );
@@ -152,8 +157,6 @@ namespace xgc
 			//////////////////////////////////////////////////////////////////////////
 			// 为防止静态库同时被多个动态库或执行文件共享的问题，这里只声明该Static对象。
 			static auto_handle_pool *pInstance;
-
-			typedef auto_handle< _type, _handle_type > *object_ptr;
 
 			struct chunk
 			{
@@ -258,7 +261,7 @@ namespace xgc
 				ptr->position = mCurrentChunk->cursor;
 
 				// 将对象指针放在句柄缓冲池中
-				XGC_ASSERT( mCurrentChunk->ptr[mCurrentChunk->cursor] == xgc_nullptr );
+				XGC_ASSERT( !mCurrentChunk->ptr[mCurrentChunk->cursor] );
 				mCurrentChunk->ptr[mCurrentChunk->cursor] = ptr;
 				mCurrentChunk->alloca++;
 				mCurrentChunk->cursor++;

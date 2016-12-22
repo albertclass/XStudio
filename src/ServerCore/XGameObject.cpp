@@ -50,7 +50,7 @@ namespace XGC
 		auto iter_code = iter_event->second.mTriggerCode.find( 0xffff );
 		if( iter_code != iter_event->second.mTriggerCode.end() )
 		{
-			for each( auto iter in iter_code->second.mTriggerList )
+			for( auto iter : iter_code->second.mTriggerList )
 				iter.second( GetObjectID(), iter.first, wParam, lParam, nCode );
 		}
 
@@ -62,7 +62,7 @@ namespace XGC
 			return;
 		}
 
-		for each( auto iter in iter_code->second.mTriggerList )
+		for( auto iter : iter_code->second.mTriggerList )
 			iter.second( GetObjectID(), iter.first, wParam, lParam, nCode );
 
 		// »Ø¸´µÝ¹é²ãÊý
@@ -177,7 +177,7 @@ namespace XGC
 		{
 			xObjectSet Objects = pMap->CaptureObjectByEyeshot( GetPosition(), fnNotifyFilter );
 
-			for each( xObject hObject in Objects )
+			for( xObject hObject : Objects )
 			{
 				if( hObject == GetObjectID() )
 					continue;
@@ -209,7 +209,7 @@ namespace XGC
 		{
 			xObjectSet Objects = pMap->CaptureObjectByEyeshot( GetPosition(), fnNotifyFilter );
 
-			for each( xObject hObject in Objects )
+			for( xObject hObject : Objects )
 			{
 				if (hObject == GetObjectID())
 					continue;
@@ -237,7 +237,7 @@ namespace XGC
 		{
 			xObjectSet Objects = pMap->CaptureObjectByEyeshot( GetPosition(), fnNotifyFilter );
 
-			for each( xObject hObject in Objects )
+			for( xObject hObject : Objects )
 			{
 				if( hObject == GetObjectID() )
 					continue;
@@ -262,7 +262,7 @@ namespace XGC
 		{
 			xObjectSet Objects = pMap->CaptureObjectByEyeshot( GetPosition(), fnNotifyFilter );
 
-			for each( xObject hObject in Objects )
+			for( xObject hObject : Objects )
 			{
 				if( hObject == GetObjectID() )
 					continue;

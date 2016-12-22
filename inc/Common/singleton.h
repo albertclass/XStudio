@@ -16,7 +16,7 @@ namespace xgc
 {
 	namespace common
 	{
-		typedef void (__cdecl *atexit_pfn_t)();
+		typedef void (XGC_CDECL_CALL *atexit_pfn_t)();
 
 		// added by lcj 2013-6-07 start
 		typedef void (*destoryFunc)();
@@ -58,9 +58,9 @@ namespace xgc
 		{
 
 		#ifndef EXPORT_API
-			void __cdecl AtExitFn(); // declaration needed below   
+			void XGC_CDECL_CALL AtExitFn(); // declaration needed below   
 		#else
-			void __cdecl AtExitFn();
+			void XGC_CDECL_CALL AtExitFn();
 		#endif
 
 			class LifetimeTracker;
@@ -799,7 +799,7 @@ namespace xgc
 		private:
 			// Helpers
 			static void MakeInstance();
-			static void __cdecl DestroySingleton();
+			static void XGC_CDECL_CALL DestroySingleton();
 
 			// Protection
 			SingletonHolder();
@@ -906,7 +906,7 @@ namespace xgc
 			template <class> class L,
 			template <class> class M
 		>
-		void __cdecl 
+		void XGC_CDECL_CALL 
 		SingletonHolder<T, CreationPolicy, L, M>::DestroySingleton()
 		{
 			// modified by lcj 2013-6-7 start

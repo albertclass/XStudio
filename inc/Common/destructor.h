@@ -1,6 +1,7 @@
 #pragma once
 #ifndef _DESTRUCTOR_H_
 #define _DESTRUCTOR_H_
+#include "defines.h"
 #include "debuger.h"
 
 template< class T >
@@ -45,7 +46,7 @@ namespace xgc
 		template< class T >
 		struct ContainerDestroyer< T* >
 		{
-			XGC_INLINE static void Destroy( T* Point )
+			XGC_INLINE static void Destroy( T* Point ) throw()
 			{
 				FUNCTION_BEGIN;
 				AutoDeletePoint< T* >::SafeDelete( Point );
@@ -126,7 +127,7 @@ namespace xgc
 		{
 			XGC_INLINE static void Destroy( const std::set< V, P, A >& C )
 			{
-				for( auto = iter, C.begin(); iter != C.end(); ++iter )
+				for( auto iter = C.begin(); iter != C.end(); ++iter )
 				{
 					ContainerDestroyer< V >::Destroy( *iter );
 				}
@@ -268,7 +269,7 @@ namespace xgc
 		template< class T, class D >
 		void DestroyContainer( const T& v, D pFn )
 		{
-			for each( auto it in v ) pFn( it );
+			for( auto it : v ) pFn( it );
 		}
 	}
 }

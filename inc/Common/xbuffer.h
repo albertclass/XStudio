@@ -15,12 +15,15 @@ namespace xgc
 {
 	namespace common
 	{
-		enum COMMON_API buffer_exception_code : int
+		enum COMMON_API buffer_exception_code
 		{
 			buffer_copy_overflow = -1,
 		};
 
+		#if defined _WINDOWS
 		class COMMON_API std::exception;
+		#endif
+		
 		class COMMON_API buffer_exception : std::exception
 		{
 		public:
@@ -52,7 +55,7 @@ namespace xgc
 				
 			}
 
-			virtual char const* what() const
+			virtual const char * what() const noexcept
 			{
 				return std::exception::what();
 			}
@@ -373,6 +376,7 @@ namespace xgc
 		template< class _Buf >
 		class separate_buffer_recorder : public _Buf
 		{
+			typedef _Buf _Base;
 		protected:
 			/// 写指针位置
 			xgc_size wd_;
@@ -462,7 +466,7 @@ namespace xgc
 			///
 			xgc_lpcstr begin()
 			{
-				return base();
+				return _Base::base();
 			}
 
 			///
@@ -473,7 +477,7 @@ namespace xgc
 			///
 			xgc_lpcstr begin()const
 			{
-				return base();
+				return _Base::base();
 			}
 
 			///
@@ -484,7 +488,7 @@ namespace xgc
 			///
 			xgc_lpcstr end()
 			{
-				return base() + capacity();
+				return _Base::base() + _Base::capacity();
 			}
 
 			///
@@ -495,7 +499,7 @@ namespace xgc
 			///
 			xgc_lpcstr end()const
 			{
-				return base() + capacity();
+				return _Base::base() + _Base::capacity();
 			}
 
 			///
@@ -506,7 +510,7 @@ namespace xgc
 			///
 			xgc_size len()const
 			{
-				return capacity();
+				return _Base::capacity();
 			}
 
 			///
@@ -563,6 +567,7 @@ namespace xgc
 		template< class _Buf >
 		class union_buffer_recorder : public _Buf
 		{
+			typedef _Buf _Base;
 		protected:
 			struct recorder
 			{
@@ -582,7 +587,7 @@ namespace xgc
 			union_buffer_recorder()
 				: _Buf()
 			{
-				memset( (xgc_lpvoid)base(), 0, sizeof( recorder ) );
+				memset( (xgc_lpvoid)_Base::base(), 0, sizeof( recorder ) );
 			}
 
 			///
@@ -619,7 +624,7 @@ namespace xgc
 			///
 			xgc_lpcstr begin()
 			{
-				return base() + sizeof( recorder );
+				return _Base::base() + sizeof( recorder );
 			}
 
 			///
@@ -630,7 +635,7 @@ namespace xgc
 			///
 			xgc_lpcstr begin()const
 			{
-				return base() + sizeof( recorder );
+				return _Base::base() + sizeof( recorder );
 			}
 
 			///
@@ -641,7 +646,7 @@ namespace xgc
 			///
 			xgc_lpcstr end()
 			{
-				return base() + capacity();
+				return _Base::base() + _Base::capacity();
 			}
 
 			///
@@ -652,7 +657,7 @@ namespace xgc
 			///
 			xgc_lpcstr end()const
 			{
-				return base() + capacity();
+				return _Base::base() + _Base::capacity();
 			}
 
 			///
@@ -663,7 +668,7 @@ namespace xgc
 			///
 			xgc_size len()const
 			{
-				return capacity() - sizeof(recorder);
+				return _Base::capacity() - sizeof(recorder);
 			}
 
 			///
@@ -674,7 +679,7 @@ namespace xgc
 			///
 			xgc_size wd()const
 			{
-				return ( (recorder*) base() )->wd_;
+				return ( (recorder*) _Base::base() )->wd_;
 			}
 
 			///
@@ -685,7 +690,7 @@ namespace xgc
 			///
 			xgc_size rd()const
 			{
-				return ( (recorder*) base() )->rd_;
+				return ( (recorder*) _Base::base() )->rd_;
 			}
 
 			///
@@ -696,7 +701,7 @@ namespace xgc
 			///
 			xgc_void set_wd( xgc_size val )
 			{
-				( (recorder*) base() )->wd_ = val;
+				( (recorder*) _Base::base() )->wd_ = val;
 			}
 
 			///
@@ -707,7 +712,7 @@ namespace xgc
 			///
 			xgc_void set_rd( xgc_size val )
 			{
-				( (recorder*) base() )->rd_ = val;
+				( (recorder*) _Base::base() )->rd_ = val;
 			}
 
 		};
@@ -721,6 +726,7 @@ namespace xgc
 		template< class _Buf, template< class > class _Rec >
 		class buffer_recorder : public _Rec< _Buf >
 		{
+			typedef _Rec<_Buf> _Base;
 		public:
 			///
 			/// \brief 默认构造
@@ -766,7 +772,7 @@ namespace xgc
 			///
 			xgc_lpcstr rd_ptr()const
 			{
-				return begin() + rd();
+				return _Base::begin() + _Base::rd();
 			}
 
 			///
@@ -777,7 +783,7 @@ namespace xgc
 			///
 			xgc_lpcstr wd_ptr()const
 			{
-				return begin() + wd();
+				return _Base::begin() + _Base::wd();
 			}
 
 			///
@@ -788,7 +794,7 @@ namespace xgc
 			///
 			xgc_void plus_rd( xgc_long add )
 			{
-				set_rd( rd() + add );
+				_Base::set_rd( _Base::rd() + add );
 			}
 
 			///
@@ -799,7 +805,7 @@ namespace xgc
 			///
 			xgc_void plus_wd( xgc_long add )
 			{
-				this->set_wd( wd() + add );
+				_Base::set_wd( _Base::wd() + add );
 			}
 
 
@@ -811,8 +817,8 @@ namespace xgc
 			///
 			xgc_void reset()
 			{
-				set_rd( 0 );
-				set_wd( 0 );
+				_Base::set_rd( 0 );
+				_Base::set_wd( 0 );
 			}
 
 			///
@@ -823,14 +829,15 @@ namespace xgc
 			///
 			xgc_void reset( xgc_size rd, xgc_size wd )
 			{
-				set_rd( rd );
-				set_wd( wd );
+				_Base::set_rd( rd );
+				_Base::set_wd( wd );
 			}
 		};
 
 		template< class _Buf, template< class > class _Rec = separate_buffer_recorder >
 		class linear_buffer : public buffer_recorder< _Buf, _Rec >
 		{
+			typedef buffer_recorder< _Buf, _Rec > _Base;
 		public:
 			linear_buffer()
 				: buffer_recorder< _Buf, _Rec >()
@@ -872,8 +879,8 @@ namespace xgc
 			///
 			xgc_size space()const
 			{
-				XGC_ASSERT_RETURN( end() >= wd_ptr(), 0 );
-				return end() - wd_ptr();
+				XGC_ASSERT_RETURN( _Base::end() >= _Base::wd_ptr(), 0 );
+				return _Base::end() - _Base::wd_ptr();
 			}
 
 			///
@@ -884,8 +891,8 @@ namespace xgc
 			///
 			xgc_size leave()const
 			{
-				XGC_ASSERT_RETURN( wd_ptr() >= rd_ptr(), 0 );
-				return wd_ptr() - rd_ptr();
+				XGC_ASSERT_RETURN( _Base::wd_ptr() >= _Base::rd_ptr(), 0 );
+				return _Base::wd_ptr() - _Base::rd_ptr();
 			}
 
 			///
@@ -896,12 +903,12 @@ namespace xgc
 			///
 			xgc_long read_some( xgc_lpvoid data, xgc_size size )
 			{
-				if( wd() <= rd() )
+				if( _Base::wd() <= _Base::rd() )
 					return -1;
 
-				xgc_long cpy = (xgc_long) XGC_MIN( wd() - rd(), size );
-				memcpy( data, rd_ptr(), cpy );
-				plus_rd( cpy );
+				xgc_long cpy = (xgc_long) XGC_MIN( _Base::wd() - _Base::rd(), size );
+				memcpy( data, _Base::rd_ptr(), cpy );
+				_Base::plus_rd( cpy );
 
 				return cpy;
 			}
@@ -914,12 +921,12 @@ namespace xgc
 			///
 			xgc_long write_some( xgc_lpcvoid data, xgc_size size )
 			{
-				XGC_ASSERT( wd() < len() );
+				XGC_ASSERT( _Base::wd() < _Base::len() );
 
-				xgc_long cpy = (xgc_long) XGC_MIN( size, len() - wd() );
+				xgc_long cpy = (xgc_long) XGC_MIN( size, _Base::len() - _Base::wd() );
 
-				memcpy( (xgc_lpvoid)wd_ptr(), data, cpy );
-				plus_wd( cpy );
+				memcpy( (xgc_lpvoid)_Base::wd_ptr(), data, cpy );
+				_Base::plus_wd( cpy );
 
 				return cpy;
 			}
@@ -928,6 +935,7 @@ namespace xgc
 		template< class _Buf, template< class > class _Rec = separate_buffer_recorder >
 		class ring_buffer : public buffer_recorder< _Buf, _Rec >
 		{
+			typedef buffer_recorder< _Buf, _Rec > _Base;
 		public:
 			///
 			/// \brief 默认构造函数
@@ -982,13 +990,13 @@ namespace xgc
 			///
 			xgc_size space()const
 			{
-				if( wd() >= rd() )
+				if( _Base::wd() >= _Base::rd() )
 				{
-					return ( end() - wd_ptr() ) + ( rd_ptr() - begin() ) - 1;
+					return ( _Base::end() - _Base::wd_ptr() ) + ( _Base::rd_ptr() - _Base::begin() ) - 1;
 				}
 				else
 				{
-					return rd_ptr() - wd_ptr() - 1;
+					return _Base::rd_ptr() - _Base::wd_ptr() - 1;
 				}
 			}
 
@@ -1000,13 +1008,13 @@ namespace xgc
 			///
 			xgc_size leave()const
 			{
-				if( rd() > wd() )
+				if( _Base::rd() > _Base::wd() )
 				{
-					return ( end() - rd_ptr() ) + ( wd_ptr() - begin() );
+					return ( _Base::end() - _Base::rd_ptr() ) + ( _Base::wd_ptr() - _Base::begin() );
 				}
 				else
 				{
-					return wd_ptr() - rd_ptr();
+					return _Base::wd_ptr() - _Base::rd_ptr();
 				}
 			}
 
@@ -1018,24 +1026,24 @@ namespace xgc
 				xgc_size copy_1 = 0;
 				xgc_size copy_2 = 0;
 
-				if( rd() > wd() )
+				if( _Base::rd() > _Base::wd() )
 				{
 					// <-------w       r------->
-					part_1 = end() - rd_ptr();
+					part_1 = _Base::end() - _Base::rd_ptr();
 					copy_1 = XGC_MIN( part_1, size );
 
-					memcpy( data, rd_ptr(), copy_1 );
-					set_rd( ( rd() + copy_1 ) % capacity() );
+					memcpy( data, _Base::rd_ptr(), copy_1 );
+					set_rd( ( _Base::rd() + copy_1 ) % _Base::capacity() );
 				}
 
-				if( rd() < wd() )
+				if( _Base::rd() < _Base::wd() )
 				{
 					// <       r-------w       >
-					part_2 = wd_ptr() - rd_ptr();
+					part_2 = _Base::wd_ptr() - _Base::rd_ptr();
 					copy_2 = XGC_MIN( part_2, size - copy_1 );
 
-					memcpy( (xgc_byte*)data + copy_1, rd_ptr(), copy_2 );
-					plus_rd( (xgc_long) copy_2 );
+					memcpy( (xgc_byte*)data + copy_1, _Base::rd_ptr(), copy_2 );
+					_Base::plus_rd( (xgc_long) copy_2 );
 				}
 
 				return copy_1 + copy_2;
@@ -1050,27 +1058,27 @@ namespace xgc
 				xgc_size copy_2 = 0;
 
 				// 注意，写指针不能越过读指针
-				if( wd() >= rd() )
+				if( _Base::wd() >= _Base::rd() )
 				{
 					// <       r-------w       >
-					part_1 = end() - wd_ptr();
-					copy_1 = size < part_1 ? size : rd() ? part_1 : part_1 - 1;
+					part_1 = _Base::end() - _Base::wd_ptr();
+					copy_1 = size < part_1 ? size : _Base::rd() ? part_1 : part_1 - 1;
 
-					memcpy( (xgc_lpvoid)wd_ptr(), data, copy_1 );
-					this->set_wd( ( wd() + copy_1 ) % len() );
+					memcpy( (xgc_lpvoid)_Base::wd_ptr(), data, copy_1 );
+					this->set_wd( ( _Base::wd() + copy_1 ) % _Base::len() );
 				}
 
 				if( size == copy_1 )
 					return size;
 
-				if( wd() < rd() )
+				if( _Base::wd() < _Base::rd() )
 				{
 					// <-------w       r------->
-					part_2 = rd_ptr() - wd_ptr();
+					part_2 = _Base::rd_ptr() - _Base::wd_ptr();
 					copy_2 = XGC_MIN( part_2 - 1, size - copy_1 );
 
-					memcpy( (xgc_lpvoid)wd_ptr(), (xgc_byte*)data + copy_1, copy_2 );
-					this->plus_wd( (xgc_long)copy_2 );
+					memcpy( (xgc_lpvoid)_Base::wd_ptr(), (xgc_byte*)data + copy_1, copy_2 );
+					_Base::plus_wd( (xgc_long)copy_2 );
 				}
 
 				return copy_1 + copy_2;

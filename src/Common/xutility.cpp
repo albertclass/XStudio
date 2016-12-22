@@ -182,7 +182,7 @@ namespace xgc
 
 	std::mt19937& get_random_driver()
 	{
-		static std::default_random_engine mt( (xgc_int32) time( xgc_nullptr ) );
+		static std::mt19937 mt( (xgc_int32) time( xgc_nullptr ) );
 		return mt;
 	}
 

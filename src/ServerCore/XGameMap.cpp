@@ -85,10 +85,10 @@ namespace XGC
 
 		SetActorEventHandler( xgc_nullptr );
 
-		for each( auto it in mMapClock ) getTimer().remove_event( it.second );
+		for( auto it : mMapClock ) getTimer().remove_event( it.second );
 		mMapClock.clear();
 
-		for each( auto it in mMapTimer ) getTimer().remove_event( it.second );
+		for( auto it : mMapTimer ) getTimer().remove_event( it.second );
 		mMapTimer.clear();
 
 		mSourceMap.clear();
@@ -351,13 +351,13 @@ namespace XGC
 		}
 
 		// 离开视野
-		for each( auto it in leave_eyeshot_list )
+		for( auto it : leave_eyeshot_list )
 		{
 			NotifyLeaveEyeshot( pObject, it, VisualMode::Leave );
 		}
 
 		// 进入视野
-		for each( auto it in enter_eyeshot_list )
+		for( auto it : enter_eyeshot_list )
 		{
 			NotifyEnterEyeshot( pObject, it, VisualMode::Enter );
 		}
@@ -633,7 +633,7 @@ namespace XGC
 		if( iter == mSourceMap.end() )
 			return;
 
-		for each( auto evt in iter->second )
+		for( auto evt : iter->second )
 		{
 			pGameObject->RegisteTrigger( GetObjectID(), XGC_LOWORD( evt.first ),
 				bind( &XGameMap::ExecuteObjectTrigger, this, pGameObject->GetObjectID(), evt.first, _1, _2, _3, _4 ),

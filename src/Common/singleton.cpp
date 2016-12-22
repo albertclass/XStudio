@@ -1,7 +1,5 @@
 #include "defines.h"
-#include <windows.h>
 #include "singleton.h"
-
 
 namespace xgc
 {
@@ -21,7 +19,7 @@ namespace xgc
 
 		#ifdef ENABLE_NEW_SETLONGLIVITY
 
-		void __cdecl Private::AtExitFn()
+		void XGC_CDECL_CALL Private::AtExitFn()
 		{
 			assert(pTrackerArray!=0 && !pTrackerArray->empty());
     
@@ -44,7 +42,7 @@ namespace xgc
 
 		#else
 
-		void __cdecl Private::AtExitFn()
+		void XGC_CDECL_CALL Private::AtExitFn()
 		{
 			assert(elements > 0 && pTrackerArray != 0);
 			// Pick the element at the top of the stack

@@ -29,6 +29,8 @@ enum COMMON_API EExeLogLvl
 	LOGLVL_MAX,
 };
 
+#define LOGEND "\n"
+
 #define LOGEXT( FUNCTION, LINE, LEVEL, FMT, ... )	xgc::logger::write( FUNCTION, LINE, LEVEL, FMT, ##__VA_ARGS__ )
 #define LOGFMT( LEVEL, FMT, ... )					xgc::logger::write( LEVEL, FMT, ##__VA_ARGS__ )
 

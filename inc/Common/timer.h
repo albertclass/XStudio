@@ -13,6 +13,8 @@ namespace xgc
 {
 	namespace common
 	{
+		using std::function;
+		
 		// 定时器句柄
 		typedef pool_handle< pool_handle_base > timer_t;
 
@@ -37,9 +39,11 @@ namespace xgc
 
 		typedef std::function < xgc_void( timer_t, intptr_t& ) > timer_cb;
 
+		#if defined(_WINDOWS)
 		template class COMMON_API std::function < xgc_void( timer_t ) > ;
 		template class COMMON_API std::function < xgc_void( timer_t, en_event_t ) > ;
-
+		#endif
+		
 		extern xgc_void(*timer_event_dispatcher)( timer_t, en_event_t );
 
 		/// 
@@ -216,7 +220,7 @@ namespace xgc
 			xgc_time64 (*get_tickcount_)();
 		public:
 			timer( xgc_time64 (*get_tickcount)() = system_tickcount );
-			~timer( xgc_void );
+			~timer();
 
 			///
 			/// \brief 取定时器当前时间

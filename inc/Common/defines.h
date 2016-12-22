@@ -37,7 +37,7 @@
 #	if __GNUC__ >= 4
 #		define xgc_nullptr nullptr
 #	else
-#		define xgc_nullptr NULL
+#		define xgc_nullptr __null
 #	endif
 #endif
 
@@ -113,26 +113,30 @@ typedef xgc_lpvoid			xgc_handle;
 
 // Ê¹ÓÃ¾ÙÀý
 // #pragma attention( "test todo" )
+// #define FIRST_HELPER (F, ...)	F
+// #define OTHER_HELPER (F, ...)	__VA_ARGS__
+// #define FIRST(...)	FIRST_HELPER(__VA_ARGS__, D)
+// #define OTHER(...)	OTHER_HELPER(__VA_ARGS__)
 
 #ifdef _DEBUG
 #	define XGC_ASSERT(expr)						XGC_ASSERT_MSG(expr,#expr,0)
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr##__VA_ARGS__); }else{ (expr)->Release(); }
-#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg,__VA_ARGS__); }
-#	define XGC_DEBUG_MESSAGE(msg,...)			XGC_ASSERT_MSG(false,msg,__VA_ARGS__)
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); }else{ (expr)->Release(); }
+#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg,##__VA_ARGS__); }
+#	define XGC_DEBUG_MESSAGE(msg,...)			XGC_ASSERT_MSG(false,msg,##__VA_ARGS__)
 #	define XGC_ASSERT_POINTER(expr)				XGC_ASSERT_MSG(expr,"NULL POINT FOUND, IS'T RIGHT?")
 #	define XGC_VERIFY(expr)						XGC_ASSERT_MSG(expr,"")
 #	define XGC_DEBUG_CODE( ... )				__VA_ARGS__
 #elif defined( _ASSERT_LOG )
 #	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " #expr##__VA_ARGS__ ); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " #expr##__VA_ARGS__ ); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WARNING( "ASSERT " #expr##__VA_ARGS__ ); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WARNING( "ASSERT " #expr##__VA_ARGS__ ); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " #expr##__VA_ARGS__ ); }else{(expr)->Release();}
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); }else{(expr)->Release();}
 #	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
 #	define XGC_DEBUG_MESSAGE(msg,...)			if(!(true)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
 #	define XGC_ASSERT_POINTER(expr)				if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }

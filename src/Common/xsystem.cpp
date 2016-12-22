@@ -7,10 +7,16 @@
 #	pragma comment(lib, "psapi.lib")
 #endif
 
+#ifdef _WINDOWS
+#	define SLASH '\\'
+#elif defined _LINUX
+#	define SLASH '/'
+#endif
+
 namespace xgc
 {
-	static xgc_char g_module_name[_MAX_FNAME] = { 0 };
-	static xgc_char g_module_path[_MAX_PATH] = { 0 };
+	static xgc_char g_module_name[XGC_MAX_FNAME] = { 0 };
+	static xgc_char g_module_path[XGC_MAX_PATH] = { 0 };
 
 	xgc_lpcstr get_module_name( xgc_bool rebuild /*= false*/ )
 	{
@@ -27,7 +33,7 @@ namespace xgc
 			if( cpyLen == 0 )
 				return g_module_name;
 
-			xgc_lpstr p = strrchr( g_module_name, '\\' );
+			xgc_lpstr p = strrchr( g_module_name, SLASH );
 			if( p )
 				strcpy_s( g_module_name, p + 1 );
 		}
@@ -48,11 +54,11 @@ namespace xgc
 
 			XGC_ASSERT_RETURN( cpyLen, xgc_nullptr );
 			xgc_lpstr last = xgc_nullptr;
-			xgc_lpstr found = strchr( g_module_path, '\\' );
+			xgc_lpstr found = strchr( g_module_path, SLASH );
 			while( found )
 			{
 				last = found++;
-				found = strchr( found, '\\' );
+				found = strchr( found, SLASH );
 			}
 
 			if( last ) last[1] = 0;
@@ -61,38 +67,64 @@ namespace xgc
 		return g_module_path;
 	}
 
-	xgc_lpcstr get_normal_path( xgc_lpstr szOut, xgc_size nSize, xgc_lpcstr lpRelativePath, ... )
+	xgc_lpcstr get_normal_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... )
+	{
+		xgc_lpcstr ret = xgc_nullptr;
+		
+		va_list args;
+		va_start( args, relative );
+		ret = get_normal_path( absolute, size, relative, args );
+		va_end( args );
+
+		return ret;
+	}
+
+	xgc_lpcstr get_normal_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args )
 	{
 		int cpy1 = 0;
-		xgc_lpcstr driver = strchr( lpRelativePath, ':' );
-		if( xgc_nullptr == driver )
+		char relative_path[XGC_MAX_PATH] = { 0 };
+
+		#if defined _WINDOWS
+		xgc_lpcstr root = strchr( relative, ':' );
+		if( xgc_nullptr == root )
 		{
-			cpy1 = sprintf_s( szOut, nSize, "%s", get_module_path() );
+			cpy1 = sprintf_s( relative_path, "%s", get_module_path() );
 			XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
 		}
-		else if( driver - lpRelativePath != 1 )
+		else if( driver - relative != 1 )
 		{
 			return xgc_nullptr;
 		}
-		else if( driver[1] != '\\' && driver[1] != '/' )
+		#elif defined _LINUX
+		if( relative[0] != SLASH )
+		{
+			cpy1 = sprintf_s( relative_path, "%s", get_module_path() );
+			XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
+		}
+		#endif
+		else if( relative[0] != '.' )
 		{
 			return xgc_nullptr;
 		}
 
-		va_list args;
-		va_start( args, lpRelativePath );
-		int cpy2 = vsprintf_s( szOut + cpy1, nSize - cpy1, lpRelativePath, args );
-		va_end( args );
+		int cpy2 = vsprintf_s( relative_path + cpy1, sizeof(relative_path) - cpy1, relative, args );
 
 		if( cpy2 < 0 )
 			return xgc_nullptr;
 
-		if( cpy2 == sizeof(szOut) -cpy1 )
+		if( cpy2 == sizeof(absolute) - cpy1 )
 			return xgc_nullptr;
 
-		return _fullpath( szOut, szOut, nSize );
+		#if defined _WINDOWS
+		return _fullpath( absolute, absolute, size );
+		#elif defined _LINUX
+		if( realpath(absolute, relative_path) )
+			return absolute;
+		
+		return xgc_nullptr;
+		#endif
 	}
-
+	
 	xgc_ulong get_process_id()
 	{
 		#if defined(_WINDOWS)
@@ -113,6 +145,7 @@ namespace xgc
 		return -1;
 	}
 	
+	#if defined _WINDOWS
 	xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnPMem, xgc_uint64 *pnVMem )
 	{
 		XGC_ASSERT_RETURN( pnPMem != pnVMem, false );
@@ -155,7 +188,6 @@ namespace xgc
 		return true;
 	}
 
-	#if defined(_WINDOWS)
 	/// 获得CPU的核数
 	static int32_t get_processor_number()
 	{
@@ -179,11 +211,9 @@ namespace xgc
 		li.HighPart = ftime->dwHighDateTime;
 		return li.QuadPart;
 	}
-	#endif
 
 	xgc_int32 get_process_cpu_usage( xgc_handle h )
 	{
-		#if defined(_WINDOWS)
 		FILETIME now;
 		FILETIME creation_time;
 		FILETIME exit_time;
@@ -228,14 +258,10 @@ namespace xgc
 		last_system_time_ = system_time;
 		last_time_ = time;
 		return cpu;
-		#else
-		return 0;
-		#endif
 	}
 
 	xgc_int32 get_system_cpu_usage()
 	{
-		#if defined(_WINDOWS)
 		static int64_t global_system_time_ = 0;
 		static int64_t global_kernel_time_ = 0;
 		static int64_t global_user_time_ = 0;
@@ -267,16 +293,12 @@ namespace xgc
 		global_user_time_   = utc_user_time;
 		global_idle_time_   = utc_idle_time;
 		return (int)cpu;
-		#else
-		return 0;
-		#endif
 	}
 
 	xgc_bool privilege( xgc_lpcstr prililege_name, xgc_bool enable /*= true */ )
 	{
 		bool bSuccess = false;
 
-		#ifdef _WINDOWS
 		HANDLE hToken = NULL;
 
 		if( !OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken ) )
@@ -294,9 +316,79 @@ namespace xgc
 		}
 
 		CloseHandle( hToken );
-		#endif
 		
 		return bSuccess;
 	}
+	#elif defined _LINUX
+	///
+	/// \brief 获取进程内存使用情况
+	///
+	/// \author albert.xu
+	/// \date 2016/08/08 14:55
+	///
+	xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnMem, xgc_uint64 *pnVem )
+	{
+		if( pnMem )
+			*pnMem = 0;
 
+		if( pnVem )
+			*pnVem = 0;
+
+		return true;
+	}
+
+	///
+	/// \brief 获取系统内存使用情况
+	///
+	/// \author albert.xu
+	/// \date 2016/08/08 15:22
+	///
+	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint32 *pnLoadMem )
+	{
+		if( pnTotalMem )
+			*pnTotalMem = 0;
+
+		if( pnUsageMem )
+			*pnUsageMem = 0;
+
+		if( pnLoadMem )
+			*pnLoadMem = 0;
+
+		return true;
+	}
+
+	///
+	/// \brief 获取当前CPU使用情况
+	///
+	/// \author albert.xu
+	/// \date 2016/08/08 14:55
+	///
+	xgc_int32 get_process_cpu_usage( xgc_handle h )
+	{
+		return 0;
+	}
+
+	///
+	/// \brief 获取当前系统的CPU使用情况
+	///
+	/// \author albert.xu
+	/// \date 2016/08/08 15:09
+	///
+	xgc_int32 get_system_cpu_usage()
+	{
+		return 0;
+	}
+
+	///
+	/// \brief 设置进程权限
+	///
+	/// \author albert.xu
+	/// \date 2016/08/10 15:52
+	///
+	xgc_bool privilege( xgc_lpcstr prililege_name, xgc_bool enable )
+	{
+		return true;
+	}
+
+	#endif
 }

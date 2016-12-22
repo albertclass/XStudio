@@ -260,7 +260,7 @@ namespace XGC
 	{
 		FUNCTION_BEGIN;
 
-		for each ( auto &iter in m_ChangedSlotMap )
+		for( auto &iter : m_ChangedSlotMap )
 		{
 			// TODO
 			ENPacketType eType;
