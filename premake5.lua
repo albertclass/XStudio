@@ -8,47 +8,80 @@ solution "xgc"
     filter { "system:windows", "configurations:Relase" }
         flags { "NoIncrementalLink", "LinkTimeOptimization" }
 
-project "Common"
+project "common"
     kind "SharedLib"
     language "C++"
-    location "prj/Common"
-    includedirs "inc/Common"
-    objdir "obj"
-    links { "stdc++" }
+    location "prj/common"
+    includedirs "inc/common"
+    targetdir "lib/%{cfg.buildcfg}"
 
     flags { "C++11", "MultiProcessorCompile" }
 
     files {
-        "inc/Common/**.h",
-        "inc/Common/**.hpp",
-        "src/Common/**.cpp",
-        "src/Common/**.inl",
+        "inc/common/**.h",
+        "inc/common/**.hpp",
+        "src/common/**.cpp",
+        "src/common/**.inl",
     }
 
     vpaths {
-        ["Header Files/*"] = { "inc/Common/**.h", "inc/Common/**.hpp" },
-        ["Source Files/*"] = { "src/Common/**.cpp", "src/Common/**.inl" }
+        ["Header Files/*"] = { "inc/common/**.h", "inc/common/**.hpp" },
+        ["Source Files/*"] = { "src/common/**.cpp", "src/common/**.inl" }
     }
 
     filter "configurations:Debug"
+        objdir "../obj/common/debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
         symbols "On"
 
     filter "configurations:Release"
+        objdir "../obj/common/release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
 
     filter "system:windows"
         architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
-	    targetdir "lib/$(Configuration)"
 
     filter "system:linux"
+        links { "stdc++" }
+        buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }
 
-    filter { "system:linux", "configurations:Debug" }
-        targetdir "lib/debug"
+project "unittest"
+    kind "ConsoleApp"
+    language "C++"
+    location "prj/unittest"
+    includedirs "inc/common"
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    links "common"
+    
+    flags { "C++11", "MultiProcessorCompile" }
 
-    filter { "system:linux", "configurations:Release" }
-        targetdir "lib/release"
+    files {
+        "test/**.h",
+        "test/**.hpp",
+        "test/**.cpp",
+        "test/**.inl",
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG" }
+        symbols "On"
+        optimize "On"
+    
+    filter "system:windows"
+        architecture "x64"
+        defines { "WIN64" }
+
+    filter "system:linux"
+        links { "stdc++", "ncurses", "rt", "pthread" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }

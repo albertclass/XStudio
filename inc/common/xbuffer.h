@@ -279,11 +279,15 @@ namespace xgc
 		{
 		private:
 			/// 共享内存句柄
+			#if defined _WINDOWS
 			xgc_handle shared_memory_;
-			xgc_handle shared_file_;
+			#endif
 
+			xgc_char shared_file_name[XGC_MAX_FNAME];
+			xgc_char shared_file_path[XGC_MAX_PATH];
 			/// 缓冲区首地址
 			xgc_lpstr data_;
+			xgc_size  size_;
 		public:
 			///
 			/// \brief 默认构造
@@ -302,12 +306,20 @@ namespace xgc
 			shared_memory_buffer( xgc_lpcstr shared_memory_name, xgc_size size );
 
 			///
-			/// \brief 删除拷贝构造
+			/// \brief 拷贝构造
 			///
 			/// \author albert.xu
 			/// \date 2015/12/18 16:31
 			///
 			shared_memory_buffer( const shared_memory_buffer& buffer );
+
+			///
+			/// \brief 右值拷贝构造
+			///
+			/// \author albert.xu
+			/// \date 2015/12/18 16:31
+			///
+			shared_memory_buffer( shared_memory_buffer&& buffer );
 
 			///
 			/// \brief 析构函数
@@ -334,6 +346,17 @@ namespace xgc
 			xgc_void destroy();
 
 			///
+			/// \brief 创建共享内存
+			///
+			/// \author albert.xu
+			/// \date 2015/12/18 16:29
+			///
+			xgc_bool is_create()const
+			{
+				return data_ != xgc_nullptr;
+			}
+
+			///
 			/// \brief 获取缓冲基地址
 			///
 			/// \author albert.xu
@@ -341,7 +364,7 @@ namespace xgc
 			///
 			xgc_lpstr base()
 			{
-				return data_ + sizeof( xgc_size );
+				return data_;
 			}
 
 			///
@@ -352,7 +375,7 @@ namespace xgc
 			///
 			xgc_lpcstr base() const
 			{
-				return data_ + sizeof( xgc_size );
+				return data_;
 			}
 
 			///
@@ -363,7 +386,7 @@ namespace xgc
 			///
 			xgc_size capacity()const
 			{
-				return *(xgc_size*)data_;
+				return size_;
 			}
 		};
 
@@ -714,7 +737,6 @@ namespace xgc
 			{
 				( (recorder*) _Base::base() )->rd_ = val;
 			}
-
 		};
 
 		///
@@ -1033,7 +1055,7 @@ namespace xgc
 					copy_1 = XGC_MIN( part_1, size );
 
 					memcpy( data, _Base::rd_ptr(), copy_1 );
-					set_rd( ( _Base::rd() + copy_1 ) % _Base::capacity() );
+					_Base::set_rd( ( _Base::rd() + copy_1 ) % _Base::len() );
 				}
 
 				if( _Base::rd() < _Base::wd() )
@@ -1051,6 +1073,8 @@ namespace xgc
 
 			xgc_size write_some( xgc_lpcvoid data, xgc_size size )
 			{
+				size = XGC_MIN( size, _Base::len() );
+
 				xgc_size part_1 = 0;
 				xgc_size part_2 = 0;
 
@@ -1061,11 +1085,13 @@ namespace xgc
 				if( _Base::wd() >= _Base::rd() )
 				{
 					// <       r-------w       >
-					part_1 = _Base::end() - _Base::wd_ptr();
+					part_1 = _Base::len() - _Base::wd();
 					copy_1 = size < part_1 ? size : _Base::rd() ? part_1 : part_1 - 1;
 
+					XGC_ASSERT_RETURN( copy_1 <= part_1, 0 );
+
 					memcpy( (xgc_lpvoid)_Base::wd_ptr(), data, copy_1 );
-					this->set_wd( ( _Base::wd() + copy_1 ) % _Base::len() );
+					_Base::set_wd( ( _Base::wd() + copy_1 ) % _Base::len() );
 				}
 
 				if( size == copy_1 )
@@ -1077,11 +1103,53 @@ namespace xgc
 					part_2 = _Base::rd_ptr() - _Base::wd_ptr();
 					copy_2 = XGC_MIN( part_2 - 1, size - copy_1 );
 
+					XGC_ASSERT_RETURN( copy_2 <= part_2, copy_1 );
+
 					memcpy( (xgc_lpvoid)_Base::wd_ptr(), (xgc_byte*)data + copy_1, copy_2 );
 					_Base::plus_wd( (xgc_long)copy_2 );
 				}
 
 				return copy_1 + copy_2;
+			}
+
+			xgc_size write_overflow( xgc_lpcvoid data, xgc_size size )
+			{
+				xgc_size part_1 = 0;
+				xgc_size part_2 = 0;
+
+				xgc_size copy_1 = 0;
+				xgc_size copy_2 = 0;
+
+				if( _Base::wd() >= _Base::rd() )
+				{
+					// <       r-------w       >
+					part_1 = _Base::len() - _Base::wd();
+					copy_1 = XGC_MIN( size, part_1 );
+
+					XGC_ASSERT_RETURN( copy_1 <= part_1, 0 );
+
+					memcpy( (xgc_lpvoid)_Base::wd_ptr(), data, copy_1 );
+
+					_Base::set_wd( ( _Base::wd() + copy_1 ) % _Base::len() );
+					if( part_1 == copy_1 && _Base::rd() == 0 )
+						_Base::set_rd( 1 );
+				}
+
+				while( copy_1 + copy_2 < size )
+				{
+					copy_1 += copy_2;
+					copy_2 = 0;
+
+					// <-------w       r------->
+					part_2 = _Base::len() - _Base::wd();
+					copy_2 = XGC_MIN( _Base::len() - copy_1, size - copy_1 );
+
+					memcpy( (xgc_lpvoid)_Base::wd_ptr(), (xgc_byte*)data + copy_1, copy_2 );
+
+					_Base::set_wd( ( _Base::wd() + copy_2 ) % _Base::len() );
+					if( copy_2 == part_2 )
+						_Base::set_rd( 1 );
+				}
 			}
 		};
 	};  // end namespace common

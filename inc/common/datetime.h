@@ -311,7 +311,7 @@ namespace xgc
 						0
 					};
 
-					storage.dt = (uint64_t) mktime( &gtime ) * 10000000ULL + st.milliseconds * 10000ULL;
+					storage.dt = (uint64_t) mktime( &gtime ) * 10000000ULL + st.milliseconds * 10000ULL + _Time_T_Diff;
 				#endif
 			}
 
@@ -334,36 +334,40 @@ namespace xgc
 			/// 获取当前时间值
 			/// [7/23/2014] create by albert.xu
 			///
-			xgc_time64 time()
+			datetime time()const
 			{
-				return storage.dt % ( 24 * 60 * 60 * 10000000ULL );
+				filetime ft;
+				ft.dt = storage.dt % ( 24 * 60 * 60 * 10000000ULL ); 
+				return datetime( ft );
 			}
 
 			///
 			/// 获取当前日期值
 			/// [7/23/2014] create by albert.xu
 			///
-			xgc_time64 date()
+			datetime date()const
 			{
-				return storage.dt / ( 24 * 60 * 60 * 10000000ULL ) * ( 24 * 60 * 60 * 10000000ULL );
+				filetime ft;
+				ft.dt = storage.dt / ( 24 * 60 * 60 * 10000000ULL ) * ( 24 * 60 * 60 * 10000000ULL ); 
+				return datetime(ft);
 			}
 
 			///
 			/// 设置日期， 不改变时间
 			/// [7/23/2014] create by albert.xu
 			///
-			xgc_void setdate( datetime dt )
+			xgc_void set_date( datetime dt )
 			{
-				storage.dt = time() + dt.date();
+				storage.dt = time().to_ftime() + dt.date().to_ftime();
 			}
 
 			///
 			/// 设置时间， 不改变日期
 			/// [7/23/2014] create by albert.xu
 			///
-			xgc_void settime( datetime dt )
+			xgc_void set_time( datetime dt )
 			{
-				storage.dt = date() + dt.time();
+				storage.dt = date().to_ftime() + dt.time().to_ftime();
 			}
 
 			xgc_time64 to_ctime() const

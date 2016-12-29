@@ -26,8 +26,36 @@ namespace xgc
 	/// @param SplitWith 目录间的分割符
 	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
 	///
-	COMMON_API xgc_lpcstr get_normal_path( xgc_lpstr szOut, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
+	COMMON_API xgc_lpcstr get_normal_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... );
 
+	///
+	/// [12/16/2013 albert.xu]
+	/// 获取指定文件的目录，目录以
+	/// @param pszRelativePath 以运行文件为根目录的相对路径
+	/// @param SplitWith 目录间的分割符
+	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
+	///
+	COMMON_API xgc_lpcstr get_normal_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args );
+
+
+	///
+	/// [12/16/2013 albert.xu]
+	/// 获取指定文件的目录，目录以
+	/// @param pszRelativePath 以运行文件为根目录的相对路径
+	/// @param SplitWith 目录间的分割符
+	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
+	///
+	template< size_t size >
+	xgc_lpcstr get_normal_path( xgc_char( &absolute )[size], xgc_lpcstr relative, ... )
+	{
+		va_list ap;
+		va_start( ap, relative );
+		auto ret = get_normal_path_args( absolute, size, relative, ap );
+		va_end( ap );
+
+		return ret;
+	}
+	
 	///
 	/// [12/16/2013 albert.xu]
 	/// 获取进程ID

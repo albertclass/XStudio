@@ -71,7 +71,7 @@
 		}
 
 #elif defined(_LINUX)
-	extern __thread sigjmp_buf sigjmp_env;
+	extern XGC_DECLSPEC_THREAD sigjmp_buf sigjmp_env;
 	class sigjmp_buf_stack
 	{
 	public:
@@ -91,6 +91,7 @@
 	#define FUNCTION_BEGIN\
 		try\
 		{\
+			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __FILE__, __LINE__ ); \
 			sigjmp_buf_stack _save_point_##__LINE__();\
 			if( int sig = sigsetjmp(sigjmp_env, 1) != 0 )\
 			{\
@@ -124,10 +125,6 @@
 		}
 
 #endif // _LINUX
-
-#define SEGMENT_BEGIN( TITLE, ... )		FUNCTION_BEGIN
-#define SEGMENT_FINAL()					FUNCTION_END
-#define SEGMENT_CATCH( ... )			FUNCTION_CATCH( __VA_ARGS__ )
 
 ///
 /// @namespace xgc 
@@ -183,7 +180,7 @@ namespace xgc
 		std::thread		mThread;
 		std::mutex		mSection;
 
-		InvokeWatcher	*pInvokeWatcherHead;
+		InvokeWatcher	*mInvokeWatcherHead;
 		xgc_bool		mFinished;
 	};
 

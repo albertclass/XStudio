@@ -2,7 +2,7 @@
 #define _MACRO_DEFINE_H
 
 #include "config.h"
-
+#include "commonspp.h"
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 // 安全删除定义
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -120,11 +120,11 @@ typedef xgc_lpvoid			xgc_handle;
 
 #ifdef _DEBUG
 #	define XGC_ASSERT(expr)						XGC_ASSERT_MSG(expr,#expr,0)
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,__VA_ARGS__); }else{ (expr)->Release(); }
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); }else{ (expr)->Release(); }
 #	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg,##__VA_ARGS__); }
 #	define XGC_DEBUG_MESSAGE(msg,...)			XGC_ASSERT_MSG(false,msg,##__VA_ARGS__)
 #	define XGC_ASSERT_POINTER(expr)				XGC_ASSERT_MSG(expr,"NULL POINT FOUND, IS'T RIGHT?")
