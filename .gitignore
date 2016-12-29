@@ -1,6 +1,5 @@
 # ignore some directory
 
-.vscode
 /bin
 /lib
 /prj

@@ -1,0 +1,49 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    // Controls the font family.
+    "editor.fontFamily": "'mononoki', 'Courier New', monospace, 'Droid Sans Fallback'",
+
+    // Controls the font weight.
+    "editor.fontWeight": "normal",
+
+    // Controls the font size in pixels.
+    "editor.fontSize": 14,
+
+    // Controls the line height. Use 0 to compute the lineHeight from the fontSize.
+    "editor.lineHeight": 0,
+
+    // Controls visibility of line numbers
+    "editor.lineNumbers": "on",
+
+    // Controls visibility of the glyph margin
+    "editor.glyphMargin": true,
+
+    // The number of spaces a tab is equal to. This setting is overriden based on the file contents when `editor.detectIndentation` is on.
+    "editor.tabSize": 4,
+
+    // Insert spaces when pressing Tab. This setting is overriden based on the file contents when `editor.detectIndentation` is on.
+    "editor.insertSpaces": false,
+
+    // When opening a file, `editor.tabSize` and `editor.insertSpaces` will be detected based on the file contents.
+    "editor.detectIndentation": true,
+
+    // Controls if selections have rounded corners
+    "editor.roundedSelection": true,
+
+    // Configure glob patterns for excluding files and folders.
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true
+    },
+
+    // Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.
+    "files.associations": {},
+
+    // The default character set encoding to use when reading and writing files.
+    "files.encoding": "gbk",
+
+    // The default end of line character.
+    "files.eol": "\r\n"
+}
