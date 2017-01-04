@@ -40,6 +40,7 @@ static int testmain( int agrc, char * argv[] )
 
 	output( "%s\n", (char*)sb.base() );
 
+	return 0;
 }
 
 UNIT_TEST( "buffer", "buffer test", testmain );

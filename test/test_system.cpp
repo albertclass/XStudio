@@ -2,7 +2,6 @@
 #include "xsystem.h"
 
 using namespace xgc;
-using namespace xgc::common;
 
 static int testmain( int agrc, char * argv[] )
 {
@@ -15,6 +14,8 @@ static int testmain( int agrc, char * argv[] )
 	char path[XGC_MAX_PATH] = { 0 };
 	get_normal_path( path, sizeof(path), "%s", "../../src/" );
 	output( "normal path = %s\n", path );
+
+	return 0;
 }
 
 UNIT_TEST( "system", "system test", testmain );

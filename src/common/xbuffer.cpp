@@ -104,7 +104,7 @@ namespace xgc
 			size_ = size;
 
 
-			xgc_handle hFileHandle = INVALID_HANDLE_VALUE;
+			xgc_handle shared_file_h = INVALID_HANDLE_VALUE;
 			SECURITY_ATTRIBUTES sa = { 0 };
 			SECURITY_DESCRIPTOR sd = { 0 };
 			InitializeSecurityDescriptor( &sd, SECURITY_DESCRIPTOR_REVISION );
@@ -145,7 +145,7 @@ namespace xgc
 			if( shared_memory_ == NULL || shared_memory_ == INVALID_HANDLE_VALUE )
 			{
 				XGC_ASSERT_MESSAGE( false, "CreateFileMappingA error %u", GetLastError() );
-				CloseHandle( hFileHandle );
+				CloseHandle( shared_file_h );
 				return -1;
 			}
 

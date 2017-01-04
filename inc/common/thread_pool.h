@@ -98,32 +98,38 @@ namespace xgc
 			// 构造
 			thread_pool( size_t size = 4 ) : stop { false }
 			{
-				size = size < 1 ? 1 : size;
-				for( size_t i = 0; i < size; ++i )
-				{
-					pool.emplace_back( &thread_pool::schedual, this );    // push_back(std::thread{...})
-				}
+				restart( size < 1 ? 1 : size );
 			}
 
 			// 析构
 			~thread_pool()
 			{
-				for( std::thread& thread : pool )
-				{
-					thread.join();        // 等待任务结束， 前提：线程一定会执行完
-				}
+				shutdown();
 			}
 
 			// 停止任务提交
 			void shutdown()
 			{
 				stop.store( true );
+				for( std::thread& thread : pool )
+				{
+					thread.join();        // 等待任务结束， 前提：线程一定会执行完
+				}
+
+				pool.clear();
 			}
 
 			// 重启任务提交
-			void restart()
+			void restart( size_t size = 4 )
 			{
+				shutdown();
+
 				stop.store( false );
+				size = size < 1 ? 1 : size;
+				for( size_t i = 0; i < size; ++i )
+				{
+					pool.emplace_back( &thread_pool::schedual, this );    // push_back(std::thread{...})
+				}
 			}
 
 			// 提交一个任务

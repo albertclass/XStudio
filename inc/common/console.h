@@ -47,7 +47,7 @@ namespace xgc
 		/// [12/24/2013 albert.xu]
 		///
 
-		COMMON_API xgc_bool	console_init( xgc_int16 cols, xgc_int16 rows, PHANDLER_ROUTINE pfnRoutine );
+		COMMON_API xgc_bool	console_init( xgc_int16 cols, xgc_int16 rows );
 
 		///
 		/// [12/24/2013 albert.xu]

@@ -971,6 +971,57 @@ namespace xgc
 		return std::exception::what();
 	}
 	#elif defined _LINUX
+	void bt_sighandler(int sig, siginfo_t * info, void * ptr) 
+	{
+		void *trace[16];
+		char **messages = (char **)NULL;
+		int i, trace_size = 0;
+		struct sigcontext* ctx = (sigcontext*) ptr;
+		
+		#if defined(_AI_X32)
+		void *call = (void*)ctx->eip;
+		#endif
+
+		#if defined(_AI_X64)
+		void *call = (void*)ctx->rip;
+		#endif
+		
+		if (sig == SIGSEGV)
+			SYS_INFO("Got signal %d, faulty address is %p, from %p", sig, ctx->cr2, call);
+		else
+			SYS_INFO("Got signal %d", sig);
+
+		trace_size = backtrace(trace, 16);
+		/* overwrite sigaction with caller's address */
+		// trace[1] = call;
+		messages = backtrace_symbols(trace, trace_size);
+		/* skip first stack frame (points here) */
+		SYS_INFO("[bt] Execution stackwalk:");
+		for (i=1; i<trace_size; ++i)
+		{
+			SYS_INFO("[bt] #%d %s\n", i, messages[i]);
+		}
+
+		siglongjmp(sigjmp_env, sig);
+	}
+	
+	xgc_bool InitException()
+	{
+		struct sigaction sa;
+
+		sigemptyset(&sa.sa_mask); 
+		sa.sa_flags = SA_RESTART | SA_SIGINFO;
+		sa.sa_sigaction = bt_sighandler;
+
+		sigaction(SIGFPE ,  &sa, NULL);
+		sigaction(SIGSEGV,  &sa, NULL); 
+		sigaction(SIGUSR1,  &sa, NULL);
+	}
+
+	xgc_void FiniException()
+	{
+	}
+
 	const char* seh_exception::what() const throw()
 	{
 		return std::exception::what();

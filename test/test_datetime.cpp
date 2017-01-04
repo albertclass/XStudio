@@ -42,6 +42,8 @@ static int testmain( int agrc, char * argv[] )
 
 	dt = datetime::from_ctime( time(nullptr) );
 	output( "dt from ctime %s\n", dt.to_string(sz_datetime) );
+
+	return 0;
 }
 
 UNIT_TEST( "datetime", "datetime test", testmain )

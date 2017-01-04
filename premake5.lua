@@ -13,7 +13,9 @@ project "common"
     language "C++"
     location "prj/common"
     includedirs "inc/common"
-    targetdir "lib/%{cfg.buildcfg}"
+    targetdir "bin/%{cfg.buildcfg}/%{prj.name}"
+    implibdir "lib/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
     flags { "C++11", "MultiProcessorCompile" }
 
@@ -30,12 +32,10 @@ project "common"
     }
 
     filter "configurations:Debug"
-        objdir "../obj/common/debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
         symbols "On"
 
     filter "configurations:Release"
-        objdir "../obj/common/release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
 
@@ -54,7 +54,7 @@ project "unittest"
     language "C++"
     location "prj/unittest"
     includedirs "inc/common"
-    targetdir "bin/%{cfg.buildcfg}"
+    targetdir "bin/%{cfg.buildcfg}/%{prj.name}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     links "common"
     
@@ -77,6 +77,8 @@ project "unittest"
         optimize "On"
     
     filter "system:windows"
+    	libdirs { "lib/%{cfg.buildcfg}" }
+    	links { "common.lib" }
         architecture "x64"
         defines { "WIN64" }
 

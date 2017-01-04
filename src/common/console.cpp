@@ -11,7 +11,6 @@
 
 #include "console.h"
 #include "logger.h"
-#include "geometry.h"
 
 namespace xgc
 {
@@ -605,13 +604,8 @@ namespace xgc
 		/// [12/24/2013 albert.xu]
 		///
 
-		xgc_bool console_init( xgc_int16 cols, xgc_int16 rows, PHANDLER_ROUTINE pfnHandler )
+		xgc_bool console_init( xgc_int16 cols, xgc_int16 rows )
 		{
-			if( pfnHandler )
-			{
-				SetConsoleCtrlHandler( pfnHandler, TRUE );
-			}
-
 			HMENU hSysMenu = GetSystemMenu( GetConsoleWindow(), FALSE );
 			if( hSysMenu != 0 )
 			{

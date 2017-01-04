@@ -105,7 +105,7 @@
 		}\
 		catch( seh_exception &e )\
 		{\
-			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			SYS_INFO( "SEH Exception throw. %s", e.what() ); \
 			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
 			xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
 		}\
