@@ -1,4 +1,3 @@
-#ifdef _WINDOWS
 #include <stdio.h>
 #include <conio.h>
 #include <fcntl.h>
@@ -10,6 +9,8 @@
 #include <condition_variable>
 
 #include "console.h"
+
+#ifdef _WINDOWS
 #include "logger.h"
 
 namespace xgc
@@ -22,8 +23,6 @@ namespace xgc
 
 		template<class _Ty>
 		using atomic = std::atomic< _Ty >;
-
-		using sRect	= xgc::xRect< xgc_int16 >;
 
 		enum e_border
 		{
@@ -62,6 +61,19 @@ namespace xgc
 			eTextDirty = 2,
 			eTextFlagCount,
 		};
+		
+		/// 文字属性
+		//struct char_info
+		//{
+		//	union
+		//	{
+		//		xgc_char  ach;
+		//		xgc_wchar wch;
+		//	}_c;
+
+		//	xgc_uint8 fg;
+		//	xgc_uint8 fb;
+		//};
 
 		/// 文本缓冲区
 		struct text_buffer
@@ -76,6 +88,8 @@ namespace xgc
 			xgc_uint16	flags;
 			/// 缓冲区指针
 			PCHAR_INFO	buffer;
+			/// 缓冲区指针
+			//char_info*	buffer;
 
 			/// 互斥锁，用于线程同步
 			mutex mtx;
@@ -268,7 +282,6 @@ namespace xgc
 			// 窗口重绘
 			DWORD  nNum = 0;
 
-
 			xgc_int16 cols = 0;
 			xgc_int16 rows = 0;
 			get_console_size( cols, rows );
@@ -277,15 +290,10 @@ namespace xgc
 
 			for( window_t i = 0; _sort_window[i] != INVALID_WINDOW_INDEX && i < XGC_COUNTOF( _sort_window ); ++i )
 			{
-				redraw_window( _sort_window[i], active_buffer[1], true );
+				redraw_window( _sort_window[i], true );
 			}
 
-			SMALL_RECT rc = { 0, 0, cols-1, rows-1 };
-
-			if( ReadConsoleOutput( active_buffer[1], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc ) )
-			{
-				WriteConsoleOutput( active_buffer[0], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc );
-			}
+			refresh();
 		}
 
 		static xgc_bool process_keyboard_event( KEY_EVENT_RECORD &Input )
@@ -604,7 +612,7 @@ namespace xgc
 		/// [12/24/2013 albert.xu]
 		///
 
-		xgc_bool console_init( xgc_int16 cols, xgc_int16 rows )
+		xgc_bool init_console( xgc_int16 cols, xgc_int16 rows )
 		{
 			HMENU hSysMenu = GetSystemMenu( GetConsoleWindow(), FALSE );
 			if( hSysMenu != 0 )
@@ -645,7 +653,7 @@ namespace xgc
 			return true;
 		}
 
-		xgc_void console_fini()
+		xgc_void fini_console()
 		{
 			// 退出
 			g_console_library = 0UL;
@@ -791,6 +799,20 @@ namespace xgc
 			};
 		}
 
+		xgc_void refresh()
+		{
+			xgc_int16 cols = 0;
+			xgc_int16 rows = 0;
+			get_console_size( cols, rows );
+
+			SMALL_RECT rc = { 0, 0, cols-1, rows-1 };
+
+			if( ReadConsoleOutput( active_buffer[1], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc ) )
+			{
+				WriteConsoleOutput( active_buffer[0], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc );
+			}
+		}
+
 		buffer_t buffer( xgc_uint16 w, xgc_uint16 h )
 		{
 			buffer_t idx = 0;
@@ -829,6 +851,15 @@ namespace xgc
 				++idx;
 			}
 			return INVALID_BUFFER_INDEX;
+		}
+
+		buffer_t buffer( window_t window )
+		{
+			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, INVALID_BUFFER_INDEX );
+			text_window *w = _text_window[window];
+			XGC_ASSERT_RETURN( w, INVALID_BUFFER_INDEX );
+			guard lock( w->mtx );
+			return w->buffer;
 		}
 
 		window_t window( xgc_int16 x, xgc_int16 y, xgc_int16 cols, xgc_int16 rows, buffer_t &t, xgc_uint16 style, xgc_lpcstr title )
@@ -927,15 +958,6 @@ namespace xgc
 			}
 
 			return INVALID_WINDOW_INDEX;
-		}
-
-		buffer_t window_buffer( window_t idx )
-		{
-			XGC_ASSERT_RETURN( idx != INVALID_WINDOW_INDEX, INVALID_BUFFER_INDEX );
-			text_window *w = _text_window[idx];
-			XGC_ASSERT_RETURN( w, INVALID_BUFFER_INDEX );
-			guard lock( w->mtx );
-			return w->buffer;
 		}
 
 		xgc_void window_style( window_t window, xgc_uint16 style )
@@ -1061,11 +1083,12 @@ namespace xgc
 		}
 
 		/// 重绘指定窗口
-		xgc_void redraw_window( window_t window, xgc_handle output, xgc_bool border )
+		xgc_void redraw_window( window_t window, xgc_bool border )
 		{
 			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, XGC_NONE );
 			XGC_ASSERT_RETURN( _text_window_count, XGC_NONE );
 
+			xgc_handle output = active_buffer[1];
 			// 取当前需要绘制的窗口
 			text_window *w = _text_window[window];
 			if( xgc_nullptr == w )
@@ -1306,7 +1329,7 @@ namespace xgc
 			else
 				w->sx += col;
 
-			redraw_window( window, active_buffer[0], true );
+			redraw_window( window, true );
 		}
 
 		/// 向上滚动窗口row行

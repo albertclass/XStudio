@@ -46,28 +46,24 @@ namespace xgc
 		///
 		/// [12/24/2013 albert.xu]
 		///
-
-		COMMON_API xgc_bool	console_init( xgc_int16 cols, xgc_int16 rows );
+		COMMON_API xgc_bool	init_console( xgc_int16 cols, xgc_int16 rows );
 
 		///
 		/// [12/24/2013 albert.xu]
 		/// 释放控制台
 		///
-
-		COMMON_API xgc_void	console_fini();
+		COMMON_API xgc_void	fini_console();
 
 		///
 		/// 屏幕是否被初始化了.
 		/// [6/4/2015] create by albert.xu
 		///
-
 		COMMON_API xgc_bool console_is_init();
 
 		///
 		/// [3/4/2014 albert.xu]
 		/// 重定向标准输出
 		///
-
 		COMMON_API xgc_bool	redirect( FILE* stdfile, buffer_t buffer );
 
 		///
@@ -98,8 +94,15 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
 		///
-
 		COMMON_API xgc_void gotoxy( xgc_int16 col, xgc_int16 row, window_t window = INVALID_WINDOW_INDEX );
+
+		///
+		/// \brief 刷新窗口
+		///
+		/// \author albert.xu
+		/// \date 2015/12/24 10:00
+		///
+		COMMON_API xgc_void refresh();
 
 		///
 		/// \brief 分配一个文本缓冲,宽度为w, 高度为h
@@ -110,8 +113,13 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/24 10:00
 		///
-
 		COMMON_API buffer_t buffer( xgc_uint16 w, xgc_uint16 h );
+
+		///
+		/// [1/12/2014 albert.xu]
+		/// 获取窗口关联的缓冲区句柄
+		///
+		COMMON_API buffer_t	buffer( window_t window );
 
 		///
 		/// \brief 分配一个窗口, 并和text关联起来
@@ -124,15 +132,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:35
 		///
-
 		COMMON_API window_t	window( xgc_int16 x, xgc_int16 y, xgc_int16 cols, xgc_int16 rows, buffer_t &t, xgc_uint16 style, xgc_lpcstr title = xgc_nullptr );
-
-		///
-		/// [1/12/2014 albert.xu]
-		/// 获取窗口关联的缓冲区句柄
-		///
-
-		COMMON_API buffer_t	window_buffer( window_t window );
 
 		///
 		/// \brief 设置窗口样式
@@ -167,8 +167,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
 		///
-
-		COMMON_API xgc_void	redraw_window( window_t window, xgc_handle output, xgc_bool border );
+		COMMON_API xgc_void	redraw_window( window_t window, xgc_bool border );
 
 		///
 		/// \breif 滚动窗口
@@ -185,7 +184,6 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
 		///
-
 		COMMON_API xgc_void	free_buffer( buffer_t );
 
 		///
@@ -194,7 +192,6 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
 		///
-
 		COMMON_API xgc_void	free_window( window_t );
 
 		///
@@ -203,7 +200,6 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
 		///
-
 		COMMON_API xgc_int32 printf_text( buffer_t text, xgc_lpcstr fmt, ... );
 
 		///
@@ -221,7 +217,6 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/07 20:31
 		///
-
 		COMMON_API xgc_int32 buffer_read( buffer_t text, xgc_lpstr buf, xgc_int16 len, xgc_bool wait = true );
 	}
 }

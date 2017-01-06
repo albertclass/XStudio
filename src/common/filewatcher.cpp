@@ -1,4 +1,4 @@
-#include "defines.h"
+﻿#include "defines.h"
 #include "exports.h"
 #include <functional>
 #include <mutex>
@@ -14,15 +14,15 @@ namespace xgc
 	namespace common
 	{
 		#define MAX_BUFF_SIZE (1024*4)
-		/// ���һ�δ���Ĵ���
+		/// 最后一次错误的代码
 		static xgc_ulong  last_error = 0;
-		/// ��ɶ˿ھ��
+		/// 完成端口句柄
 		static HANDLE iocp_handle = xgc_nullptr;
-		/// �ػ��߳��Ƿ����蹤��
+		/// 守护线程是否仍需工作
 		static xgc_bool hardwork = true;
-		/// 线程�?
+		/// 线程互斥量
 		static std::mutex thread_guard;
-		/// �����߳�����
+		/// 工作线程数组
 		static xgc_vector< std::thread > work_threads;
 
 		///
@@ -38,28 +38,28 @@ namespace xgc
 			HANDLE fh;
 			/// 事件掩码
 			xgc_uint32 events;
-			/// �?径地址
+			/// 监视路径
 			xgc_char path[XGC_MAX_PATH];
 			/// 缓冲文件
 			xgc_char file[XGC_MAX_FNAME];
 			/// 消息缓冲
-			/// 注意，�?��?�缓冲�?�地址一定�?�保证四字节对齐，否则无法收到通知消息
+			/// 注意，保证四字节对齐，否则无法收到通知消息
 			xgc_char notify_infomation[MAX_BUFF_SIZE];
 
 			/// 回调地址
 			filewatcher_notifier invoke;
 
 			xgc_ulong actions;
-			/// 最后一次修改时�?
+			/// 最后一次修改时间
 			xgc_time64 lasttick;
-			/// �?否监控整�?�?录树
+			/// 是否监控整个树目录
 			xgc_bool watch_subtree;
 		};
 
 		/// 所有的事件句柄都在这里保存
 		static std::unordered_map< xgc_handle, filewatcher_handler* > event_handles;
 
-		/// ACTION 映射�?
+		/// ACTION 映射表
 		static xgc_ulong filewatcher_action_map[] =
 		{
 			#if defined( WIN32 ) || defined( WIN64 )
@@ -284,7 +284,7 @@ namespace xgc
 				size_t numberofconverted = 0;
 				auto err = wcstombs_s( &numberofconverted, file, info->FileName, _TRUNCATE );
 
-				// 文件名不一致了
+				// 鏂囦欢鍚嶄笉涓€鑷翠簡
 				if( e->actions >= 1 && strcasecmp( file, e->file ) != 0 )
 				{
 					for( int i = 1; i < 6; ++i )
@@ -344,5 +344,114 @@ namespace xgc
 		}
 	}
 }
+#elif defined(_LINUX)
+namespace xgc
+{
+	namespace common
+	{
+		#define MAX_BUFF_SIZE (1024*4)
 
+		static int inotify_fd = -1;
+
+		///
+		/// \brief 事件句柄
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 16:27
+		///
+		struct filewatch_handler
+		{
+			/// 文件句柄
+			int fd;
+			/// 事件掩码
+			xgc_uint32 events;
+			/// 监视路径
+			xgc_char path[XGC_MAX_PATH];
+			/// 缓冲文件
+			xgc_char file[XGC_MAX_FNAME];
+			/// 消息缓冲
+			/// 注意，保证四字节对齐，否则无法收到通知消息
+			xgc_char notify_infomation[MAX_BUFF_SIZE];
+
+			/// 回调地址
+			filewatcher_notifier invoke;
+
+			xgc_ulong actions;
+			/// 最后一次修改时间
+			xgc_time64 lasttick;
+			/// 是否监控整个树目录
+			xgc_bool watch_subtree;
+		};
+
+		/// 所有的事件句柄都在这里保存
+		static std::unordered_map< xgc_handle, filewatch_handler* > event_handles;
+
+		///
+		/// \brief 初始化文件监视器
+		///
+		/// \prarm thread_count 线程数量
+		/// \param thread_interval 线程等待间隔，线程数为0时无效
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 15:45
+		///
+		xgc_bool init_filewatcher( xgc_ulong thread_count, xgc_ulong thread_interval /*= 0xffffffff*/ )
+		{
+			inotify_fd = inotify_init();
+
+			if( fd < 0 )
+			{
+				perror ("inotify_init () = ");
+				return false;
+			}
+
+			return true;
+		}
+
+		///
+		/// \brief 清理文件监视器
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 15:45
+		///
+		xgc_void fini_filewatcher()
+		{
+			if( inotify_fd > 0 )
+				close( inotify_fd );
+		}
+
+		///
+		/// \brief 新增一个文件监视器
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 15:46
+		///
+		xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatcher_notifier &notify_fn, xgc_bool auto_merger /*= true*/ )
+		{
+			int fd = inotify_add_watch( inotify_fd, path, filter );
+			filewatch_handler* handler_ptr = XGC_NEW filewatch_handler;
+			event_handler.insert( std::make_pair( fd, handler_ptr ) );
+		}
+
+		///
+		/// \brief 删除一个文件监视器
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 15:49
+		///
+		xgc_void del_filewatcher( xgc_lpcstr path )
+		{
+		}
+
+		///
+		/// \brief 处理已上报的通知
+		///
+		/// \author albert.xu
+		/// \date 2016/08/10 16:37
+		///
+		xgc_long do_filewatcher_notify( xgc_ulong timeout /*= 0*/ )
+		{
+		}
+	}
+}
 #endif // _WINDOWS

@@ -28,14 +28,24 @@ int main( int argc, char* argv[] )
 	int row_max, col_max;
 
 #ifdef _WINDOWS
-	console_init( 80, 26 );
+	console_init( 120, 40 );
 	buffer_t menu_b = INVALID_BUFFER_INDEX;
 	buffer_t info_b = INVALID_BUFFER_INDEX;
 
-	window_t menu_w = window( 0,  0, 80, 14, menu_b, WINDOW_STYLE_BORDER );
-	window_t info_w = window( 0, 15, 80, 12, info_b, WINDOW_STYLE_BORDER );
+	window_t menu_w = window( 0,  0, 120, 14, menu_b, WINDOW_STYLE_BORDER );
+	window_t info_w = window( 0, 14, 120, 26, info_b, WINDOW_STYLE_BORDER );
 
-	redirect( stdout, window_buffer(info_w) );
+	redirect( stdout, buffer(info_w) );
+
+	int i = 0;
+	for( auto &it : prepage )
+	{
+		printf_text( menu_b, "%d. %s\n", i++, it->display );
+	}
+
+	printf_text( menu_b, "q. exit\n" );
+
+	redraw_window( menu_w, true );
 
 	while( false == exit )
 	{
@@ -58,6 +68,10 @@ int main( int argc, char* argv[] )
 		{
 			exit = (ch == 27 || ch == 'q');
 		}
+
+		redraw_window( menu_w, true );
+		redraw_window( info_w, true );
+		refresh();
 	}
 
 	console_fini();
