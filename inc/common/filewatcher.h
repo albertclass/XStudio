@@ -11,7 +11,6 @@
 #ifndef _FILEWATCHER_H_
 #define _FILEWATCHER_H_
 
-#if defined(_WINDOWS)
 namespace xgc
 {
 	namespace common
@@ -26,28 +25,13 @@ namespace xgc
 		#define FILE_WATCHER_NOCHANGE       7
 		#define FILE_WATCHER_ERRORDEQUE     8
 
-		#define FILE_WATCHER_NOTIFY_SECURITY   (1UL << 1)
-		#define FILE_WATCHER_NOTIFY_CREATION   (1UL << 2)
-		#define FILE_WATCHER_NOTIFY_LASTACCESS (1UL << 3)
-		#define FILE_WATCHER_NOTIFY_LASTWRITE  (1UL << 4)
-		#define FILE_WATCHER_NOTIFY_SIZE       (1UL << 5)
-		#define FILE_WATCHER_NOTIFY_ATTRIBUTES (1UL << 6)
-		#define FILE_WATCHER_NOTIFY_DIRNAME    (1UL << 7)
-		#define FILE_WATCHER_NOTIFY_FILENAME   (1UL << 8)
-
-		#define FILE_WATCHER_ACTION_ADDED            (1)
-		#define FILE_WATCHER_ACTION_REMOVED	         (2)	
-		#define FILE_WATCHER_ACTION_MODIFIED         (3)
-		#define FILE_WATCHER_ACTION_RENAMED_OLD_NAME (4)
-		#define FILE_WATCHER_ACTION_RENAMED_NEW_NAME (5)
-		
 		///
 		/// \brief 文件监视通知回调，在do_filewatcher_notify中被调用
 		///
 		/// \author albert.xu
 		/// \date 2016/08/23 11:05
 		///
-		typedef std::function< xgc_void( xgc_lpcstr path, xgc_lpcstr filename, xgc_ulong action ) > filewatcher_notifier;
+		typedef std::function< xgc_void( xgc_lpcstr path, xgc_lpcstr filename, xgc_ulong action ) > filewatch_notifier;
 
 		///
 		/// \brief 初始化文件监视器
@@ -74,7 +58,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/08/10 15:46
 		///
-		COMMON_API xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatcher_notifier &notify_fn, xgc_bool auto_merger = true );
+		COMMON_API xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatch_notifier &notify_fn, xgc_bool auto_merger = true );
 
 		///
 		/// \brief 删除一个文件监视器
@@ -94,5 +78,4 @@ namespace xgc
 	}
 }
 
-#endif // _WINDOWS
 #endif // _FILEWATCHER_H_

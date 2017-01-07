@@ -1,9 +1,6 @@
 #include <stdio.h>
-#include <conio.h>
 #include <fcntl.h>
-#include <io.h>
 #include <time.h>
-#include <process.h>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
@@ -11,6 +8,9 @@
 #include "console.h"
 
 #ifdef _WINDOWS
+#include <io.h>
+#include <conio.h>
+#include <process.h>
 #include "logger.h"
 
 namespace xgc

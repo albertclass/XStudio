@@ -1,12 +1,14 @@
-ï»¿#include "defines.h"
+#include "defines.h"
 #include "exports.h"
 #include <functional>
 #include <mutex>
 #include <thread>
+#include <algorithm>
 
 #include "filewatcher.h"
 #include "xsystem.h"
 #include "datetime.h"
+#include "logger.h"
 
 #if defined(_WINDOWS)
 namespace xgc
@@ -14,63 +16,61 @@ namespace xgc
 	namespace common
 	{
 		#define MAX_BUFF_SIZE (1024*4)
-		/// æœ€åä¸€æ¬¡é”™è¯¯çš„ä»£ç 
+		/// ×îºóÒ»´Î´íÎóµÄ´úÂë
 		static xgc_ulong  last_error = 0;
-		/// å®Œæˆç«¯å£å¥æŸ„
+		/// Íê³É¶Ë¿Ú¾ä±ú
 		static HANDLE iocp_handle = xgc_nullptr;
-		/// å®ˆæŠ¤çº¿ç¨‹æ˜¯å¦ä»éœ€å·¥ä½œ
+		/// ÊØ»¤Ïß³ÌÊÇ·ñÈÔĞè¹¤×÷
 		static xgc_bool hardwork = true;
-		/// çº¿ç¨‹äº’æ–¥é‡
+		/// Ïß³Ì»¥³âÁ¿
 		static std::mutex thread_guard;
-		/// å·¥ä½œçº¿ç¨‹æ•°ç»„
+		/// ¹¤×÷Ïß³ÌÊı×é
 		static xgc_vector< std::thread > work_threads;
 
 		///
-		/// \brief äº‹ä»¶å¥æŸ„
+		/// \brief ÊÂ¼ş¾ä±ú
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 16:27
 		///
-		struct filewatcher_handler
+		struct filewatch_handler
 		{
 			OVERLAPPED	ol;
-			/// æ–‡ä»¶å¥æŸ„
+			/// ÎÄ¼ş¾ä±ú
 			HANDLE fh;
-			/// äº‹ä»¶æ©ç 
+			/// ÊÂ¼şÑÚÂë
 			xgc_uint32 events;
-			/// ç›‘è§†è·¯å¾„
+			/// ¼àÊÓÂ·¾¶
 			xgc_char path[XGC_MAX_PATH];
-			/// ç¼“å†²æ–‡ä»¶
+			/// »º³åÎÄ¼ş
 			xgc_char file[XGC_MAX_FNAME];
-			/// æ¶ˆæ¯ç¼“å†²
-			/// æ³¨æ„ï¼Œä¿è¯å››å­—èŠ‚å¯¹é½ï¼Œå¦åˆ™æ— æ³•æ”¶åˆ°é€šçŸ¥æ¶ˆæ¯
+			/// ÏûÏ¢»º³å
+			/// ×¢Òâ£¬±£Ö¤ËÄ×Ö½Ú¶ÔÆë£¬·ñÔòÎŞ·¨ÊÕµ½Í¨ÖªÏûÏ¢
 			xgc_char notify_infomation[MAX_BUFF_SIZE];
 
-			/// å›è°ƒåœ°å€
-			filewatcher_notifier invoke;
+			/// »Øµ÷µØÖ·
+			filewatch_notifier invoke;
 
 			xgc_ulong actions;
-			/// æœ€åä¸€æ¬¡ä¿®æ”¹æ—¶é—´
+			/// ×îºóÒ»´ÎĞŞ¸ÄÊ±¼ä
 			xgc_time64 lasttick;
-			/// æ˜¯å¦ç›‘æ§æ•´ä¸ªæ ‘ç›®å½•
+			/// ÊÇ·ñ¼à¿ØÕû¸öÊ÷Ä¿Â¼
 			xgc_bool watch_subtree;
 		};
 
-		/// æ‰€æœ‰çš„äº‹ä»¶å¥æŸ„éƒ½åœ¨è¿™é‡Œä¿å­˜
-		static std::unordered_map< xgc_handle, filewatcher_handler* > event_handles;
+		/// ËùÓĞµÄÊÂ¼ş¾ä±ú¶¼ÔÚÕâÀï±£´æ
+		static std::unordered_map< xgc_handle, filewatch_handler* > event_handles;
 
-		/// ACTION æ˜ å°„è¡¨
+		/// ACTION Ó³Éä±í
 		static xgc_ulong filewatcher_action_map[] =
 		{
-			#if defined( WIN32 ) || defined( WIN64 )
 			0,
 			FILE_WATCHER_ACTION_ADDED,
 			FILE_WATCHER_ACTION_REMOVED,
 			FILE_WATCHER_ACTION_MODIFIED,
 			FILE_WATCHER_ACTION_RENAMED_OLD_NAME,
 			FILE_WATCHER_ACTION_RENAMED_NEW_NAME,
-			#else
-			#endif
+			FILE_WATCHER_ACTION_COUNT,
 		};
 
 		xgc_bool init_filewatcher( xgc_ulong thread_count, xgc_ulong interval /*= 0xffffffff*/ )
@@ -127,7 +127,7 @@ namespace xgc
 			}
 		}
 
-		xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatcher_notifier &notify_fn, xgc_bool auto_merger/* = true*/ )
+		xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatch_notifier &notify_fn, xgc_bool auto_merger/* = true*/ )
 		{
 			// Open handle to the directory to be monitored, note the FILE_FLAG_OVERLAPPED
 			HANDLE hWatcher = CreateFile( path,
@@ -160,7 +160,7 @@ namespace xgc
 
 			// Allocate notification buffers (will be filled by the system when a
 			// notification occurs
-			auto e = XGC_NEW filewatcher_handler;
+			auto e = XGC_NEW filewatch_handler;
 			if( xgc_nullptr == e )
 				return FILE_WATCHER_ERROROUTOFMEM;
 
@@ -168,18 +168,10 @@ namespace xgc
 
 			e->fh       = hWatcher;
 			e->events   = 0;
-			e->actions  = auto_merger ? 1 : 0;
+			e->actions  = auto_merger ? 0x80000000 : 0;
 			e->lasttick = 0;
 
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_SECURITY ) ? FILE_NOTIFY_CHANGE_SECURITY : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_CREATION ) ? FILE_NOTIFY_CHANGE_CREATION : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_LASTACCESS ) ? FILE_NOTIFY_CHANGE_LAST_ACCESS : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_LASTWRITE ) ? FILE_NOTIFY_CHANGE_LAST_WRITE : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_SIZE ) ? FILE_NOTIFY_CHANGE_SIZE : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_ATTRIBUTES ) ? FILE_NOTIFY_CHANGE_ATTRIBUTES : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_DIRNAME ) ? FILE_NOTIFY_CHANGE_DIR_NAME : 0 );
-			e->events = XGC_ADD_FLAGS( e->events, XGC_CHK_FLAGS( filter, FILE_WATCHER_NOTIFY_FILENAME ) ? FILE_NOTIFY_CHANGE_FILE_NAME : 0 );
-
+			e->events 	= filter;
 			e->watch_subtree = watch_subtree;
 
 			strcpy_s( e->path, path );
@@ -216,7 +208,7 @@ namespace xgc
 		{
 			std::unique_lock< std::mutex > locker( thread_guard );
 
-			auto it = std::find_if( event_handles.begin(), event_handles.end(), [path]( const std::pair< xgc_handle, filewatcher_handler* > &o )->bool{
+			auto it = std::find_if( event_handles.begin(), event_handles.end(), [path]( const std::pair< xgc_handle, filewatch_handler* > &o )->bool{
 				return strcasecmp( o.second->path, path ) == 0;
 			} );
 
@@ -251,14 +243,9 @@ namespace xgc
 					auto t = datetime::now().to_milliseconds();
 
 					// the first bit mean enable auto merger
-					if( e && e->invoke && e->actions > 1 && t - e->lasttick > 1000 )
+					if( e && e->invoke && XGC_CHK_FLAGS( e->actions, 0x80000000 ) && t - e->lasttick > 1000 )
 					{
-						for( int i = 1; i < 6; ++i )
-						{
-							if( XGC_CHKBIT( e->actions, i ) )
-								e->invoke( e->path, e->file, i );
-						}
-
+						e->invoke( e->path, e->file, e->actions );
 						e->actions = 1;
 					}
 				}
@@ -272,7 +259,7 @@ namespace xgc
 			if( it == event_handles.end() ) //not found
 				return FILE_WATCHER_ERRORUNKNOWN;
 
-			filewatcher_handler* e = it->second;
+			filewatch_handler* e = it->second;
 
 			FILE_NOTIFY_INFORMATION* info = (FILE_NOTIFY_INFORMATION*) e->notify_infomation;
 
@@ -284,15 +271,10 @@ namespace xgc
 				size_t numberofconverted = 0;
 				auto err = wcstombs_s( &numberofconverted, file, info->FileName, _TRUNCATE );
 
-				// é‚å›¦æ¬¢éšå¶„ç¬‰æ¶“â‚¬é‘·ç¿ ç°¡
-				if( e->actions >= 1 && strcasecmp( file, e->file ) != 0 )
+				// ÎÄ¼şÃû²»Ò»ÖÂÁË
+				if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) && strcasecmp( file, e->file ) != 0 )
 				{
-					for( int i = 1; i < 6; ++i )
-					{
-						if( XGC_CHKBIT( e->actions, i ) )
-							e->invoke( e->path, e->file, i );
-					}
-
+					e->invoke( e->path, e->file, e->actions );
 					e->actions = 1;
 
 					strcpy_s( e->file, file );
@@ -300,13 +282,13 @@ namespace xgc
 
 				if( err == 0 )
 				{
-					if( XGC_CHKBIT( e->actions, 0 ) )
+					if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) )
 					{
-						e->actions = XGC_SETBIT( e->actions, filewatcher_action_map[info->Action] );
+						e->actions = XGC_SET_BIT( e->actions, info->Action );
 					}
 					else
 					{
-						e->invoke( e->path, file, filewatcher_action_map[info->Action] );
+						e->invoke( e->path, file, XGC_BIT( info->Action ) );
 					}
 				}
 
@@ -345,52 +327,59 @@ namespace xgc
 	}
 }
 #elif defined(_LINUX)
+#include <sys/inotify.h>  
+#include <sys/epoll.h>  
+#include <sys/ioctl.h>  
 namespace xgc
 {
 	namespace common
 	{
 		#define MAX_BUFF_SIZE (1024*4)
 
+		/// notify fd
 		static int inotify_fd = -1;
+		/// epoll fd
+		static int epoll_fd = -1;
+
+		/// Ïß³Ì»¥³âÁ¿
+		static std::mutex thread_guard;
+		/// ¹¤×÷Ïß³ÌÊı×é
+		static xgc_vector< std::thread > work_threads;
 
 		///
-		/// \brief äº‹ä»¶å¥æŸ„
+		/// \brief ÊÂ¼ş¾ä±ú
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 16:27
 		///
 		struct filewatch_handler
 		{
-			/// æ–‡ä»¶å¥æŸ„
+			/// ÎÄ¼ş¾ä±ú
 			int fd;
-			/// äº‹ä»¶æ©ç 
+			/// ÊÂ¼şÑÚÂë
 			xgc_uint32 events;
-			/// ç›‘è§†è·¯å¾„
+			/// ¼àÊÓÂ·¾¶
 			xgc_char path[XGC_MAX_PATH];
-			/// ç¼“å†²æ–‡ä»¶
+			/// »º³åÎÄ¼ş
 			xgc_char file[XGC_MAX_FNAME];
-			/// æ¶ˆæ¯ç¼“å†²
-			/// æ³¨æ„ï¼Œä¿è¯å››å­—èŠ‚å¯¹é½ï¼Œå¦åˆ™æ— æ³•æ”¶åˆ°é€šçŸ¥æ¶ˆæ¯
-			xgc_char notify_infomation[MAX_BUFF_SIZE];
-
-			/// å›è°ƒåœ°å€
-			filewatcher_notifier invoke;
+			/// »Øµ÷µØÖ·
+			filewatch_notifier invoke;
 
 			xgc_ulong actions;
-			/// æœ€åä¸€æ¬¡ä¿®æ”¹æ—¶é—´
+			/// ×îºóÒ»´ÎĞŞ¸ÄÊ±¼ä
 			xgc_time64 lasttick;
-			/// æ˜¯å¦ç›‘æ§æ•´ä¸ªæ ‘ç›®å½•
+			/// ÊÇ·ñ¼à¿ØÕû¸öÊ÷Ä¿Â¼
 			xgc_bool watch_subtree;
 		};
 
-		/// æ‰€æœ‰çš„äº‹ä»¶å¥æŸ„éƒ½åœ¨è¿™é‡Œä¿å­˜
-		static std::unordered_map< xgc_handle, filewatch_handler* > event_handles;
+		/// ËùÓĞµÄÊÂ¼ş¾ä±ú¶¼ÔÚÕâÀï±£´æ
+		static std::unordered_map< int, filewatch_handler* > event_handles;
 
 		///
-		/// \brief åˆå§‹åŒ–æ–‡ä»¶ç›‘è§†å™¨
+		/// \brief ³õÊ¼»¯ÎÄ¼ş¼àÊÓÆ÷
 		///
-		/// \prarm thread_count çº¿ç¨‹æ•°é‡
-		/// \param thread_interval çº¿ç¨‹ç­‰å¾…é—´éš”ï¼Œçº¿ç¨‹æ•°ä¸º0æ—¶æ— æ•ˆ
+		/// \prarm thread_count Ïß³ÌÊıÁ¿
+		/// \param thread_interval Ïß³ÌµÈ´ı¼ä¸ô£¬Ïß³ÌÊıÎª0Ê±ÎŞĞ§
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:45
@@ -399,9 +388,32 @@ namespace xgc
 		{
 			inotify_fd = inotify_init();
 
-			if( fd < 0 )
+			if( inotify_fd < 0 )
 			{
-				perror ("inotify_init () = ");
+				SYS_ERROR( "inotify_init error!" );
+				return false;
+			}
+
+			epoll_fd = epoll_create(1024);
+			if( epoll_fd < 0 )
+			{
+				SYS_ERROR( "epoll_create error!" );
+				return false;
+			}
+
+			// set inotify fd to no block
+			int nb = 1;  
+    		ioctl( inotify_fd, FIONBIO, &nb );
+
+			// associate epoll and inotify
+			struct epoll_event evt;  
+			evt.events = EPOLLIN|EPOLLET;  
+			evt.data.fd = inotify_fd;
+
+			int rs = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, inotify_fd, &evt);
+			if( rs < 0 )
+			{
+				SYS_ERROR( "Could not add Inotify event in EPOLL %d", rs );
 				return false;
 			}
 
@@ -409,7 +421,7 @@ namespace xgc
 		}
 
 		///
-		/// \brief æ¸…ç†æ–‡ä»¶ç›‘è§†å™¨
+		/// \brief ÇåÀíÎÄ¼ş¼àÊÓÆ÷
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:45
@@ -417,40 +429,178 @@ namespace xgc
 		xgc_void fini_filewatcher()
 		{
 			if( inotify_fd > 0 )
+			{
 				close( inotify_fd );
+				inotify_fd = -1;
+			}
+
+			if( epoll_fd > 0 )
+			{
+				close( epoll_fd );
+				epoll_fd = -1;
+			}
 		}
 
 		///
-		/// \brief æ–°å¢ä¸€ä¸ªæ–‡ä»¶ç›‘è§†å™¨
+		/// \brief ĞÂÔöÒ»¸öÎÄ¼ş¼àÊÓÆ÷
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:46
 		///
-		xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatcher_notifier &notify_fn, xgc_bool auto_merger /*= true*/ )
+		xgc_long add_filewatcher( xgc_lpcstr path, xgc_ulong filter, xgc_bool watch_subtree, const filewatch_notifier &notify_fn, xgc_bool auto_merger /*= true*/ )
 		{
-			int fd = inotify_add_watch( inotify_fd, path, filter );
-			filewatch_handler* handler_ptr = XGC_NEW filewatch_handler;
-			event_handler.insert( std::make_pair( fd, handler_ptr ) );
+			filewatch_handler* e = XGC_NEW filewatch_handler;
+
+			if( xgc_nullptr == e )
+				return FILE_WATCHER_ERROROUTOFMEM;
+
+			memset( e, 0, sizeof( *e ) );
+
+			e->fd       = -1;
+			e->events   = 0;
+			e->actions  = auto_merger ? 0x80000000 : 0;
+			e->lasttick = 0;
+
+			e->events = filter;
+
+			e->watch_subtree = watch_subtree;
+
+			strcpy_s( e->path, path );
+
+			e->invoke = notify_fn;
+
+			e->fd = inotify_add_watch( inotify_fd, path, filter );
+			if( e->fd < 0 )
+			{
+				SAFE_DELETE( e );
+				return FILE_WATCHER_ERRORREADDIR;
+			}
+
+			std::unique_lock< std::mutex > lock( thread_guard );
+			event_handles.insert( std::make_pair( e->fd, e ) );
+
+			return FILE_WATCHER_SUCCESS;
 		}
 
 		///
-		/// \brief åˆ é™¤ä¸€ä¸ªæ–‡ä»¶ç›‘è§†å™¨
+		/// \brief É¾³ıÒ»¸öÎÄ¼ş¼àÊÓÆ÷
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 15:49
 		///
 		xgc_void del_filewatcher( xgc_lpcstr path )
 		{
+			std::unique_lock< std::mutex > locker( thread_guard );
+
+			auto it = std::find_if( event_handles.begin(), event_handles.end(), [path]( const std::pair< int, filewatch_handler* > &o )->bool{
+				return strcasecmp( o.second->path, path ) == 0;
+			} );
+
+			if( it != event_handles.end() )
+			{
+				auto e = it->second;
+				if( -1 == inotify_rm_watch( inotify_fd, e->fd ) )
+				{
+					SYS_ERROR( "inotify_rm_watch error." );
+					return;
+				}
+
+				close( e->fd );
+
+				SAFE_DELETE( e );
+
+				event_handles.erase( it );
+			}
 		}
 
 		///
-		/// \brief å¤„ç†å·²ä¸ŠæŠ¥çš„é€šçŸ¥
+		/// \brief ´¦ÀíÒÑÉÏ±¨µÄÍ¨Öª
 		///
 		/// \author albert.xu
 		/// \date 2016/08/10 16:37
 		///
 		xgc_long do_filewatcher_notify( xgc_ulong timeout /*= 0*/ )
 		{
+			struct epoll_event evts[10];
+			int n = epoll_wait( epoll_fd, evts, XGC_COUNTOF(evts), timeout );
+			if( n < 0 )
+			{
+				SYS_ERROR( "epoll_wait error." );
+				return FILE_WATCHER_ERRORDEQUE;
+			}
+
+			if( n == 0 )
+			{
+				// timeout
+				std::unique_lock< std::mutex > lock( thread_guard );
+
+				for( auto pair : event_handles )
+				{
+					auto e = pair.second;
+					auto t = datetime::now().to_milliseconds();
+
+					// the first bit mean enable auto merger
+					if( e && e->invoke && XGC_CHK_FLAGS(e->actions, 0x80000000) && t - e->lasttick > 1000 )
+					{
+						e->invoke( e->path, e->file, e->actions );
+						e->actions = 0x80000000;
+					}
+				}
+
+				return FILE_WATCHER_NOCHANGE;
+			}
+
+			for( int i = 0; i < n; ++i )
+			{
+				// check it is inotify event.
+				if( evts[i].data.fd != inotify_fd )
+					continue;
+
+				if( evts[i].events & (EPOLLERR|EPOLLHUP) )
+					continue;
+				
+				if( evts[i].events & EPOLLIN )
+				{
+					/// ÏûÏ¢»º³å
+					char inotify_infomation[MAX_BUFF_SIZE];  
+                    memset( inotify_infomation, 0, sizeof(inotify_infomation) );
+
+					int total = read( evts[i].data.fd, inotify_infomation, sizeof(inotify_infomation) );
+					int bytes = 0;
+					while( total > bytes )
+					{
+						inotify_event *ievt = (inotify_event *)( inotify_infomation + bytes );
+
+						std::unique_lock< std::mutex > lock( thread_guard );
+
+						auto it = event_handles.find( ievt->wd );
+						if( it != event_handles.end() ) //found watch fd
+						{
+							filewatch_handler* e = it->second;
+
+							if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) && strcasecmp( ievt->name, e->file ) != 0 )
+							{
+								// file name changed auto merge end.
+								e->invoke( e->path, e->file, e->actions );
+								e->actions = 0x80000000;
+
+								strcpy_s( e->file, ievt->name );
+							}
+							
+							if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) )
+							{
+								e->actions = XGC_ADD_FLAGS( e->actions, ievt->mask );
+							}
+							else
+							{
+								e->invoke( e->path, ievt->name, ievt->mask );
+							}
+						}
+						
+						bytes += sizeof(inotify_event) + ievt->len;
+					}
+				}
+			}
 		}
 	}
 }
