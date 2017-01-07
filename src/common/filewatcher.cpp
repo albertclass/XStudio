@@ -61,18 +61,6 @@ namespace xgc
 		/// 所有的事件句柄都在这里保存
 		static std::unordered_map< xgc_handle, filewatch_handler* > event_handles;
 
-		/// ACTION 映射表
-		static xgc_ulong filewatcher_action_map[] =
-		{
-			0,
-			FILE_WATCHER_ACTION_ADDED,
-			FILE_WATCHER_ACTION_REMOVED,
-			FILE_WATCHER_ACTION_MODIFIED,
-			FILE_WATCHER_ACTION_RENAMED_OLD_NAME,
-			FILE_WATCHER_ACTION_RENAMED_NEW_NAME,
-			FILE_WATCHER_ACTION_COUNT,
-		};
-
 		xgc_bool init_filewatcher( xgc_ulong thread_count, xgc_ulong interval /*= 0xffffffff*/ )
 		{
 			if( !privilege( SE_BACKUP_NAME ) )
@@ -243,10 +231,10 @@ namespace xgc
 					auto t = datetime::now().to_milliseconds();
 
 					// the first bit mean enable auto merger
-					if( e && e->invoke && XGC_CHK_FLAGS( e->actions, 0x80000000 ) && t - e->lasttick > 1000 )
+					if( e && e->invoke && e->actions > 0x80000000 && t - e->lasttick > 1000 )
 					{
 						e->invoke( e->path, e->file, e->actions );
-						e->actions = 1;
+						e->actions = 0x80000000;
 					}
 				}
 
@@ -272,10 +260,12 @@ namespace xgc
 				auto err = wcstombs_s( &numberofconverted, file, info->FileName, _TRUNCATE );
 
 				// 文件名不一致了
-				if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) && strcasecmp( file, e->file ) != 0 )
+				if( strcasecmp( file, e->file ) != 0 )
 				{
-					e->invoke( e->path, e->file, e->actions );
-					e->actions = 1;
+					if( e->actions > 0x80000000 )
+						e->invoke( e->path, e->file, e->actions );
+
+					e->actions = 0x80000000;
 
 					strcpy_s( e->file, file );
 				}
@@ -284,7 +274,7 @@ namespace xgc
 				{
 					if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) )
 					{
-						e->actions = XGC_SET_BIT( e->actions, info->Action );
+						e->actions = XGC_SETBIT( e->actions, info->Action );
 					}
 					else
 					{
@@ -540,7 +530,7 @@ namespace xgc
 					auto t = datetime::now().to_milliseconds();
 
 					// the first bit mean enable auto merger
-					if( e && e->invoke && XGC_CHK_FLAGS(e->actions, 0x80000000) && t - e->lasttick > 1000 )
+					if( e && e->invoke && e->actions > 0x80000000 && t - e->lasttick > 1000 )
 					{
 						e->invoke( e->path, e->file, e->actions );
 						e->actions = 0x80000000;
@@ -578,10 +568,12 @@ namespace xgc
 						{
 							filewatch_handler* e = it->second;
 
-							if( XGC_CHK_FLAGS( e->actions, 0x80000000 ) && strcasecmp( ievt->name, e->file ) != 0 )
+							if( strcasecmp( ievt->name, e->file ) != 0 )
 							{
 								// file name changed auto merge end.
-								e->invoke( e->path, e->file, e->actions );
+								if( e->actions > 0x80000000 )
+									e->invoke( e->path, e->file, e->actions );
+
 								e->actions = 0x80000000;
 
 								strcpy_s( e->file, ievt->name );

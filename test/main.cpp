@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
 	int row_max, col_max;
 
 #ifdef _WINDOWS
-	console_init( 120, 40 );
+	init_console( 120, 40 );
 	buffer_t menu_b = INVALID_BUFFER_INDEX;
 	buffer_t info_b = INVALID_BUFFER_INDEX;
 
@@ -74,7 +74,7 @@ int main( int argc, char* argv[] )
 		refresh();
 	}
 
-	console_fini();
+	fini_console();
 #else
 	initscr();
 	raw();

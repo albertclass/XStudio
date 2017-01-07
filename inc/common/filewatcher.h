@@ -10,7 +10,10 @@
 #pragma once
 #ifndef _FILEWATCHER_H_
 #define _FILEWATCHER_H_
+#include "defines.h"
+#include "exports.h"
 
+#include <functional>
 namespace xgc
 {
 	namespace common
