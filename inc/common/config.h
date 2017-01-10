@@ -38,7 +38,6 @@
 #	include "platform/linux/sys.h"
 #endif
 
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,13 +45,6 @@
 #include <string.h>
 #include <assert.h>
 
-// #include <map>
-// #include <set>
-// #include <list>
-// #include <vector>
-// #include <unordered_map>
-// #include <unordered_set>
-// #include <algorithm>
 ///////////////////////////////////////////////////////////
 // adpater linux to windows
 

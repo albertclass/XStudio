@@ -57,6 +57,11 @@ private:
 	std::vector< unit_test > view;
 };
 
+#ifdef _LINUX
+int getch();
+int kbhit();
+#endif // _LINUX
+
 unit_test_frame &get_test_frame();
 
 struct unit_test_register

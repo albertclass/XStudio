@@ -12,4 +12,5 @@
 #define xgc_invalid_handle xgc_nullptr
 
 #define gettid() syscall(SYS_gettid)
+
 #endif // __XGC_SYSTEM_H__
