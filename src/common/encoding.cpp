@@ -355,18 +355,18 @@ namespace xgc
 				return -1;
 
 			#if defined(_LINUX)
-			cch = wcrtomb( poi, (xgc_wchar)ucs, &mbstat );
+			cch = wcrtomb( mbs ? poi : (xgc_lpstr)mbs, (xgc_wchar)ucs, &mbstat );
 			if( cch == -1 )
 				return -1;
 			#elif defined(_WINDOWS)
 			int ich = 0;
-			wctomb_s( &ich, poi, size - (poi-(xgc_lpstr)mbs), (xgc_wchar)ucs );
+			wctomb_s( &ich, mbs ? poi : (xgc_lpstr)mbs, size - (poi-(xgc_lpstr)mbs), (xgc_wchar)ucs );
 			if( ich == -1 )
 				return -1;
 			cch = ich;
 			#else
 			// wctomb not thread safety
-			cch = wctomb( poi, (xgc_wchar)ucs );
+			cch = wctomb( mbs ? poi : (xgc_lpstr)mbs, (xgc_wchar)ucs );
 			if( cch == -1 )
 				return -1;
 			#endif
