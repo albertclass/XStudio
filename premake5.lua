@@ -14,7 +14,6 @@ project "common"
     location "prj/common"
     includedirs "inc/common"
     targetdir "bin/%{cfg.buildcfg}"
-    implibdir "lib/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
     flags { "C++11", "MultiProcessorCompile" }
@@ -40,10 +39,12 @@ project "common"
         optimize "On"
 
     filter "system:windows"
+        implibdir "lib/%{cfg.buildcfg}"
         architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
+        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
         architecture "x64"
@@ -56,7 +57,6 @@ project "unittest"
     includedirs "inc/common"
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    links "common"
     
     flags { "C++11", "MultiProcessorCompile" }
 
@@ -83,7 +83,8 @@ project "unittest"
         defines { "WIN64" }
 
     filter "system:linux"
-        links { "stdc++", "ncurses", "rt", "pthread" }
+       	libdirs { "bin/%{cfg.buildcfg}" }
+        links { "stdc++", "rt", "pthread", "common" }
         buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }

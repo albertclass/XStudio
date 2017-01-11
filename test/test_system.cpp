@@ -19,8 +19,8 @@ static int testmain( int agrc, char * argv[] )
 
 	for( int i = 0; i < 100; ++i )
 	{
-		xgc_real64 cpu_proc = get_process_cpu_usage();
 		xgc_real64 cpu_sys  = get_system_cpu_usage();
+		xgc_real64 cpu_proc = get_process_cpu_usage();
 		output( "proc cpu usage %lf%%, system cpu usage %lf%%\n", cpu_proc, cpu_sys );
 
 		xgc_uint64 total, usage, pmem, vmem;

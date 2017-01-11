@@ -1,4 +1,5 @@
 #include "xsystem.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -161,7 +162,7 @@ namespace xgc
 		return -1;
 	}
 	
-	#if defined _WINDOWS
+	#ifdef _WINDOWS
 	xgc_bool get_process_memory_usage( xgc_uint64 *pnPMem, xgc_uint64 *pnVMem )
 	{
 		XGC_ASSERT_RETURN( pnPMem != pnVMem, false );
@@ -324,13 +325,9 @@ namespace xgc
 		
 		return bSuccess;
 	}
-	#elif defined _LINUX
-	///
-	/// \brief 获取进程内存使用情况
-	///
-	/// \author albert.xu
-	/// \date 2016/08/08 14:55
-	///
+	#endif // _WINDOWS
+	
+	#ifdef _LINUX
 	xgc_bool get_process_memory_usage( xgc_uint64 *pnMem, xgc_uint64 *pnVem )
 	{
 		auto parseLine = [](char* line){
@@ -338,9 +335,8 @@ namespace xgc
 			const char* p = line;
 			while (*p < '0' || *p > '9') p++;
 			line[strlen(line)-3] = '\0';
-			i = atoi(p);
-			return i;
-		}
+			return atoi(p);
+		};
 
 		FILE* file = fopen("/proc/self/status", "r");
 		char line[256];
@@ -359,7 +355,7 @@ namespace xgc
 		return true;
 	}
 
-	xgc_bool get_virtual_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
+	xgc_bool get_system_virtual_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
 	{
 		struct sysinfo memInfo;
 
@@ -367,12 +363,13 @@ namespace xgc
 
 		if( pnTotalMem )
 		{
-			*pnTotalMem = memInfo.mem_unit;
+			*pnUsageMem  = memInfo.totalswap;
+			*pnTotalMem *= memInfo.mem_unit;
 		}
 
 		if( pnUsageMem )
 		{
-			*pnUsageMem  = memInfo.totalram - memInfo.freeram;
+			*pnUsageMem  = memInfo.totalswap - memInfo.freeswap;
 			//Add other values in next statement to avoid int overflow on right hand side...
 			*pnUsageMem *= memInfo.mem_unit;
 		}
@@ -384,9 +381,8 @@ namespace xgc
 				const char* p = line;
 				while (*p < '0' || *p > '9') p++;
 				line[strlen(line)-3] = '\0';
-				i = atoi(p);
-				return i;
-			}
+				return atoi(p);
+			};
 
 			FILE* file = fopen("/proc/self/status", "r");
 			char line[256];
@@ -395,23 +391,16 @@ namespace xgc
 			{
 				if (strncmp(line, "VmRSS:", 6) == 0)
 				{
-					result = parseLine(line);
+					*pnPrivateMem = parseLine(line);
 					break;
 				}
 			}
 			fclose(file);
-			*pnPrivateMem = result;
 		}
 
 		return true;
 	}
 
-	///
-	/// \brief 获取系统内存使用情况
-	///
-	/// \author albert.xu
-	/// \date 2016/08/08 15:22
-	///
 	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
 	{
 		struct sysinfo memInfo;
@@ -422,7 +411,6 @@ namespace xgc
 		{
 			*pnTotalMem = memInfo.totalram;
 			//Add other values in next statement to avoid int overflow on right hand side...
-			*pnTotalMem += memInfo.totalswap;
 			*pnTotalMem *= memInfo.mem_unit;
 		}
 
@@ -430,7 +418,6 @@ namespace xgc
 		{
 			*pnUsageMem  = memInfo.totalram - memInfo.freeram;
 			//Add other values in next statement to avoid int overflow on right hand side...
-			*pnUsageMem += memInfo.totalswap - memInfo.freeswap;
 			*pnUsageMem *= memInfo.mem_unit;
 		}
 
@@ -441,9 +428,8 @@ namespace xgc
 				const char* p = line;
 				while (*p < '0' || *p > '9') p++;
 				line[strlen(line)-3] = '\0';
-				i = atoi(p);
-				return i;
-			}
+				return atoi(p);
+			};
 
 			FILE* file = fopen("/proc/self/status", "r");
 			char line[256];
@@ -452,12 +438,11 @@ namespace xgc
 			{
 				if (strncmp(line, "VmSize:", 7) == 0)
 				{
-					result = parseLine(line);
+					*pnPrivateMem = parseLine(line);
 					break;
 				}
 			}
 			fclose(file);
-			*pnPrivateMem = result;
 		}
 
 		return true;
@@ -467,13 +452,8 @@ namespace xgc
 	static clock_t lastSysCPU = 0;
 	static clock_t lastUsrCPU = 0;
 	static int numProcessors = 0;
+	static xgc_uint64 lastTotalUser = 0, lastTotalUserLow = 0, lastTotalSys = 0, lastTotalIdle = 0;
 
-	///
-	/// \brief 获取当前CPU使用情况
-	///
-	/// \author albert.xu
-	/// \date 2016/08/08 14:55
-	///
 	xgc_real64 get_process_cpu_usage()
 	{
 		struct tms timeSample;
@@ -521,14 +501,6 @@ namespace xgc
 		return percent;
 	}
 
-	static unsigned long long lastTotalUser = 0, lastTotalUserLow = 0, lastTotalSys = 0, lastTotalIdle = 0;
-
-	///
-	/// \brief 获取当前系统的CPU使用情况
-	///
-	/// \author albert.xu
-	/// \date 2016/08/08 15:09
-	///
 	xgc_real64 get_system_cpu_usage()
 	{
 		xgc_real64 percent = 0.0f;
@@ -569,12 +541,6 @@ namespace xgc
 		return percent;
 	}
 
-	///
-	/// \brief 设置进程权限
-	///
-	/// \author albert.xu
-	/// \date 2016/08/10 15:52
-	///
 	xgc_bool privilege( xgc_lpcstr prililege_name, xgc_bool enable )
 	{
 		return true;
