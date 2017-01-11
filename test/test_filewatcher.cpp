@@ -25,7 +25,7 @@ static int testmain( int agrc, char * argv[] )
 {
 	init_filewatcher(0);
 	#if defined(_WINDOWS)
-	add_filewatcher( "D:\\GitHub\\XStudio", FILE_WATCHER_FILTER, true, notify, true );
+	auto ret = add_filewatcher( "D:\\GitHub\\XStudio", FILE_WATCHER_FILTER, true, notify, true );
 	#endif
 
 	#if defined(_LINUX)

@@ -297,7 +297,7 @@ namespace xgc
 		MemStatus& mMem = pHead->status[pHead->current];
 		mMem.index = pHead->current;
 
-		get_process_memory_usage( xgc_nullptr, &mMem.pmem, &mMem.vmem );
+		get_process_memory_usage( &mMem.pmem, &mMem.vmem );
 		mMem.time = (xgc_time32) clock();
 		strcpy_s( mMem.name, name ? name: "" );
 

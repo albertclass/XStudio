@@ -74,7 +74,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
 	///
-	COMMON_API xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnMem, xgc_uint64 *pnVMem );
+	COMMON_API xgc_bool get_process_memory_usage( xgc_uint64 *pnMem, xgc_uint64 *pnVMem );
 
 	///
 	/// \brief 获取系统内存使用情况
@@ -82,7 +82,15 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 15:22
 	///
-	COMMON_API xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint32 *pnLoadMem );
+	COMMON_API xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem );
+
+	///
+	/// \brief 获取系统虚拟内存使用情况
+	///
+	/// \author albert.xu
+	/// \date 2017/01/11 10:57
+	///
+	COMMON_API xgc_bool get_system_virtual_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem );
 
 	///
 	/// \brief 获取当前CPU使用情况
@@ -90,7 +98,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
 	///
-	COMMON_API xgc_int32 get_process_cpu_usage( xgc_handle h );
+	COMMON_API xgc_real64 get_process_cpu_usage();
 
 	///
 	/// \brief 获取当前系统的CPU使用情况
@@ -98,7 +106,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 15:09
 	///
-	COMMON_API xgc_int32 get_system_cpu_usage();
+	COMMON_API xgc_real64 get_system_cpu_usage();
 
 	///
 	/// \brief 设置进程权限

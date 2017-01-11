@@ -4,12 +4,23 @@
 
 #ifdef _WINDOWS
 #	include <psapi.h>
+#	include <pdh.h>
 #	pragma comment(lib, "psapi.lib")
+#	pragma comment(lib, "pdh.lib")
+#endif
+
+#ifdef _LINUX
+#	include "sys/types.h"
+#	include "sys/sysinfo.h"
+#	include "sys/times.h"
+#	include "sys/vtimes.h"
 #endif
 
 #ifdef _WINDOWS
 #	define SLASH '\\'
-#elif defined _LINUX
+#endif
+
+#ifdef _LINUX
 #	define SLASH '/'
 #endif
 
@@ -151,14 +162,14 @@ namespace xgc
 	}
 	
 	#if defined _WINDOWS
-	xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnPMem, xgc_uint64 *pnVMem )
+	xgc_bool get_process_memory_usage( xgc_uint64 *pnPMem, xgc_uint64 *pnVMem )
 	{
 		XGC_ASSERT_RETURN( pnPMem != pnVMem, false );
 		if( pnPMem == xgc_nullptr && pnVMem == xgc_nullptr )
 			return false;
 
 		PROCESS_MEMORY_COUNTERS MEM;
-		if( 0 == GetProcessMemoryInfo( (HANDLE)h, &MEM, sizeof( MEM ) ) )
+		if( 0 == GetProcessMemoryInfo( GetCurrentProcess(), &MEM, sizeof( MEM ) ) )
 			return false;
 
 		if( pnPMem )
@@ -170,7 +181,7 @@ namespace xgc
 		return true;
 	}
 
-	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint32 *pnLoadMem )
+	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
 	{
 		XGC_ASSERT_RETURN( pnUsageMem != pnTotalMem, false );
 		if( pnUsageMem == xgc_nullptr && pnTotalMem == xgc_nullptr )
@@ -181,123 +192,112 @@ namespace xgc
 		if( 0 == GlobalMemoryStatusEx( &MEM ) )
 			return false;
 
-		if( pnUsageMem )
-			*pnUsageMem = MEM.ullTotalPhys - MEM.ullAvailPhys;
-
 		if( pnTotalMem )
 			*pnTotalMem = MEM.ullTotalPhys;
 
-		if( pnLoadMem )
-			*pnLoadMem = MEM.dwMemoryLoad;
+		if( pnUsageMem )
+			*pnUsageMem = MEM.ullTotalPhys - MEM.ullAvailPhys;
+
+		if( pnPrivateMem )
+			*pnPrivateMem = MEM.dwMemoryLoad;
+
+		PROCESS_MEMORY_COUNTERS PMC;
+		GetProcessMemoryInfo(GetCurrentProcess(), &PMC, sizeof(PMC));
+
+		if( pnPrivateMem )
+			*pnPrivateMem = PMC.WorkingSetSize;
 
 		return true;
 	}
 
-	/// 获得CPU的核数
-	static int32_t get_processor_number()
+	xgc_bool get_system_virtual_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
 	{
-		SYSTEM_INFO info;
-		GetSystemInfo(&info);
-		return (int32_t)info.dwNumberOfProcessors;
+		XGC_ASSERT_RETURN( pnUsageMem != pnTotalMem, false );
+		if( pnUsageMem == xgc_nullptr && pnTotalMem == xgc_nullptr )
+			return false;
+
+		MEMORYSTATUSEX MEM;
+		MEM.dwLength = sizeof( MEM );
+		if( 0 == GlobalMemoryStatusEx( &MEM ) )
+			return false;
+
+		if( pnTotalMem )
+			*pnTotalMem = MEM.ullTotalPageFile;
+
+		if( pnUsageMem )
+			*pnUsageMem = MEM.ullTotalPageFile - MEM.ullAvailPageFile;
+
+		PROCESS_MEMORY_COUNTERS_EX PMC;
+		GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&PMC, sizeof(PMC));
+
+		if( pnPrivateMem )
+			*pnPrivateMem = PMC.PrivateUsage;
+
+		return true;
 	}
 
-	static int32_t processor_count = get_processor_number();
+	static PDH_HQUERY	cpuQuery = INVALID_HANDLE_VALUE;
+	static PDH_HCOUNTER cpuTotal = INVALID_HANDLE_VALUE;
 
-	static int64_t last_time_ = 0;
-	static int64_t last_system_time_ = 0;
-
-	/// 时间转换
-	static uint64_t file_time_2_utc(const FILETIME* ftime)
+	xgc_real64 get_system_cpu_usage()
 	{
-		LARGE_INTEGER li;
+		if( cpuQuery == INVALID_HANDLE_VALUE )
+			PdhOpenQuery(NULL, NULL, &cpuQuery);
 
-		XGC_ASSERT_RETURN(ftime,0);
-		li.LowPart 	= ftime->dwLowDateTime;
-		li.HighPart = ftime->dwHighDateTime;
-		return li.QuadPart;
+		if( cpuTotal == INVALID_HANDLE_VALUE )
+			PdhAddCounter(cpuQuery, "\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
+
+		PdhCollectQueryData(cpuQuery);
+
+
+		PDH_FMT_COUNTERVALUE counterVal;
+		PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
+		return counterVal.doubleValue;
 	}
 
-	xgc_int32 get_process_cpu_usage( xgc_handle h )
+	static ULARGE_INTEGER lastCPU, lastSysCPU, lastUsrCPU;
+	static int numProcessors = 0;
+
+	xgc_real64 get_process_cpu_usage()
 	{
-		FILETIME now;
-		FILETIME creation_time;
-		FILETIME exit_time;
-		FILETIME kernel_time;
-		FILETIME user_time;
-		int64_t system_time;
-		int64_t time;
-		int64_t system_time_delta;
-		int64_t time_delta;
-
-		int cpu = -1;
-
-		GetSystemTimeAsFileTime(&now);
-
-		if (!GetProcessTimes((HANDLE)h, &creation_time, &exit_time,
-							  &kernel_time, &user_time))
+		if( numProcessors == 0 )
 		{
-			// We don't assert here because in some cases (such as in the Task  Manager)
-			// we may call this function on a process that has just exited but  we have
-			// not yet received the notification.
-			return -1;
+			SYSTEM_INFO sysInfo;
+			FILETIME ftime, fsys, fuser;
+
+			GetSystemInfo(&sysInfo);
+			numProcessors = sysInfo.dwNumberOfProcessors;
+
+			GetSystemTimeAsFileTime(&ftime);
+			memcpy(&lastCPU, &ftime, sizeof(FILETIME));
+
+			HANDLE self = GetCurrentProcess();
+			GetProcessTimes(self, &ftime, &ftime, &fsys, &fuser);
+			memcpy(&lastSysCPU, &fsys, sizeof(FILETIME));
+			memcpy(&lastUsrCPU, &fuser, sizeof(FILETIME));
 		}
 
-		system_time = (file_time_2_utc(&kernel_time) + file_time_2_utc(&user_time)) / processor_count;
-		time = file_time_2_utc(&now);
+		FILETIME ftime, fsys, fuser;
+		ULARGE_INTEGER now, sys, usr;
+		double percent;
 
-		if ((last_system_time_ == 0) || (last_time_ == 0))
-		{
-			// First call, just set the last values.
-			last_system_time_ = system_time;
-			last_time_ = time;
-			return -1;
-		}
+		GetSystemTimeAsFileTime(&ftime);
+		memcpy(&now, &ftime, sizeof(FILETIME));
 
-		system_time_delta = system_time - last_system_time_;
-		time_delta = time - last_time_;
+		HANDLE self = GetCurrentProcess();
 
-		XGC_ASSERT_RETURN(time_delta != 0, -1);
+		GetProcessTimes(self, &ftime, &ftime, &fsys, &fuser);
+		memcpy(&sys, &fsys, sizeof(FILETIME));
+		memcpy(&usr, &fuser, sizeof(FILETIME));
+		percent  = (sys.QuadPart - lastSysCPU.QuadPart) * 1.0;
+		percent += (usr.QuadPart - lastUsrCPU.QuadPart) * 1.0;
+		percent /= (now.QuadPart - lastCPU.QuadPart);
+		percent /= numProcessors;
+		lastCPU = now;
+		lastUsrCPU = usr;
+		lastSysCPU = sys;
 
-		// We add time_delta / 2 so the result is rounded.
-		cpu = (int)((system_time_delta * 100 + time_delta / 2) / time_delta);
-		last_system_time_ = system_time;
-		last_time_ = time;
-		return cpu;
-	}
-
-	xgc_int32 get_system_cpu_usage()
-	{
-		static int64_t global_system_time_ = 0;
-		static int64_t global_kernel_time_ = 0;
-		static int64_t global_user_time_ = 0;
-		static int64_t global_idle_time_ = 0;
-
-		FILETIME now;
-		FILETIME idle_time;
-		FILETIME kernel_time;
-		FILETIME user_time;
-
-		double cpu = -1;
-
-		GetSystemTimeAsFileTime(&now);
-
-		if (!GetSystemTimes(&idle_time, &kernel_time, &user_time))
-			return -1;
-
-		int64_t utc_kernel_time = file_time_2_utc( &kernel_time );
-		int64_t utc_user_time   = file_time_2_utc( &user_time );
-		int64_t utc_idle_time   = file_time_2_utc( &idle_time );
-
-		int64_t delta_kernel_time = utc_kernel_time - global_kernel_time_;
-		int64_t delta_user_time   = utc_user_time - global_user_time_;
-		int64_t delta_idle_time   = utc_idle_time - global_idle_time_;
-
-		// We add time_delta / 2 so the result is rounded.
-		cpu = ( (double)(delta_kernel_time + delta_user_time - delta_idle_time) * 100.0f / (double)(delta_kernel_time +delta_user_time) ) + 0.5f;
-		global_kernel_time_ = utc_kernel_time;
-		global_user_time_   = utc_user_time;
-		global_idle_time_   = utc_idle_time;
-		return (int)cpu;
+		return percent * 100.0;
 	}
 
 	xgc_bool privilege( xgc_lpcstr prililege_name, xgc_bool enable /*= true */ )
@@ -331,13 +331,77 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
 	///
-	xgc_bool get_process_memory_usage( xgc_handle h, xgc_uint64 *pnMem, xgc_uint64 *pnVem )
+	xgc_bool get_process_memory_usage( xgc_uint64 *pnMem, xgc_uint64 *pnVem )
 	{
-		if( pnMem )
-			*pnMem = 0;
+		auto parseLine = [](char* line){
+			// This assumes that a digit will be found and the line ends in " Kb".
+			const char* p = line;
+			while (*p < '0' || *p > '9') p++;
+			line[strlen(line)-3] = '\0';
+			i = atoi(p);
+			return i;
+		}
 
-		if( pnVem )
-			*pnVem = 0;
+		FILE* file = fopen("/proc/self/status", "r");
+		char line[256];
+
+		while (fgets(line, sizeof(line), file) != NULL)
+		{
+			if( pnMem && strncmp(line, "VmSize:", 7) == 0 )
+				*pnMem = parseLine(line);
+
+			if( pnVem && strncmp(line, "VmRSS:", 6) == 0 )
+				*pnVem = parseLine(line);
+		}
+
+		fclose(file);
+
+		return true;
+	}
+
+	xgc_bool get_virtual_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
+	{
+		struct sysinfo memInfo;
+
+		sysinfo (&memInfo);
+
+		if( pnTotalMem )
+		{
+			*pnTotalMem = memInfo.mem_unit;
+		}
+
+		if( pnUsageMem )
+		{
+			*pnUsageMem  = memInfo.totalram - memInfo.freeram;
+			//Add other values in next statement to avoid int overflow on right hand side...
+			*pnUsageMem *= memInfo.mem_unit;
+		}
+
+		if( pnPrivateMem )
+		{
+			auto parseLine = [](char* line){
+				// This assumes that a digit will be found and the line ends in " Kb".
+				const char* p = line;
+				while (*p < '0' || *p > '9') p++;
+				line[strlen(line)-3] = '\0';
+				i = atoi(p);
+				return i;
+			}
+
+			FILE* file = fopen("/proc/self/status", "r");
+			char line[256];
+
+			while (fgets(line, sizeof(line), file) != NULL)
+			{
+				if (strncmp(line, "VmRSS:", 6) == 0)
+				{
+					result = parseLine(line);
+					break;
+				}
+			}
+			fclose(file);
+			*pnPrivateMem = result;
+		}
 
 		return true;
 	}
@@ -348,19 +412,61 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 15:22
 	///
-	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint32 *pnLoadMem )
+	xgc_bool get_system_memory_usage( xgc_uint64 *pnTotalMem, xgc_uint64 *pnUsageMem, xgc_uint64 *pnPrivateMem )
 	{
+		struct sysinfo memInfo;
+
+		sysinfo (&memInfo);
+
 		if( pnTotalMem )
-			*pnTotalMem = 0;
+		{
+			*pnTotalMem = memInfo.totalram;
+			//Add other values in next statement to avoid int overflow on right hand side...
+			*pnTotalMem += memInfo.totalswap;
+			*pnTotalMem *= memInfo.mem_unit;
+		}
 
 		if( pnUsageMem )
-			*pnUsageMem = 0;
+		{
+			*pnUsageMem  = memInfo.totalram - memInfo.freeram;
+			//Add other values in next statement to avoid int overflow on right hand side...
+			*pnUsageMem += memInfo.totalswap - memInfo.freeswap;
+			*pnUsageMem *= memInfo.mem_unit;
+		}
 
-		if( pnLoadMem )
-			*pnLoadMem = 0;
+		if( pnPrivateMem )
+		{
+			auto parseLine = [](char* line){
+				// This assumes that a digit will be found and the line ends in " Kb".
+				const char* p = line;
+				while (*p < '0' || *p > '9') p++;
+				line[strlen(line)-3] = '\0';
+				i = atoi(p);
+				return i;
+			}
+
+			FILE* file = fopen("/proc/self/status", "r");
+			char line[256];
+
+			while (fgets(line, sizeof(line), file) != NULL)
+			{
+				if (strncmp(line, "VmSize:", 7) == 0)
+				{
+					result = parseLine(line);
+					break;
+				}
+			}
+			fclose(file);
+			*pnPrivateMem = result;
+		}
 
 		return true;
 	}
+
+	static clock_t lastCPU = 0;
+	static clock_t lastSysCPU = 0;
+	static clock_t lastUsrCPU = 0;
+	static int numProcessors = 0;
 
 	///
 	/// \brief 获取当前CPU使用情况
@@ -368,10 +474,54 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 14:55
 	///
-	xgc_int32 get_process_cpu_usage( xgc_handle h )
+	xgc_real64 get_process_cpu_usage()
 	{
-		return 0;
+		struct tms timeSample;
+
+		if( numProcessors == 0 )
+		{
+			FILE* file;
+			char line[128];
+
+			lastCPU = times(&timeSample);
+			lastSysCPU = timeSample.tms_stime;
+			lastUsrCPU = timeSample.tms_utime;
+
+			file = fopen("/proc/cpuinfo", "r");
+			numProcessors = 0;
+			while(fgets(line, 128, file) != NULL){
+				if (strncmp(line, "processor", 9) == 0) numProcessors++;
+			}
+			fclose(file);
+		}
+
+		clock_t now;
+		xgc_real64 percent = 0.0;
+
+		now = times(&timeSample);
+		if( now <= lastCPU || 
+			timeSample.tms_stime < lastSysCPU ||
+			timeSample.tms_utime < lastUsrCPU )
+		{
+			//Overflow detection. Just skip this value.
+			percent = 0.0;
+		}
+		else
+		{
+			percent  = (timeSample.tms_stime - lastSysCPU) + (timeSample.tms_utime - lastUsrCPU);
+			percent /= (now - lastCPU);
+			percent /= numProcessors;
+			percent *= 100.0;
+		}
+
+		lastCPU = now;
+		lastSysCPU = timeSample.tms_stime;
+		lastUsrCPU = timeSample.tms_utime;
+
+		return percent;
 	}
+
+	static unsigned long long lastTotalUser = 0, lastTotalUserLow = 0, lastTotalSys = 0, lastTotalIdle = 0;
 
 	///
 	/// \brief 获取当前系统的CPU使用情况
@@ -379,9 +529,44 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2016/08/08 15:09
 	///
-	xgc_int32 get_system_cpu_usage()
+	xgc_real64 get_system_cpu_usage()
 	{
-		return 0;
+		xgc_real64 percent = 0.0f;
+		xgc_uint64 totalUser, totalUserLow, totalSys, totalIdle, total;
+
+		FILE* file = fopen("/proc/stat", "r");
+		fscanf( file, 
+				"cpu %llu %llu %llu %llu", 
+				&totalUser, 
+				&totalUserLow,
+				&totalSys, 
+				&totalIdle);
+
+		fclose(file);
+
+		if( totalUser < lastTotalUser || 
+			totalUserLow < lastTotalUserLow ||
+			totalSys < lastTotalSys || 
+			totalIdle < lastTotalIdle)
+		{
+			//Overflow detection. Just skip this value.
+			percent = 0.0;
+		}
+		else
+		{
+			total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (totalSys - lastTotalSys);
+			percent = total;
+			total += (totalIdle - lastTotalIdle);
+			percent /= total;
+			percent *= 100;
+		}
+
+		lastTotalUser = totalUser;
+		lastTotalUserLow = totalUserLow;
+		lastTotalSys = totalSys;
+		lastTotalIdle = totalIdle;
+
+		return percent;
 	}
 
 	///
