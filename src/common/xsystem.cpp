@@ -119,10 +119,6 @@ namespace xgc
 			XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
 		}
 		#endif
-		else if( relative_path[0] != '.' )
-		{
-			return xgc_nullptr;
-		}
 
 		int cpy3 = sprintf_s( absolute_path + cpy1, sizeof(absolute_path) - cpy1, "%s", relative_path );
 

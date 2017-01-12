@@ -32,9 +32,31 @@ namespace xgc
 			free( trans_buffer );
 		}
 
-		xgc_bool ini_reader::load( xgc_lpcstr path )
+		xgc_bool ini_reader::load( xgc_lpcstr fpath )
 		{
-			return load( path, "" );
+			xgc_char path[XGC_MAX_PATH]  = {0};
+			xgc_char file[XGC_MAX_FNAME] = {0};
+
+			xgc_lpcstr slash = "\\/";
+			xgc_lpcstr last_slash = xgc_nullptr;
+			xgc_lpcstr find_slash = strpbrk( fpath, slash );
+			while( find_slash )
+			{
+				last_slash = find_slash;
+				find_slash = strpbrk( find_slash + 1, slash );
+			}
+
+			if( last_slash )
+			{
+				strncpy_s( path, fpath, last_slash - fpath );
+				strncpy_s( file, last_slash + 1, _TRUNCATE );
+			}
+			else
+			{
+				strcpy_s( file, fpath );
+			}
+
+			return load( path, file );
 		}
 
 		///
@@ -44,14 +66,14 @@ namespace xgc
 		xgc_bool ini_reader::load( xgc_lpcstr fpath, xgc_lpcstr fname )
 		{
 			xgc_char path[XGC_MAX_PATH] = { 0 };
-			xgc_lpcstr pathname = get_normal_path( path, sizeof( path ), "%s", fpath );
+			xgc_lpcstr pathname = get_normal_path( path, sizeof( path ), "%s/%s", fpath, fname );
 
 			// 打开指定文件
 			int fd = -1;
 			#if defined(_WINDOWS)
 			_sopen_s( &fd, pathname, O_RDONLY | O_BINARY, SH_DENYWR, S_IREAD );
 			#elif defined( __GNUC__ )
-			fd = _open( pathname, O_RDONLY, S_IREAD );
+			fd = open( pathname, O_RDONLY, S_IREAD );
 			#endif
 			if( fd == -1 )
 				return false;
@@ -143,7 +165,7 @@ namespace xgc
 			LineType eType = eNewLine;
 
 			xgc_size nMemSize = memsize( storage );
-			xgc_size nBufSize = memsize( pFileInfo->file_buffer );
+			xgc_size nBufSize = pFileInfo->file_size;
 			while( pCur < pFileInfo->file_buffer + nBufSize )
 			{
 				// 检查缓冲是否够用，不够用则扩大缓冲空间
@@ -302,9 +324,10 @@ namespace xgc
 					break;
 				case eTransValue:
 					{
-						if( strchr( " \t\r\n", *pCur ) )
+						if( strchr(" \t\r\n", *pCur) )
 						{
 							*pCur = 0;
+
 							auto cpy = transform( trans_buffer + trans_offset, memsize( trans_buffer ) - trans_offset, keypair_ptr->val );
 							while( cpy < 0 )
 							{
@@ -353,9 +376,12 @@ namespace xgc
 			return true;
 		}
 
-		const ini_reader::section* ini_reader::find_section( xgc_lpcstr lpSection )const
+		const ini_reader::section* ini_reader::find_section( xgc_lpcstr lpSection, const section* after )const
 		{
-			const section* pSection = (section*) storage;
+			if( after && after->next == 0 )
+				return xgc_nullptr;
+
+			const section* pSection = (const section*) (after ? (storage + after->next) : storage);
 			if( section_count ) do
 			{
 				if( strcmp( lpSection, pSection->name ) == 0 )
@@ -377,39 +403,16 @@ namespace xgc
 			return xgc_nullptr != get_item_value( lpSection, lpItem, xgc_nullptr );
 		}
 
-		xgc_size ini_reader::get_item_count( xgc_lpcstr lpSection, xgc_lpcstr lpItemName /*= xgc_nullptr*/ )const
+		ini_reader::psection ini_reader::get_section( xgc_size nSection )const
 		{
-			const section* pSection = find_section( lpSection );
-			if( xgc_nullptr == pSection )
-				return 0;
-
-			if( lpItemName )
-			{
-				xgc_size nCount = 0;
-				for( xgc_uint16 i = 0; i < pSection->pair_count; ++i )
-				{
-					if( strcmp( pSection->pair[i].key, lpItemName ) == 0 )
-						++nCount;
-				}
-				return nCount;
-			}
-			else
-			{
-				return pSection->pair_count;
-			}
-
-		}
-
-		xgc_lpcstr ini_reader::get_section_name( xgc_size nSectionIdx )const
-		{
-			if( nSectionIdx >= section_count )
+			if( nSection >= section_count )
 				return xgc_nullptr;
 
 			const section* pSection = (section*) storage;
 			do
 			{
-				if( nSectionIdx-- == 0 )
-					return pSection->name;
+				if( nSection-- == 0 )
+					return pSection;
 
 				pSection = (const section*) ( storage + pSection->next );
 			} while( pSection != (const section*) storage );
@@ -417,54 +420,163 @@ namespace xgc
 			return xgc_nullptr;
 		}
 
+		xgc_lpcstr ini_reader::get_section_name( const ini_reader::psection pSection )const
+		{
+			return pSection ? pSection->name : xgc_nullptr;
+		}
+
+		xgc_size ini_reader::get_item_count( xgc_lpcstr lpSection, xgc_lpcstr lpItemName /*= xgc_nullptr*/ )const
+		{
+			xgc_size nCount = 0;
+			const section* pSection = find_section( lpSection );
+			while( pSection )
+			{
+				if( lpItemName )
+				{
+					for( xgc_uint16 i = 0; i < pSection->pair_count; ++i )
+					{
+						if( strcmp( pSection->pair[i].key, lpItemName ) == 0 )
+							++nCount;
+					}
+				}
+				else
+				{
+					nCount += pSection->pair_count;
+				}
+
+				pSection = find_section( lpSection, pSection );
+			}
+
+			return nCount;
+		}
+
+		xgc_size ini_reader::get_item_count( ini_reader::psection lpSection, xgc_lpcstr lpItemName /*= xgc_nullptr*/ )const
+		{
+			XGC_ASSERT_RETURN( lpSection, 0 );
+
+			if( lpItemName )
+			{
+				xgc_size nCount = 0;
+				for( xgc_uint16 i = 0; i < lpSection->pair_count; ++i )
+				{
+					if( strcmp( lpSection->pair[i].key, lpItemName ) == 0 )
+						++nCount;
+				}
+
+				return nCount;
+			}
+			else
+			{
+				return lpSection->pair_count;
+			}
+
+			return 0;
+		}
+
 		xgc_lpcstr ini_reader::get_item_name( xgc_lpcstr lpSection, xgc_size nIndex )const
 		{
 			const section* pSection = find_section( lpSection );
-			if( xgc_nullptr == pSection )
-				return xgc_nullptr;
+			while( pSection )
+			{
+				if( nIndex < pSection->pair_count )
+				{
+					return pSection->pair[nIndex].key;
+				}
 
-			if( nIndex >= pSection->pair_count )
-				return xgc_nullptr;
+				nIndex -= pSection->pair_count;
+				pSection = find_section(lpSection, pSection);
+			}
+		}
 
-			return pSection->pair[nIndex].key;
+		xgc_lpcstr ini_reader::get_item_name( ini_reader::psection lpSection, xgc_size nItem )const
+		{
+			XGC_ASSERT_RETURN( lpSection, xgc_nullptr );
+
+			if( lpSection && nItem < lpSection->pair_count )
+				return lpSection->pair[nItem].key;
+
+			return xgc_nullptr;
 		}
 
 		xgc_lpcstr ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_size nIndex, xgc_lpcstr lpDefault )const
 		{
 			const section* pSection = find_section( lpSection );
-			if( xgc_nullptr == pSection )
-				return lpDefault;
+			while( pSection )
+			{
+				if( nIndex < pSection->pair_count )
+				{
+					if( pSection->pair[nIndex].trans_val )
+						return trans_buffer + pSection->pair[nIndex].trans_val;
 
-			if( nIndex >= pSection->pair_count )
-				return lpDefault;
+					return pSection->pair[nIndex].val;
+				}
 
-			if( pSection->pair[nIndex].trans_val )
-				return trans_buffer + pSection->pair[nIndex].trans_val;
+				nIndex -= pSection->pair_count;
+				pSection = find_section( lpSection, pSection );
+			}
 
-			return pSection->pair[nIndex].val;
+			return lpDefault;
+		}
+
+		xgc_lpcstr ini_reader::get_item_value( ini_reader::psection lpSection, xgc_size nIndex, xgc_lpcstr lpDefault )const
+		{
+			XGC_ASSERT_RETURN( lpSection, lpDefault );
+
+			if( nIndex < lpSection->pair_count )
+			{
+				if( lpSection->pair[nIndex].trans_val )
+					return trans_buffer + lpSection->pair[nIndex].trans_val;
+
+				return lpSection->pair[nIndex].val;
+			}
+
+			return lpDefault;
 		}
 
 		xgc_lpcstr ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpItemName, xgc_size nIndex, xgc_lpcstr lpDefault ) const
 		{
-			const section* pSection = find_section( lpSection );
-			if( xgc_nullptr == pSection )
-				return lpDefault;
-
-			if( nIndex >= pSection->pair_count )
-				return lpDefault;
-
 			xgc_size nCount = 0;
-			for( xgc_uint16 i = 0; i < pSection->pair_count; ++i )
+			const section* pSection = find_section( lpSection );
+			while( pSection )
 			{
-				if( strcmp( pSection->pair[i].key, lpItemName ) != 0 )
+				for( xgc_uint16 i = 0; i < pSection->pair_count; ++i )
+				{
+					if( strcmp( pSection->pair[i].key, lpItemName ) != 0 )
+						continue;
+
+					if( nCount == nIndex )
+					{
+						if( pSection->pair[i].trans_val )
+							return trans_buffer + pSection->pair[i].trans_val;
+						else
+							return pSection->pair[i].val;
+					}
+
+					++nCount;
+				}
+
+				pSection = find_section( lpSection, pSection );
+			}
+
+			return lpDefault;
+		}
+
+		xgc_lpcstr ini_reader::get_item_value( ini_reader::psection lpSection, xgc_lpcstr lpItemName, xgc_size nIndex, xgc_lpcstr lpDefault )const
+		{
+			XGC_ASSERT_RETURN( lpSection, lpDefault );
+			xgc_size nCount = 0;
+
+			for( xgc_uint16 i = 0; i < lpSection->pair_count; ++i )
+			{
+				if( strcmp( lpSection->pair[i].key, lpItemName ) != 0 )
 					continue;
 
 				if( nCount == nIndex )
 				{
-					if( pSection->pair[nIndex].trans_val )
-						return trans_buffer + pSection->pair[nIndex].trans_val;
+					if( lpSection->pair[i].trans_val )
+						return trans_buffer + lpSection->pair[i].trans_val;
 					else
-						return pSection->pair[nIndex].val;
+						return lpSection->pair[i].val;
 				}
 
 				++nCount;
@@ -473,33 +585,64 @@ namespace xgc
 			return lpDefault;
 		}
 
-		xgc_lpcstr ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpName, xgc_lpcstr lpDefault )const
+		xgc_lpcstr ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpItemName, xgc_lpcstr lpDefault )const
 		{
 			const section* pSection = find_section( lpSection );
-			if( xgc_nullptr == pSection )
-				return lpDefault;
-
-			for( xgc_size nIdx = 0; nIdx < pSection->pair_count; ++nIdx )
+			while( pSection )
 			{
-				if( strcmp( lpName, pSection->pair[nIdx].key ) == 0 )
+				for( xgc_size nIdx = 0; nIdx < pSection->pair_count; ++nIdx )
 				{
-					if( pSection->pair[nIdx].trans_val )
-						return trans_buffer + pSection->pair[nIdx].trans_val;
+					if( strcmp( lpItemName, pSection->pair[nIdx].key ) == 0 )
+					{
+						if( pSection->pair[nIdx].trans_val )
+							return trans_buffer + pSection->pair[nIdx].trans_val;
 
-					return pSection->pair[nIdx].val;
+						return pSection->pair[nIdx].val;
+					}
 				}
+
+				pSection = find_section( lpSection, pSection );
 			}
 
 			return lpDefault;
+		}
+
+		xgc_lpcstr ini_reader::get_item_value( ini_reader::psection lpSection, xgc_lpcstr lpItemName, xgc_lpcstr lpDefault )const
+		{
+			XGC_ASSERT_RETURN( lpSection, lpDefault );
+			for( xgc_size nIdx = 0; nIdx < lpSection->pair_count; ++nIdx )
+			{
+				if( strcmp( lpItemName, lpSection->pair[nIdx].key ) == 0 )
+				{
+					if( lpSection->pair[nIdx].trans_val )
+						return trans_buffer + lpSection->pair[nIdx].trans_val;
+
+					return lpSection->pair[nIdx].val;
+				}
+			}
 		}
 
 		///
 		/// \brief 获取数值类型的值
 		/// [8/11/2014] create by albert.xu
 		///
-		xgc_bool ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpszTitle, xgc_bool bDefault ) const
+		xgc_bool ini_reader::get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpItem, xgc_bool bDefault ) const
 		{
-			xgc_lpcstr pValue = get_item_value( lpSection, lpszTitle, xgc_nullptr );
+			xgc_lpcstr pValue = get_item_value( lpSection, lpItem, xgc_nullptr );
+			if( pValue )
+			{
+				if( strcasecmp( "true", pValue ) == 0 )
+					return true;
+				else
+					return atoi( pValue ) != 0;
+			}
+
+			return bDefault;
+		}
+
+		xgc_bool ini_reader::get_item_value( ini_reader::psection lpSection, xgc_lpcstr lpItem, xgc_bool bDefault ) const
+		{
+			xgc_lpcstr pValue = get_item_value( lpSection, lpItem, xgc_nullptr );
 			if( pValue )
 			{
 				if( strcasecmp( "true", pValue ) == 0 )

@@ -35,7 +35,8 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
-        "**/.DS_Store": true
+        "**/.DS_Store": true,
+        "obj": true
     },
 
     // Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.
