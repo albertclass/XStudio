@@ -115,10 +115,10 @@ namespace xgc
 			// [12/30/2013 albert.xu]
 			// 带构造参数的对象分配
 			//-----------------------------------//
-#			define XGC_ALLOC_REPEAT(N)\
+			#define XGC_ALLOC_REPEAT(N)\
 			template< XGC_ENUM_D(N,class P) >\
 			XGC_INLINE T* alloc( XGC_PARAM_D(N, P, &p) )\
-			{\
+			{\ 
 				T* pMem = alloc_memory( _NORMAL_BLOCK, __FILE__, __LINE__ ); \
 				if( pMem ) { new (pMem)T( XGC_ENUM_D(N, p) ); }\
 				return pMem;\

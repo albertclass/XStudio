@@ -201,7 +201,7 @@ namespace xgc
 			/// \brief 获取数值类型的值
 			/// [8/11/2014] create by albert.xu
 			///
-			template< class T, typename std::enable_if< is_numeric<T>::value, bool >::type = true >
+			template< class T, class = typename std::enable_if< is_numeric<T>::value >::type >
 			T get_item_value( xgc_lpcstr lpSection, xgc_lpcstr lpItemName, T Default )const
 			{
 				xgc_lpcstr pValue = get_item_value( lpSection, lpItemName, xgc_nullptr );
@@ -213,7 +213,7 @@ namespace xgc
 			/// \brief 获取数值类型的值
 			/// [8/11/2014] create by albert.xu
 			///
-			template< class T, typename std::enable_if< is_numeric<T>::value, bool >::type = true >
+			template< class T, class = typename std::enable_if< is_numeric<T>::value >::type >
 			T get_item_value( psection lpSection, xgc_lpcstr lpItemName, T Default )const
 			{
 				xgc_lpcstr pValue = get_item_value( lpSection, lpItemName, xgc_nullptr );
