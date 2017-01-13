@@ -248,10 +248,10 @@ namespace xgc
 				if( 0 != dwNameLen )
 				{
 					hFile = CreateFile( szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, 0 );
-					SymLoadModule( hProcess, hFile, (PSTR) ( dwNameLen ? szFile : NULL ), NULL, (DWORD) stMBI.AllocationBase, 0 );
+					SymLoadModule( hProcess, hFile, (PSTR) ( dwNameLen ? szFile : NULL ), NULL, (ULONG_PTR) stMBI.AllocationBase, 0 );
 					CloseHandle( hFile );
 				}
-				return ( (DWORD) stMBI.AllocationBase );
+				return ( (ULONG_PTR) stMBI.AllocationBase );
 			}
 		}
 

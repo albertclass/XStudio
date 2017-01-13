@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "ini_reader.h"
 #include "xbuffer.h"
 #include "xsystem.h"
 #include "pugixml.hpp"
@@ -15,6 +16,7 @@ namespace xgc
 	using common::shared_memory_buffer;
 	using common::union_buffer_recorder;
 
+	using common::ini_reader;
 	namespace logger
 	{
 		const int ShmLogLineWidth = 256;
@@ -449,5 +451,26 @@ namespace xgc
 
 			fclose( fp );
 		}
+
+		COMMON_API xgc_bool init_logger_ex( xgc_lpcstr path )
+		{
+			ini_reader ini;
+			if( false == ini.load( path ) )
+				return false;
+
+
+		}
+
+		COMMON_API xgc_void fini_logger_ex()
+		{
+			return COMMON_API xgc_void();
+		}
+
+		logger_impl& get_logger( xgc_lpcstr name )
+		{
+			static logger inst;
+			return inst.get(name);
+		}
+
 	}
 }

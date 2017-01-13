@@ -46,4 +46,4 @@ static int testmain( int agrc, char * argv[] )
 	return 0;
 }
 
-UNIT_TEST( "datetime", "datetime test", testmain )
+UNIT_TEST( "datetime", "test datetime", testmain )

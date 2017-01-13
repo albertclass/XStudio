@@ -43,4 +43,4 @@ static int testmain( int agrc, char * argv[] )
 	return 0;
 }
 
-UNIT_TEST( "buffer", "buffer test", testmain );
+UNIT_TEST( "buffer", "test buffer", testmain );

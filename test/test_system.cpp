@@ -38,4 +38,4 @@ static int testmain( int agrc, char * argv[] )
 	return 0;
 }
 
-UNIT_TEST( "system", "system test", testmain );
+UNIT_TEST( "system", "test system", testmain );

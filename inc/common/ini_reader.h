@@ -92,6 +92,12 @@ namespace xgc
 			xgc_bool is_exist_item( xgc_lpcstr lpSection, xgc_lpcstr lpItem )const;
 
 			///
+			/// \brief 查找Section
+			/// [8/11/2014] create by albert.xu
+			///
+			psection find_section( xgc_lpcstr lpSection )const;
+
+			///
 			/// \brief 获取节的个数
 			/// [8/11/2014] create by albert.xu
 			///

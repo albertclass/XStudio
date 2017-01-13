@@ -64,4 +64,4 @@ static int testmain( int agrc, char * argv[] )
 	return 0;
 }
 
-UNIT_TEST( "debuger", "debuger test", testmain );
+UNIT_TEST( "debuger", "test debuger", testmain );

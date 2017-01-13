@@ -61,4 +61,4 @@ static int testmain( int agrc, char * argv[] )
 	return 0;
 }
 
-UNIT_TEST( "filewatcher", "filewatcher test", testmain );
+UNIT_TEST( "filewatcher", "test filewatcher", testmain );
