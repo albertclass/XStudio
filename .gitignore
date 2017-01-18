@@ -1,6 +1,7 @@
 # ignore some directory
 
-/bin
+/bin/Debug
+/bin/Release
 /lib
 /prj
 /obj

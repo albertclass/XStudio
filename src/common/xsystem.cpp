@@ -136,6 +136,9 @@ namespace xgc
 		if( realpath(absolute_path, absolute) )
 			return absolute;
 		
+		if( errno == ENOENT )
+			return absolute;
+
 		return xgc_nullptr;
 		#endif
 	}
@@ -151,7 +154,8 @@ namespace xgc
 		if( recursion )
 		{
 			xgc_lpcstr slash = "\\/";
-			xgc_lpstr found = strpbrk( absolute, slash );
+			xgc_lpstr found = strpbrk( absolute+1, slash );
+
 			while( found )
 			{
 				*found = 0;
@@ -163,13 +167,30 @@ namespace xgc
 					#endif
 
 					#ifdef _LINUX
-					if( -1 == mkdir( absolute, 0777 ) )
+					if( -1 == mkdir( absolute, 0777 ) && errno != EEXIST )
+					{
 						return -1;
+					}
 					#endif
 				}
 				*found = '/';
 
 				found = strpbrk( found += strspn( found, slash ), slash );
+			}
+
+			if( _access( absolute, 0 ) == -1 )
+			{
+				#ifdef _WINDOWS
+				if( -1 == _mkdir( absolute ) )
+					return -1;
+				#endif
+
+				#ifdef _LINUX
+				if( -1 == mkdir( absolute, 0777 ) && errno != EEXIST )
+				{
+					return -1;
+				}
+				#endif
 			}
 		}
 		else

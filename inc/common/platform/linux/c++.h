@@ -182,15 +182,16 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 }
 
 // low level file function
-#define _open open
-#define _read read
-#define _write write
-#define _close close
+#define _eof 	eof
+#define _open 	open
+#define _read 	read
+#define _write 	write
+#define _close 	close
+#define _access access
 
 #define _fstat fstat
 #define _stat stat
 
-#define _pipe pipe
 #define memsize	malloc_usable_size
 
 #define XGC_ASSERT_MSG(expr, FMT, ...) \

@@ -117,7 +117,7 @@ namespace xgc
 			if( file_path && file_path[0] )
 			{
 				xgc_char sz_path[XGC_MAX_PATH] = { 0 };
-				get_normal_path( sz_path, "%s/%s.shm", file_path, shared_memory_name );
+				get_normal_path( sz_path, "%s/%s", file_path, shared_memory_name );
 				shared_file_h = CreateFileA(
 					sz_path,
 					GENERIC_READ | GENERIC_WRITE,
@@ -215,7 +215,7 @@ namespace xgc
 			{
 				// using file mapping
 				xgc_char sz_file[XGC_MAX_PATH] = { 0 };
-				get_normal_path( sz_file, "%s/%s.shm", file_path, shared_memory_name );
+				get_normal_path( sz_file, "%s/%s", file_path, shared_memory_name );
 				fd = open( sz_file, O_RDWR, 0 );
 				if( -1 == fd  )
 				{

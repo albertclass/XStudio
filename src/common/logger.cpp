@@ -11,6 +11,8 @@
 #endif
 
 #ifdef _LINUX
+#	include <sys/stat.h>
+#	include <sys/fcntl.h>
 #endif
 
 #include <thread>
@@ -555,11 +557,11 @@ namespace xgc
 					// split filename and ext
 					char filename[XGC_MAX_FNAME] = { 0 };
 					strcpy_s( filename, file );
-					char *ext = "";
-					char *dot = strchr( filename, '.' );
+					xgc_lpcstr ext = "";
+					xgc_lpstr dot = strchr( filename, '.' );
 					if( dot )
 					{
-						*dot = 0;
+						*dot = '\0';
 						ext = dot + 1;
 					}
 
@@ -609,11 +611,11 @@ namespace xgc
 					// split filename and ext
 					char filename[XGC_MAX_FNAME] = { 0 };
 					strcpy_s( filename, file );
-					char *ext = "";
-					char *dot = strchr( filename, '.' );
+					xgc_lpcstr ext = "";
+					xgc_lpstr dot = strchr( filename, '.' );
 					if( dot )
 					{
-						*dot = 0;
+						*dot = '\0';
 						ext = dot + 1;
 					}
 
@@ -685,7 +687,7 @@ namespace xgc
 		public:
 			pipe_adapter( xgc_size _buffer_size )
 				: fd{ -1, -1 }
-				, buffer_size( _buffer_size )
+				, buffer_size( XGC_RNG(_buffer_size, 1024*64, 1024*1024) )
 				, work_thread_exit( 0 )
 			{
 			}
@@ -693,7 +695,7 @@ namespace xgc
 			~pipe_adapter()
 			{
 				work_thread_exit = clock();
-				write( "##############\n", 15 );
+				write( (xgc_lpvoid)"##############\n", 15 );
 				work_thread.join();
 
 				_close( fd[0] );
@@ -708,7 +710,7 @@ namespace xgc
 			xgc_bool init()
 			{
 				#ifdef _WINDOWS
-				if( -1 == _pipe( fd, 1024 * 1024, O_BINARY ) )
+				if( -1 == _pipe( fd, buffer_size, O_BINARY ) )
 				{
 					write_file( "error.log", "open log pipe error." );
 					return false;
@@ -721,6 +723,7 @@ namespace xgc
 					write_file( "error.log", "open log pipe error." );
 					return false;
 				}
+				fcntl(fd[1], F_SETPIPE_SZ, buffer_size);
 				#endif
 
 				work_thread = std::thread( &pipe_adapter::thread, this );
@@ -752,6 +755,39 @@ namespace xgc
 				}
 
 				work_thread_exit = clock();
+				#ifdef _LINUX
+				//先获取原先的flags
+				int flags = fcntl(fd[0], F_GETFL);
+				//设置fd为非阻塞模式
+    			fcntl(fd[0],F_SETFL, flags | O_NONBLOCK);
+
+				while( clock() - work_thread_exit < (buffer_size >> 10) )
+				{
+					// check is end of pipe
+					int readbytes = _read( fd[0], buffer, (xgc_uint32) buffer_size );
+					if( readbytes > 0 )
+					{
+						std::unique_lock< std::mutex > lock( guard );
+						for( auto adapter : adapters )
+						{
+							adapter->write( buffer, readbytes );
+						}
+						// refresh delay clock
+						work_thread_exit = clock();
+					}
+					else if( errno == EAGAIN )
+					{	
+						std::this_thread::sleep_for( std::chrono::milliseconds(1) );
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				#endif 
+
+				#ifdef _WINDOWS
 				// delay exit read maybe wait a moment
 				while( clock() - work_thread_exit < (buffer_size >> 10) )
 				{
@@ -777,6 +813,7 @@ namespace xgc
 						std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 					}
 				}
+				#endif
 
 
 				free( buffer );
@@ -786,7 +823,7 @@ namespace xgc
 			{
 				while( size )
 				{
-					int write_bytes = _write( fd[1], data, (xgc_uint32)size );
+					int write_bytes = ::_write( fd[1], data, (xgc_uint32)size );
 					XGC_ASSERT_BREAK( -1 != write_bytes );
 					size -= write_bytes;
 				}
@@ -1037,7 +1074,7 @@ namespace xgc
 			context.tags = tags;
 			context.line = line;
 			context.fmt = fmt;
-			context.args = args;
+			va_copy( context.args, args );
 
 			for( auto &span : format )
 			{
