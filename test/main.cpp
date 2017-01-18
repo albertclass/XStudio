@@ -23,8 +23,6 @@ int main( int argc, char* argv[] )
 	auto frame = get_test_frame();
 	auto prepage = frame.tests( page, show );
 
-	int row_max, col_max;
-
 	bool exit = false;
 	while( exit == false )
 	{

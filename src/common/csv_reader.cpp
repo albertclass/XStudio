@@ -234,7 +234,7 @@ namespace xgc
 		/// \param col ÁÐºÅ
 		///
 
-		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_size col, xgc_lpcstr value ) const throw()
+		xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_size col, xgc_lpcstr value ) const throw()
 		{
 			xgc_lpcstr val = get_cell( title ? row + 1 : row, col );
 			if( val )
@@ -249,7 +249,7 @@ namespace xgc
 		/// \param title ±íÍ·
 		///
 
-		inline xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr value ) const throw()
+		xgc_lpcstr csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_lpcstr value ) const throw()
 		{
 			XGC_ASSERT_RETURN( title, xgc_nullptr );
 			return get_value( row, get_col( title ), value );

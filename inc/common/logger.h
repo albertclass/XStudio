@@ -94,25 +94,56 @@ namespace xgc
 		/// 文件日志
 		///
 		COMMON_API xgc_void write_file( xgc_lpcstr file, xgc_lpcstr format, ... );
+	}
 
-
+	namespace common
+	{
 		///
 		/// [12/16/2013 albert.xu]
 		/// 初始化日志模块
 		///
-		COMMON_API xgc_bool init_logger_ex( xgc_lpcstr path );
+		COMMON_API xgc_bool init_logger( xgc_lpcstr path );
 
 		///
 		/// [1/10/2014 albert.xu]
 		/// 清理日志系统
 		///
-		COMMON_API xgc_void fini_logger_ex();
+		COMMON_API xgc_void fini_logger();
 
+		///
+		/// [1/10/2014 albert.xu]
+		/// 写文件日志
+		///
+		COMMON_API xgc_void write_file( xgc_lpcstr file, xgc_lpcstr format, ... );
+
+		class COMMON_API logger;
+		///
+		/// [1/10/2014 albert.xu]
+		/// 日志适配器
+		///
+		class COMMON_API logger_adapter
+		{
+		public:
+			virtual xgc_void write( xgc_lpvoid data, xgc_size size ) = 0;
+			virtual ~logger_adapter(){}
+		};
+
+		///
+		/// \brief 日志实现类
+		///
+		/// [01/16/2017 albert.xu]
+		///
 		class COMMON_API logger_impl
 		{
 		private:
-			typedef std::function< xgc_size (xgc_char*, xgc_size) > log_span;
+			///
+			/// \brief 字符串片段
+			///
+			/// [01/16/2017 albert.xu]
+			///
+			typedef std::function< xgc_size (xgc_char*, xgc_size) > string_span;
 
+			// 日志输出上下文
 			struct
 			{
 				xgc_lpcstr file;
@@ -124,126 +155,82 @@ namespace xgc
 				va_list	   args;
 			} context;
 
-			xgc_vector<log_span> format;
+			// 消息格式化序列
+			xgc_vector<string_span> format;
+
+			// 过滤包含关键字的消息
 			xgc_unordered_set<xgc_string> filter_include;
+			// 过滤排除关键字的消息
 			xgc_unordered_set<xgc_string> filter_exclude;
+			// 输出适配器
+			xgc_list< logger_adapter* > adapters;
 
-			xgc_list< std::function< void( xgc_lpcstr, xgc_size ) > > adapters;
+			friend class logger;
+		private:
+			logger_impl()
+			{
 
+			}
+
+			~logger_impl()
+			{
+				for( auto it : adapters )
+				{
+					SAFE_DELETE(it);
+				}
+
+				adapters.clear();
+				format.clear();
+				filter_include.clear();
+				filter_exclude.clear();
+			}
+
+			logger_impl( const logger_impl & ) = delete;
 		public:
+			// 添加包含关键字
 			xgc_void add_include( xgc_lpcstr keyword )
 			{
 				filter_include.insert( keyword );
 			}
 
+			// 删除包含关键字
 			xgc_void del_include( xgc_lpcstr keyword )
 			{
 				filter_include.erase( keyword );
 			}
 
+			// 添加排除关键字
 			xgc_void add_exclude( xgc_lpcstr keyword )
 			{
 				filter_include.insert( keyword );
 			}
 
+			// 删除排除关键字
 			xgc_void del_exclude( xgc_lpcstr keyword )
 			{
 				filter_include.erase( keyword );
 			}
 
-			xgc_void add_adapter( std::function< void( xgc_lpcstr, xgc_size ) > &&adapter )
+			// 添加适配器
+			xgc_void add_adapter( logger_adapter *adapter )
 			{
-				adapters.emplace_back( std::forward< std::function< void( xgc_lpcstr, xgc_size) > >(adapter) );
+				XGC_ASSERT( adapter );
+				adapters.push_back( adapter );
 			}
 
-			xgc_void parse_format( xgc_lpcstr fmt )
-			{
-				auto ptr = fmt;
-				auto beg = fmt;
+			///
+			/// \brief 解析日志格式化配置
+			///
+			/// [01/16/2017 albert.xu]
+			///
+			xgc_void parse_format( xgc_lpcstr fmt );
 
-				xgc_bool in_match = false;
-				xgc_long barckets = 0; 
-
-				while( ptr && *ptr )
-				{
-					if( *ptr == '$' && *(ptr+1) == '(' )
-					{
-						if( ptr > beg )
-						{
-							format.emplace_back( std::bind( &logger_impl::span, this, std::placeholders::_1, std::placeholders::_2, xgc_string(beg, ptr - beg) ) );
-						}
-
-						if( strncmp( ptr, "$(date)", 7 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::date, this, std::placeholders::_1, std::placeholders::_2 ) );
-							ptr += 7;
-						}
-						else if( strncmp( ptr, "$(time)", 7 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::time, this, std::placeholders::_1, std::placeholders::_2 ) );
-							ptr += 7;
-						}
-						else if( strncmp( ptr, "$(datetime)", 13 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::datetime, this, std::placeholders::_1, std::placeholders::_2 ) );
-							ptr += 13;
-						}
-						else if( strncmp( ptr, "$(file)", 7 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::file, this, std::placeholders::_1, std::placeholders::_2 ) );
-							ptr += 7;
-						}
-						else if( strncmp( ptr, "$(func)", 7 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::func, this, std::placeholders::_1, std::placeholders::_2 ) );
-							ptr += 7;
-						}
-						else if( strncmp( ptr, "$(line)", 7 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::line, this, std::placeholders::_1, std::placeholders::_2 ) );
-							beg = ptr += 7;
-						}
-						else if( strncmp( ptr, "$(message)", 10 ) == 0 )
-						{
-							format.emplace_back( std::bind( &logger_impl::message, this, std::placeholders::_1, std::placeholders::_2 ) );
-							beg = ptr += 10;
-						}
-
-					}
-					
-					++ptr;
-				}
-			}
-
-			xgc_void write( xgc_lpcstr file, xgc_lpcstr func, xgc_ulong line, xgc_lpcstr tags, xgc_lpcstr fmt, ... )
-			{
-				xgc_char log[2048] = { 0 };
-				xgc_size len = 0;
-
-				va_list args;
-				va_start( args, fmt );
-				context.file = file;
-				context.func = func;
-				context.tags = tags;
-				context.line = line;
-				context.fmt	 = fmt;
-				context.args = args;
-
-				for( auto &span : format )
-				{
-					auto cpy = span( log + len, sizeof(log) - len );
-					if( cpy < 0 )
-						cpy = sprintf_s( log + len, sizeof(log) - len, "<format error>" );
-
-					len += cpy;
-				}
-
-				for( auto adapter : adapters )
-				{
-					adapter( log, len );
-				}
-				va_end(args);
-			}
+			///
+			/// \brief 写日志
+			///
+			/// [01/16/2017 albert.xu]
+			///
+			xgc_void write( xgc_lpcstr file, xgc_lpcstr func, xgc_ulong line, xgc_lpcstr tags, xgc_lpcstr fmt, ... );
 
 		private:
 			xgc_size date( xgc_char* buf, xgc_size len )
@@ -304,7 +291,6 @@ namespace xgc
 		class COMMON_API logger
 		{
 		private:
-			logger_impl root;
 			xgc_unordered_map< xgc_string, logger_impl* > loggers;
 
 		public:
@@ -314,7 +300,7 @@ namespace xgc
 				if( it != loggers.end() )
 					return *(it->second);
 
-				return root;
+				return *(logger_impl*)xgc_nullptr;
 			}
 
 			logger_impl& get_or_create( xgc_lpcstr name )
@@ -329,10 +315,23 @@ namespace xgc
 
 				return *(ib.first->second);
 			}
+
+			xgc_void clear()
+			{
+				for( auto it : loggers )
+				{
+					SAFE_DELETE( it.second );
+				}
+
+				loggers.clear();
+			}
 		};
 
-
+		/// get logger by logger name
 		COMMON_API logger_impl& get_logger( xgc_lpcstr name );
+
+		/// get logger by logger name
+		COMMON_API logger_impl& new_logger( xgc_lpcstr name );
 	}
 }
 

@@ -37,7 +37,6 @@ namespace xgc
 	///
 	COMMON_API xgc_lpcstr get_normal_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args );
 
-
 	///
 	/// [12/16/2013 albert.xu]
 	/// 获取指定文件的目录，目录以
@@ -56,6 +55,12 @@ namespace xgc
 		return ret;
 	}
 	
+	///
+	/// [12/16/2013 albert.xu]
+	/// 建立目录
+	///
+	COMMON_API xgc_ulong makepath( xgc_lpcstr path, xgc_bool recursion = true );
+
 	///
 	/// [12/16/2013 albert.xu]
 	/// 获取进程ID

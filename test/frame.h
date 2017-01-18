@@ -29,8 +29,6 @@ public:
 
 	void regist( const char* name, const char * display, pfn_test entry )
 	{
-		printf( "%s registed\n", name );
-
 		unit_test test;
 		test.name = name;
 		test.display = display;

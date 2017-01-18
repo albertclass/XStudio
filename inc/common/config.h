@@ -31,6 +31,7 @@
 #endif
 
 #ifdef _WINDOWS
+#	define _CRT_SECURE_NO_WARNINGS
 #	include "platform/windows/sys.h"
 #endif
 

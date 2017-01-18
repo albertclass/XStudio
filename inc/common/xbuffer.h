@@ -1120,6 +1120,7 @@ namespace xgc
 				xgc_size copy_1 = 0;
 				xgc_size copy_2 = 0;
 
+				size = XGC_MIN( size, _Base::len() );
 				if( _Base::wd() >= _Base::rd() )
 				{
 					// <       r-------w       >
@@ -1150,6 +1151,8 @@ namespace xgc
 					if( copy_2 == part_2 )
 						_Base::set_rd( 1 );
 				}
+
+				return copy_1 + copy_2;
 			}
 		};
 	};  // end namespace common

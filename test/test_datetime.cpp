@@ -6,9 +6,6 @@ using namespace xgc::common;
 
 static int testmain( int agrc, char * argv[] )
 {
-	char sz_date[64];
-	char sz_time[64];
-
 	char sz_datetime[64];
 
 	datetime dt = datetime::now();

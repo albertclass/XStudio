@@ -120,6 +120,29 @@ XGC_INLINE errno_t strcpy_s( char (&destnation)[count], const char *source )
 	return strcpy_s( destnation, count, source );
 }
 
+XGC_INLINE errno_t strncpy_s( char *destination, size_t count, const char *source, size_t copied )
+{
+	if( nullptr == source )
+		return -1;
+
+	size_t i = 0;
+	while( i < count - 1 && i < copied && source[i] )
+	{
+		destination[i] = source[i];
+		++i;
+	}
+
+	destination[i] = 0;
+
+	return 0;
+}
+
+template< size_t count >
+XGC_INLINE errno_t strncpy_s( char (&destnation)[count], const char *source, size_t copied )
+{
+	return strncpy_s( destnation, count, source, copied );
+}
+
 XGC_INLINE errno_t strcat_s( char *destination, size_t count, const char *source )
 {
 	if( nullptr == source )
@@ -167,6 +190,7 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 #define _fstat fstat
 #define _stat stat
 
+#define _pipe pipe
 #define memsize	malloc_usable_size
 
 #define XGC_ASSERT_MSG(expr, FMT, ...) \
