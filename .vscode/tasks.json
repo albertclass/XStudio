@@ -1,0 +1,37 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "isShellCommand": true,
+    "args": [],
+    "showOutput": "always",
+    "echoCommand": true,
+    "suppressTaskName": true,
+    "linux": {
+        "command": "sh",
+        "args": ["-c"],
+        "tasks": [{
+                "taskName": "build all",
+                "isBuildCommand": true,
+                "args": ["make --directory=prj"],
+                "problemMatcher": {
+                    "owner": "cpp",
+                    "fileLocation": ["relative", "${workspaceRoot}/prj/Common"],
+                    "pattern": {
+                        "regexp": "^(.*):(\\d+):(\\d+):\\s+\\w*\\s*(warning|error):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    }
+                }
+            },
+
+            {
+                "taskName": "premake",
+                "args": ["premake5 gmake"]
+            }
+        ]
+    }
+}
