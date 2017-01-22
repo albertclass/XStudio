@@ -49,22 +49,24 @@ namespace xgc
 			virtual void execute() = 0;
 		};
 
-		template< class _Func, class... _Types >
+		template< class _Ret >
 		struct task_warp : public task_base
 		{
-			typedef decltype( _Func ) _Ret;
 		private:
-			std::packaged_task< _Func( _Types... ) > task;
+			std::function< _Ret() > exec;
+			std::packaged_task< _Ret() > task;
 
 		public:
-			explicit task_warp( std::packaged_task< _Func( _Types... ) > &t )
-				: task( t )
+			explicit task_warp( const std::function< _Ret() > &t )
+				: exec( t )
+				, task( [this]()->_Ret{ return exec(); } )
 			{
 
 			}
 
-			explicit task_warp( std::packaged_task< _Func( _Types... ) > &&t )
-				: task( _STD move( t ) )
+			explicit task_warp( std::function< _Ret() > &&t )
+				: exec( _STD move( t ) )
+				, task( [this]()->_Ret{ return exec(); } )
 			{
 
 			}
@@ -88,7 +90,9 @@ namespace xgc
 			// 任务队列
 			xgc_queue<task_base*> tasks;
 			// 同步
-			std::mutex m_task;
+			std::mutex m_lock_queue;
+			// 同步
+			std::mutex m_lock_task;
 			// 光栅
 			std::condition_variable cv_task;
 			// 是否关闭提交
@@ -96,7 +100,12 @@ namespace xgc
 
 		public:
 			// 构造
-			thread_pool( size_t size = 4 ) : stop { false }
+			thread_pool() : stop( false )
+			{
+
+			}
+
+			explicit thread_pool( size_t size ) : stop { false }
 			{
 				restart( size < 1 ? 1 : size );
 			}
@@ -111,6 +120,7 @@ namespace xgc
 			void shutdown()
 			{
 				stop.store( true );
+				cv_task.notify_all();    // 唤醒线程执行
 				for( std::thread& thread : pool )
 				{
 					thread.join();        // 等待任务结束， 前提：线程一定会执行完
@@ -143,14 +153,12 @@ namespace xgc
 					throw std::runtime_error( "task executor have closed commit." );
 				}
 
-				auto task = XGC_NEW task_warp< _Fx, _Types... >( std::packaged_task<_Ret()>( [f, args...]()->_Ret{
-					return f( args... );
-				} ) );
+				auto task = XGC_NEW task_warp< _Ret >( std::bind( f, std::forward< _Types >( args )... ) );
 
 				std::future< _Ret > future = task->get_future();
 
 				// 添加任务到队列
-				std::unique_lock<std::mutex> lock { m_task };
+				std::unique_lock<std::mutex> lock { m_lock_queue };
 				tasks.push( task );
 
 				cv_task.notify_all();    // 唤醒线程执行
@@ -162,17 +170,28 @@ namespace xgc
 			// 获取一个待执行的 task
 			task_base* get_one_task()
 			{
-				std::unique_lock<std::mutex> lock { m_task };
-				cv_task.wait( lock, [this](){ return !tasks.empty(); } ); // wait 直到有 task
-				auto t = tasks.front(); // 取一个 task
-				tasks.pop();
-				return t;
+				std::unique_lock<std::mutex> lock( m_lock_task );
+				cv_task.wait( lock, [this](){
+					auto is_stop  = stop.load();
+					auto is_empty = tasks.empty();
+					return  is_stop || !is_empty;
+				} ); // wait 直到有 task
+
+				if( false == stop )
+				{
+					std::unique_lock<std::mutex> lock( m_lock_queue );
+					auto t = tasks.front(); // 取一个 task
+					tasks.pop();
+					return t;
+				}
+
+				return xgc_nullptr;
 			}
 
 			// 任务调度
 			void schedual()
 			{
-				while( stop.load() )
+				while( !stop.load() )
 				{
 					task_base* t = get_one_task();
 					if( t )
