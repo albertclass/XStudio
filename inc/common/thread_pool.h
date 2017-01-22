@@ -143,9 +143,7 @@ namespace xgc
 					throw std::runtime_error( "task executor have closed commit." );
 				}
 
-				auto task = XGC_NEW task_warp< _Fx, _Types... >( std::packaged_task<_Ret()>( [f, args...]()->_Ret{
-					return f( args... );
-				} ) );
+				auto task = XGC_NEW task_warp< _Fx, _Types... >( std::packaged_task<_Ret()>( std::bind( f, std::forward< _Types... >( args... ) );
 
 				std::future< _Ret > future = task->get_future();
 
