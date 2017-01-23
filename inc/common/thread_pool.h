@@ -65,7 +65,7 @@ namespace xgc
 			}
 
 			explicit task_warp( std::function< _Ret() > &&t )
-				: exec( _STD move( t ) )
+				: exec( std::move( t ) )
 				, task( [this]()->_Ret{ return exec(); } )
 			{
 
@@ -144,7 +144,7 @@ namespace xgc
 
 			// 提交一个任务
 			template< class _Fx, class... _Types >
-			auto commit( _Fx&& f, _Types&&... args ) ->_STD future< decltype(function_ret_t( std::forward< _Fx >( f ) )) >
+			auto commit( _Fx&& f, _Types&&... args ) ->std::future< decltype(function_ret_t( std::forward< _Fx >( f ) )) >
 			{
 				using _Ret = decltype(function_ret_t( std::forward< _Fx >( f ) ));
 
