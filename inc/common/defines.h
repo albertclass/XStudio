@@ -127,8 +127,8 @@ typedef xgc_lpvoid			xgc_handle;
 #	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); }else{ (expr)->Release(); }
 #	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg,##__VA_ARGS__); }
 #	define XGC_DEBUG_MESSAGE(msg,...)			XGC_ASSERT_MSG(false,msg,##__VA_ARGS__)
-#	define XGC_ASSERT_POINTER(expr)				XGC_ASSERT_MSG(expr,"NULL POINT FOUND, IS'T RIGHT?")
-#	define XGC_VERIFY(expr)						XGC_ASSERT_MSG(expr,"")
+#	define XGC_ASSERT_POINTER(expr)				XGC_ASSERT_MSG((expr),"NULL POINT FOUND, IS'T RIGHT?")
+#	define XGC_VERIFY(expr)						XGC_ASSERT_MSG((expr),"")
 #	define XGC_DEBUG_CODE( ... )				__VA_ARGS__
 #elif defined( _ASSERT_LOG )
 #	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }

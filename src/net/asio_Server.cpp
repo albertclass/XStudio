@@ -16,7 +16,7 @@ namespace xgc
 			XGC_ASSERT( acceptor_count_ );
 		}
 
-		asio_ServerBase::~asio_ServerBase(xgc_void)
+		asio_ServerBase::~asio_ServerBase()
 		{
 			acceptor_.close();
 		}
@@ -49,7 +49,8 @@ namespace xgc
 			asio::error_code ec;
 			acceptor_.close( ec );
 
-			while( acceptor_count_ ) Sleep(1);
+			while( acceptor_count_ )
+				std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 
 			if( bCloseAllLink )
 				getSocketMgr().CloseAll( this );
@@ -105,7 +106,7 @@ namespace xgc
 		{
 		}
 
-		asio_ServerEx::~asio_ServerEx(xgc_void)
+		asio_ServerEx::~asio_ServerEx()
 		{
 		}
 

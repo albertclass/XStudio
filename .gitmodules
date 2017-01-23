@@ -10,3 +10,12 @@
 [submodule "src/third-part/fmt"]
 	path = src/third-part/cppformat
 	url = https://github.com/fmtlib/fmt.git
+[submodule "dep/LuaBridge"]
+	path = dep/LuaBridge
+	url = https://github.com/albertclass/LuaBridge.git
+[submodule "dep/luajit"]
+	path = dep/luajit
+	url = https://github.com/luaJIT/luaJIT.git
+[submodule "dep/asio"]
+	path = dep/asio
+	url = https://github.com/albertclass/asio.git

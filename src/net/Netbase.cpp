@@ -19,7 +19,7 @@ namespace xgc
 		xgc_void		(*CloseLink)( network_t handle ) = 0;
 		xgc_uintptr		(*ExecuteState)( xgc_uint32 operate_code, xgc_uintptr param ) = 0;// 返回 0 表示成功, < 0 表示发生错误 > 0 表示可以正常执行,但有其他问题.
 
-		__declspec( thread ) xgc_void* packet_base = 0;
+		XGC_DECLSPEC_THREAD xgc_lpvoid packet_base = 0;
 
 		#define HEADER_SIZE (4)
 		static xgc_size	asio_header_space()
@@ -107,7 +107,7 @@ namespace xgc
 			xgc_nullptr, //asio_packet_encrypt,
 		};
 
-		#define SETUP_API( PIX, FNAME )	XGC_VERIFY( FNAME = xgc::net::##PIX##FNAME )
+		#define SETUP_API( PIX, FNAME )	XGC_VERIFY( FNAME = XGC_CONCATENATE_MACRO(PIX,FNAME) )
 		//--------------------------------------------------------//
 		//	created:	3:12:2009   14:27
 		//	filename: 	net

@@ -149,7 +149,7 @@ namespace xgc
 				using _Ret = decltype(function_ret_t( std::forward< _Fx >( f ) ));
 
 				if( stop.load() )
-				{    // stop == true ??
+				{    // stop == true ??qqqq
 					throw std::runtime_error( "task executor have closed commit." );
 				}
 

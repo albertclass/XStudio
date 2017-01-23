@@ -11,7 +11,7 @@ namespace xgc
 		{
 		}
 
-		CClientSession::~CClientSession( xgc_void )
+		CClientSession::~CClientSession()
 		{
 		}
 
@@ -56,7 +56,7 @@ namespace xgc
 		///function	:	连接关闭时的处理函数。重载此函数时需在做完应用需要做的事情后将连接删除或重置
 		///param	:	无
 		///return	:	0	成功	-1 失败
-		int CClientSession::OnClose( xgc_void )
+		int CClientSession::OnClose()
 		{
 			if( queue_ptr_ )
 			{

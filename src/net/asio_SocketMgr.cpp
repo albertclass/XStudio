@@ -1,25 +1,27 @@
 #include "asio_Header.h"
+#include <thread>
+#include <chrono>
 
 namespace xgc
 {
 	namespace net
 	{
-		asio_SocketMgr::asio_SocketMgr( xgc_void )
+		asio_SocketMgr::asio_SocketMgr()
 		{
 		}
 
-		asio_SocketMgr::~asio_SocketMgr( xgc_void )
+		asio_SocketMgr::~asio_SocketMgr()
 		{
 		}
 
 		xgc_void asio_SocketMgr::Initialize()
 		{
-			for( xgc_uint16 i = 0; i < xgc_countof( handles ); ++i )
+			for( xgc_uint16 i = 0; i < XGC_COUNTOF( handles ); ++i )
 			{
 				free_handles.push( i );
 			}
 
-			for( xgc_uint16 i = 0; i < xgc_countof( handles ); ++i )
+			for( xgc_uint16 i = 0; i < XGC_COUNTOF( handles ); ++i )
 			{
 				free_groups.push( i );
 			}
@@ -39,10 +41,10 @@ namespace xgc
 
 			do
 			{
-				Sleep( 1000 );
+				std::this_thread::sleep_for( std::chrono::milliseconds(1000) );
 
 				counter = 0;
-				for( network_t i = 0; i < xgc_countof( handles ); ++i )
+				for( network_t i = 0; i < XGC_COUNTOF( handles ); ++i )
 				{
 					asio_SocketPtr pSocket = getSocket( i );
 					if( pSocket )
@@ -58,7 +60,7 @@ namespace xgc
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )
 		{
-			if( handle >= xgc_countof( handles ) )
+			if( handle >= XGC_COUNTOF( handles ) )
 				return xgc_nullptr;
 
 			if( xgc_nullptr == handles[handle] )
@@ -69,7 +71,7 @@ namespace xgc
 
 		xgc_void asio_SocketMgr::CloseAll( xgc_lpvoid from /*= 0 */ )
 		{
-			for( network_t i = 0; i < xgc_countof( handles ); ++i )
+			for( network_t i = 0; i < XGC_COUNTOF( handles ); ++i )
 			{
 				asio_SocketPtr pSocket = getSocket( i );
 				if( pSocket && (from == 0 || pSocket->belong( from )) )
@@ -86,9 +88,9 @@ namespace xgc
 		/// \date 2016/02/26 14:17
 		///
 
-		xgc_bool asio_SocketMgr::WaitForClose( network_t handle, xgc_uint32 sleep, xgc_int32 timeout )
+		xgc_bool asio_SocketMgr::WaitForClose( network_t handle, xgc_uint32 sleep, xgc_ulong timeout )
 		{
-			if( handle >= xgc_countof( handles ) )
+			if( handle >= XGC_COUNTOF( handles ) )
 				return true;
 
 			clock_t start = clock();
@@ -99,7 +101,7 @@ namespace xgc
 					return true;
 
 				pSocket->close();
-				Sleep( sleep );
+				std::this_thread::sleep_for( std::chrono::milliseconds(sleep) );
 			}
 
 			return false;
@@ -150,7 +152,7 @@ namespace xgc
 			{
 				if( pGroup->find( handle ) == pGroup->end() )
 				{
-					CSocketGroup::_Pairib ret = pGroup->insert( handle );
+					auto ret = pGroup->insert( handle );
 					auto size = (xgc_long) pGroup->size();
 					FreeHandleGroup( pGroup );
 					return ret.second ? size : -3;

@@ -8,8 +8,6 @@ namespace xgc
 	namespace net
 	{
 		using namespace asio;
-		using boost::posix_time::seconds;
-		using boost::posix_time::milliseconds;
 
 		static xgc_size send_buffer_size = 1024 * 256;
 		static xgc_size recv_buffer_size = 1024 * 1024;
@@ -60,9 +58,9 @@ namespace xgc
 				if( timeout )
 				{
 					// 通过strand对象保证超时函数和连接函数是串行的。
-					asio::strand strand( socket_.get_io_service() );
+					asio::io_service::strand strand( socket_.get_io_service() );
 
-					timer_.expires_from_now( milliseconds( timeout ) );
+					timer_.expires_from_now( std::chrono::milliseconds( timeout ) );
 					timer_.async_wait(
 						strand.wrap( std::bind( &asio_Socket::handle_timeout, shared_from_this(), std::placeholders::_1 ) ) );
 
@@ -111,7 +109,7 @@ namespace xgc
 
 			if( pingpang_inerval_ )
 			{
-				timer_.expires_from_now( millisec( pingpang_inerval_ < 1000 ? 1000 : pingpang_inerval_ ) );
+				timer_.expires_from_now( std::chrono::milliseconds( pingpang_inerval_ < 1000 ? 1000 : pingpang_inerval_.load() ) );
 				timer_.async_wait( bind( &asio_Socket::handle_timer, shared_from_this() ) );
 			}
 		}
@@ -156,7 +154,7 @@ namespace xgc
 					// 超出接收缓冲的消息包说明该连接发生异常，中断连接。
 					if( packet_length >= recv_buffer_.capacity() )
 					{
-						XGC_ASSERT( FALSE );
+						XGC_ASSERT( false );
 						if( holder_ )
 							holder_->OnError( NET_ERROR_NOT_ENOUGH_MEMROY );
 
@@ -370,7 +368,7 @@ namespace xgc
 
 			if( is_connected() && pingpang_inerval_ )
 			{
-				timer_.expires_from_now( milliseconds( XGC_MAX( pingpang_inerval_, 1000 ) ) );
+				timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( pingpang_inerval_.load(), 1000 ) ) );
 				timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this() ) );
 
 				// check socket timeout

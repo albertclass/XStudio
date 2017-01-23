@@ -50,6 +50,48 @@ project "common"
         architecture "x64"
         defines { "LINUX64" }
 
+project "net"
+    kind "SharedLib"
+    language "C++"
+    location "prj/net"
+    includedirs { "inc/net", "inc/common", "src/third-part/asio/asio/include" }
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+        "inc/net/**.h",
+        "inc/net/**.hpp",
+        "src/net/**.cpp",
+        "src/net/**.inl",
+    }
+
+    vpaths {
+        ["Header Files/*"] = { "inc/net/**.h", "inc/net/**.hpp" },
+        ["Source Files/*"] = { "src/net/**.cpp", "src/net/**.inl" }
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
+        optimize "On"
+
+    filter "system:windows"
+        implibdir "lib/%{cfg.buildcfg}"
+        architecture "x64"
+        defines { "WIN64", "_IMAGEHLP64" }
+
+    filter "system:linux"
+        implibdir "bin/%{cfg.buildcfg}"
+        links { "stdc++" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+
 project "unittest"
     kind "ConsoleApp"
     language "C++"

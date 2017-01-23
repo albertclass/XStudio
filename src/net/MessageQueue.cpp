@@ -14,12 +14,12 @@ namespace xgc
 {
 	namespace net
 	{
-		CMessageQueue::CMessageQueue( xgc_void )
+		CMessageQueue::CMessageQueue()
 			: mIndex( 0 )
 		{
 		}
 
-		CMessageQueue::~CMessageQueue(xgc_void)
+		CMessageQueue::~CMessageQueue()
 		{
 			// 清除所有消息
 			for( auto it : mPacketList )
