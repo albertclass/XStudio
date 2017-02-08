@@ -1,5 +1,5 @@
 #include "asio_Header.h"
-#include "ServerSession.h"
+#include "NetSession.h"
 
 namespace xgc
 {
