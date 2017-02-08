@@ -53,6 +53,8 @@ static int testmain( int agrc, char * argv[] )
 		auto val = ini.get_item_value("Params", "ppp", i, "<<empty>>" );
 		output( "ppp=%s\n", val );
 	}
+
+	return 0;
 } 
 
 UNIT_TEST( "ini_reader", "ini read test", testmain );

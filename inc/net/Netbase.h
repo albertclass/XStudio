@@ -6,6 +6,7 @@
 #include "exports.h"
 
 #include <memory>
+#include <functional>
 #define NETBASE_API COMMON_API
 
 //网络通讯包相关
@@ -28,34 +29,6 @@ namespace xgc
 
 #pragma pack()
 
-		struct PacketProtocal
-		{
-			xgc_size	(*header_space)();
-			// return data length include head length.
-			xgc_size	(*packet_length)( xgc_lpstr header );
-			// filter your interesting packet, return event code
-			xgc_uint32	(*packet_filter)( xgc_lpstr header );
-			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
-			// return packet write size;
-			xgc_size	(*packet_system)( xgc_byte event, xgc_lpstr header ); 
-			// set data length exclude head length.
-			xgc_size	(*packet_finial)( xgc_lpstr header, xgc_size length );
-			// verify packet data correctly
-			xgc_bool	(*packet_verifiy)( xgc_lpstr header, xgc_size size, xgc_lpvoid context);
-
-			//////////////////////////////////////////////////////////////////////////
-			// decrypt packet return dest buffer need size if output is null
-			// otherwise, return actual size of decrypt data size
-			//////////////////////////////////////////////////////////////////////////
-			xgc_uint32	(*packet_decrypt)( xgc_lpstr data, xgc_size size, xgc_byte* output, xgc_lpvoid context); 
-
-			//////////////////////////////////////////////////////////////////////////
-			// encrypt packet return actual size, work in multil thread
-			//////////////////////////////////////////////////////////////////////////
-			xgc_uint32	(*packet_encrypt)( xgc_lpstr data, xgc_size size, xgc_byte* output, xgc_lpvoid context); 
-		};
-
-		NETBASE_API extern PacketProtocal ProtocalDefault;
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		#define SYSTEM_MESSAGE_TYPE	0
 		#define EVENT_ACCEPT	0
@@ -279,14 +252,6 @@ namespace xgc
 			virtual network_t	handle()const = 0;
 
 			///
-			/// \brief 用户数据
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:41
-			///
-			virtual xgc_lpvoid	userdata()const = 0;
-
-			///
 			/// \brief 消息包创建时的时间戳
 			///
 			/// \author albert.xu
@@ -300,7 +265,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/24 11:46
 			///
-			virtual xgc_void	release() throw() = 0;
+			virtual xgc_void	freedom() throw() = 0;
 		};
 
 		///
@@ -322,24 +287,79 @@ namespace xgc
 		typedef std::shared_ptr< IMessageQueue > MessageQueuePtr;
 
 		///
+		/// \brief 消息协议解析接口
+		///
+		/// \author albert.xu
+		/// \date 2016/02/17 16:20
+		///
+		struct NETBASE_API IProtocal
+		{
+			virtual xgc_size	header_space() = 0;
+			// return data length include head length.
+			virtual xgc_size	packet_length( xgc_lpstr header ) = 0;
+			// filter your interesting packet, return event code
+			virtual xgc_uint32	packet_filter( xgc_lpstr header ) = 0;
+			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
+			// return packet write size;
+			virtual xgc_size	packet_system( xgc_byte event, xgc_lpstr header ) = 0;
+			// set data length exclude head length.
+			virtual xgc_size	packet_finial( xgc_lpstr header, xgc_size length ) = 0;
+			// verify packet data correctly
+			virtual xgc_bool	packet_verifiy( xgc_lpstr header, xgc_size size, xgc_lpvoid context) = 0;
+
+			//////////////////////////////////////////////////////////////////////////
+			// decrypt packet return dest buffer need size if output is null
+			// otherwise, return actual size of decrypt data size
+			//////////////////////////////////////////////////////////////////////////
+			virtual xgc_size	packet_decrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context)  = 0;
+
+			//////////////////////////////////////////////////////////////////////////
+			// encrypt packet return actual size, work in multil thread
+			//////////////////////////////////////////////////////////////////////////
+			virtual xgc_size	packet_encrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context) = 0;
+		};
+
+		class NETBASE_API ProtocalDefault : IProtocal 
+		{
+		public:
+			virtual xgc_size	header_space();
+			// return data length include head length.
+			virtual xgc_size	packet_length( xgc_lpstr header );
+			// filter your interesting packet, return event code
+			virtual xgc_uint32	packet_filter( xgc_lpstr header );
+			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
+			// return packet write size;
+			virtual xgc_size	packet_system( xgc_byte event, xgc_lpstr header );
+			// set data length exclude head length.
+			virtual xgc_size	packet_finial( xgc_lpstr header, xgc_size length );
+			// verify packet data correctly
+			virtual xgc_bool	packet_verifiy( xgc_lpstr header, xgc_size size, xgc_lpvoid context);
+
+			//////////////////////////////////////////////////////////////////////////
+			// decrypt packet return dest buffer need size if output is null
+			// otherwise, return actual size of decrypt data size
+			//////////////////////////////////////////////////////////////////////////
+			virtual xgc_size	packet_decrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context);
+
+			//////////////////////////////////////////////////////////////////////////
+			// encrypt packet return actual size, work in multil thread
+			//////////////////////////////////////////////////////////////////////////
+			virtual xgc_size	packet_encrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context);
+		};
+
+		///
 		/// \brief 网络会话接口
 		///
 		/// \author albert.xu
 		/// \date 2016/02/17 16:20
 		///
-		struct INetworkSession
+		struct NETBASE_API INetworkSession
 		{
-			INetworkSession()
-				: userdata_( NULL )
-				, handle_( -1 )
-			{
-
-			}
-
-			virtual ~INetworkSession()
-			{
-
-			}
+			///
+			/// \brief 数据包是否
+			/// \return	0 ~ 成功, -1 ~ 失败
+			///
+			virtual int OnParsePacket( const void* data, xgc_size size ) = 0;
 
 			///
 			/// \brief 连接关闭时的处理函数。重载此函数时需在做完应用需要做的事情后将连接删除或重置
@@ -360,7 +380,7 @@ namespace xgc
 			/// \param	len	接受到数据的长度,此数据由iocp保证其真实性。
 			/// \return	0 ~ 成功, -1 ~ 失败
 			///
-			virtual int OnRecv( const void *data, size_t size ) = 0;
+			virtual int OnRecv( const void *data, xgc_size size ) = 0;
 
 			///
 			/// \brief 成功发送网络数据包后给iocp上层处理的函数，目前暂时未使用
@@ -368,7 +388,7 @@ namespace xgc
 			/// \param len 成功发送的数据长度
 			/// \return	0 ~ 成功, -1 ~ 失败
 			///
-			virtual int OnSend( const void *data, size_t size ) = 0;
+			virtual int OnSend( const void *data, xgc_size size ) = 0;
 
 			///
 			/// \brief iocp捕获到错误并提供给应用的处理机会
@@ -377,15 +397,25 @@ namespace xgc
 			virtual int OnError( int error ) = 0;
 
 			///
+			/// \brief 保活定时器，用于定时发送保活消息
+			/// \return 0 ~ 成功, -1 ~ 失败
+			virtual int OnAlive() = 0;
+
+			///
 			/// \brief 获取用户数据
 			///
 			/// \author albert.xu
 			/// \date 2016/02/17 16:23
 			///
-			const xgc_lpvoid GetUserdata()const
-			{ 
-				return userdata_; 
-			}
+			virtual int GetPing()const = 0;
+
+			///
+			/// \brief 获取用户数据
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:23
+			///
+			virtual xgc_lpvoid GetUserdata()const = 0;
 
 			///
 			/// \brief 设置用户数据
@@ -393,35 +423,27 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 16:23
 			///
-			xgc_void SetUserdata( xgc_lpvoid pUserdata )
-			{ 
-				userdata_ = pUserdata; 
-			}
-
-		protected:
-			/// 连接句柄
-			network_t		handle_;
-			/// 用户数据
-			xgc_lpvoid		userdata_;
+			virtual xgc_void SetUserdata( xgc_lpvoid userdata ) = 0;
 		};
 
 		/// 网络会话创建函数指针类型
-		typedef INetworkSession* (*create_handler_func)( xgc_uintptr lParam, const PacketProtocal* protocal_ptr );
+		typedef std::function< INetworkSession* () > pfnCreateHolder;
 
 		/// 消息处理函数指针类型
-		typedef xgc_void (*pfnProcessor)( network_t, xgc_lpcstr, xgc_size, xgc_lpvoid );
+		typedef xgc_void (*pfnProcessor)( network_t, xgc_lpcstr, xgc_size );
 
 		enum eNetLibrary{ asio };
 		extern "C"
 		{
 			NETBASE_API extern xgc_bool		(*InitNetwork)( int workthreads );
 			NETBASE_API extern xgc_void		(*FiniNetwork)();
-			NETBASE_API extern xgc_uintptr  (*StartServer)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, MessageQueuePtr &queue_ptr );
-			NETBASE_API extern xgc_uintptr  (*StartServerEx)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, create_handler_func call, xgc_uintptr param );
+			NETBASE_API extern xgc_uintptr  (*StartServer)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
+			NETBASE_API extern xgc_uintptr  (*StartServerEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
 			NETBASE_API extern xgc_void		(*CloseServer)( xgc_uintptr server_h );
-			NETBASE_API extern xgc_bool		(*ConnectServer)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
-			NETBASE_API extern xgc_bool		(*ConnectServerAsync)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
-			
+			NETBASE_API extern xgc_bool		(*Connect)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
+			NETBASE_API extern xgc_bool		(*ConnectAsync)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
+			NETBASE_API extern xgc_bool		(*ConnectEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
+			NETBASE_API extern xgc_bool	    (*ConnectExAsync)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
 			NETBASE_API extern xgc_void		(*SendPacket)( network_t handle, xgc_lpvoid data, xgc_size size );
 			NETBASE_API extern xgc_void		(*SendLastPacket)( network_t handle, xgc_lpvoid data, xgc_size size );
 			NETBASE_API extern xgc_void		(*SendPackets)( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size );

@@ -9,15 +9,12 @@ namespace xgc
 		class asio_NetworkPacket : public INetPacket
 		{
 		friend class asio_Socket;
-		public:
-			enum mode{ swd = 1, srd = 2, srw = 3 };
-
+		private:
 			asio_NetworkPacket( xgc_size capacity )
 				: rd_(0)
 				, wd_(0)
 				, link_(INVALID_NETWORK_HANDLE)
 				, timestamp_(0)
-				, buffer_( (xgc_lpstr)malloc( capacity + __packet_buffer_guard_size * 2 ) )
 				, buffer_size_( capacity + __packet_buffer_guard_size * 2 )
 			{
 				*(xgc_uint64*) (buffer_) = 0xebebebebebebebebULL;
@@ -30,7 +27,6 @@ namespace xgc
 				, wd_(0)
 				, link_(lnk)
 				, timestamp_(0)
-				, buffer_( (xgc_lpstr)malloc( capacity + __packet_buffer_guard_size * 2 ) )
 				, buffer_size_( capacity + __packet_buffer_guard_size * 2 )
 			{
 				*(xgc_uint64*) (buffer_) = 0xebebebebebebebebULL;
@@ -47,12 +43,6 @@ namespace xgc
 				free( (void*)buffer_ );
 			}
 
-			XGC_INLINE xgc_void done( network_t h, xgc_lpvoid u )
-			{ 
-				link_ = h; 
-				stamptime();
-			}
-
 		private:
 			XGC_INLINE xgc_size rd()const{ return rd_; }
 			XGC_INLINE xgc_size wd()const{ return wd_; }
@@ -64,6 +54,8 @@ namespace xgc
 			XGC_INLINE xgc_lpstr wd_ptr(){ return base() + wd(); }
 
 		public:
+			enum mode{ swd = 1, srd = 2, srw = 3 };
+
 			///
 			/// \brief 获取缓冲区首地址
 			///
@@ -83,7 +75,7 @@ namespace xgc
 			///
 			XGC_INLINE xgc_lpcstr base()const
 			{
-				return buffer_+ __packet_buffer_guard_size;
+				return buffer_ + __packet_buffer_guard_size;
 			}
 
 			///
@@ -94,7 +86,7 @@ namespace xgc
 			///
 			XGC_INLINE xgc_size space()const
 			{
-				return buffer_size_ - wd_;
+				return buffer_size_ - __packet_buffer_guard_size - wd_;
 			}
 
 			///
@@ -205,19 +197,16 @@ namespace xgc
 			}
 
 			///
-			/// \brief 从缓冲区前端移除部分数据
+			/// \brief 封包结束
 			///
 			/// \author albert.xu
-			/// \date 2016/02/17 15:50
+			/// \date 2016/02/17 15:51
 			///
-			xgc_size popn( xgc_size n ) throw()
-			{
-				xgc_size cpy = XGC_MIN( region(), n );
-				memmove( base(), base() + n, region() - cpy );
 
-				rd_ -= XGC_MIN( rd_, cpy );
-				wd_ -= XGC_MIN( wd_, cpy );
-				return cpy;
+			XGC_INLINE xgc_void done( network_t h, xgc_lpvoid u )
+			{ 
+				link_ = h; 
+				stamptime();
 			}
 
 			///
@@ -226,7 +215,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 15:51
 			///
-			void stamptime()
+			XGC_INLINE void stamptime()
 			{
 				timestamp_ = time(&timestamp_);
 			}
@@ -298,27 +287,6 @@ namespace xgc
 			}
 
 			///
-			/// \brief 获取缓冲区关联的用户数据
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 15:52
-			///
-			virtual xgc_lpvoid userdata()const override
-			{ 
-				xgc_lpvoid pUserdata = xgc_nullptr;
-
-				// 再想想有什么好的方法
-				//auto pHandle = getHandleManager().FetchHandle( link_ );
-				//if( pHandle )
-				//{
-				//	pUserdata = pHandle->GetUserdata();
-				//	getHandleManager().FreeHandle( pHandle );
-				//}
-
-				return pUserdata;
-			}
-
-			///
 			/// \brief 获取缓冲区时间戳
 			///
 			/// \author albert.xu
@@ -335,9 +303,9 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 15:53
 			///
-			virtual xgc_void release() throw() override
+			virtual xgc_void freedom() throw() override
 			{ 
-				delete this; 
+				free( this );
 			}
 
 			///
@@ -348,7 +316,11 @@ namespace xgc
 			///
 			static XGC_INLINE asio_NetworkPacket* allocate( xgc_size alloc_size )
 			{
-				return XGC_NEW asio_NetworkPacket( alloc_size );
+				xgc_lpvoid ptr = malloc( sizeof( asio_NetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
+
+				new (ptr) asio_NetworkPacket( alloc_size );
+
+				return (asio_NetworkPacket*)ptr;
 			}
 
 			///
@@ -359,7 +331,11 @@ namespace xgc
 			///
 			static XGC_INLINE asio_NetworkPacket* allocate( xgc_size alloc_size, network_t handle )
 			{
-				return XGC_NEW asio_NetworkPacket( alloc_size, handle );
+				xgc_lpvoid ptr = malloc( sizeof( asio_NetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
+
+				new (ptr) asio_NetworkPacket( alloc_size, handle );
+
+				return (asio_NetworkPacket*)ptr;
 			}
 
 			///
@@ -372,7 +348,7 @@ namespace xgc
 			{
 				if( packet )
 				{
-					packet->release();
+					packet->freedom();
 					packet = xgc_nullptr;
 				}
 			}
@@ -389,7 +365,7 @@ namespace xgc
 			/// 缓冲区大小
 			xgc_size	buffer_size_;
 			/// 缓冲区指针
-			xgc_lpstr	buffer_;
+			xgc_char	buffer_[1];
 		};
 	};
 };

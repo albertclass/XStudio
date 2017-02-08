@@ -9,8 +9,11 @@ namespace xgc
 	{
 		using namespace asio;
 
-		static xgc_size send_buffer_size = 1024 * 256;
-		static xgc_size recv_buffer_size = 1024 * 1024;
+		static xgc_size send_buffer_size = 1024 * 64;
+		static xgc_size recv_buffer_size = 1024 * 64;
+
+		static xgc_size send_package_max = 1024 * 4;
+		static xgc_size recv_package_max = 1024;
 
 		// 设置发送缓冲大小
 		xgc_void set_send_buffer_size( xgc_size size )
@@ -26,18 +29,15 @@ namespace xgc
 				recv_buffer_size = size;
 		}
 
-		asio_Socket::asio_Socket( io_service& s, PacketProtocal* protocal, INetworkSession* holder, xgc_uint16 interval )
+		asio_Socket::asio_Socket( io_service& s, INetworkSession* holder, xgc_uint16 timeout )
 			: socket_( s )
 			, holder_( holder )
 			, handle_( INVALID_NETWORK_HANDLE )
 			, send_buffer_( send_buffer_size )
 			, recv_buffer_( recv_buffer_size )
-			, userdata_( xgc_nullptr )
 			, connect_status_( 0 )
-			, pingpang_inerval_( interval )
-			, pingpong_failed_( 0 )
+			, timeout_( timeout )
 			, timer_( s )
-			, protocal_( protocal )
 		{
 		}
 
@@ -104,12 +104,12 @@ namespace xgc
 				holder_->OnAccept( handle_, from );
 
 			socket_.async_read_some(
-				buffer( const_cast<xgc_lpstr>(recv_buffer_.base()), protocal_->header_space() ),
+				buffer( recv_buffer_.end(), recv_buffer_.space( recv_package_max ) ),
 				std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 
-			if( pingpang_inerval_ )
+			if( timeout_ )
 			{
-				timer_.expires_from_now( std::chrono::milliseconds( pingpang_inerval_ < 1000 ? 1000 : pingpang_inerval_.load() ) );
+				timer_.expires_from_now( std::chrono::milliseconds( timeout_ < 1000 ? 1000 : timeout_.load() ) );
 				timer_.async_wait( bind( &asio_Socket::handle_timer, shared_from_this() ) );
 			}
 		}
@@ -144,12 +144,12 @@ namespace xgc
 		{
 			if( !error )
 			{
-				recv_buffer_.wd_plus( translate );
+				recv_buffer_.push( translate );
 
-				xgc_size packet_length = protocal_->packet_length( recv_buffer_.base() );
+				xgc_size packet_length = holder_->OnParsePacket( (char*)recv_buffer_.begin(), recv_buffer_.length() );
 
 				// 已接收到数据包
-				while( packet_length && recv_buffer_.size() >= packet_length )
+				while( packet_length && recv_buffer_.length() >= packet_length )
 				{
 					// 超出接收缓冲的消息包说明该连接发生异常，中断连接。
 					if( packet_length >= recv_buffer_.capacity() )
@@ -162,18 +162,18 @@ namespace xgc
 						return;
 					}
 
-					filter_packet( recv_buffer_.base(), packet_length );
+					holder_->OnRecv( (char*)recv_buffer_.begin(), packet_length );
 
 					// 弹出已收的数据包
-					recv_buffer_.popn( packet_length );
+					recv_buffer_.pop( packet_length );
 
 					// 重新计算包长度，处理一个接收多个包的问题。
-					packet_length = protocal_->packet_length( recv_buffer_.base() );
+					packet_length = holder_->OnParsePacket( (char*)recv_buffer_.begin(), recv_buffer_.length() );
 				}
 
 				// 继续读取协议体
 				socket_.async_read_some(
-					buffer( const_cast<xgc_lpstr>(recv_buffer_.wd_ptr()), recv_buffer_.space() ),
+					buffer( recv_buffer_.end(), recv_buffer_.space( recv_package_max ) ),
 					std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 			}
 			else
@@ -185,48 +185,6 @@ namespace xgc
 			}
 		}
 
-		xgc_uint32 asio_Socket::filter_packet( xgc_lpstr data, xgc_size size )
-		{
-			// filter packet
-			xgc_uint32 ret = protocal_->packet_filter( data );
-			switch( ret )
-			{
-			case FILTER_SYSTEM_PING:
-				{
-					xgc_lpcstr c = data + protocal_->header_space();
-
-					xgc_char pong[64] = { 0 };
-					xgc_size length = protocal_->packet_system( EVENT_PONG, pong );
-					*(clock_t*) (pong + length) = clock();
-					length += sizeof( clock_t );
-
-					protocal_->packet_finial( pong, length );
-					send( pong, length );
-				}
-				break;
-			case FILTER_SYSTEM_PONG:
-				{
-					pingpong_ = clock() - *(clock_t*) (data + protocal_->header_space());
-
-					// clear failed_count so socket timeout value are reset;
-					pingpong_failed_ = 0;
-				}
-				break;
-			case FILTER_PASS:
-				{
-					if( holder_ )
-					{
-						holder_->OnRecv( data, size );
-					}
-				}
-				break;
-			case FILTER_REFUSE:
-				break;
-			}
-
-			return ret;
-		}
-
 		xgc_void asio_Socket::send( xgc_lpvoid data, xgc_size size, xgc_bool last /*= false*/ )
 		{
 			XGC_ASSERT( data && size );
@@ -234,7 +192,7 @@ namespace xgc
 			std::lock_guard< std::mutex > guard( send_buffer_lock );
 
 			// 数据放入发送缓冲
-			if( send_buffer_.putn( data, size ) != size )
+			if( send_buffer_.put( data, size ) != size )
 			{
 				if( holder_ )
 					holder_->OnError( NET_ERROR_SEND_BUFFER_FULL );
@@ -251,10 +209,10 @@ namespace xgc
 			}
 
 			// 发送和发送完成可能不在同一线程中
-			if( send_buffer_.size() == size )
+			if( send_buffer_.length() == size )
 			{
 				socket_.async_send(
-					buffer( send_buffer_.base(), send_buffer_.size() ),
+					buffer( send_buffer_.begin(), send_buffer_.length() ),
 					std::bind( &asio_Socket::handle_send, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 			}
 		}
@@ -267,19 +225,19 @@ namespace xgc
 
 				// 智能指针释放将导致消息缓冲被释放 
 				if( holder_ )
-					holder_->OnSend( send_buffer_.base(), translate );
+					holder_->OnSend( send_buffer_.begin(), translate );
 
-				send_buffer_.popn( translate );
+				send_buffer_.pop( translate );
 
 				// 要求断开连接
 				if( connect_status_ == 2 )
 				{
 					close();
 				}
-				else if( send_buffer_.size() )
+				else if( send_buffer_.length() )
 				{
 					socket_.async_send(
-						buffer( send_buffer_.base(), send_buffer_.size() ),
+						buffer( send_buffer_.begin(), send_buffer_.length() ),
 						std::bind( &asio_Socket::handle_send, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 				}
 			}
@@ -315,7 +273,7 @@ namespace xgc
 			}
 		}
 
-		xgc_uintptr asio_Socket::get_socket_info( xgc_int16 mask, xgc_byte * data )
+		xgc_ulong asio_Socket::get_socket_info( xgc_int16 mask, xgc_byte * data )
 		{
 			xgc_byte* ptr = data;
 			try
@@ -340,8 +298,8 @@ namespace xgc
 
 				if( mask & NET_LOCAL_PING )
 				{
-					*(xgc_uint32*) (ptr) = pingpong_;
-					ptr += sizeof( xgc_uint32 );
+					*(int*) (ptr) = holder_->GetPing();
+					ptr += sizeof(int);
 				}
 			}
 			catch( asio::error_code& ec )
@@ -350,35 +308,22 @@ namespace xgc
 				return -1;
 			}
 
-			return ptr - data;
+			return xgc_ulong(ptr - data);
 		}
 
 		xgc_void asio_Socket::handle_timer()
 		{
-			clock_t c = clock();
-
-			xgc_char buf[64] = { 0 };
-			// send ping message
-			xgc_size bytes = protocal_->packet_system( EVENT_PING, buf );
-			*(clock_t*) (buf + bytes) = c;
-			bytes += sizeof( clock_t );
-			protocal_->packet_finial( buf, bytes );
-
-			send( buf, bytes );
-
-			if( is_connected() && pingpang_inerval_ )
+			if( is_connected() && timeout_ )
 			{
-				timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( pingpang_inerval_.load(), 1000 ) ) );
-				timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this() ) );
-
 				// check socket timeout
-				if( pingpong_failed_ > 5 )
+				if( holder_->OnAlive() > 1 )
 				{
 					close();
 				}
 				else
 				{
-					pingpong_failed_++;
+					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( timeout_.load(), 1000 ) ) );
+					timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this() ) );
 				}
 			}
 		}

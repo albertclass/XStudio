@@ -7,11 +7,13 @@ namespace xgc
 	{
 		xgc_bool		(*InitNetwork)( int workthreads ) = 0;
 		xgc_void		(*FiniNetwork)() = 0;
-		xgc_uintptr     (*StartServer)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, MessageQueuePtr &queue_ptr );
-		xgc_uintptr     (*StartServerEx)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, create_handler_func call, xgc_uintptr param );
-		xgc_void		(*CloseServer)( xgc_uintptr server_h );
-		xgc_bool		(*ConnectServer)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
-		xgc_bool	    (*ConnectServerAsync)( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
+		xgc_uintptr     (*StartServer)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue ) = 0;
+		xgc_uintptr     (*StartServerEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator ) = 0;
+		xgc_void		(*CloseServer)( xgc_uintptr server_h ) = 0;
+		xgc_bool		(*Connect)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue ) = 0;
+		xgc_bool	    (*ConnectAsync)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue ) = 0;
+		xgc_bool		(*ConnectEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator ) = 0;
+		xgc_bool	    (*ConnectAsyncEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator ) = 0;
 		xgc_void		(*SendPacket)( network_t handle, xgc_lpvoid data, xgc_size size ) = 0;
 		xgc_void		(*SendLastPacket)( network_t handle, xgc_lpvoid data, xgc_size size ) = 0;
 		xgc_void		(*SendPackets)( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size ) = 0;
@@ -22,37 +24,33 @@ namespace xgc
 		XGC_DECLSPEC_THREAD xgc_lpvoid packet_base = 0;
 
 		#define HEADER_SIZE (4)
-		static xgc_size	asio_header_space()
+		xgc_size ProtocalDefault::header_space()
 		{
 			return 4;
 		}
 
-		static xgc_size	asio_packet_length( xgc_lpstr header )
+		xgc_size ProtocalDefault::packet_length( xgc_lpstr header )
 		{
 			// return packet length
 			return *(xgc_uint16*)header;
 		}
 
 		// filter your interesting packet, return event code
-		static xgc_uint32 asio_packet_filter( xgc_lpstr header )
+		xgc_uint32 ProtocalDefault::packet_filter( xgc_lpstr header )
 		{
 			if( header[2] == SYSTEM_MESSAGE_TYPE )
 			{
 				switch( header[3] )
 				{
-				case EVENT_PING:
-					return FILTER_SYSTEM_PING;
-					break;
-				case EVENT_PONG:
-					return FILTER_SYSTEM_PONG;
-					break;
+				case EVENT_PING: return FILTER_SYSTEM_PING;
+				case EVENT_PONG: return FILTER_SYSTEM_PONG;
 				}
 			}
 			return FILTER_PASS;
 		}
 
 		// return packet base address;
-		static xgc_size	asio_packet_system( xgc_byte event, xgc_lpstr header )
+		xgc_size ProtocalDefault::packet_system( xgc_byte event, xgc_lpstr header )
 		{
 			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
 			//switch( event )
@@ -71,41 +69,29 @@ namespace xgc
 			header[2] = SYSTEM_MESSAGE_TYPE;
 			header[3] = event;
 
-			return 4;
+			return header_space();
 		}
 
-		static xgc_size asio_packet_finial( xgc_lpstr header, xgc_size length )
+		xgc_size ProtocalDefault::packet_finial( xgc_lpstr header, xgc_size length )
 		{
 			*(xgc_uint16*)header = (xgc_uint16)length;
 			return length;
 		}
 
-		//static xgc_bool	asio_packet_verifiy( xgc_byte* header, xgc_uint32 size, xgc_lpvoid context)
-		//{
-		//	return true;
-		//}
-
-		//static xgc_uint32 asio_packet_decrypt( xgc_byte* header, xgc_uint32 size, xgc_lpvoid context)
-		//{
-		//	return true;
-		//}
-
-		//static xgc_uint32 asio_packet_encrypt( xgc_byte* header, xgc_uint32 size, xgc_lpvoid context)
-		//{
-		//	return true;
-		//}
-
-		NETBASE_API PacketProtocal ProtocalDefault = 
+		xgc_bool ProtocalDefault::packet_verifiy( xgc_lpstr data, xgc_size size, xgc_lpvoid context)
 		{
-			asio_header_space,
-			asio_packet_length,
-			asio_packet_filter,
-			asio_packet_system,
-			asio_packet_finial,
-			xgc_nullptr, //asio_packet_verifiy,
-			xgc_nullptr, //asio_packet_decrypt,
-			xgc_nullptr, //asio_packet_encrypt,
-		};
+			return true;
+		}
+
+		xgc_size ProtocalDefault::packet_decrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context)
+		{
+			return 0;
+		}
+
+		xgc_size ProtocalDefault::packet_encrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context)
+		{
+			return 0;
+		}
 
 		#define SETUP_API( PIX, FNAME )	XGC_VERIFY( FNAME = XGC_CONCATENATE_MACRO(PIX,FNAME) )
 		//--------------------------------------------------------//
@@ -124,8 +110,10 @@ namespace xgc
 				SETUP_API( asio_, StartServer );
 				SETUP_API( asio_, StartServerEx );
 				SETUP_API( asio_, CloseServer );
-				SETUP_API( asio_, ConnectServer );
-				SETUP_API( asio_, ConnectServerAsync );
+				SETUP_API( asio_, Connect );
+				SETUP_API( asio_, ConnectAsync );
+				SETUP_API( asio_, ConnectEx );
+				SETUP_API( asio_, ConnectAsyncEx );
 				SETUP_API( asio_, SendPacket );
 				SETUP_API( asio_, SendLastPacket );
 				SETUP_API( asio_, SendPackets );
@@ -168,10 +156,10 @@ namespace xgc
 				pfnProcessor functor = deliver_table[header->type][header->code];
 				if( functor )
 				{
-					functor( pPacketMsg->handle(), pPacketMsg->data(), pPacketMsg->size(), pPacketMsg->userdata() );
+					functor( pPacketMsg->handle(), pPacketMsg->data(), pPacketMsg->size() );
 				}
 
-				pPacketMsg->release();
+				pPacketMsg->freedom();
 				nProcess++;
 			}
 

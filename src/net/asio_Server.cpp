@@ -5,13 +5,12 @@ namespace xgc
 {
 	namespace net
 	{
-		asio_ServerBase::asio_ServerBase( io_service& service, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 time_invent, xgc_uint16 timeout )
+		asio_ServerBase::asio_ServerBase( io_service& service, xgc_uint16 acceptor_count, xgc_uint16 timeout, const pfnCreateHolder &creator )
 			: service_( service )
 			, acceptor_( service_, ip::tcp::v4() )
-			, time_invent_( time_invent )
 			, timeout_( timeout )
 			, acceptor_count_( acceptor_count )
-			, protocal_( &protocal )
+			, creator_( creator )
 		{
 			XGC_ASSERT( acceptor_count_ );
 		}
@@ -71,48 +70,8 @@ namespace xgc
 
 		xgc_void asio_ServerBase::post_accept()
 		{
-			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, protocal_, CreateHolder( protocal_ ), time_invent_ );
-			acceptor_.async_accept( pSocket->socket(), std::bind( &asio_Server::handle_accept, this, pSocket, std::placeholders::_1 ) );
-		}
-	}
-
-	//----------------------------------------------------------------
-	namespace net
-	{
-		//////////////////////////////////////////////////////////////////////////
-		// Server
-
-		asio_Server::asio_Server( io_service& service, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 ping_invent, xgc_uint16 timeout, MessageQueuePtr queue_ptr )
-			: asio_ServerBase( service, protocal, acceptor_count, ping_invent, timeout )
-			, queue_ptr_( queue_ptr )
-		{
-		}
-
-		asio_Server::~asio_Server()
-		{
-		}
-
-		INetworkSession* asio_Server::CreateHolder( PacketProtocal* protocal )
-		{
-			return XGC_NEW CServerSession( queue_ptr_, protocal );
-		}
-
-		//////////////////////////////////////////////////////////////////////////
-		// ServerEx
-		asio_ServerEx::asio_ServerEx( io_service& service, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 ping_invent, xgc_uint16 timeout, create_handler_func call, xgc_uintptr param )
-			: asio_ServerBase( service, protocal, acceptor_count, ping_invent, timeout )
-			, call_( call )
-			, param_( param )
-		{
-		}
-
-		asio_ServerEx::~asio_ServerEx()
-		{
-		}
-
-		INetworkSession* asio_ServerEx::CreateHolder( PacketProtocal* protocal )
-		{
-			return call_( param_, protocal_ );
+			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, creator_(), timeout_ );
+			acceptor_.async_accept( pSocket->socket(), std::bind( &asio_ServerBase::handle_accept, this, pSocket, std::placeholders::_1 ) );
 		}
 	}
 }

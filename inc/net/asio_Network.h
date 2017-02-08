@@ -77,7 +77,7 @@ namespace xgc
 		/// 
 		/// \return server 句柄，关闭服务器时需要提供相应句柄
 		/// 
-		xgc_uintptr asio_StartServer( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, MessageQueuePtr &queue_ptr );
+		xgc_uintptr asio_StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
 
 		/// 
 		/// 
@@ -86,7 +86,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 十一月 2015
 		/// 
-		xgc_uintptr asio_StartServerEx( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, create_handler_func call, xgc_uintptr param );
+		xgc_uintptr asio_StartServerEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
 
 		///
 		/// \brief 关闭服务器
@@ -102,7 +102,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/17 16:00
 		///
-		xgc_bool asio_ConnectServer( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
+		xgc_bool asio_Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
 
 		///
 		/// \brief 异步连接到服务器
@@ -110,8 +110,23 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/17 16:00
 		///
-		xgc_bool asio_ConnectServerAsync( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
+		xgc_bool asio_ConnectAsync( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue_ptr );
 
+		///
+		/// \brief 连接到服务器
+		///
+		/// \author albert.xu
+		/// \date 2016/02/17 16:00
+		///
+		xgc_bool asio_ConnectEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
+
+		///
+		/// \brief 异步连接到服务器
+		///
+		/// \author albert.xu
+		/// \date 2016/02/17 16:00
+		///
+		xgc_bool asio_ConnectAsyncEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
 		///
 		/// \brief 发送消息包
 		///

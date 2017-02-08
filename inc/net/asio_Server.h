@@ -34,7 +34,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			asio_ServerBase( io_service& service_, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 time_invent, xgc_uint16 timeout );
+			asio_ServerBase( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, const pfnCreateHolder & creator );
 
 			///
 			/// \brief 析构
@@ -77,62 +77,19 @@ namespace xgc
 			///
 			xgc_void post_accept();
 
-		private:
+		protected:
+			io_service&			service_;
+			ip::tcp::acceptor	acceptor_;
+			xgc_uint16			timeout_;
+			xgc_uint16			acceptor_count_;
 			///
 			/// \brief 创建网络会话
 			///
 			/// \author albert.xu
 			/// \date 2016/02/26 15:48
 			///
-			virtual INetworkSession* CreateHolder( PacketProtocal* protocal ) = 0;
-		protected:
-			io_service&			service_;
-			ip::tcp::acceptor	acceptor_;
-			xgc_uint16			time_invent_;
-			xgc_uint16			timeout_;
-			xgc_uint16			acceptor_count_;
-			PacketProtocal*		protocal_;
+			pfnCreateHolder		creator_;
 		};
-
-		///
-		/// \brief 一般服务器对象
-		///
-		/// \author albert.xu
-		/// \date 2016/02/26 15:49
-		///
-		class asio_Server : public asio_ServerBase
-		{
-		public:
-			asio_Server( io_service& service, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 ping_invent, xgc_uint16 timeout, MessageQueuePtr queue_ptr );
-			~asio_Server();
-
-		protected:
-			virtual INetworkSession* CreateHolder( PacketProtocal* protocal );
-
-		private:
-			MessageQueuePtr	queue_ptr_;
-		};
-
-		///
-		/// \brief 高级服务器对象
-		///
-		/// \author albert.xu
-		/// \date 2016/02/26 15:50
-		///
-		class asio_ServerEx	:	public asio_ServerBase
-		{
-		public:
-			asio_ServerEx( io_service& service, PacketProtocal& protocal, xgc_uint16 acceptor_count, xgc_uint16 ping_invent, xgc_uint16 timeout, create_handler_func call, xgc_uintptr param );
-			~asio_ServerEx();
-
-		protected:
-			virtual INetworkSession* CreateHolder( PacketProtocal* protocal );
-
-		private:
-			create_handler_func call_;
-			xgc_uintptr param_;
-		};
-
 	}
 }
 #endif // _ASIO_SERVER_H_

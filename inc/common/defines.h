@@ -169,7 +169,11 @@ typedef xgc_lpvoid			xgc_handle;
 #define XGC_ADD_FLAGS(v,flags)	(((v)|(flags)))
 #define XGC_CLR_FLAGS(v,flags)	(((v)&(~(flags))))
 
-#define XGC_ALIGNOF(_Size, _Alignment) (((_Size) + (_Alignment) - 1) & ~((_Alignment)-1))
+#define XGC_ALIGN_MEM(x, align) (((x) + (align) - 1) & ~((align)-1))
+
+#define XGC_ALIGN_UP(x, align) ((x)&(-align))
+#define XGC_ALIGN_DOWN(x, align) (-(-(x)&-(align)))
+
 #define XGC_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
 
 #define XGC_CHECK_ARRAY_INDEX( _Array, _Index ) (_Index < XGC_COUNTOF(_Array) && _Index >= 0)

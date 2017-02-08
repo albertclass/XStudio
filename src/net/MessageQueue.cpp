@@ -23,7 +23,7 @@ namespace xgc
 		{
 			// 清除所有消息
 			for( auto it : mPacketList )
-				it->release();
+				it->freedom();
 		}
 
 		xgc_bool CMessageQueue::PopMessage( INetPacket** pPacket )
@@ -54,7 +54,7 @@ namespace xgc
 
 			if( pPacket->length() < 2 )
 			{
-				pPacket->release();
+				pPacket->freedom();
 				return;
 			}
 
@@ -76,6 +76,5 @@ namespace xgc
 		{
 			delete this;
 		}
-
 	}
 }

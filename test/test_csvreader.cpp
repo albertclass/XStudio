@@ -26,6 +26,8 @@ static int testmain( int agrc, char * argv[] )
 
 		output( "\n" );
 	}
+
+	return 0;
 } 
 
 UNIT_TEST( "csv_reader", "csv read test", testmain );

@@ -10,9 +10,7 @@
 ///
 ///////////////////////////////////////////////////////////////
 #include "asio_Header.h"
-
-#include "ServerSession.h"
-#include "ClientSession.h"
+#include "NetSession.h"
 
 namespace xgc
 {
@@ -75,26 +73,38 @@ namespace xgc
 			getNetwork().exit();
 		}
 
-		xgc_uintptr asio_StartServer( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, MessageQueuePtr &queue_ptr )
+		xgc_uintptr asio_StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
 		{
-			if( queue_ptr == xgc_nullptr )
+			if( queue == xgc_nullptr )
 			{
-				queue_ptr = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
+				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
 			}
 
-			if( queue_ptr == xgc_nullptr )
+			if( queue == xgc_nullptr )
 				return 0;
 
-			asio_ServerBase *server = XGC_NEW asio_Server( getNetwork().Ref(), protocal, acceptor_count, ping_invent, timeout, queue_ptr );
+			asio_ServerBase *server = XGC_NEW asio_ServerBase( 
+				getNetwork().Ref(), 
+				10,
+				timeout,
+				[queue](){
+					return XGC_NEW CServerSession( queue );
+			});
+
 			if( server )
 				server->StartServer( address, port );
 
 			return (xgc_uintptr) server;
 		}
 
-		xgc_uintptr asio_StartServerEx( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 ping_invent, xgc_uint16 timeout, xgc_uint16 acceptor_count, create_handler_func call, xgc_uintptr param )
+		xgc_uintptr asio_StartServerEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
 		{
-			asio_ServerBase *server = XGC_NEW asio_ServerEx( getNetwork().Ref(), protocal, acceptor_count, ping_invent, timeout, call, param );
+			asio_ServerBase *server = XGC_NEW asio_ServerBase( 
+				getNetwork().Ref(), 
+				10, 
+				timeout,
+				creator );
+
 			if( server )
 				server->StartServer( address, port );
 
@@ -109,14 +119,14 @@ namespace xgc
 			SAFE_DELETE( server );
 		}
 
-		xgc_bool asio_ConnectServer( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr )
+		xgc_bool asio_Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
 		{
-			if( queue_ptr == xgc_nullptr )
+			if( queue == xgc_nullptr )
 			{
-				queue_ptr = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
+				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
 			}
 
-			if( !Connect( getNetwork().Ref(), address, port, &protocal, queue_ptr, timeout ) )
+			if( !asio_Connect( getNetwork().Ref(), address, port, timeout, queue ) )
 			{
 				return false;
 			}
@@ -124,14 +134,29 @@ namespace xgc
 			return true;
 		}
 
-		xgc_bool asio_ConnectServerAsync( xgc_lpcstr address, xgc_uint16 port, PacketProtocal &protocal, xgc_uint16 timeout, MessageQueuePtr &queue_ptr )
+		xgc_bool asio_ConnectAsync( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
 		{
-			if( queue_ptr == xgc_nullptr )
+			if( queue == xgc_nullptr )
 			{
-				queue_ptr = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
+				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
 			}
 
-			return ConnectAsync( getNetwork().Ref(), address, port, &protocal, queue_ptr, timeout );
+			return asio_ConnectAsync( getNetwork().Ref(), address, port, timeout, queue );
+		}
+
+		xgc_bool asio_ConnectEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
+		{
+			if( !asio_ConnectEx( getNetwork().Ref(), address, port, timeout, creator ) )
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		xgc_bool asio_ConnectAsyncEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
+		{
+			return asio_ConnectAsyncEx( getNetwork().Ref(), address, port, timeout, creator );
 		}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -265,14 +290,14 @@ namespace xgc
 				case Operator_QueryHandleInfo:
 				{
 					Param_QueryHandleInfo* pParam = (Param_QueryHandleInfo*) param;
-					xgc_uintptr ret = -1;
+
 					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
 					if( pSocket )
 					{
-						ret = pSocket->get_socket_info( pParam->mask, pParam->data );
+						return pSocket->get_socket_info( pParam->mask, pParam->data );
 					}
 
-					return ret;
+					return 0;
 				}
 				break;
 				case Operator_SetBufferSize:
@@ -285,6 +310,5 @@ namespace xgc
 			}
 			return 0;
 		}
-
 	}
 }

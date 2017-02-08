@@ -60,11 +60,7 @@ namespace xgc
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )
 		{
-			if( handle >= XGC_COUNTOF( handles ) )
-				return xgc_nullptr;
-
-			if( xgc_nullptr == handles[handle] )
-				return xgc_nullptr;
+			XGC_ASSERT_RETURN( handle < XGC_COUNTOF( handles ), xgc_nullptr );
 
 			return handles[handle];
 		}

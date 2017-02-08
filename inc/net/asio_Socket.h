@@ -18,7 +18,7 @@ namespace xgc
 		class asio_Socket : public std::enable_shared_from_this< asio_Socket >
 		{
 		public:
-			asio_Socket( io_service& s, PacketProtocal* protocal, INetworkSession* holder, xgc_uint16 interval );
+			asio_Socket( io_service& s, INetworkSession* holder, xgc_uint16 timeout );
 
 			~asio_Socket();
 
@@ -65,7 +65,7 @@ namespace xgc
 			* \author albert.xu
 			* \date 十一月 2015
 			*/
-			xgc_uintptr get_socket_info( xgc_int16 mask, xgc_byte* data );
+			xgc_ulong get_socket_info( xgc_int16 mask, xgc_byte* data );
 		private:
 			/*!
 			 *
@@ -112,29 +112,15 @@ namespace xgc
 			 */
 			xgc_void handle_timer();
 
-			/*!
-			 *
-			 * \brief 过滤包
-			 *
-			 * \author albert.xu
-			 * \date 十一月 2015
-			 */
-			xgc_uint32 filter_packet( xgc_lpstr, xgc_size size );
-
 		public:
 			ip::tcp::socket& socket()
 			{
 				return socket_;
 			}
 
-			PacketProtocal*	get_protocal()const
-			{
-				return protocal_;
-			}
-
 			xgc_lpvoid	get_userdata()const
 			{
-				return userdata_;
+				return holder_->GetUserdata();
 			}
 
 			network_t	get_handler()const
@@ -149,7 +135,7 @@ namespace xgc
 
 			xgc_void set_userdata( xgc_lpvoid userdata )
 			{
-				userdata_ = userdata; holder_->SetUserdata( userdata );
+				holder_->SetUserdata( userdata );
 			}
 
 			xgc_bool is_connected()const
@@ -165,18 +151,14 @@ namespace xgc
 		private:
 			ip::tcp::socket		socket_;            // 套接字
 			std::mutex			send_buffer_lock;   // 发送缓冲区锁
-			asio_NetworkPacket	send_buffer_;       // 发送缓冲
-			asio_NetworkPacket	recv_buffer_;       // 接收缓冲
+			asio_NetBuffer		send_buffer_;       // 发送缓冲
+			asio_NetBuffer		recv_buffer_;       // 接收缓冲
 
-			network_t			handle_;            // 网络句柄
-			std::atomic< xgc_uint32	> pingpong_;		 // ping值
-			std::atomic< xgc_uint16	> pingpang_inerval_; // 心跳发送间隔
-			std::atomic< xgc_uint16	> pingpong_failed_;  // 失败次数
+			std::atomic< xgc_uint16	> timeout_; // 心跳发送间隔
 			std::atomic< xgc_uint16 > connect_status_;   // 当前连接状态 0 - 未连接， 1 - 已连接， 2 - 等待关闭
-			xgc_lpvoid			userdata_;          // 用户数据
+			network_t			handle_;            // 网络句柄
 			xgc_lpvoid			from_;			    // 来自哪里
 			asio::steady_timer	timer_;			    // 保活定时器
-			PacketProtocal		*protocal_;		    // 协议句柄
 			INetworkSession		*holder_;           // 数据处理句柄
 		};
 

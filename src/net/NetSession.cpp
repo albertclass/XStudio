@@ -1,49 +1,29 @@
 #include "asio_Header.h"
-#include "ServerSession.h"
+#include "NetSession.h"
 
 namespace xgc
 {
 	namespace net
 	{
-		CServerSession::CServerSession( MessageQueuePtr queue )
-			: queue_( queue )
+		CSession::CSession( MessageQueuePtr Queue )
+			: queue_( Queue )
 		{
 		}
 
-		CServerSession::~CServerSession()
+		CSession::~CSession()
 		{
 		}
 
-		int CServerSession::OnParsePacket( const void * data, xgc_size size )
+		int CSession::OnParsePacket( const void * data, xgc_size size )
 		{
 			return (int)packet_length((char*)data);
-		}
-
-		///function	:	新的远端连接成功时的处理函数
-		///param	:	new_handle	新连接的套接字
-		///return	:	0	成功	-1 失败
-		int CServerSession::OnAccept( network_t new_handle, xgc_lpvoid from )
-		{
-			if( queue_ )
-			{
-				handle_ = new_handle;
-				asio_NetworkPacket* pPacket = asio_NetworkPacket::allocate( 32, handle_ );
-
-				pPacket->reset( packet_system( EVENT_ACCEPT, pPacket->base() ) );
-				pPacket->putn( (const xgc_byte*)&from, sizeof(xgc_uintptr) );
-				packet_finial( pPacket->base(), pPacket->length() );
-
-				queue_->PushMessage( pPacket );
-			}
-
-			return 0;
 		}
 
 		///function	:	成功接受到网络数据包后提交到iocp上层应用处理的函数
 		///param	:	data	接受到的数据	在中len范围内可靠有效
 		///param	:	len		接受到数据的长度	此数据由iocp保证其真实性。
 		///return	:	0	成功	-1 失败
-		int CServerSession::OnRecv( const void *data, size_t size )
+		int CSession::OnRecv( const void *data, xgc_size size )
 		{
 			// filter packet
 			xgc_uint32 ret = packet_filter( (char*)data );
@@ -87,19 +67,10 @@ namespace xgc
 			return 0;
 		}
 
-		///function	:	成功发送网络数据包后给iocp上层处理的函数，目前暂时未使用
-		///param	:	data	成功发送的数据
-		///param	:	len		成功发送的数据长度
-		///return	:	0	成功	-1 失败
-		int CServerSession::OnSend( const void *data, size_t size )
-		{
-			return 0;
-		}
-
 		///function	:	连接关闭时的处理函数。重载此函数时需在做完应用需要做的事情后将连接删除或重置
 		///param	:	无
 		///return	:	0	成功	-1 失败
-		int CServerSession::OnClose()
+		int CSession::OnClose()
 		{
 			if( queue_ )
 			{
@@ -114,26 +85,35 @@ namespace xgc
 			return 0;
 		}
 
+		///function	:	成功发送网络数据包后给iocp上层处理的函数，目前暂时未使用
+		///param	:	data	成功发送的数据
+		///param	:	len		成功发送的数据长度
+		///return	:	0	成功	-1 失败
+		int CSession::OnSend( const void *data, xgc_size size )
+		{
+			return 0;
+		}
+
 		///function	:	iocp捕获到错误并提供给应用的处理机会
 		///param	:	error	错误代码
 		///return	:	0	成功	-1 失败
-		int CServerSession::OnError( int error )
+		int CSession::OnError( int error )
 		{
 			if( queue_ )
 			{
 				asio_NetworkPacket* pPacket = asio_NetworkPacket::allocate( 32, handle_ );
 
 				pPacket->reset( packet_system( EVENT_ERROR, pPacket->base() ) );
-				pPacket->putn( (const xgc_byte*)&error, sizeof(error) );
-
+				pPacket->putn( (const xgc_byte*) &error, sizeof( error ) );
 				packet_finial( pPacket->base(), pPacket->length() );
 
 				queue_->PushMessage( pPacket );
 			}
+
 			return 0;
 		}
 
-		int CServerSession::OnAlive()
+		int CSession::OnAlive()
 		{
 			xgc_char buf[256] = { 0 };
 			// send ping message
@@ -151,6 +131,66 @@ namespace xgc
 
 			// timeout
 			return (int)pingfailed_++;
+		}
+
+		///////////////////////////////////////////////////////////////////////////
+		CClientSession::CClientSession( MessageQueuePtr QueuePtr )
+			: CSession( QueuePtr )
+		{
+		}
+
+		CClientSession::~CClientSession()
+		{
+		}
+
+		///function	:	新的远端连接成功时的处理函数
+		///param	:	new_handle	新连接的套接字
+		///return	:	0	成功	-1 失败
+		int CClientSession::OnAccept( network_t new_handle, xgc_lpvoid from )
+		{
+			if( queue_ )
+			{
+				handle_ = new_handle;
+				asio_NetworkPacket* pPacket = asio_NetworkPacket::allocate( 32, new_handle );
+
+				pPacket->reset( packet_system( EVENT_CONNECT, pPacket->base() ) );
+				pPacket->putn( (const xgc_byte*) &from, sizeof( xgc_lpvoid ) );
+				packet_finial( pPacket->base(), pPacket->length() );
+
+				queue_->PushMessage( pPacket );
+			}
+
+			return 0;
+		}
+
+		///////////////////////////////////////////////////////////////////////////
+		CServerSession::CServerSession( MessageQueuePtr QueuePtr )
+			: CSession( QueuePtr )
+		{
+		}
+
+		CServerSession::~CServerSession()
+		{
+		}
+
+		///function	:	新的远端连接成功时的处理函数
+		///param	:	new_handle	新连接的套接字
+		///return	:	0	成功	-1 失败
+		int CServerSession::OnAccept( network_t new_handle, xgc_lpvoid from )
+		{
+			if( queue_ )
+			{
+				handle_ = new_handle;
+				asio_NetworkPacket* pPacket = asio_NetworkPacket::allocate( 32, handle_ );
+
+				pPacket->reset( packet_system( EVENT_ACCEPT, pPacket->base() ) );
+				pPacket->putn( (const xgc_byte*)&from, sizeof(xgc_uintptr) );
+				packet_finial( pPacket->base(), pPacket->length() );
+
+				queue_->PushMessage( pPacket );
+			}
+
+			return 0;
 		}
 	}
 }

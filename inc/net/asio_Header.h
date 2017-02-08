@@ -26,12 +26,13 @@
 
 #include "Netbase.h"
 #include "MessageQueue.h"
+#include "asio_NetBuffer.h"
 #include "asio_NetworkPacket.h"
 #include "asio_Socket.h"
 #include "asio_SocketMgr.h"
 #include "asio_Network.h"
 #include "asio_Server.h"
-#include "asio_AsyncConnector.h"
+#include "asio_Connector.h"
 
 using namespace asio;
 #define REALSIZE( S ) (((S+sizeof(xgc_uint32))&(~0x3ff))+0x400)
