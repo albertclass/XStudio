@@ -8,7 +8,9 @@
 #ifndef __DATABASE_H
 #define __DATABASE_H
 
+#include "config.h"
 #include <functional>
+#include <memory>
 
 namespace xgc
 {
@@ -72,7 +74,7 @@ namespace xgc
 		typedef class CMySQLConnection	CMySQLConnection;
 		typedef class CMySqlDatabase	CMySqlDatabase;
 
-		struct sql_recordset_deleter
+		struct DATABASE_API sql_recordset_deleter
 		{
 			sql_recordset_deleter() _NOEXCEPT
 			{	// default construct
@@ -94,14 +96,14 @@ namespace xgc
 		typedef function< respcall( sql_connection conn ) > postcall;
 
 		///定义ExecuteEx的返回值
-		enum sql_result
+		enum DATABASE_API sql_result
 		{
 			sql_failed = -1,
 			sql_success = 0,
 			sql_empty = 1,
 		};
 
-		struct connection_cfg
+		struct DATABASE_API connection_cfg
 		{
 			xgc_lpcstr host;
 			xgc_uint16 port;
@@ -116,79 +118,79 @@ namespace xgc
 		/// [1/17/2014 albert.xu]
 		/// 初始化数据库模块
 		///
-		xgc_bool sql_init_library();
+		DATABASE_API xgc_bool sql_init_library();
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 清理数据库模块
 		///
-		xgc_void sql_fini_library();
+		DATABASE_API xgc_void sql_fini_library();
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 获取数据库连接的最后一次错误码
 		///
-		xgc_uint32 get_error_code( sql_connection conn );
+		DATABASE_API xgc_uint32 get_error_code( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 获取数据库连接的最后一次错误信息
 		///
-		xgc_lpcstr get_error_info( sql_connection conn );
+		DATABASE_API xgc_lpcstr get_error_info( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 同步连接数据库,并取得数据库句柄,失败返回 0
 		///
-		sql_connection connect( connection_cfg cfg, xgc_bool immediately = true );
+		DATABASE_API sql_connection connect( connection_cfg cfg, xgc_bool immediately = true );
 
 		///
 		/// 主动重连数据库
 		/// [12/2/2014] create by albert.xu
 		///
-		xgc_bool reconnect( sql_connection conn );
+		DATABASE_API xgc_bool reconnect( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 主动断开数据库连接
 		///
-		xgc_void disconnect( sql_connection conn );
+		DATABASE_API xgc_void disconnect( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 执行一个数据库查询
 		///
-		xgc_bool execute_sql( sql_connection conn, xgc_lpcstr cmd );
+		DATABASE_API xgc_bool execute_sql( sql_connection conn, xgc_lpcstr cmd );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 执行一个数据库查询,并返回结果集
 		///
-		sql_result execute_sql_rc( sql_connection conn, xgc_lpcstr cmd, sql_recordset &rs );
+		DATABASE_API sql_result execute_sql_rc( sql_connection conn, xgc_lpcstr cmd, sql_recordset &rs );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 获取影响的记录条数
 		///
-		xgc_size affect_rows( sql_connection conn );
+		DATABASE_API xgc_size affect_rows( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 获取下一个结果集,并返回结果集
 		///
-		xgc_bool next_sql( sql_connection conn );
+		DATABASE_API xgc_bool next_sql( sql_connection conn );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 获取下一个结果集,并返回结果集
 		///
-		sql_result next_sql_rc( sql_connection conn, sql_recordset &rs );
+		DATABASE_API sql_result next_sql_rc( sql_connection conn, sql_recordset &rs );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 查询数据库连接状态
 		///
-		xgc_bool connected( sql_connection conn );
+		DATABASE_API xgc_bool connected( sql_connection conn );
 
 		/*!
 		 * @brief 转义字符串，使之可用于MYSQL查询
@@ -200,7 +202,7 @@ namespace xgc
 		 * @author guqiwei.weir
 		 * @date [6/16/2014]
 		 */
-		xgc_size escape_string( sql_connection conn, xgc_lpcstr src, xgc_size src_size, xgc_lpstr dst, xgc_size dst_size );
+		DATABASE_API xgc_size escape_string( sql_connection conn, xgc_lpcstr src, xgc_size src_size, xgc_lpstr dst, xgc_size dst_size );
 
 		template< xgc_size S >
 		xgc_size escape_string( sql_connection conn, xgc_lpcstr src, xgc_size src_size, xgc_char( &dst )[S] )
@@ -223,77 +225,77 @@ namespace xgc
 		//////////////////////////////////////////////////////////////////////////
 		// recordset_t
 		//////////////////////////////////////////////////////////////////////////
-		xgc_void	release( sql_recordset &rs );
-		xgc_bool	movefirst( sql_recordset &rs );
-		xgc_bool	movenext( sql_recordset &rs );
-		xgc_bool	movelast( sql_recordset &rs );
-		xgc_bool	eof( sql_recordset &rs );
-		xgc_uint64	recordcount( sql_recordset &rs );
-		xgc_uint32	fieldcount( sql_recordset &rs );
-		xgc_uint16	fieldtype( sql_recordset &rs, xgc_uint32 index );
-		xgc_uint16	fieldtype( sql_recordset &rs, xgc_lpcstr name );
-		xgc_uint32	fieldindex( sql_recordset &rs, xgc_lpcstr name );
-		xgc_uint32	fieldflags( sql_recordset &rs, xgc_uint32 index, xgc_uint32 test );
-		xgc_uint32	fieldflags( sql_recordset &rs, xgc_lpcstr name, xgc_uint32 test );
+		DATABASE_API xgc_void		release( sql_recordset &rs );
+		DATABASE_API xgc_bool		movefirst( sql_recordset &rs );
+		DATABASE_API xgc_bool		movenext( sql_recordset &rs );
+		DATABASE_API xgc_bool		movelast( sql_recordset &rs );
+		DATABASE_API xgc_bool		eof( sql_recordset &rs );
+		DATABASE_API xgc_uint64	recordcount( sql_recordset &rs );
+		DATABASE_API xgc_uint32	fieldcount( sql_recordset &rs );
+		DATABASE_API xgc_uint16	fieldtype( sql_recordset &rs, xgc_uint32 index );
+		DATABASE_API xgc_uint16	fieldtype( sql_recordset &rs, xgc_lpcstr name );
+		DATABASE_API xgc_uint32	fieldindex( sql_recordset &rs, xgc_lpcstr name );
+		DATABASE_API xgc_uint32	fieldflags( sql_recordset &rs, xgc_uint32 index, xgc_uint32 test );
+		DATABASE_API xgc_uint32	fieldflags( sql_recordset &rs, xgc_lpcstr name, xgc_uint32 test );
 
 		// 字段长度
-		xgc_size	field_length( sql_recordset &rs, xgc_uint32 index );
-		xgc_size	field_length( sql_recordset &rs, xgc_lpcstr name );
+		DATABASE_API xgc_size	field_length( sql_recordset &rs, xgc_uint32 index );
+		DATABASE_API xgc_size	field_length( sql_recordset &rs, xgc_lpcstr name );
 
 		// 所有字段都可以返回为string
-		xgc_lpcstr	field_string( sql_recordset &rs, xgc_uint32 index );
+		DATABASE_API xgc_lpcstr	field_string( sql_recordset &rs, xgc_uint32 index );
 
 		///
 		/// [1/20/2014 albert.xu]
 		/// 数值类型字段读取
 		///
-		xgc_long	field_integer( sql_recordset &rs, xgc_uint32 index, xgc_long _default );
-		xgc_ulong	field_unsigned( sql_recordset &rs, xgc_uint32 index, xgc_ulong _default );
+		DATABASE_API xgc_long	field_integer( sql_recordset &rs, xgc_uint32 index, xgc_long _default );
+		DATABASE_API xgc_ulong	field_unsigned( sql_recordset &rs, xgc_uint32 index, xgc_ulong _default );
 
 		///
 		/// [1/20/2014 albert.xu]
 		/// 超大数值类型字段读取
 		///
-		xgc_int64	field_longlong( sql_recordset &rs, xgc_uint32 index, xgc_int64 _default );
-		xgc_uint64	field_ulonglong( sql_recordset &rs, xgc_uint32 index, xgc_uint64 _default );
+		DATABASE_API xgc_int64	field_longlong( sql_recordset &rs, xgc_uint32 index, xgc_int64 _default );
+		DATABASE_API xgc_uint64	field_ulonglong( sql_recordset &rs, xgc_uint32 index, xgc_uint64 _default );
 
 		///
 		/// [1/20/2014 albert.xu]
 		/// bit类型字段读取
 		///
-		xgc_bool	field_bool( sql_recordset &rs, xgc_uint32 index, xgc_bool _default );
+		DATABASE_API xgc_bool	field_bool( sql_recordset &rs, xgc_uint32 index, xgc_bool _default );
 
 		///
 		/// [1/20/2014 albert.xu]
 		/// 浮点类型字段读取
 		///
-		xgc_real32	field_float( sql_recordset &rs, xgc_uint32 index, xgc_real32 _default );
-		xgc_real64	field_double( sql_recordset &rs, xgc_uint32 index, xgc_real64 _default );
-		xgc_real64	field_decimal( sql_recordset &rs, xgc_uint32 index, xgc_real64 _default );
+		DATABASE_API xgc_real32	field_float( sql_recordset &rs, xgc_uint32 index, xgc_real32 _default );
+		DATABASE_API xgc_real64	field_double( sql_recordset &rs, xgc_uint32 index, xgc_real64 _default );
+		DATABASE_API xgc_real64	field_decimal( sql_recordset &rs, xgc_uint32 index, xgc_real64 _default );
 
 		///
 		/// [1/20/2014 albert.xu]
 		/// 二进制类型字段读取
 		///
-		xgc_lpvoid	field_binary( sql_recordset &rs, xgc_uint32 index, xgc_lpvoid data, xgc_size length );
+		DATABASE_API xgc_lpvoid	field_binary( sql_recordset &rs, xgc_uint32 index, xgc_lpvoid data, xgc_size length );
 
 		///
 		/// timestamp 类型
 		/// [12/17/2014] create by jianglei.kinly
 		///
-		xgc_lpcstr field_timestamp( sql_recordset &rs, xgc_uint32 index );
+		DATABASE_API xgc_lpcstr field_timestamp( sql_recordset &rs, xgc_uint32 index );
 
 		///
 		/// 转了unix_timestamp的类型
 		/// [12/17/2014] create by jianglei.kinly
 		///
-		xgc_time64 field_unix_timestamp( sql_recordset &rs, xgc_uint32 index, xgc_time64 _default );
+		DATABASE_API xgc_time64 field_unix_timestamp( sql_recordset &rs, xgc_uint32 index, xgc_time64 _default );
 
 		///
 		/// [1/17/2014 albert.xu]
 		/// 设置日志接口, 默认为printf
 		///
-		xgc_void set_logger( xgc_int32( *pfn_logger )(xgc_lpcstr fmt, ...) );
+		DATABASE_API xgc_void set_logger( xgc_int32( *pfn_logger )(xgc_lpcstr fmt, ...) );
 
 		//////////////////////////////////////////////////////////////////////////
 		// service
@@ -304,9 +306,9 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/18 17:31
 		///
-		sql_database async_connect( connection_cfg cfg );
+		DATABASE_API sql_database async_connect( connection_cfg cfg );
 
-		sql_database sync_connect( connection_cfg cfg );
+		DATABASE_API sql_database sync_connect( connection_cfg cfg );
 
 		///
 		/// \brief 获取连接对象
@@ -314,7 +316,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/18 17:34
 		///
-		xgc_size async_escape_string( sql_database s, xgc_lpcstr data, xgc_int32 data_size, xgc_lpstr buffer, xgc_size buffer_size );
+		DATABASE_API xgc_size async_escape_string( sql_database s, xgc_lpcstr data, xgc_int32 data_size, xgc_lpstr buffer, xgc_size buffer_size );
 
 		///
 		/// \brief 销毁数据库服务
@@ -322,9 +324,9 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/18 17:31
 		///
-		xgc_void async_close( sql_database s );
+		DATABASE_API xgc_void async_close( sql_database s );
 
-		xgc_void sync_close( sql_database s );
+		DATABASE_API xgc_void sync_close( sql_database s );
 
 		///
 		/// \brief 投递数据库请求
@@ -332,7 +334,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/18 17:31
 		///
-		xgc_void async_post( sql_database s, const postcall &call );
+		DATABASE_API xgc_void async_post( sql_database s, const postcall &call );
 
 		///
 		/// \brief 获取数据库回应
@@ -340,14 +342,14 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/18 17:31
 		///
-		respcall async_resp( sql_database s );
+		DATABASE_API respcall async_resp( sql_database s );
 
-		xgc_bool sync_exec( sql_database s, xgc_lpcstr sql );
-		sql_result sync_exec_rc( sql_database s, xgc_lpcstr sql, sql_recordset &rs );
-		xgc_void sync_post( sql_database s, postcall && call );
+		DATABASE_API xgc_bool sync_exec( sql_database s, xgc_lpcstr sql );
+		DATABASE_API sql_result sync_exec_rc( sql_database s, xgc_lpcstr sql, sql_recordset &rs );
+		DATABASE_API xgc_void sync_post( sql_database s, postcall && call );
 
-		xgc_uint32 get_error_code(sql_database s);
-		xgc_lpcstr get_error_info(sql_database s);
+		DATABASE_API xgc_uint32 get_error_code(sql_database s);
+		DATABASE_API xgc_lpcstr get_error_info(sql_database s);
 	}
 }
 #endif //__DATABASE_H

@@ -1,8 +1,8 @@
 // Database.cpp : 定义 DLL 应用程序的导出函数。
 //
 
-#include "stdafx.h"
-#include "Database.h"
+#include "config.h"
+#include "database.h"
 #include "db_mysql.h"
 using namespace xgc::common;
 

@@ -1,11 +1,16 @@
-
-#include "stdafx.h"
+#include "config.h"
 #include "table_maker.h"
+#include "xsystem.h"
+#include "pugixml.hpp"
 
-#include <unordered_set>
 #include <list>
 #include <string>
+#include <sstream>
+#include <unordered_set>
 
+#ifdef _LINUX
+#	include<dlfcn.h>
+#endif
 using namespace xgc::sql;
 
 typedef xgc_lpstr( *sql_format )(xgc_lpcstr name, xgc_lpcstr sql, xgc_lpcstr params);
@@ -42,7 +47,7 @@ static xgc_void parse_environment( xgc_lpcstr environment )
 		_environment_variables[_environment_variable_count][variable_key] = strtok_s( environment_token, variable_delimiter, &variable_next );
 		_environment_variables[_environment_variable_count][variable_val] = strtok_s( xgc_nullptr, variable_delimiter, &variable_next );
 
-		if( ++_environment_variable_count > xgc_countof( _environment_variables ) )
+		if( ++_environment_variable_count > XGC_COUNTOF( _environment_variables ) )
 			break;
 
 		environment_token = strtok_s( xgc_nullptr, environment_delimiter, &environment_next );
@@ -204,9 +209,17 @@ xgc_bool execute_schemas( sql_connection conn, pugi::xml_node& node, xgc_lpcstr 
 ///
 xgc_bool execute_tables( sql_connection conn, pugi::xml_node& node, xgc_lpcstr environment )
 {
-	HMODULE _M = LoadLibrary( xgc_nullptr );
+	#ifdef _WINDOWS
+	HMODULE _M = LoadLibraryA( xgc_nullptr );
 
 	sql_format rule = (sql_format) GetProcAddress( _M, node.attribute( "rule" ).as_string() );
+	#endif
+
+	#ifdef _LINUX
+	xgc_lpvoid _M = dlopen( xgc_nullptr, RTLD_LAZY );
+
+	sql_format rule = (sql_format) dlsym( _M, node.attribute( "rule" ).as_string() );
+	#endif
 	xgc_string name = node.attribute( "name" ).as_string();
 	xgc_string params = node.attribute( "params" ).as_string();
 	xgc_lpcstr next = xgc_nullptr;
@@ -273,18 +286,28 @@ xgc_bool execute_tables( sql_connection conn, pugi::xml_node& node, xgc_lpcstr e
 		free( sql );
 	}
 
+	#ifdef _WINDOWS
 	FreeLibrary( _M );
+	#endif
+
+	#ifdef _LINUX
+	dlclose(_M);
+	#endif
+
 	return true;
 }
 
 xgc_bool make_tables( connection_cfg cfg, xgc_lpcstr fconfig, xgc_lpcstr environment )
 {
+	char fullpath[XGC_MAX_PATH] = { 0 };
+	xgc::get_normal_path( fullpath, fconfig );
+
 	// ∂¡»°±Ì∏Ò≈‰÷√
 	pugi::xml_document doc;
-	pugi::xml_parse_result resload = doc.load_file( fconfig );
+	pugi::xml_parse_result resload = doc.load_file( fullpath );
 	if( !resload )
 	{
-		SYS_ERROR( "read table config file %s \n", fconfig );
+		SYS_ERROR( "read table config file %s \n", fullpath );
 		return false;
 	}
 

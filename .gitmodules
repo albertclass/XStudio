@@ -1,15 +1,3 @@
-[submodule "src/third-part/asio"]
-	path = src/third-part/asio
-	url = https://github.com/albertclass/asio.git
-[submodule "src/third-part/LuaBridge"]
-	path = src/third-part/LuaBridge
-	url = https://github.com/albertclass/LuaBridge.git
-[submodule "src/third-part/luajit-2.0"]
-	path = src/third-part/luajit-2.0
-	url = http://luajit.org/git/luajit-2.0.git
-[submodule "src/third-part/fmt"]
-	path = src/third-part/cppformat
-	url = https://github.com/fmtlib/fmt.git
 [submodule "dep/LuaBridge"]
 	path = dep/LuaBridge
 	url = https://github.com/albertclass/LuaBridge.git

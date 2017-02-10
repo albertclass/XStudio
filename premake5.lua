@@ -54,7 +54,7 @@ project "net"
     kind "SharedLib"
     language "C++"
     location "prj/net"
-    includedirs { "inc/net", "inc/common", "src/third-part/asio/asio/include" }
+    includedirs { "inc/net", "inc/common", "dep/asio/asio/include" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
@@ -92,11 +92,58 @@ project "net"
         architecture "x64"
         defines { "LINUX64" }
 
+project "database"
+    kind "SharedLib"
+    language "C++"
+    location "prj/database"
+    includedirs { "inc/database", "inc/common"}
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+        "inc/database/**.h",
+        "inc/database/**.hpp",
+        "src/database/**.h",
+        "src/database/**.hpp",
+        "src/database/**.cpp",
+        "src/database/**.inl",
+    }
+
+    vpaths {
+        ["Header Files/*"] = { "inc/database/**.h", "inc/database/**.hpp", "src/database/**.h", "src/database/**.hpp" },
+        ["Source Files/*"] = { "src/database/**.cpp", "src/database/**.inl" }
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT", "_DB_EXPORTS", "_DLL" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG", "_DB_EXPORTS", "_DLL" }
+        optimize "On"
+
+    filter "system:windows"
+    	includedirs "dep/mysql/win64/include"
+        implibdir "lib/%{cfg.buildcfg}"
+        libdirs { "lib/%{cfg.buildcfg}", "dep/mysql/win64/lib" }
+        links { "common.lib", "libmysql.lib" }
+        architecture "x64"
+        defines { "WIN64", "_IMAGEHLP64" }
+
+    filter "system:linux"
+        implibdir "bin/%{cfg.buildcfg}"
+        links { "stdc++", "common", "mysql" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+
 project "unittest"
     kind "ConsoleApp"
     language "C++"
     location "prj/unittest"
-    includedirs "inc/common"
+    includedirs {"inc/common", "inc/net"}
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     
@@ -120,7 +167,7 @@ project "unittest"
     
     filter "system:windows"
     	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib" }
+    	links { "common.lib", "net.lib" }
         architecture "x64"
         defines { "WIN64" }
 
@@ -130,3 +177,4 @@ project "unittest"
         buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }
+

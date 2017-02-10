@@ -152,7 +152,7 @@ namespace xgc
 				while( packet_length && recv_buffer_.length() >= packet_length )
 				{
 					// 超出接收缓冲的消息包说明该连接发生异常，中断连接。
-					if( packet_length >= recv_buffer_.capacity() )
+					if( packet_length >= recv_buffer_.space() )
 					{
 						XGC_ASSERT( false );
 						if( holder_ )

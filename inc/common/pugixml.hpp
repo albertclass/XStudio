@@ -96,7 +96,7 @@ namespace pugi
 namespace pugi
 {
 	// Tree node types
-	enum xml_node_type
+	enum PUGIXML_API xml_node_type
 	{
 		node_null,			// Empty (null) node handle
 		node_document,		// A document tree's absolute root
@@ -252,7 +252,7 @@ namespace pugi
 	};
 
 	// Writer interface for node printing (see xml_node::print)
-	class PUGIXML_CLASS xml_writer
+	class COMMON_API xml_writer
 	{
 	public:
 		virtual ~xml_writer() {}
@@ -262,7 +262,7 @@ namespace pugi
 	};
 
 	// xml_writer implementation for FILE*
-	class PUGIXML_CLASS xml_writer_file: public xml_writer
+	class COMMON_API xml_writer_file: public xml_writer
 	{
 	public:
 		// Construct writer from a FILE* object; void* is used to avoid header dependencies on stdio
@@ -276,7 +276,7 @@ namespace pugi
 
 	#ifndef PUGIXML_NO_STL
 	// xml_writer implementation for streams
-	class PUGIXML_CLASS xml_writer_stream: public xml_writer
+	class COMMON_API xml_writer_stream: public xml_writer
 	{
 	public:
 		// Construct writer from an output stream object
@@ -292,7 +292,7 @@ namespace pugi
 	#endif
 
 	// A light-weight handle for manipulating attributes in DOM tree
-	class PUGIXML_CLASS xml_attribute
+	class COMMON_API xml_attribute
 	{
 		friend class xml_attribute_iterator;
 		friend class xml_node;
@@ -394,7 +394,7 @@ namespace pugi
 #endif
 
 	// A light-weight handle for manipulating nodes in DOM tree
-	class PUGIXML_CLASS xml_node
+	class COMMON_API xml_node
 	{
 		friend class xml_attribute_iterator;
 		friend class xml_node_iterator;
@@ -649,7 +649,7 @@ namespace pugi
 #endif
 
 	// A helper for working with text inside PCDATA nodes
-	class PUGIXML_CLASS xml_text
+	class COMMON_API xml_text
 	{
 		friend class xml_node;
 
@@ -734,7 +734,7 @@ namespace pugi
 #endif
 
 	// Child node iterator (a bidirectional iterator over a collection of xml_node)
-	class PUGIXML_CLASS xml_node_iterator
+	class COMMON_API xml_node_iterator
 	{
 		friend class xml_node;
 
@@ -776,7 +776,7 @@ namespace pugi
 	};
 
 	// Attribute iterator (a bidirectional iterator over a collection of xml_attribute)
-	class PUGIXML_CLASS xml_attribute_iterator
+	class COMMON_API xml_attribute_iterator
 	{
 		friend class xml_node;
 
@@ -818,7 +818,7 @@ namespace pugi
 	};
 
 	// Named node range helper
-	class PUGIXML_CLASS xml_named_node_iterator
+	class COMMON_API xml_named_node_iterator
 	{
 		friend class xml_node;
 
@@ -861,7 +861,7 @@ namespace pugi
 	};
 
 	// Abstract tree walker class (see xml_node::traverse)
-	class PUGIXML_CLASS xml_tree_walker
+	class COMMON_API xml_tree_walker
 	{
 		friend class xml_node;
 
@@ -914,7 +914,7 @@ namespace pugi
 	};
 
 	// Parsing result
-	struct PUGIXML_CLASS xml_parse_result
+	struct COMMON_API xml_parse_result
 	{
 		// Parsing status (see xml_parse_status)
 		xml_parse_status status;
@@ -936,7 +936,7 @@ namespace pugi
 	};
 
 	// Document class (DOM tree root)
-	class PUGIXML_CLASS xml_document: public xml_node
+	class COMMON_API xml_document: public xml_node
 	{
 	private:
 		char_t* _buffer;
@@ -1019,7 +1019,7 @@ namespace pugi
 	};
 
 	// XPath parsing result
-	struct PUGIXML_CLASS xpath_parse_result
+	struct COMMON_API xpath_parse_result
 	{
 		// Error message (0 if no error)
 		const char* error;
@@ -1038,7 +1038,7 @@ namespace pugi
 	};
 
 	// A single XPath variable
-	class PUGIXML_CLASS xpath_variable
+	class COMMON_API xpath_variable
 	{
 		friend class xpath_variable_set;
 
@@ -1073,7 +1073,7 @@ namespace pugi
 	};
 
 	// A set of XPath variables
-	class PUGIXML_CLASS xpath_variable_set
+	class COMMON_API xpath_variable_set
 	{
 	private:
 		xpath_variable* _data[64];
@@ -1116,7 +1116,7 @@ namespace pugi
 	};
 
 	// A compiled XPath query object
-	class PUGIXML_CLASS xpath_query
+	class COMMON_API xpath_query
 	{
 	private:
 		void* _impl;
@@ -1191,7 +1191,10 @@ namespace pugi
 	
 	#ifndef PUGIXML_NO_EXCEPTIONS
 	// XPath exception class
-	class PUGIXML_CLASS xpath_exception: public std::exception
+	#ifdef _WINDOWS
+	class COMMON_API std::exception;
+	#endif
+	class COMMON_API xpath_exception: public std::exception
 	{
 	private:
 		xpath_parse_result _result;
@@ -1209,7 +1212,7 @@ namespace pugi
 	#endif
 	
 	// XPath node class (either xml_node or xml_attribute)
-	class PUGIXML_CLASS xpath_node
+	class COMMON_API xpath_node
 	{
 	private:
 		xml_node _node;
@@ -1250,7 +1253,7 @@ namespace pugi
 #endif
 
 	// A fixed-size collection of XPath nodes
-	class PUGIXML_CLASS xpath_node_set
+	class COMMON_API xpath_node_set
 	{
 	public:
 		// Collection type

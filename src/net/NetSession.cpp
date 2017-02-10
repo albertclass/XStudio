@@ -6,7 +6,11 @@ namespace xgc
 	namespace net
 	{
 		CSession::CSession( MessageQueuePtr Queue )
-			: queue_( Queue )
+			: ping_( 0 )
+			, pingfailed_( 0 )
+			, handle_( INVALID_NETWORK_HANDLE )
+			, userdata_( xgc_nullptr )
+			, queue_( Queue )
 		{
 		}
 

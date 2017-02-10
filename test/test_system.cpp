@@ -2,7 +2,7 @@
 #include "xsystem.h"
 #include <thread>
 #include <chrono>
-
+#include <pugixml.hpp>
 using namespace xgc;
 
 static int testmain( int agrc, char * argv[] )
@@ -35,6 +35,10 @@ static int testmain( int agrc, char * argv[] )
 
 		std::this_thread::sleep_for( std::chrono::milliseconds(1000) );
 	}
+
+	pugi::xml_document doc;
+	doc.load("../database.xml");
+
 	return 0;
 }
 
