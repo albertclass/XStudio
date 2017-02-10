@@ -125,9 +125,9 @@ project "database"
         optimize "On"
 
     filter "system:windows"
-    	includedirs "dep/mysql/win64/include"
+    	includedirs "$(MYSQL56)/include"
         implibdir "lib/%{cfg.buildcfg}"
-        libdirs { "lib/%{cfg.buildcfg}", "dep/mysql/win64/lib" }
+        libdirs { "lib/%{cfg.buildcfg}", "$(MYSQL56)/lib" }
         links { "common.lib", "libmysql.lib" }
         architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
