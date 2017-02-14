@@ -22,18 +22,6 @@ namespace xgc
 		{
 		}
 
-		// 日志的回调函数指针
-		xgc_int32 ( *writelog )( xgc_lpcstr fmt, ... ) = printf;
-
-		//-----------------------------------//
-		// [1/17/2014 albert.xu]
-		// 设置日志回调接口
-		//-----------------------------------//
-		xgc_void set_logger( xgc_int32 ( *pfn_logger )( xgc_lpcstr fmt, ... ) )
-		{
-			writelog = pfn_logger;
-		}
-
 		xgc_uint32 get_error_code( sql_connection conn )
 		{
 			CMySQLConnection* pConn = conn;

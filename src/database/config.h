@@ -13,10 +13,14 @@
 #	include <windows.h>
 #	include <winsock2.h>	// 由于mysql.h中未定义__LCC__，因此需要这里包含winsock.h
 #	include <process.h>
+#	include <mysql.h>
+#	include <errmsg.h>
 #endif
 
-#include <mysql.h>
-#include <errmsg.h>
+#ifdef _LINUX
+#	include <mysql/mysql.h>
+#	include <mysql/errmsg.h>
+#endif
 
 #include "logger.h"
 #if defined( _WINDOWS )
