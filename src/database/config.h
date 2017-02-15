@@ -15,8 +15,8 @@
 #	include <process.h>
 #endif
 
-#include <mysql.h>
-#include <errmsg.h>
+#include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 #include "logger.h"
 #if defined( _WINDOWS )
