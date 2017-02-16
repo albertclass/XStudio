@@ -5,7 +5,6 @@ namespace xgc
 {
 	namespace sql
 	{
-		extern xgc_int32 ( *writelog )( xgc_lpcstr fmt, ... );
 		class CMySQLRecordSet
 		{
 			friend class CMySQLConnection;
@@ -275,7 +274,7 @@ namespace xgc
 					if( bCheck && mCheckThread )
 					{
 						XGC_ASSERT_MESSAGE( false, "与之前不同的线程被发现。" );
-						writelog( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, GetCurrentThreadId() );
+						SYS_ERROR( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, GetCurrentThreadId() );
 					}
 
 					mOwnerThread = GetCurrentThreadId();

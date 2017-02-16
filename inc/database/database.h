@@ -225,11 +225,11 @@ namespace xgc
 		//////////////////////////////////////////////////////////////////////////
 		// recordset_t
 		//////////////////////////////////////////////////////////////////////////
-		DATABASE_API xgc_void		release( sql_recordset &rs );
-		DATABASE_API xgc_bool		movefirst( sql_recordset &rs );
-		DATABASE_API xgc_bool		movenext( sql_recordset &rs );
-		DATABASE_API xgc_bool		movelast( sql_recordset &rs );
-		DATABASE_API xgc_bool		eof( sql_recordset &rs );
+		DATABASE_API xgc_void	release( sql_recordset &rs );
+		DATABASE_API xgc_bool	movefirst( sql_recordset &rs );
+		DATABASE_API xgc_bool	movenext( sql_recordset &rs );
+		DATABASE_API xgc_bool	movelast( sql_recordset &rs );
+		DATABASE_API xgc_bool	eof( sql_recordset &rs );
 		DATABASE_API xgc_uint64	recordcount( sql_recordset &rs );
 		DATABASE_API xgc_uint32	fieldcount( sql_recordset &rs );
 		DATABASE_API xgc_uint16	fieldtype( sql_recordset &rs, xgc_uint32 index );
@@ -290,12 +290,6 @@ namespace xgc
 		/// [12/17/2014] create by jianglei.kinly
 		///
 		DATABASE_API xgc_time64 field_unix_timestamp( sql_recordset &rs, xgc_uint32 index, xgc_time64 _default );
-
-		///
-		/// [1/17/2014 albert.xu]
-		/// 设置日志接口, 默认为printf
-		///
-		DATABASE_API xgc_void set_logger( xgc_int32( *pfn_logger )(xgc_lpcstr fmt, ...) );
 
 		//////////////////////////////////////////////////////////////////////////
 		// service
