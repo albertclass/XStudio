@@ -1,12 +1,13 @@
 // Database.cpp : 定义 DLL 应用程序的导出函数。
 //
-
 #include "config.h"
 #include "database.h"
 #include "db_mysql.h"
 using namespace xgc::common;
 
 #include <mutex>
+#include <thread>
+#include <condition_variable>
 
 namespace xgc
 {
@@ -65,7 +66,7 @@ namespace xgc
 		const xgc_uint32 DB_FIELD_UNIQUE_FLAG = UNIQUE_FLAG;
 		const xgc_uint32 DB_FIELD_BINCMP_FLAG = BINCMP_FLAG;
 
-		void sql_recordset_deleter::operator()( CMySQLRecordSet *_Ptr ) const _NOEXCEPT
+		void sql_recordset_deleter::operator()( CMySQLRecordSet *_Ptr ) const noexcept
 		{	// delete a pointer
 			static_assert(0 < sizeof( CMySQLRecordSet ),
 						   "can't delete an incomplete type");
@@ -138,7 +139,8 @@ namespace xgc
 					return true;
 				}
 				m_thread = std::thread( &CMySqlDatabase::svc, this );
-				m_event.wait( autolock( m_singel ) );
+				autolock lock( m_singel );
+				m_event.wait( lock );
 				return m_working;
 			}
 
@@ -187,7 +189,7 @@ namespace xgc
 
 		protected:
 			// 数据库服务线程
-			static xgc_uint32 __stdcall svc( xgc_lpvoid pParam )
+			static int svc( xgc_lpvoid pParam )
 			{
 				CMySqlDatabase *pService = (CMySqlDatabase*) pParam;
 
@@ -280,7 +282,8 @@ namespace xgc
 				return xgc_nullptr;
 			} );
 
-			cv.wait( autolock( m ) );
+			autolock lock( m );
+			cv.wait( lock );
 
 			return ret;
 		}

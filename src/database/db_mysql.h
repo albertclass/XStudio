@@ -269,15 +269,15 @@ namespace xgc
 
 			xgc_void CheckOwnerThread( xgc_bool bCheck = true )
 			{
-				if( GetCurrentThreadId() != mOwnerThread )
+				if( gettid() != mOwnerThread )
 				{
 					if( bCheck && mCheckThread )
 					{
 						XGC_ASSERT_MESSAGE( false, "与之前不同的线程被发现。" );
-						SYS_ERROR( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, GetCurrentThreadId() );
+						SYS_ERROR( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, gettid() );
 					}
 
-					mOwnerThread = GetCurrentThreadId();
+					mOwnerThread = gettid();
 				}
 			}
 		private:

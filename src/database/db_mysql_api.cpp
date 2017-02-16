@@ -442,7 +442,9 @@ namespace xgc
 				case FIELD_TYPE_MEDIUM_BLOB:
 				case FIELD_TYPE_LONG_BLOB:
 					if( data && length )
-						memcpy_s( data, length, blob, blob_length );
+					{
+						memcpy( data, blob, XGC_MIN( length, blob_length) );
+					}
 
 					return (xgc_lpvoid)blob;
 				default:

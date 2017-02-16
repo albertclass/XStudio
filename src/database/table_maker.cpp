@@ -34,23 +34,21 @@ static xgc_ulong _environment_variable_count = 0;
 ///
 static xgc_void parse_environment( xgc_lpcstr environment )
 {
-	_environment = _strdup( environment );
+	_environment = strdup( environment );
 
-	xgc_lpstr environment_delimiter = ";";
-	xgc_lpstr environment_next = xgc_nullptr;
-	xgc_lpstr environment_token = strtok_s( _environment, environment_delimiter, &environment_next );
+	xgc_lpcstr environment_delimiter = ";";
+	xgc_lpstr environment_token = strtok( _environment, environment_delimiter );
 	while( environment_token )
 	{
-		xgc_lpstr variable_delimiter = " =\t\r\n";
-		xgc_lpstr variable_next = xgc_nullptr;
+		xgc_lpcstr variable_delimiter = " =\t\r\n";
 
-		_environment_variables[_environment_variable_count][variable_key] = strtok_s( environment_token, variable_delimiter, &variable_next );
-		_environment_variables[_environment_variable_count][variable_val] = strtok_s( xgc_nullptr, variable_delimiter, &variable_next );
+		_environment_variables[_environment_variable_count][variable_key] = strtok( environment_token, variable_delimiter );
+		_environment_variables[_environment_variable_count][variable_val] = strtok( xgc_nullptr, variable_delimiter );
 
 		if( ++_environment_variable_count > XGC_COUNTOF( _environment_variables ) )
 			break;
 
-		environment_token = strtok_s( xgc_nullptr, environment_delimiter, &environment_next );
+		environment_token = strtok( xgc_nullptr, environment_delimiter );
 	}
 }
 
@@ -76,7 +74,7 @@ static xgc_void erase_environment()
 ///
 static xgc_lpstr replace_environment_variable( xgc_lpstr buffer, xgc_lpcstr search, xgc_lpcstr replace )
 {
-	xgc_size size = _msize( buffer );
+	xgc_size size = memsize( buffer );
 
 	xgc_size len_b = strlen( buffer );
 	xgc_size len_s = strlen( search );
@@ -104,12 +102,14 @@ static xgc_lpstr replace_environment_variable( xgc_lpstr buffer, xgc_lpcstr sear
 			// 将新缓冲赋予buffer
 			buffer = (xgc_lpstr)new_buffer;
 
-			size = _msize( buffer );
+			size = memsize( buffer );
 		}
 
 		// 执行替换操作
-		memmove_s( str + len_r, (buffer + size) - (str + len_r), str + len_s, ( buffer + len_b ) - ( str + len_s ) );
-		memcpy_s( str, buffer + size - str, replace, len_r );
+		auto size_1 = (buffer + size) - (str + len_r);
+		auto size_2 = ( buffer + len_b ) - ( str + len_s );
+		memmove( str + len_r, str + len_s, XGC_MIN( size_1, size_2 ) );
+		memcpy( str, replace, XGC_MIN( buffer + size - str, len_r) );
 
 		// 查找下一个
 		str = strstr( str + len_r, search );
@@ -121,7 +121,7 @@ static xgc_lpstr replace_environment_variable( xgc_lpstr buffer, xgc_lpcstr sear
 static xgc_lpstr replace_environment( xgc_lpcstr sql )
 {
 	// 分配返回的缓冲区
-	xgc_lpstr buf = _strdup( sql );
+	xgc_lpstr buf = strdup( sql );
 
 	// 挨个替换环境变量
 	for( xgc_ulong i = 0; i < _environment_variable_count; ++i )
@@ -236,7 +236,13 @@ xgc_bool execute_tables( sql_connection conn, pugi::xml_node& node, xgc_lpcstr e
 	if( res == sql_failed )
 	{
 		SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+		#ifdef _WINDOWS
 		FreeLibrary( _M );
+		#endif
+
+		#ifdef _LINUX
+		dlclose(_M);
+		#endif
 		return false;
 	}
 
@@ -267,7 +273,7 @@ xgc_bool execute_tables( sql_connection conn, pugi::xml_node& node, xgc_lpcstr e
 		else
 		{
 			xgc_lpstr esc = (xgc_lpstr) malloc( strlen( sql ) * 2 + 2 );
-			escape_string( conn, sql, strlen( sql ), esc, _msize( (void*) esc ) );
+			escape_string( conn, sql, strlen( sql ), esc, memsize( (void*) esc ) );
 			std::stringstream ver;
 			ver << "insert __tables( `name`, `version`, `sql`, `create_time` ) values( \n"
 				<< "'" << name << "',\n"
@@ -353,17 +359,17 @@ xgc_bool make_tables( connection_cfg cfg, xgc_lpcstr fconfig, xgc_lpcstr environ
 
 extern "C"
 {
-	xgc_lpstr __declspec( dllexport ) hash_namerule( xgc_lpcstr name, xgc_lpcstr sql, xgc_lpcstr params )
+	xgc_lpstr DATABASE_API hash_namerule( xgc_lpcstr name, xgc_lpcstr sql, xgc_lpcstr params )
 	{
 		xgc_lpstr ret = (xgc_lpstr) malloc( 4096 );
 		xgc_size  cur = 0;
 
 		// 使用后缀，用','分割符。
+		xgc_lpcstr delim = ", ";
 		xgc_char *token = xgc_nullptr;
-		xgc_char *next  = xgc_nullptr;
 
-		xgc_lpstr dup = _strdup( params );
-		token = strtok_s( dup, ", ", &next );
+		xgc_lpstr dup = strdup( params );
+		token = strtok( dup, delim );
 
 		while( token )
 		{
@@ -375,23 +381,23 @@ extern "C"
 				tmp.insert( pos, token );
 			}
 
-			if( _msize( ret ) - cur < tmp.length() + 1 )
+			if( memsize( ret ) - cur < tmp.length() + 1 )
 			{
-				xgc_lpstr nnn = (xgc_lpstr) realloc( ret, _msize( ret ) + 4096 );
+				xgc_lpstr nnn = (xgc_lpstr) realloc( ret, memsize( ret ) + 4096 );
 				if( nnn == xgc_nullptr )
 				{
 					free( dup );
 					free( ret );
-					return false;
+					return xgc_nullptr;
 				}
 
 				ret = nnn;
 			}
 
-			strcpy_s( ret + cur, _msize( ret ) - cur, tmp.c_str() );
+			strcpy_s( ret + cur, memsize( ret ) - cur, tmp.c_str() );
 			cur += tmp.length();
 
-			token = strtok_s( xgc_nullptr, ", ", &next );
+			token = strtok( xgc_nullptr, delim );
 		}
 
 		free( dup );

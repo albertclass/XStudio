@@ -134,7 +134,8 @@ project "database"
 
     filter "system:linux"
         implibdir "bin/%{cfg.buildcfg}"
-        links { "stdc++", "common", "mysql" }
+        libdirs { "/usr/lib64/mysql" }
+        links { "stdc++", "common", "mysqlclient" }
         buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }
@@ -167,13 +168,13 @@ project "unittest"
     
     filter "system:windows"
     	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib" }
+    	links { "common.lib", "net.lib", "database.lib" }
         architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
        	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common" }
+        links { "stdc++", "rt", "pthread", "common", "net", "database" }
         buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }

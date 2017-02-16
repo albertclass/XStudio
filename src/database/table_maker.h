@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _TABLE_MAKER_H_
 #define _TABLE_MAKER_H_
-#include "Database.h"
+#include "database.h"
 
 ///
 /// \brief 根据配置文件创建数据库表

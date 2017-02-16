@@ -73,15 +73,12 @@ namespace xgc
 
 		// operator <<
 		serialization_basic_type_w( xgc_bool );
-		serialization_basic_type_w( xgc_wchar );
 
-		serialization_basic_type_w( xgc_long );
 		serialization_basic_type_w( xgc_int8 );
 		serialization_basic_type_w( xgc_int16 );
 		serialization_basic_type_w( xgc_int32 );
 		serialization_basic_type_w( xgc_int64 );
 
-		serialization_basic_type_w( xgc_ulong );
 		serialization_basic_type_w( xgc_uint8 );
 		serialization_basic_type_w( xgc_uint16 );
 		serialization_basic_type_w( xgc_uint32 );
@@ -92,15 +89,11 @@ namespace xgc
 
 		// operator >>
 		serialization_basic_type_r( xgc_bool );
-		serialization_basic_type_r( xgc_wchar );
-
-		serialization_basic_type_r( xgc_long );
 		serialization_basic_type_r( xgc_int8 );
 		serialization_basic_type_r( xgc_int16 );
 		serialization_basic_type_r( xgc_int32 );
 		serialization_basic_type_r( xgc_int64 );
 
-		serialization_basic_type_r( xgc_ulong );
 		serialization_basic_type_r( xgc_uint8 );
 		serialization_basic_type_r( xgc_uint16 );
 		serialization_basic_type_r( xgc_uint32 );
@@ -221,14 +214,15 @@ namespace xgc
 		template< serialization_types, class buffer, template< class > class recorder >
 		serialization& operator << ( serialization& stream, ring_buffer< buffer, recorder > &buf )
 		{
+			char data[32798] = { 0 };
+
 			xgc_uint32 size = (xgc_uint32) buf.leave();
 			stream.write_some( &size, sizeof( xgc_uint32 ) );
-			char buffer[1024*32];
-			auto readbytes = buf.read_some( buffer, sizeof( buffer ) );
+			auto readbytes = buf.read_some( data, sizeof( data ) );
 			while( readbytes )
 			{
-				stream.write_some( buffer, readbytes );
-				readbytes = buf.read_some( buffer, sizeof( buffer ) );
+				stream.write_some( data, readbytes );
+				readbytes = buf.read_some( data, sizeof( data ) );
 			}
 
 			return stream;
@@ -246,14 +240,14 @@ namespace xgc
 			xgc_uint32 size;
 			xgc_uint32 readtotal = 0U;
 			stream.read_some( &size, sizeof( xgc_uint32 ) );
-			size = XGC_MIN( size, (xgc_uint32) leave() );
-			char buffer[1024 * 32];
-			auto readbytes = stream.read_some( buffer, size );
+			size = XGC_MIN( size, (xgc_uint32) buf.leave() );
+			char data[1024 * 32];
+			auto readbytes = stream.read_some( data, size );
 
 			while( readtotal < size )
 			{
-				buf.write_some( buffer, readbytes );
-				readbytes = stream.read_some( buffer, size - readtotal );
+				buf.write_some( data, readbytes );
+				readbytes = stream.read_some( data, size - readtotal );
 				readtotal += readbytes;
 			}
 
@@ -361,8 +355,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::vector< type, alloc >& c )
 		{
 			stream << c.size();
-			std::vector< type, alloc >::const_iterator iter = c.begin();
-			std::vector< type, alloc >::const_iterator iend = c.end();
+			typename std::vector< type, alloc >::const_iterator iter = c.begin();
+			typename std::vector< type, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << *iter++;
 			return stream;
@@ -372,8 +366,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::vector< type*, alloc >& c )
 		{
 			stream << c.size();
-			std::vector< type*, alloc >::const_iterator iter = c.begin();
-			std::vector< type*, alloc >::const_iterator iend = c.end();
+			typename std::vector< type*, alloc >::const_iterator iter = c.begin();
+			typename std::vector< type*, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << **iter++;
 			return stream;
@@ -383,8 +377,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::list< type, alloc >& c )
 		{
 			stream << c.size();
-			std::list< type, alloc >::const_iterator iter = c.begin();
-			std::list< type, alloc >::const_iterator iend = c.end();
+			typename std::list< type, alloc >::const_iterator iter = c.begin();
+			typename std::list< type, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << *iter++;
 			return stream;
@@ -394,8 +388,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::list< type*, alloc >& c )
 		{
 			stream << c.size();
-			std::list< type*, alloc >::const_iterator iter = c.begin();
-			std::list< type*, alloc >::const_iterator iend = c.end();
+			typename std::list< type*, alloc >::const_iterator iter = c.begin();
+			typename std::list< type*, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << **iter++;
 			return stream;
@@ -405,8 +399,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::deque< type, alloc >& c )
 		{
 			stream << c.size();
-			std::deque< type, alloc >::const_iterator iter = c.begin();
-			std::deque< type, alloc >::const_iterator iend = c.end();
+			typename std::deque< type, alloc >::const_iterator iter = c.begin();
+			typename std::deque< type, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << *iter++;
 			return stream;
@@ -416,8 +410,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::deque< type*, alloc >& c )
 		{
 			stream << c.size();
-			std::deque< type*, alloc >::const_iterator iter = c.begin();
-			std::deque< type*, alloc >::const_iterator iend = c.end();
+			typename std::deque< type*, alloc >::const_iterator iter = c.begin();
+			typename std::deque< type*, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << **iter++;
 			return stream;
@@ -427,8 +421,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::set< type, compair, alloc >& c )
 		{
 			stream << c.size();
-			std::set< type, compair, alloc >::const_iterator iter = c.begin();
-			std::set< type, compair, alloc >::const_iterator iend = c.end();
+			typename std::set< type, compair, alloc >::const_iterator iter = c.begin();
+			typename std::set< type, compair, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << *iter++;
 			return stream;
@@ -438,8 +432,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::set< type*, compair, alloc >& c )
 		{
 			stream << c.size();
-			std::set< type*, compair, alloc >::const_iterator iter = c.begin();
-			std::set< type*, compair, alloc >::const_iterator iend = c.end();
+			typename std::set< type*, compair, alloc >::const_iterator iter = c.begin();
+			typename std::set< type*, compair, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << **iter++;
 			return stream;
@@ -449,8 +443,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::map< key, value, compair, alloc >& c )
 		{
 			stream << c.size();
-			std::map< key, value, compair, alloc >::const_iterator iter = c.begin();
-			std::map< key, value, compair, alloc >::const_iterator iend = c.end();
+			typename std::map< key, value, compair, alloc >::const_iterator iter = c.begin();
+			typename std::map< key, value, compair, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 			{
 				stream << *iter;
@@ -463,8 +457,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::unordered_set< type, hasher, equal_key, alloc > &c )
 		{
 			stream << c.size();
-			std::unordered_set< type, hasher, equal_key, alloc >::const_iterator iter = c.begin();
-			std::unordered_set< type, hasher, equal_key, alloc >::const_iterator iend = c.end();
+			typename std::unordered_set< type, hasher, equal_key, alloc >::const_iterator iter = c.begin();
+			typename std::unordered_set< type, hasher, equal_key, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << *iter++;
 			return stream;
@@ -474,8 +468,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::unordered_set< type*, hasher, equal_key, alloc > &c )
 		{
 			stream << c.size();
-			std::unordered_set< type*, hasher, equal_key, alloc >::const_iterator iter = c.begin();
-			std::unordered_set< type*, hasher, equal_key, alloc >::const_iterator iend = c.end();
+			typename std::unordered_set< type*, hasher, equal_key, alloc >::const_iterator iter = c.begin();
+			typename std::unordered_set< type*, hasher, equal_key, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 				stream << **iter++;
 			return stream;
@@ -485,8 +479,8 @@ namespace xgc
 		serialization& operator << ( serialization& stream, const std::unordered_map< key, value, hasher, equal_key, alloc >& c )
 		{
 			stream << c.size();
-			std::unordered_map< key, value, hasher, equal_key, alloc >::const_iterator iter = c.begin();
-			std::unordered_map< key, value, hasher, equal_key, alloc >::const_iterator iend = c.end();
+			typename std::unordered_map< key, value, hasher, equal_key, alloc >::const_iterator iter = c.begin();
+			typename std::unordered_map< key, value, hasher, equal_key, alloc >::const_iterator iend = c.end();
 			while( iter != iend )
 			{
 				stream << *iter;
@@ -510,11 +504,11 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::vector< type, alloc >& c )
 		{
-			std::vector< type, alloc >::size_type size;
+			typename std::vector< type, alloc >::size_type size;
 			stream >> size;
 			c.resize( size );
 
-			for( std::vector< type, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::vector< type, alloc >::size_type i = 0; i < size; ++i )
 			{
 				stream >> c[i];
 			}
@@ -524,11 +518,11 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::vector< type*, alloc >& c )
 		{
-			std::vector< type*, alloc >::size_type size;
+			typename std::vector< type*, alloc >::size_type size;
 			stream >> size;
 			c.resize( size );
 
-			for( std::vector< type*, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::vector< type*, alloc >::size_type i = 0; i < size; ++i )
 			{
 				c[i] = XGC_NEW type();
 				stream >> *c[i];
@@ -539,11 +533,11 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::list< type, alloc >& c )
 		{
-			std::list< type, alloc >::size_type		size;
-			std::list< type, alloc >::value_type	value;
+			typename std::list< type, alloc >::size_type	size;
+			typename std::list< type, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::list< type, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::list< type, alloc >::size_type i = 0; i < size; ++i )
 			{
 				stream >> value;
 				c.push_back( value );
@@ -554,15 +548,15 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::list< type*, alloc >& c )
 		{
-			std::list< type*, alloc >::size_type	size;
-			std::list< type*, alloc >::value_type	_value;
+			typename std::list< type*, alloc >::size_type	size;
+			typename std::list< type*, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::list< type*, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::list< type*, alloc >::size_type i = 0; i < size; ++i )
 			{
-				_value = XGC_NEW type();
-				stream >> *_value;
-				c.push_back( _value );
+				value = XGC_NEW type();
+				stream >> *value;
+				c.push_back( value );
 			}
 			return stream;
 		}
@@ -570,11 +564,11 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::deque< type, alloc >& c )
 		{
-			std::deque< type, alloc >::size_type	size;
-			std::deque< type, alloc >::value_type	value;
+			typename std::deque< type, alloc >::size_type	size;
+			typename std::deque< type, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::queue< type, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::queue< type, alloc >::size_type i = 0; i < size; ++i )
 			{
 				stream >> value;
 				c.push_back( value );
@@ -585,15 +579,15 @@ namespace xgc
 		template< serialization_types, class type, class alloc >
 		serialization& operator >> ( serialization& stream, std::deque< type*, alloc >& c )
 		{
-			std::deque< type*, alloc >::size_type	size;
-			std::deque< type*, alloc >::value_type	_value;
+			typename std::deque< type*, alloc >::size_type	size;
+			typename std::deque< type*, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::queue< type*, alloc >::size_type i = 0; i < size; ++i )
+			for( typename std::queue< type*, alloc >::size_type i = 0; i < size; ++i )
 			{
-				_value = XGC_NEW type();
-				stream >> *_value;
-				c.push_back( _value );
+				value = XGC_NEW type();
+				stream >> *value;
+				c.push_back( value );
 			}
 			return stream;
 		}
@@ -601,11 +595,11 @@ namespace xgc
 		template< serialization_types, class type, class compair, class alloc >
 		serialization& operator >> ( serialization& stream, std::set< type, compair, alloc >& c )
 		{
-			std::set< type, compair, alloc >::size_type	size;
-			std::set< type, compair, alloc >::value_type	value;
+			typename std::set< type, compair, alloc >::size_type	size;
+			typename std::set< type, compair, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::set< type, compair, alloc >::size_type i = 0; i < size; ++i )
+			for( size_t i = 0; i < size; ++i )
 			{
 				stream >> value;
 				c.insert( value );
@@ -617,15 +611,15 @@ namespace xgc
 		template< serialization_types, class type, class compair, class alloc >
 		serialization& operator >> ( serialization& stream, std::set< type*, compair, alloc >& c )
 		{
-			std::set< type*, compair, alloc >::size_type	size;
-			std::set< type*, compair, alloc >::value_type	_value;
+			typename std::set< type*, compair, alloc >::size_type	size;
+			typename std::set< type*, compair, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::set< type*, compair, alloc >::size_type i = 0; i < size; ++i )
+			for( size_t i = 0; i < size; ++i )
 			{
-				_value = XGC_NEW type();
-				stream >> *_value;
-				c.insert( _value );
+				value = XGC_NEW type();
+				stream >> *value;
+				c.insert( value );
 			}
 
 			return stream;
@@ -650,11 +644,11 @@ namespace xgc
 		template< serialization_types, class type, class hasher, class equal_key, class alloc >
 		serialization& operator >> ( serialization& stream, std::unordered_set< type, hasher, equal_key, alloc >& c )
 		{
-			std::unordered_set< type, hasher, equal_key, alloc >::size_type	size;
-			std::unordered_set< type, hasher, equal_key, alloc >::value_type	value;
+			typename std::unordered_set< type, hasher, equal_key, alloc >::size_type	size;
+			typename std::unordered_set< type, hasher, equal_key, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::unordered_set< type, hasher, equal_key, alloc >::size_type i = 0; i < size; ++i )
+			for( size_t i = 0; i < size; ++i )
 			{
 				stream >> value;
 				c.insert( value );
@@ -666,15 +660,15 @@ namespace xgc
 		template< serialization_types, class type, class hasher, class equal_key, class alloc >
 		serialization& operator >> ( serialization& stream, std::unordered_set< type*, hasher, equal_key, alloc >& c )
 		{
-			std::unordered_set< type*, hasher, equal_key, alloc >::size_type	size;
-			std::unordered_set< type*, hasher, equal_key, alloc >::value_type	_value;
+			typename std::unordered_set< type*, hasher, equal_key, alloc >::size_type	size;
+			typename std::unordered_set< type*, hasher, equal_key, alloc >::value_type	value;
 			stream >> size;
 
-			for( std::unordered_set< type*, hasher, equal_key, alloc >::size_type i = 0; i < size; ++i )
+			for( size_t i = 0; i < size; ++i )
 			{
-				_value = XGC_NEW type();
-				stream >> *_value;
-				c.insert( _value );
+				value = XGC_NEW type();
+				stream >> *value;
+				c.insert( value );
 			}
 
 			return stream;
@@ -754,7 +748,7 @@ namespace xgc
 			typedef const ret *ret_type;
 			static ret_type buffer_cast( xgc_lpcvoid cursor, xgc_size size, xgc_lpcvoid *next, xgc_size *release )
 			{
-				typedef org = std::remove_pointer< ret >::type;
+				typedef typename std::remove_pointer< ret >::type org;
 				XGC_ASSERT_THROW( size >= sizeof( org ), std::out_of_range( "read buffer out of range" ) );
 
 				if( next )

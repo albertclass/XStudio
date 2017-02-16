@@ -76,15 +76,15 @@ namespace xgc
 
 		struct DATABASE_API sql_recordset_deleter
 		{
-			sql_recordset_deleter() _NOEXCEPT
+			sql_recordset_deleter() noexcept
 			{	// default construct
 			}
 
-			sql_recordset_deleter( const sql_recordset_deleter& ) _NOEXCEPT
+			sql_recordset_deleter( const sql_recordset_deleter& ) noexcept
 			{	// construct from another default_delete
 			}
 
-			void operator()( CMySQLRecordSet *_Ptr ) const _NOEXCEPT;
+			void operator()( CMySQLRecordSet *_Ptr ) const noexcept;
 		};
 
 		typedef std::unique_ptr< CMySQLRecordSet, sql_recordset_deleter > sql_recordset;
