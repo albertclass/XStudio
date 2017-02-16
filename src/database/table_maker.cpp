@@ -106,10 +106,11 @@ static xgc_lpstr replace_environment_variable( xgc_lpstr buffer, xgc_lpcstr sear
 		}
 
 		// 执行替换操作
-		auto size_1 = (buffer + size) - (str + len_r);
-		auto size_2 = ( buffer + len_b ) - ( str + len_s );
+		xgc_size size_1 = (buffer + size) - (str + len_r);
+		xgc_size size_2 = ( buffer + len_b ) - ( str + len_s );
 		memmove( str + len_r, str + len_s, XGC_MIN( size_1, size_2 ) );
-		memcpy( str, replace, XGC_MIN( buffer + size - str, len_r) );
+		xgc_size size_0 = buffer + size - str;
+		memcpy( str, replace, XGC_MIN( size_0, len_r) );
 
 		// 查找下一个
 		str = strstr( str + len_r, search );

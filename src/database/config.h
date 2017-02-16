@@ -9,6 +9,8 @@
 #include "defines.h"
 
 #ifdef _WINDOWS
+#	include <WinSock2.h>
+#	pragma comment( lib, "ws2_32.lib")
 #	include <mysql.h>
 #	include <errmsg.h>
 #endif

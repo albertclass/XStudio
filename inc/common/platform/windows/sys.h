@@ -11,4 +11,6 @@
 
 #define xgc_invalid_handle INVALID_HANDLE_VALUE
 
+#define gettid() GetCurrentThreadId()
+
 #endif // __XGC_SYSTEM_H__
