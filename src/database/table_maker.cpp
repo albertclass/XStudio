@@ -1,4 +1,4 @@
-#include "config.h"
+#include "database.h"
 #include "table_maker.h"
 #include "xsystem.h"
 #include "pugixml.hpp"

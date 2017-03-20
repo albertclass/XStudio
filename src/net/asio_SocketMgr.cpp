@@ -1,4 +1,6 @@
-#include "asio_Header.h"
+#include "Header.h"
+#include "asio_SocketMgr.h"
+
 #include <thread>
 #include <chrono>
 
@@ -36,7 +38,7 @@ namespace xgc
 
 		xgc_void asio_SocketMgr::Final( xgc_ulong timeout )
 		{
-			auto start = clock();
+			auto start = tick();
 			auto counter = 0;
 
 			do
@@ -55,7 +57,7 @@ namespace xgc
 					}
 				}
 
-			} while( counter > 0 && (clock() - start < (clock_t) timeout) );
+			} while( counter > 0 && (tick() - start < timeout) );
 		}
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )
@@ -63,6 +65,43 @@ namespace xgc
 			XGC_ASSERT_RETURN( handle < XGC_COUNTOF( handles ), xgc_nullptr );
 
 			return handles[handle];
+		}
+
+		xgc_bool asio_SocketMgr::SetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter )
+		{
+			std::lock_guard< std::mutex > _lock( lock_timer_ );
+
+			auto it = mTimerMap.find( nTimerId );
+			if( it == mTimerMap.end() )
+			{
+				auto timer = XGC_NEW asio::steady_timer( getNetwork().Ref() );
+				timer->expires_after( std::chrono::milliseconds( (xgc_uint32)(fAfter * 1000) ) );
+				timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, hHandle, nTimerId, fPeriod ) );
+
+				mTimerMap[nTimerId] = timer;
+				return true;
+			}
+
+			return false;
+		}
+
+		xgc_bool asio_SocketMgr::DelTimer( xgc_uint32 nTimerId )
+		{
+			std::lock_guard< std::mutex > _lock( lock_timer_ );
+
+			auto it = mTimerMap.find( nTimerId );
+			if( it != mTimerMap.end() )
+			{
+				auto timer = it->second;
+				asio::error_code ec;
+				if( timer->cancel( ec ) )
+				{
+					mTimerMap.erase( it );
+					SAFE_DELETE( timer );
+				}
+			}
+
+			return true;
 		}
 
 		xgc_void asio_SocketMgr::CloseAll( xgc_lpvoid from /*= 0 */ )
@@ -89,8 +128,8 @@ namespace xgc
 			if( handle >= XGC_COUNTOF( handles ) )
 				return true;
 
-			clock_t start = clock();
-			while( clock() - start < timeout )
+			xgc_time64 start = tick();
+			while( start < start + timeout )
 			{
 				asio_SocketPtr pSocket = getSocket( handle );
 				if( xgc_nullptr == pSocket )
@@ -248,6 +287,92 @@ namespace xgc
 			pGroup->free_handle();
 		}
 
+		xgc_void asio_SocketMgr::Push( INetPacket * pEvt )
+		{
+			mEvtQueue.Push( pEvt );
+		}
+
+		xgc_long asio_SocketMgr::Exec( xgc_long nStep )
+		{
+			INetPacket *pEvt = xgc_nullptr;
+
+			while( nStep && mEvtQueue.Kick( &pEvt ) )
+			{
+				auto hNet = pEvt->handle();
+				auto pHeader = (EventHeader*)pEvt->data();
+
+				do 
+				{
+					INetworkSession * pSession = xgc_nullptr;
+					auto pSocket = getSocket( hNet );
+					if( xgc_nullptr == pSocket )
+						break;
+
+					pSession = (INetworkSession*) pSocket->get_userdata();
+					if( xgc_nullptr == pSession )
+						break;
+
+					switch( pHeader->event )
+					{
+					case EVENT_HANGUP:
+						{
+							auto srv = (asio_ServerBase*) pSocket->get_from();
+							auto session = srv->CreateSession();
+							if( !session )
+								pSocket->close();
+							else
+							{
+								pSocket->set_userdata( session );
+								pSocket->accept( EVENT_ACCEPT );
+							}
+						}
+						break;
+					case EVENT_ACCEPT:
+						{
+							if( pSession )
+								pSession->OnAccept( hNet );
+							else
+								pSocket->close();
+						}
+						break;
+					case EVENT_CONNECT:
+						{
+							if( pSession )
+								pSession->OnConnect( hNet );
+							else
+								pSocket->close();
+						}
+						break;
+					case EVENT_CLOSE:
+						{
+							pSession->OnClose();
+						}
+						break;
+					case EVENT_ERROR:
+						{
+							pSession->OnError( (xgc_uint32) pHeader->bring );
+						}
+						break;
+					case EVENT_DATA:
+						{
+							pSession->OnRecv( pHeader + 1, pHeader->bring );
+						}
+						break;
+					case EVENT_PING:
+						{
+							pSession->OnAlive();
+						}
+						break;
+					}
+				} while (false);
+
+				pEvt->freedom();
+				--nStep;
+			}
+
+			return nStep;
+		}
+
 		///
 		/// \brief 连接建立
 		///
@@ -262,7 +387,7 @@ namespace xgc
 				return false;
 
 			auto handler = free_handles.front();
-			pSocket->set_handler( handler );
+			pSocket->set_handle( handler );
 			handles[handler] = pSocket->shared_from_this();
 
 			free_handles.pop();
@@ -280,13 +405,35 @@ namespace xgc
 		xgc_void asio_SocketMgr::LinkDown( asio_SocketPtr pSocket )
 		{
 			// 为防止 锁定顺序导致的死锁问题，这里不是用关键区锁保护。
-			auto handle = pSocket->get_handler();
+			auto handle = pSocket->get_handle();
 			if( handles[handle] == pSocket )
 			{
 				handles[handle] = xgc_nullptr;
 
 				std::lock_guard< std::mutex > _guard( lock_ );
 				free_handles.push( handle );
+			}
+		}
+
+		xgc_void asio_SocketMgr::OnTimer( const asio::error_code & e, network_t handle, xgc_uint32 id, xgc_real64 period )
+		{
+			if( e == asio::error::operation_aborted )
+				return;
+
+			EventHeader evt;
+			evt.event = EVENT_TIMER;
+			evt.handle = handle;
+			evt.bring = id;
+
+			Push( CNetworkPacket::allocate( &evt, sizeof(evt), handle ) );
+
+			std::lock_guard< std::mutex > _lock( lock_timer_ );
+			auto it = mTimerMap.find( id );
+			if( it != mTimerMap.end() )
+			{
+				auto timer = it->second;
+				timer->expires_after( std::chrono::milliseconds( (xgc_uint32) (period * 1000) ) );
+				timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, handle, id, period ) );
 			}
 		}
 	}

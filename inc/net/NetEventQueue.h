@@ -24,14 +24,14 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/23 17:43
 		///
-		class CMessageQueue	:	public IMessageQueue
+		class CNetEventQueue
 		{
 		public:
-			CMessageQueue();
-			~CMessageQueue();
+			CNetEventQueue();
+			~CNetEventQueue();
 
-			CMessageQueue( const CMessageQueue& ) = delete;
-			CMessageQueue( const CMessageQueue&& ) = delete;
+			CNetEventQueue( const CNetEventQueue& ) = delete;
+			CNetEventQueue( const CNetEventQueue&& ) = delete;
 
 			///
 			/// \brief 从队列头弹出一个已接收的消息
@@ -39,7 +39,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/23 17:43
 			///
-			virtual xgc_bool PopMessage( INetPacket** ) override;
+			xgc_bool Kick( INetPacket** );
 
 			///
 			/// \brief 压入一个已接收的消息到队列未
@@ -47,7 +47,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/23 17:43
 			///
-			virtual xgc_void PushMessage( INetPacket* ) override;
+			xgc_void Push( INetPacket* );
 
 			///
 			/// \brief 获取队列长度
@@ -55,20 +55,11 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/23 17:44
 			///
-			virtual xgc_size Length()const override;
+			xgc_size Length()const;
 
-			///
-			/// \brief 是否消息队列
-			///
-			/// \author albert.xu
-			/// \date 2016/02/23 17:44
-			///
-			virtual xgc_void Release() override;
 		private:
 			/// 从网络接收的消息队列
 			std::list< INetPacket* > mPacketList;
-			/// 消息编号
-			std::atomic< xgc_ulong > mIndex;
 			/// 同步锁
 			mutable std::mutex mMsgGuard;
 		};

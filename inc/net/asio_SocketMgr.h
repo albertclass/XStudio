@@ -12,6 +12,7 @@
 #pragma once
 #ifndef _ASIO_SOCKETMGR_H_
 #define _ASIO_SOCKETMGR_H_
+#include "NetEventQueue.h"
 
 namespace xgc
 {
@@ -125,6 +126,22 @@ namespace xgc
 			}
 
 			///
+			/// \brief 设置一个定时器（并未进行完善）
+			///
+			/// \author albert.xu
+			/// \date 2017/03/20 15:34
+			///
+			xgc_bool SetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter );
+
+			///
+			/// \brief 删除一个定时器
+			///
+			/// \author albert.xu
+			/// \date 2017/03/14 17:24
+			///
+			xgc_bool DelTimer( xgc_uint32 nTimerId );
+
+			///
 			/// \brief 关闭所有套接字
 			///
 			/// \author albert.xu
@@ -192,6 +209,21 @@ namespace xgc
 			///
 			xgc_void FreeHandleGroup( CSocketGroup* pGroup )const;
 
+			///
+			/// \brief 推入事件
+			///
+			/// \author albert.xu
+			/// \date 2017/03/01 14:46
+			///
+			xgc_void Push( INetPacket *pEvt );
+
+			///
+			/// \brief 弹出事件
+			///
+			/// \author albert.xu
+			/// \date 2017/03/01 14:47
+			///
+			xgc_long Exec( xgc_long nStep );
 		protected:
 			///
 			/// \brief 连接建立
@@ -209,6 +241,13 @@ namespace xgc
 			///
 			xgc_void LinkDown( asio_SocketPtr pSocket );
 
+			///
+			/// \brief 定时器响应
+			///
+			/// \author albert.xu
+			/// \date 2017/03/14 17:32
+			///
+			xgc_void OnTimer( const asio::error_code &e, network_t handle, xgc_uint32 id, xgc_real64 period );
 		private:
 			typedef std::queue< network_t > CFreeHandleList;
 			typedef std::unordered_map< group_t, CSocketGroup* > CGroupMap;
@@ -220,12 +259,21 @@ namespace xgc
 
 			/// 句柄池
 			asio_SocketPtr	handles[0xffff];
+
 			/// 组映射表
 			CGroupMap		group_map;
 			/// 多线程锁
 			std::mutex		lock_;
 			/// 多线程组锁
 			std::mutex		lock_group_;
+
+			/// 消息队列
+			CNetEventQueue	mEvtQueue;
+
+			/// 多线程定时器锁
+			std::mutex		lock_timer_;
+			/// 定时器映射表
+			xgc_unordered_map< xgc_uint32, asio::steady_timer* > mTimerMap;
 		};
 	}
 }

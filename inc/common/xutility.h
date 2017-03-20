@@ -47,22 +47,22 @@ namespace xgc
 	};
 
 	template< xgc_size V >
-	struct Int2Type
+	struct int2type
 	{
 		enum { _Val = V };
 	};
 
 	template< typename T >
-	struct Type2Type
+	struct type2type
 	{
-		typedef T Type;
+		typedef T type;
 	};
 
 	template< typename T, xgc_size V >
-	struct IndexType
+	struct index_type
 	{
 		enum { _Val = V };
-		typedef T Type;
+		typedef T type;
 	};
 
 	///

@@ -6,11 +6,11 @@ namespace xgc
 	namespace net
 	{
 		const xgc_size __packet_buffer_guard_size = sizeof(xgc_uint64);
-		class asio_NetworkPacket : public INetPacket
+		class CNetworkPacket : public INetPacket
 		{
 		friend class asio_Socket;
 		private:
-			asio_NetworkPacket( xgc_size capacity )
+			CNetworkPacket( xgc_size capacity )
 				: rd_(0)
 				, wd_(0)
 				, link_(INVALID_NETWORK_HANDLE)
@@ -22,7 +22,7 @@ namespace xgc
 				stamptime();
 			}
 
-			asio_NetworkPacket( xgc_size capacity, network_t lnk )
+			CNetworkPacket( xgc_size capacity, network_t lnk )
 				: rd_(0)
 				, wd_(0)
 				, link_(lnk)
@@ -34,7 +34,21 @@ namespace xgc
 				stamptime();
 			}
 
-			~asio_NetworkPacket()
+			CNetworkPacket( xgc_size capacity, network_t lnk, xgc_lpvoid data, xgc_size size )
+				: rd_( 0 )
+				, wd_( 0 )
+				, link_( lnk )
+				, timestamp_( 0 )
+				, buffer_size_( capacity + __packet_buffer_guard_size * 2 )
+			{
+				*(xgc_uint64*) (buffer_) = 0xebebebebebebebebULL;
+				*(xgc_uint64*) (buffer_ + __packet_buffer_guard_size + capacity) = 0xededededededededULL;
+				stamptime();
+
+				putn( data, size );
+			}
+
+			~CNetworkPacket()
 			{
 				XGC_ASSERT( 
 					*(xgc_uint64*) (buffer_) == 0xebebebebebebebebULL && 
@@ -221,36 +235,14 @@ namespace xgc
 			}
 
 			///
-			/// \brief 获取缓冲区首地址
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 15:51
-			///
-			virtual xgc_lpcstr header()const override
-			{ 
-				return base(); 
-			}
-
-			///
-			/// \brief 数据包长度
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size length()const override
-			{
-				return wd();
-			}
-
-			///
 			/// \brief 获取缓冲区数据地址
 			///
 			/// \author albert.xu
 			/// \date 2016/02/17 15:51
 			///
-			virtual xgc_lpcstr data()const override
+			virtual xgc_lpvoid data() override
 			{ 
-				return rd_ptr(); 
+				return base(); 
 			}
 
 			///
@@ -261,7 +253,7 @@ namespace xgc
 			///
 			virtual xgc_size size()const override
 			{ 
-				return region(); 
+				return wd();
 			}
 
 			///
@@ -314,13 +306,13 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 15:53
 			///
-			static XGC_INLINE asio_NetworkPacket* allocate( xgc_size alloc_size )
+			static XGC_INLINE CNetworkPacket* allocate( xgc_size alloc_size )
 			{
-				xgc_lpvoid ptr = malloc( sizeof( asio_NetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
+				xgc_lpvoid ptr = malloc( sizeof( CNetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
 
-				new (ptr) asio_NetworkPacket( alloc_size );
+				new (ptr) CNetworkPacket( alloc_size );
 
-				return (asio_NetworkPacket*)ptr;
+				return (CNetworkPacket*)ptr;
 			}
 
 			///
@@ -329,13 +321,29 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 15:54
 			///
-			static XGC_INLINE asio_NetworkPacket* allocate( xgc_size alloc_size, network_t handle )
+			static XGC_INLINE CNetworkPacket* allocate( xgc_size alloc_size, network_t handle )
 			{
-				xgc_lpvoid ptr = malloc( sizeof( asio_NetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
+				xgc_lpvoid ptr = malloc( sizeof( CNetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
 
-				new (ptr) asio_NetworkPacket( alloc_size, handle );
+				new (ptr) CNetworkPacket( alloc_size, handle );
 
-				return (asio_NetworkPacket*)ptr;
+				return (CNetworkPacket*)ptr;
+			}
+
+			///
+			/// \brief 分配一个网络句柄关联的数据包
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 15:54
+			///
+			static XGC_INLINE CNetworkPacket* allocate( xgc_lpvoid data, xgc_size size, network_t handle )
+			{
+				auto alloc_size = size;
+				xgc_lpvoid ptr = malloc( sizeof( CNetworkPacket ) + alloc_size + __packet_buffer_guard_size * 2 );
+
+				new (ptr) CNetworkPacket( alloc_size, handle, data, alloc_size );
+
+				return (CNetworkPacket*) ptr;
 			}
 
 			///
@@ -344,7 +352,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 15:54
 			///
-			static XGC_INLINE xgc_void deallocate( asio_NetworkPacket*& packet )
+			static XGC_INLINE xgc_void deallocate( CNetworkPacket*& packet )
 			{
 				if( packet )
 				{

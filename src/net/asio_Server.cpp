@@ -1,11 +1,9 @@
-#include "asio_Header.h"
-#include "NetSession.h"
-
+#include "Header.h"
 namespace xgc
 {
 	namespace net
 	{
-		asio_ServerBase::asio_ServerBase( io_service& service, xgc_uint16 acceptor_count, xgc_uint16 timeout, const pfnCreateHolder &creator )
+		asio_ServerBase::asio_ServerBase( io_service& service, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator )
 			: service_( service )
 			, acceptor_( service_, ip::tcp::v4() )
 			, timeout_( timeout )
@@ -59,7 +57,7 @@ namespace xgc
 		{
 			if (!error)
 			{
-				pSocket->accept( this );
+				pSocket->hangup( this );
 				post_accept();
 			}
 			else
@@ -70,8 +68,8 @@ namespace xgc
 
 		xgc_void asio_ServerBase::post_accept()
 		{
-			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, creator_(), timeout_ );
-			acceptor_.async_accept( pSocket->socket(), std::bind( &asio_ServerBase::handle_accept, this, pSocket, std::placeholders::_1 ) );
+			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, creator_, timeout_ );
+			acceptor_.async_accept( pSocket->socket_, std::bind( &asio_ServerBase::handle_accept, this, pSocket, std::placeholders::_1 ) );
 		}
 	}
 }

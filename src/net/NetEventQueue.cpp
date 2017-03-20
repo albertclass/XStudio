@@ -9,24 +9,24 @@
 /// 消息接收队列
 ///
 ///////////////////////////////////////////////////////////////
-#include "asio_Header.h"
+#include "Header.h"
+#include "NetEventQueue.h"
 namespace xgc
 {
 	namespace net
 	{
-		CMessageQueue::CMessageQueue()
-			: mIndex( 0 )
+		CNetEventQueue::CNetEventQueue()
 		{
 		}
 
-		CMessageQueue::~CMessageQueue()
+		CNetEventQueue::~CNetEventQueue()
 		{
 			// 清除所有消息
 			for( auto it : mPacketList )
 				it->freedom();
 		}
 
-		xgc_bool CMessageQueue::PopMessage( INetPacket** pPacket )
+		xgc_bool CNetEventQueue::Kick( INetPacket** pPacket )
 		{
 			if( pPacket == xgc_nullptr )
 				return false;
@@ -47,34 +47,20 @@ namespace xgc
 			return false;
 		}
 
-		xgc_void CMessageQueue::PushMessage( INetPacket* pPacket )
+		xgc_void CNetEventQueue::Push( INetPacket* pPacket )
 		{
 			if( !pPacket ) 
 				return;
-
-			if( pPacket->length() < 2 )
-			{
-				pPacket->freedom();
-				return;
-			}
-
-			// 消息计数
-			++mIndex;
 
 			std::lock_guard< std::mutex > lock( mMsgGuard );
 			mPacketList.push_back( pPacket );
 		}
 
-		xgc_size CMessageQueue::Length() const
+		xgc_size CNetEventQueue::Length() const
 		{
 			std::lock_guard< std::mutex > lock( mMsgGuard );
 
 			return mPacketList.size();
-		}
-
-		xgc_void CMessageQueue::Release()
-		{
-			delete this;
 		}
 	}
 }

@@ -17,10 +17,21 @@ namespace xgc
 
 		class asio_Socket : public std::enable_shared_from_this< asio_Socket >
 		{
+		friend class asio_ServerBase;
+		friend class asio_SocketMgr;
 		public:
-			asio_Socket( io_service& s, INetworkSession* holder, xgc_uint16 timeout );
+			asio_Socket( io_service& s, xgc_lpvoid userdata, xgc_uint16 timeout );
 
 			~asio_Socket();
+
+			/*!
+			 *
+			 * \brief 连接到服务器
+			 *
+			 * \author albert.xu
+			 * \date 十一月 2015
+			 */
+			xgc_void hangup( xgc_lpvoid from );
 
 			/*!
 			 *
@@ -38,7 +49,7 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void accept( xgc_lpvoid from );
+			xgc_void accept( int event );
 
 			/*!
 			 *
@@ -48,6 +59,15 @@ namespace xgc
 			 * \date 十一月 2015
 			 */
 			xgc_void send( xgc_lpvoid data, xgc_size size, xgc_bool last = false );
+
+			/*!
+			*
+			* \brief 合并消息并发送
+			*
+			* \author albert.xu
+			* \date 十一月 2015
+			*/
+			xgc_void send( const std::list< std::tuple< xgc_lpvoid, xgc_size > >& buffers );
 
 			/*!
 			 *
@@ -66,10 +86,31 @@ namespace xgc
 			* \date 十一月 2015
 			*/
 			xgc_ulong get_socket_info( xgc_int16 mask, xgc_byte* data );
+
+			/*!
+			*
+			* \brief 关闭连接
+			*
+			* \author albert.xu
+			* \date 十一月 2015
+			*/
+			xgc_void make_event( xgc_uint32 event, xgc_uint64 bring );
 		private:
 			/*!
+			*
+			* \brief 设置连接句柄
+			*
+			* \author albert.xu
+			* \date 十一月 2015
+			*/
+			xgc_void set_handle( network_t handler )
+			{
+				handle_ = handler;
+			}
+
+			/*!
 			 *
-			 * \brief 连接成功
+			 * \brief 处理连接建立事件
 			 *
 			 * \author albert.xu
 			 * \date 十一月 2015
@@ -110,44 +151,74 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void handle_timer();
+			xgc_void handle_timer( const asio::error_code& e );
 
 		public:
-			ip::tcp::socket& socket()
+			///
+			/// \brief 获取来源信息
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:57
+			///
+			xgc_lpvoid get_from()const
 			{
-				return socket_;
+				return from_;
 			}
 
-			xgc_lpvoid	get_userdata()const
-			{
-				return holder_->GetUserdata();
-			}
-
-			network_t	get_handler()const
+			///
+			/// \brief 获取连接句柄
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:58
+			///
+			network_t get_handle()const
 			{
 				return handle_;
 			}
 
-			xgc_void set_handler( network_t handler )
-			{
-				handle_ = handler;
-			}
-
-			xgc_void set_userdata( xgc_lpvoid userdata )
-			{
-				holder_->SetUserdata( userdata );
-			}
-
+			///
+			/// \brief 是否是连接状态
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:58
+			///
 			xgc_bool is_connected()const
 			{
-				return socket_.is_open();
+				return socket_.is_open() && connect_status_ == 1;
 			}
 
-			xgc_bool belong( xgc_lpvoid token )
+			///
+			/// \brief 判断从属关系
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:58
+			///
+			xgc_bool belong( xgc_lpvoid srv )
 			{
-				return token == from_;
+				return srv == from_;
 			}
 
+			///
+			/// \brief 设置用户数据
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:59
+			///
+			xgc_void set_userdata( xgc_lpvoid userdata )
+			{
+				userdata_ = userdata;
+			}
+
+			///
+			/// \brief 获取用户数据
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 14:59
+			///
+			xgc_lpvoid get_userdata()const
+			{
+				return userdata_;
+			}
 		private:
 			ip::tcp::socket		socket_;            // 套接字
 			std::mutex			send_buffer_lock;   // 发送缓冲区锁
@@ -158,8 +229,8 @@ namespace xgc
 			std::atomic< xgc_uint16 > connect_status_;   // 当前连接状态 0 - 未连接， 1 - 已连接， 2 - 等待关闭
 			network_t			handle_;            // 网络句柄
 			xgc_lpvoid			from_;			    // 来自哪里
+			xgc_lpvoid			userdata_;			// 用户数据
 			asio::steady_timer	timer_;			    // 保活定时器
-			INetworkSession		*holder_;           // 数据处理句柄
 		};
 
 		typedef std::shared_ptr< asio_Socket > asio_SocketPtr;

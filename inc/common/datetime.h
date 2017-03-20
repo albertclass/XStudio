@@ -8,6 +8,7 @@
 #include "xutility.h"
 
 #include <time.h>
+#include <chrono>
 
 namespace xgc
 {
@@ -724,6 +725,13 @@ namespace xgc
 			return datetime::now().to_microseconds();
 		}
 
+		template< class _Duration >
+		xgc_time64 ticks()
+		{
+			return std::chrono::duration_cast<_Duration>(
+				std::chrono::steady_clock::now().time_since_epoch()
+			).count();
+		}
 	}  // end namespace common
 }  // end namespace xgc
 

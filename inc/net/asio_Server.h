@@ -34,7 +34,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			asio_ServerBase( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, const pfnCreateHolder & creator );
+			asio_ServerBase( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator );
 
 			///
 			/// \brief 析构
@@ -60,6 +60,16 @@ namespace xgc
 			///
 			xgc_void StopServer( xgc_bool bCloseAllLink = true );
 
+			///
+			/// \brief 创建连接会话
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 15:01
+			///
+			INetworkSession* CreateSession()
+			{
+				return creator_();
+			}
 		protected:
 			///
 			/// \brief 接受连接
@@ -78,17 +88,16 @@ namespace xgc
 			xgc_void post_accept();
 
 		protected:
+			/// 网络服务对象
 			io_service&			service_;
+			/// 连接
 			ip::tcp::acceptor	acceptor_;
+			/// 超时时间
 			xgc_uint16			timeout_;
+			/// 连接队列数
 			xgc_uint16			acceptor_count_;
-			///
-			/// \brief 创建网络会话
-			///
-			/// \author albert.xu
-			/// \date 2016/02/26 15:48
-			///
-			pfnCreateHolder		creator_;
+			/// 网络消息处理句柄
+			SessionCreator		creator_;
 		};
 	}
 }

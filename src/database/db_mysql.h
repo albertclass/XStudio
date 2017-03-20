@@ -1,6 +1,19 @@
 #pragma once
 #ifndef _DB_MYSQL_H_
 #define _DB_MYSQL_H_
+
+#ifdef _WINDOWS
+#	include <WinSock2.h>
+#	pragma comment( lib, "ws2_32.lib")
+#	include <mysql.h>
+#	include <errmsg.h>
+#endif
+
+#ifdef _LINUX
+#	include <mysql/mysql.h>
+#	include <mysql/errmsg.h>
+#endif
+
 namespace xgc
 {
 	namespace sql

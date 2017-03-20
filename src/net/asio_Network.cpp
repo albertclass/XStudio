@@ -9,8 +9,7 @@
 /// 网络API封装
 ///
 ///////////////////////////////////////////////////////////////
-#include "asio_Header.h"
-#include "NetSession.h"
+#include "Header.h"
 
 namespace xgc
 {
@@ -35,7 +34,7 @@ namespace xgc
 		{
 			for( int i = 0; i < insert_workthread; ++i )
 			{
-				workthreads_.push_back( std::shared_ptr<thread>( XGC_NEW asio::thread( std::bind( &asio_Network::run, this ) ) ) );
+				workthreads_.emplace_back( std::thread( std::bind( &asio_Network::run, this ) ) );
 			}
 
 			return true;
@@ -47,7 +46,7 @@ namespace xgc
 
 			for( size_t i = 0; i < workthreads_.size(); ++i )
 			{
-				workthreads_[i]->join();
+				workthreads_[i].join();
 			}
 
 			SAFE_DELETE( service_ );
@@ -58,257 +57,6 @@ namespace xgc
 		{
 			static asio_Network asio_network;
 			return asio_network;
-		}
-
-		xgc_bool asio_InitNetwork( int workthreads )
-		{
-			getSocketMgr().Initialize();
-			getNetwork().insert_workthread( workthreads );
-			return true;
-		}
-
-		xgc_void asio_FiniNetwork()
-		{
-			getSocketMgr().Final( 10000 );
-			getNetwork().exit();
-		}
-
-		xgc_uintptr asio_StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
-		{
-			if( queue == xgc_nullptr )
-			{
-				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
-			}
-
-			if( queue == xgc_nullptr )
-				return 0;
-
-			asio_ServerBase *server = XGC_NEW asio_ServerBase( 
-				getNetwork().Ref(), 
-				10,
-				timeout,
-				[queue](){
-					return XGC_NEW CServerSession( queue );
-			});
-
-			if( server )
-				server->StartServer( address, port );
-
-			return (xgc_uintptr) server;
-		}
-
-		xgc_uintptr asio_StartServerEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
-		{
-			asio_ServerBase *server = XGC_NEW asio_ServerBase( 
-				getNetwork().Ref(), 
-				10, 
-				timeout,
-				creator );
-
-			if( server )
-				server->StartServer( address, port );
-
-			return (xgc_uintptr) server;
-		}
-
-		xgc_void asio_CloseServer( xgc_uintptr server_h )
-		{
-			asio_ServerBase *server = (asio_ServerBase*) server_h;
-			server->StopServer();
-
-			SAFE_DELETE( server );
-		}
-
-		xgc_bool asio_Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
-		{
-			if( queue == xgc_nullptr )
-			{
-				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
-			}
-
-			if( !asio_Connect( getNetwork().Ref(), address, port, timeout, queue ) )
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		xgc_bool asio_ConnectAsync( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue )
-		{
-			if( queue == xgc_nullptr )
-			{
-				queue = MessageQueuePtr( XGC_NEW CMessageQueue, std::mem_fun( &CMessageQueue::Release ) );
-			}
-
-			return asio_ConnectAsync( getNetwork().Ref(), address, port, timeout, queue );
-		}
-
-		xgc_bool asio_ConnectEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
-		{
-			if( !asio_ConnectEx( getNetwork().Ref(), address, port, timeout, creator ) )
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		xgc_bool asio_ConnectAsyncEx( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator )
-		{
-			return asio_ConnectAsyncEx( getNetwork().Ref(), address, port, timeout, creator );
-		}
-
-		//////////////////////////////////////////////////////////////////////////
-		// 发送消息包
-		xgc_void asio_SendPacket( network_t handle, xgc_lpvoid data, xgc_size size )
-		{
-			asio_SocketPtr pSocket = getSocketMgr().getSocket( handle );
-
-			if( pSocket )
-			{
-				pSocket->send( data, size );
-			}
-		}
-
-		xgc_void asio_SendLastPacket( network_t handle, xgc_lpvoid data, xgc_size size )
-		{
-			asio_SocketPtr pSocket = getSocketMgr().getSocket( handle );
-			if( pSocket )
-			{
-				pSocket->send( data, size, true );
-			}
-		}
-
-		xgc_void asio_SendPackets( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size )
-		{
-			for( xgc_uint32 i = 0; i < count; ++i )
-			{
-				asio_SocketPtr pSocket = getSocketMgr().getSocket( handle[i] );
-				if( pSocket )
-				{
-					pSocket->send( data, size );
-				}
-			}
-		}
-
-		xgc_void asio_SendToGroup( group_t group, xgc_lpvoid data, xgc_size size, xgc_bool toself )
-		{
-			asio_SocketMgr::CSocketGroup* pGroup = getSocketMgr().FetchHandleGroup( group );
-			if( pGroup )
-			{
-				if( toself )
-				{
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pGroup->network_ );
-					if( pSocket )
-					{
-						pSocket->send( data, size );
-					}
-				}
-
-				asio_SocketMgr::CSocketGroup::iterator i = pGroup->begin();
-				while( i != pGroup->end() )
-				{
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( *i );
-					if( pSocket )
-					{
-						pSocket->send( data, size );
-					}
-					++i;
-				}
-				getSocketMgr().FreeHandleGroup( pGroup );
-			}
-		}
-
-		xgc_void asio_CloseLink( network_t handle )
-		{
-			asio_SocketPtr pSocket = getSocketMgr().getSocket( handle );
-			if( pSocket )
-			{
-				pSocket->close();
-			}
-		}
-
-		xgc_uintptr asio_ExecuteState( xgc_uint32 operate_code, xgc_uintptr param )
-		{
-			XGC_ASSERT_RETURN( param, -1 );
-			switch( operate_code )
-			{
-				case Operator_NewGroup:
-				{
-					Param_NewGroup* pParam = (Param_NewGroup*) param;
-					return getSocketMgr().NewGroup( pParam->self_handle );
-				}
-				break;
-				case Operator_EnterGroup:
-				{
-					Param_EnterGroup* pParam = (Param_EnterGroup*) param;
-					return getSocketMgr().EnterGroup( pParam->group, pParam->handle );
-				}
-				break;
-				case Operator_LeaveGroup:
-				{
-					Param_LeaveGroup* pParam = (Param_LeaveGroup*) param;
-					return getSocketMgr().LeaveGroup( pParam->group, pParam->handle );
-				}
-				break;
-				case Operator_RemoveGroup:
-				{
-					Param_RemoveGroup* pParam = (Param_RemoveGroup*) param;
-					return getSocketMgr().RemoveGroup( pParam->group );
-				}
-				break;
-				case Operator_GetUserdata:
-				{
-					Param_GetUserdata* pParam = (Param_GetUserdata*) param;
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
-					if( pSocket )
-					{
-						pParam->userdata_ptr = pSocket->get_userdata();
-						return 0;
-					}
-					return -1;
-				}
-				break;
-				case Operator_SetUserdata:
-				{
-					Param_SetUserdata* pParam = (Param_SetUserdata*) param;
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
-					if( pSocket )
-					{
-						pSocket->set_userdata( pParam->userdata_ptr );
-						return 0;
-					}
-					return -1;
-				}
-				break;
-				case Operator_SetTimeout:
-				{
-					Param_SetTimeout* pParam = (Param_SetTimeout*) param;
-				}
-				break;
-				case Operator_QueryHandleInfo:
-				{
-					Param_QueryHandleInfo* pParam = (Param_QueryHandleInfo*) param;
-
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
-					if( pSocket )
-					{
-						return pSocket->get_socket_info( pParam->mask, pParam->data );
-					}
-
-					return 0;
-				}
-				break;
-				case Operator_SetBufferSize:
-				{
-					Param_SetBufferSize* pParam = (Param_SetBufferSize*) param;
-					set_send_buffer_size( pParam->send_buffer_size );
-					set_recv_buffer_size( pParam->recv_buffer_size );
-				}
-				break;
-			}
-			return 0;
 		}
 	}
 }

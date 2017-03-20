@@ -8,9 +8,35 @@
 #ifndef __DATABASE_H
 #define __DATABASE_H
 
-#include "config.h"
+#include "defines.h"
+
 #include <functional>
 #include <memory>
+
+#include "logger.h"
+#if defined( _WINDOWS )
+#	ifdef _DB_EXPORTS
+#	 ifdef _DLL
+#		define DATABASE_API __declspec(dllexport)
+#	 else
+#		define DATABASE_API
+#	 endif
+#	else
+#	 ifdef _DB_STATIC
+#		define DATABASE_API
+#	 else
+#		define DATABASE_API __declspec(dllimport)
+#	 endif
+#	endif
+#elif defined( __GNUC__ )
+#	if defined( _DB_EXPORTS ) && defined( _DLL )
+#		define DATABASE_API __attribute__((__visibility__("default")))
+#	else
+#		define DATABASE_API
+#	endif
+#else 
+#	define DATABASE_API
+#endif
 
 namespace xgc
 {

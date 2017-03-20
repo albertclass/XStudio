@@ -19,24 +19,41 @@ namespace xgc
 	{
 #pragma pack(1)
 
-		//消息头定义
+		/// 消息头定义
 		struct MessageHeader
 		{
-			xgc_uint16 length;
-			xgc_byte type;
-			xgc_byte code;
+			/// 消息包总长度
+			xgc_uint16	length;
+			/// 消息类型
+			xgc_byte	type;
+			/// 消息编号
+			xgc_byte	code;
 		};
 
 #pragma pack()
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		#define SYSTEM_MESSAGE_TYPE	0
-		#define EVENT_ACCEPT	0
-		#define EVENT_CLOSE		1
+		/// 套接字消息
+		#define SOCKET_MESSAGE_TYPE	0xff
+		/// 通知消息
+		#define NOTIFY_MESSAGE_TYPE	0xfe
+
+		/// 连接建立事件
+		#define EVENT_HANGUP	0
+		/// 连接建立事件
+		#define EVENT_ACCEPT	1
+		/// 连接建立事件
 		#define EVENT_CONNECT	2
-		#define EVENT_ERROR		3
-		#define EVENT_PING		4
-		#define EVENT_PONG		5
+		/// 连接关闭事件
+		#define EVENT_CLOSE		3
+		/// 连接错误事件
+		#define EVENT_ERROR		4
+		/// 数据事件
+		#define EVENT_DATA		5
+		/// PING消息
+		#define EVENT_PING		6
+		/// 计时器消息
+		#define EVENT_TIMER		7
 
 		#define NET_ERROR_CONNECT				0x87771000L
 		#define NET_ERROR_CONNECT_TIMEOUT		0x87771001L
@@ -59,6 +76,126 @@ namespace xgc
 		typedef xgc_uint32	group_t;
 
 		///
+		/// \brief 数据包接口
+		///
+		/// \author albert.xu
+		/// \date 2016/02/17 16:19
+		///
+		struct INetPacket
+		{
+			///
+			/// \brief 数据首地址
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:40
+			///
+			virtual xgc_lpvoid	data() = 0;
+
+			///
+			/// \brief 数据长度
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:40
+			///
+			virtual xgc_size	size()const = 0;
+
+			///
+			/// \brief 数据包总容量
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:40
+			///
+			virtual xgc_size	capacity()const = 0;
+
+			///
+			/// \brief 连接句柄
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:40
+			///
+			virtual network_t	handle()const = 0;
+
+			///
+			/// \brief 消息包创建时的时间戳
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:41
+			///
+			virtual time_t		timestamp()const = 0;
+
+			///
+			/// \brief 释放消息包
+			///
+			/// \author albert.xu
+			/// \date 2016/02/24 11:46
+			///
+			virtual xgc_void	freedom() throw() = 0;
+		};
+
+		///
+		/// \brief 连接会话接口
+		///
+		/// \author albert.xu
+		/// \date 2017/03/01 10:41
+		///
+		struct NETBASE_API INetworkSession
+		{
+			///
+			/// \brief 数据包是否
+			/// \return	0 ~ 成功, -1 ~ 失败
+			///
+			virtual int OnParsePacket( const void* data, xgc_size size ) = 0;
+
+			///
+			/// \brief 连接建立
+			///
+			/// \author albert.xu
+			/// \date 2017/02/28 11:09
+			///
+			virtual xgc_void OnAccept( net::network_t handle ) = 0;
+
+			///
+			/// \brief 连接建立
+			///
+			/// \author albert.xu
+			/// \date 2017/02/28 11:09
+			///
+			virtual xgc_void OnConnect( net::network_t handle ) = 0;
+
+			///
+			/// \brief 连接错误
+			///
+			/// \author albert.xu
+			/// \date 2017/02/28 11:09
+			///
+			virtual xgc_void OnError( xgc_uint32 error_code ) = 0;
+
+			///
+			/// \brief 连接关闭
+			///
+			/// \author albert.xu
+			/// \date 2017/02/28 11:10
+			///
+			virtual xgc_void OnClose() = 0;
+
+			///
+			/// \brief 接收数据
+			///
+			/// \author albert.xu
+			/// \date 2017/02/28 11:10
+			///
+			virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) = 0;
+
+			///
+			/// \brief 网络保活事件
+			///
+			/// \author albert.xu
+			/// \date 2017/03/03 10:41
+			///
+			virtual xgc_void OnAlive() = 0;
+		};
+
+		///
 		/// \brief 新建组
 		///
 		/// \return 成功 返回新的组ID -1 没有可用的组编号
@@ -67,7 +204,7 @@ namespace xgc
 		///
 		struct Param_NewGroup
 		{
-			network_t self_handle; 
+			network_t self_handle;
 		};
 		#define Operator_NewGroup		0	
 
@@ -119,12 +256,12 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/26 16:12
 		///
-		struct Param_GetUserdata
+		struct Param_GetSession
 		{
 			network_t	handle;
-			xgc_lpvoid	userdata_ptr;
+			INetworkSession* session;
 		};
-		#define Operator_GetUserdata	4
+		#define Operator_GetSession	4
 
 		///
 		/// \brief 设置用户数据
@@ -133,12 +270,12 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/26 16:12
 		///
-		struct Param_SetUserdata
+		struct Param_SetSession
 		{
 			network_t	handle;
-			xgc_lpvoid	userdata_ptr;
+			INetworkSession* session;
 		};
-		#define Operator_SetUserdata	5	
+		#define Operator_SetSession	5
 
 		///
 		/// \brief 设置超时时间
@@ -195,265 +332,129 @@ namespace xgc
 		};
 		#define Operator_SetBufferSize	8
 
-		///
-		/// \brief 数据包接口
-		///
-		/// \author albert.xu
-		/// \date 2016/02/17 16:19
-		///
-		struct INetPacket
-		{
-			///
-			/// \brief 数据包首地址
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_lpcstr	header()const = 0;
-
-			///
-			/// \brief 数据包长度
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size	length()const = 0;
-
-			///
-			/// \brief 数据首地址
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_lpcstr	data()const = 0;
-
-			///
-			/// \brief 数据长度
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size	size()const = 0;
-
-			///
-			/// \brief 数据包总容量
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size	capacity()const = 0;
-
-			///
-			/// \brief 连接句柄
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual network_t	handle()const = 0;
-
-			///
-			/// \brief 消息包创建时的时间戳
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:41
-			///
-			virtual time_t		timestamp()const = 0;
-
-			///
-			/// \brief 释放消息包
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:46
-			///
-			virtual xgc_void	freedom() throw() = 0;
-		};
-
-		///
-		/// \brief 消息队列接口
-		///
-		/// \author albert.xu
-		/// \date 2016/02/17 16:19
-		///
-		struct IMessageQueue
-		{
-			virtual xgc_bool PopMessage( INetPacket** ) = 0;
-			virtual xgc_void PushMessage( INetPacket* ) = 0;
-
-			virtual xgc_size Length()const = 0;
-
-			virtual xgc_void Release() = 0;
-		};
-
-		typedef std::shared_ptr< IMessageQueue > MessageQueuePtr;
-
-		///
-		/// \brief 消息协议解析接口
-		///
-		/// \author albert.xu
-		/// \date 2016/02/17 16:20
-		///
-		struct NETBASE_API IProtocal
-		{
-			virtual xgc_size	header_space() = 0;
-			// return data length include head length.
-			virtual xgc_size	packet_length( xgc_lpstr header ) = 0;
-			// filter your interesting packet, return event code
-			virtual xgc_uint32	packet_filter( xgc_lpstr header ) = 0;
-			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
-			// return packet write size;
-			virtual xgc_size	packet_system( xgc_byte event, xgc_lpstr header ) = 0;
-			// set data length exclude head length.
-			virtual xgc_size	packet_finial( xgc_lpstr header, xgc_size length ) = 0;
-			// verify packet data correctly
-			virtual xgc_bool	packet_verifiy( xgc_lpstr header, xgc_size size, xgc_lpvoid context) = 0;
-
-			//////////////////////////////////////////////////////////////////////////
-			// decrypt packet return dest buffer need size if output is null
-			// otherwise, return actual size of decrypt data size
-			//////////////////////////////////////////////////////////////////////////
-			virtual xgc_size	packet_decrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context)  = 0;
-
-			//////////////////////////////////////////////////////////////////////////
-			// encrypt packet return actual size, work in multil thread
-			//////////////////////////////////////////////////////////////////////////
-			virtual xgc_size	packet_encrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context) = 0;
-		};
-
-		class NETBASE_API ProtocalDefault : IProtocal 
-		{
-		public:
-			virtual xgc_size	header_space();
-			// return data length include head length.
-			virtual xgc_size	packet_length( xgc_lpstr header );
-			// filter your interesting packet, return event code
-			virtual xgc_uint32	packet_filter( xgc_lpstr header );
-			// event = EVENT_CODE { EVENT_ACCEPT, EVENT_CLOSE, EVENT_ERROR, EVENT_CONNECT, EVENT_PING, EVENT_PONG }
-			// return packet write size;
-			virtual xgc_size	packet_system( xgc_byte event, xgc_lpstr header );
-			// set data length exclude head length.
-			virtual xgc_size	packet_finial( xgc_lpstr header, xgc_size length );
-			// verify packet data correctly
-			virtual xgc_bool	packet_verifiy( xgc_lpstr header, xgc_size size, xgc_lpvoid context);
-
-			//////////////////////////////////////////////////////////////////////////
-			// decrypt packet return dest buffer need size if output is null
-			// otherwise, return actual size of decrypt data size
-			//////////////////////////////////////////////////////////////////////////
-			virtual xgc_size	packet_decrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context);
-
-			//////////////////////////////////////////////////////////////////////////
-			// encrypt packet return actual size, work in multil thread
-			//////////////////////////////////////////////////////////////////////////
-			virtual xgc_size	packet_encrypt( xgc_lpstr data, xgc_size size, xgc_lpstr output, xgc_lpvoid context);
-		};
-
-		///
-		/// \brief 网络会话接口
-		///
-		/// \author albert.xu
-		/// \date 2016/02/17 16:20
-		///
-		struct NETBASE_API INetworkSession
-		{
-			///
-			/// \brief 数据包是否
-			/// \return	0 ~ 成功, -1 ~ 失败
-			///
-			virtual int OnParsePacket( const void* data, xgc_size size ) = 0;
-
-			///
-			/// \brief 连接关闭时的处理函数。重载此函数时需在做完应用需要做的事情后将连接删除或重置
-			/// \return	0 ~ 成功, -1 ~ 失败
-			///
-			virtual int OnClose() = 0;
-
-			///
-			/// \brief 新的远端连接成功时的处理函数
-			/// \param	new_handle	新连接的套接字
-			/// \return	0 ~ 成功, -1 ~ 失败
-			///
-			virtual int OnAccept( network_t handle, xgc_lpvoid from ) = 0;
-
-			///
-			/// \brief 成功接受到网络数据包后提交到iocp上层应用处理的函数
-			/// \param	data 接受到的数据,在中len范围内可靠有效
-			/// \param	len	接受到数据的长度,此数据由iocp保证其真实性。
-			/// \return	0 ~ 成功, -1 ~ 失败
-			///
-			virtual int OnRecv( const void *data, xgc_size size ) = 0;
-
-			///
-			/// \brief 成功发送网络数据包后给iocp上层处理的函数，目前暂时未使用
-			/// \param data 成功发送的数据
-			/// \param len 成功发送的数据长度
-			/// \return	0 ~ 成功, -1 ~ 失败
-			///
-			virtual int OnSend( const void *data, xgc_size size ) = 0;
-
-			///
-			/// \brief iocp捕获到错误并提供给应用的处理机会
-			/// \param error 错误代码
-			/// \return 0 ~ 成功, -1 ~ 失败
-			virtual int OnError( int error ) = 0;
-
-			///
-			/// \brief 保活定时器，用于定时发送保活消息
-			/// \return 0 ~ 成功, -1 ~ 失败
-			virtual int OnAlive() = 0;
-
-			///
-			/// \brief 获取用户数据
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 16:23
-			///
-			virtual int GetPing()const = 0;
-
-			///
-			/// \brief 获取用户数据
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 16:23
-			///
-			virtual xgc_lpvoid GetUserdata()const = 0;
-
-			///
-			/// \brief 设置用户数据
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 16:23
-			///
-			virtual xgc_void SetUserdata( xgc_lpvoid userdata ) = 0;
-		};
-
-		/// 网络会话创建函数指针类型
-		typedef std::function< INetworkSession* () > pfnCreateHolder;
-
 		/// 消息处理函数指针类型
-		typedef xgc_void (*pfnProcessor)( network_t, xgc_lpcstr, xgc_size );
+		typedef xgc_void (*MsgProcessor)( network_t, xgc_lpvoid, xgc_size );
 
-		enum eNetLibrary{ asio };
+		/// 创建连接会话
+		typedef INetworkSession* (*SessionCreator)();
+
+		/// 缓冲链定义
+		typedef std::list< std::tuple< xgc_lpvoid, xgc_size > > BufferChains;
+
 		extern "C"
 		{
-			NETBASE_API extern xgc_bool		(*InitNetwork)( int workthreads );
-			NETBASE_API extern xgc_void		(*FiniNetwork)();
-			NETBASE_API extern xgc_uintptr  (*StartServer)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
-			NETBASE_API extern xgc_uintptr  (*StartServerEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
-			NETBASE_API extern xgc_void		(*CloseServer)( xgc_uintptr server_h );
-			NETBASE_API extern xgc_bool		(*Connect)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
-			NETBASE_API extern xgc_bool		(*ConnectAsync)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, MessageQueuePtr &queue );
-			NETBASE_API extern xgc_bool		(*ConnectEx)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
-			NETBASE_API extern xgc_bool	    (*ConnectExAsync)( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, const pfnCreateHolder &creator );
-			NETBASE_API extern xgc_void		(*SendPacket)( network_t handle, xgc_lpvoid data, xgc_size size );
-			NETBASE_API extern xgc_void		(*SendLastPacket)( network_t handle, xgc_lpvoid data, xgc_size size );
-			NETBASE_API extern xgc_void		(*SendPackets)( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size );
-			NETBASE_API extern xgc_void		(*SendToGroup)( group_t group, xgc_lpvoid data, xgc_size size, xgc_bool toself );
-			NETBASE_API extern xgc_void		(*CloseLink)( network_t handle );
-			NETBASE_API extern xgc_uintptr	(*ExecuteState)( xgc_uint32 operate_code, xgc_uintptr param );// 返回 0 表示成功, < 0 表示发生错误 > 0 表示可以正常执行,但有其他问题.
+			/// 
+			/// 
+			/// \brief 开启服务器
+			/// 
+			/// \author albert.xu
+			/// \date 十一月 2015
+			/// 
+			NETBASE_API xgc_lpvoid StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, SessionCreator creator );
 
-			// 服务器使用
-			NETBASE_API xgc_void InstallDeliver( xgc_byte type, xgc_byte id, pfnProcessor fn );
-			NETBASE_API xgc_long DeliverMessage( MessageQueuePtr pQueue, xgc_long nCount );
+			///
+			/// \brief 关闭服务器
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:00
+			///
+			NETBASE_API xgc_void CloseServer( xgc_lpvoid server );
+
+			///
+			/// \brief 连接到服务器
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:00
+			///
+			NETBASE_API xgc_bool Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, INetworkSession* session );
+
+			///
+			/// \brief 异步连接到服务器
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:00
+			///
+			NETBASE_API xgc_bool ConnectAsync( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, INetworkSession* session );
+
+			///
+			/// \brief 发送消息包
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void SendPacket( network_t handle, xgc_lpvoid data, xgc_size size );
+
+			///
+			/// \brief 发送消息包
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void SendPacketChains( network_t handle, const BufferChains& buffers );
+
+			///
+			/// \brief 发送消息包并断开网络连接
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void SendLastPacket( network_t handle, xgc_lpvoid data, xgc_size size );
+
+			///
+			/// \brief 发送一组消息包
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void SendPackets( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size );
+
+			///
+			/// \brief 发送到一个组
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void SendToGroup( group_t group, xgc_lpvoid data, xgc_size size, xgc_bool toself );
+
+			///
+			/// \brief 关闭连接
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_void CloseLink( network_t handle );
+
+			///
+			/// \brief 设置定时器
+			///
+			/// \author albert.xu
+			/// \date 2017/03/14 17:17
+			///
+			NETBASE_API xgc_bool SetNetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter );
+
+			///
+			/// \brief 设置定时器
+			///
+			/// \author albert.xu
+			/// \date 2017/03/14 17:17
+			///
+			NETBASE_API xgc_bool DelNetTimer( xgc_uint32 nTimerId );
+
+			///
+			/// \brief 处理网络事件
+			///
+			/// \author albert.xu
+			/// \date 2017/03/02 13:54
+			///
+			NETBASE_API xgc_long ProcessNetEvent( xgc_long step );
+
+			///
+			/// \brief 设置网络状态
+			///
+			/// \author albert.xu
+			/// \date 2016/02/17 16:01
+			///
+			NETBASE_API xgc_ulong ExecuteState( xgc_uint32 operate_code, xgc_lpvoid param );
 
 			///
 			/// \brief 加载网络库
@@ -461,7 +462,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 16:25
 			///
-			NETBASE_API xgc_bool CreateNetwork( eNetLibrary );
+			NETBASE_API xgc_bool CreateNetwork( int workthreads );
 
 			///
 			/// \brief 销毁网络库

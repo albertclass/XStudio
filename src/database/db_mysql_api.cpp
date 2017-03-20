@@ -1,4 +1,3 @@
-#include "config.h"
 #include "database.h"
 #include "db_mysql.h"
 namespace xgc

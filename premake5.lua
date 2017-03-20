@@ -1,12 +1,17 @@
-local scriptPath = _SCRIPT_PATH
-
 solution "xgc"
     configurations { "Debug", "Release" }
     location "prj"
     characterset "MBCS"
 
-    filter { "system:windows", "configurations:Relase" }
-        flags { "NoIncrementalLink", "LinkTimeOptimization" }
+    filter { 
+    	"system:windows", 
+    	"configurations:Relase" 
+    }
+    
+    flags { 
+    	"NoIncrementalLink", 
+    	"LinkTimeOptimization" 
+   	}
 
 project "common"
     kind "SharedLib"
@@ -92,6 +97,49 @@ project "net"
         architecture "x64"
         defines { "LINUX64" }
 
+project "net_module"
+    kind "SharedLib"
+    language "C++"
+    location "prj/net"
+    includedirs { "inc/net_module", "inc/net", "inc/common" }
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+        "inc/net_module/**.h",
+        "src/net_module/**.cpp",
+    }
+
+    vpaths {
+        ["Header Files/*"] = { "inc/net_module/**.h" },
+        ["Source Files/*"] = { "src/net_module/**.cpp" }
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
+        optimize "On"
+
+    filter "system:windows"
+        implibdir "lib/%{cfg.buildcfg}"
+        libdirs { "lib/%{cfg.buildcfg}" }
+        links { "common.lib", "net.lib" }
+
+        architecture "x64"
+        defines { "WIN64", "_IMAGEHLP64" }
+
+    filter "system:linux"
+        implibdir "bin/%{cfg.buildcfg}"
+        links { "stdc++", "common", "net" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+
 project "database"
     kind "SharedLib"
     language "C++"
@@ -108,7 +156,7 @@ project "database"
         "src/database/**.h",
         "src/database/**.hpp",
         "src/database/**.cpp",
-        "src/database/**.inl",
+        "src/database/**.inl"
     }
 
     vpaths {
@@ -140,11 +188,54 @@ project "database"
         architecture "x64"
         defines { "LINUX64" }
 
+project "framework"
+    kind "SharedLib"
+    language "C++"
+    location "prj/framework"
+    includedirs { "inc/framework", "inc/common", "inc/net", "inc/database"}
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+        "inc/framework/**.h",
+        "src/framework/**.cpp"
+    }
+
+    vpaths {
+    	["Header Files/*"] = { "inc/framework/**.h" },
+        ["Source Files/*"] = { "src/framework/**.cpp" },
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG" }
+        symbols "On"
+        optimize "On"
+    
+    filter "system:windows"
+    	libdirs { "lib/%{cfg.buildcfg}" }
+    	links { "common.lib", "net.lib", "database.lib" }
+        architecture "x64"
+        defines { "WIN64" }
+
+    filter "system:linux"
+       	libdirs { "bin/%{cfg.buildcfg}" }
+        links { "stdc++", "rt", "pthread", "common", "net", "database" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+
+
 project "unittest"
     kind "ConsoleApp"
     language "C++"
     location "prj/unittest"
-    includedirs {"inc/common", "inc/net"}
+    includedirs {"inc/common", "inc/net", "inc/database" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     
