@@ -186,6 +186,7 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 #define _open 	open
 #define _read 	read
 #define _write 	write
+#define _lseek	lseek
 #define _close 	close
 #define _access access
 

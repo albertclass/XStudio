@@ -49,7 +49,7 @@ struct stGlobalParam
 /// 初始化全局变量表
 /// [12/19/2014] create by albert.xu
 ///
-xgc_bool InitGlobalParams( IniFile& ini );
+xgc_bool InitGlobalParams( ini_reader& ini );
 
 ///
 /// 同步全局变量表

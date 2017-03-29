@@ -42,16 +42,12 @@
 
 // Net
 #include "Netbase.h"
+#include "net_module.h"
 
 #ifdef _WINDOWS
 #	include <WinSock2.h>
 #	pragma comment( lib, "ws2_32.lib")
 #endif
-
-// proto
-//#include "netdata.h"
-//#include "protoheader.h"
-//#include "protoenums.h"
 
 using namespace xgc;
 using namespace xgc::net;

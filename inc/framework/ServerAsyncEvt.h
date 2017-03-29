@@ -12,7 +12,7 @@ xgc_bool InitServerAsyncEvt();
 /// 投递异步事件事件
 /// [1/20/2015] create by zhangyupeng
 ///
-xgc_void PostServerEvent( const function<xgc_void()>& func );
+xgc_void PostServerEvent( const std::function<xgc_void()>& func );
 
 ///
 /// 处理异步事件事件 

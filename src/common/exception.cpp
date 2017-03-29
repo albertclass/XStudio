@@ -53,7 +53,7 @@ namespace xgc
 
 		get_normal_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception" );
 		get_normal_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "log" );
-		get_normal_path( g_exception_ext, sizeof( g_exception_dmp ), "%s", "dmp" );
+		get_normal_path( g_exception_dmp, sizeof( g_exception_dmp ), "%s", "dmp" );
 
 		// 获取进程句柄
 		hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId() );
@@ -199,16 +199,16 @@ namespace xgc
 				if( SymGetLineFromAddr( hProcess, (UINT_PTR)FrameSequence.Frame[nCur], &dwDisplacement, &lineInfo ) )
 				{
 					// Put this on the next line and indented a bit.
-					LOGEXT( lineInfo.FileName, lineInfo.LineNumber, LOGLVL_SYS_INFO, "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOGEXT( lineInfo.FileName, pSymInfo->Name, lineInfo.LineNumber, "dump stack", "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 				else
 				{
-					LOGFMT( LOGLVL_SYS_INFO, "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOGFMT( "dump stack", "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 			}
 			else
 			{
-				LOGFMT( LOGLVL_SYS_INFO, "stack frame %p", FrameSequence.Frame[nCur] );
+				LOGFMT( "dump stack", "stack frame %p", FrameSequence.Frame[nCur] );
 			}
 		}
 		SYS_INFO( "---------------stack frame end--------------" );

@@ -11,91 +11,30 @@
 #define _LOGGER_H_
 #include "defines.h"
 #include "exports.h"
+#include "datetime.h"
 
 #include <functional>
-#include <datetime.h>
-
-enum COMMON_API EExeLogLvl
-{
-	LOGLVL_SYS_ERROR = 0,
-	LOGLVL_SYS_WARNING,
-	LOGLVL_SYS_INFO,
-	LOGLVL_USR_ERROR,
-	LOGLVL_USR_WARNING,
-	LOGLVL_USR_INFO,
-	LOGLVL_DBG_ERROR,
-	LOGLVL_DBG_WARNING,
-	LOGLVL_DBG_INFO,
-	LOGLVL_SCRIPT_ERROR,
-	LOGLVL_SCRIPT_WARNING,
-	LOGLVL_SCRIPT_INFO,
-	LOGLVL_MAX,
-};
 
 #define LOGEND "\n"
 
-#define LOGEXT( FUNCTION, LINE, LEVEL, FMT, ... )	xgc::logger::write( FUNCTION, LINE, LEVEL, FMT, ##__VA_ARGS__ )
-#define LOGFMT( LEVEL, FMT, ... )					xgc::logger::write( LEVEL, FMT, ##__VA_ARGS__ )
+#define LOGEXT( FILE, FUNC, LINE, TAGS, FMT, ... ) xgc::common::get_logger( "sys.info" ).write( FILE, FUNC, LINE, TAGS, FMT, ##__VA_ARGS__ )
+#define LOGFMT( TAGS, FMT, ... ) xgc::common::get_logger( "sys.info" ).write( __FILE__, __func__, __LINE__, TAGS, FMT, ##__VA_ARGS__ )
 
-#define SYS_ERROR( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_SYS_ERROR,	FMT, ##__VA_ARGS__ )
-#define SYS_WARNING( FMT, ... ) xgc::logger::write( __FILE__, __LINE__, LOGLVL_SYS_WARNING,	FMT, ##__VA_ARGS__ )
-#define SYS_INFO( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_SYS_INFO,	FMT, ##__VA_ARGS__ )
-#define USR_ERROR( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_USR_ERROR,	FMT, ##__VA_ARGS__ )
-#define USR_WARNING( FMT, ... ) xgc::logger::write( __FILE__, __LINE__, LOGLVL_USR_WARNING,	FMT, ##__VA_ARGS__ )
-#define USR_INFO( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_USR_INFO,	FMT, ##__VA_ARGS__ )
-#define DBG_ERROR( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_DBG_ERROR,	FMT, ##__VA_ARGS__ )
-#define DBG_WARNING( FMT, ... ) xgc::logger::write( __FILE__, __LINE__, LOGLVL_DBG_WARNING,	FMT, ##__VA_ARGS__ )
-#define DBG_INFO( FMT, ... )	xgc::logger::write( __FILE__, __LINE__, LOGLVL_DBG_INFO,	FMT, ##__VA_ARGS__ )
-#define SHM_LOG( FMT, ... )		xgc::logger::write_shared( __FILE__, __LINE__, FMT, ##__VA_ARGS__ )
+#define SYS_ERROR( FMT, ... )	xgc::common::get_logger( "sys"   ).write( __FILE__, __func__, __LINE__, "error",	FMT, ##__VA_ARGS__ )
+#define SYS_WARNING( FMT, ... ) xgc::common::get_logger( "sys"   ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
+#define SYS_INFO( FMT, ... )	xgc::common::get_logger( "sys"   ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
+#define USR_ERROR( FMT, ... )	xgc::common::get_logger( "user"  ).write( __FILE__, __func__, __LINE__, "error",	FMT, ##__VA_ARGS__ )
+#define USR_WARNING( FMT, ... ) xgc::common::get_logger( "user"  ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
+#define USR_INFO( FMT, ... )	xgc::common::get_logger( "user"  ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
+#define DBG_ERROR( FMT, ... )	xgc::common::get_logger( "debug" ).write( __FILE__, __func__, __LINE__, "error",	FMT, ##__VA_ARGS__ )
+#define DBG_WARNING( FMT, ... ) xgc::common::get_logger( "debug" ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
+#define DBG_INFO( FMT, ... )	xgc::common::get_logger( "debug" ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
+#define SHM_ERROR( FMT, ... )	xgc::common::get_logger( "share" ).write( __FILE__, __func__, __LINE__, "error",	FMT, ##__VA_ARGS__ )
+#define SHM_WARNING( FMT, ... )	xgc::common::get_logger( "share" ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
+#define SHM_INFO( FMT, ... )	xgc::common::get_logger( "share" ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
 
 namespace xgc
 {
-	namespace logger
-	{
-		typedef void( *LoggerCallback )( xgc_lpvoid context, xgc_lpcstr text, xgc_size size );
-
-		///
-		/// [12/16/2013 albert.xu]
-		/// 初始化日志模块
-		///
-		COMMON_API xgc_bool init_logger( xgc_lpcstr path, LoggerCallback callback, xgc_lpvoid context );
-
-		///
-		/// [1/10/2014 albert.xu]
-		/// 清理日志系统
-		///
-		COMMON_API xgc_void fini_logger();
-
-		///
-		/// [12/26/2013 albert.xu]
-		/// 初始化共享内存日志
-		///
-		COMMON_API xgc_bool init_logger_shared( xgc_lpcstr path, xgc_lpcstr name );
-
-		///
-		/// [12/16/2013 albert.xu]
-		/// 写日志
-		///
-		COMMON_API xgc_void write( EExeLogLvl level, xgc_lpcstr format, ... );
-
-		///
-		/// [12/16/2013 albert.xu]
-		/// 写日志
-		///
-		COMMON_API xgc_void write( xgc_lpcstr function, xgc_int32 line, EExeLogLvl level, xgc_lpcstr format, ... );
-		///
-		/// [3/4/2014 albert.xu]
-		/// 共享内存日志
-		///
-		COMMON_API xgc_void write_shared( xgc_lpcstr function, xgc_int32 line, xgc_lpcstr format, ... );
-
-		///
-		/// [3/4/2014 albert.xu]
-		/// 文件日志
-		///
-		COMMON_API xgc_void write_file( xgc_lpcstr file, xgc_lpcstr format, ... );
-	}
-
 	namespace common
 	{
 		///
@@ -167,23 +106,9 @@ namespace xgc
 
 			friend class logger;
 		private:
-			logger_impl()
-			{
+			logger_impl();
 
-			}
-
-			~logger_impl()
-			{
-				for( auto it : adapters )
-				{
-					SAFE_DELETE(it);
-				}
-
-				adapters.clear();
-				format.clear();
-				filter_include.clear();
-				filter_exclude.clear();
-			}
+			~logger_impl();
 
 			logger_impl( const logger_impl & ) = delete;
 		public:
@@ -202,13 +127,13 @@ namespace xgc
 			// 添加排除关键字
 			xgc_void add_exclude( xgc_lpcstr keyword )
 			{
-				filter_include.insert( keyword );
+				filter_exclude.insert( keyword );
 			}
 
 			// 删除排除关键字
 			xgc_void del_exclude( xgc_lpcstr keyword )
 			{
-				filter_include.erase( keyword );
+				filter_exclude.erase( keyword );
 			}
 
 			// 添加适配器
@@ -285,45 +210,6 @@ namespace xgc
 			xgc_size message( xgc_char* buf, xgc_size len )
 			{
 				return vsprintf_s( buf, len, context.fmt, context.args );
-			}
-		};
-
-		class COMMON_API logger
-		{
-		private:
-			xgc_unordered_map< xgc_string, logger_impl* > loggers;
-
-		public:
-			logger_impl& get( xgc_lpcstr name )
-			{
-				auto it = loggers.find( name );
-				if( it != loggers.end() )
-					return *(it->second);
-
-				return *(logger_impl*)xgc_nullptr;
-			}
-
-			logger_impl& get_or_create( xgc_lpcstr name )
-			{
-				auto it = loggers.find( name );
-				if( it != loggers.end() )
-					return *(it->second);
-
-				auto log = XGC_NEW logger_impl();
-				auto ib = loggers.insert( std::make_pair(name, log) );
-				XGC_ASSERT( ib.second );
-
-				return *(ib.first->second);
-			}
-
-			xgc_void clear()
-			{
-				for( auto it : loggers )
-				{
-					SAFE_DELETE( it.second );
-				}
-
-				loggers.clear();
 			}
 		};
 

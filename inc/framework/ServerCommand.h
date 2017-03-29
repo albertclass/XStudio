@@ -56,7 +56,7 @@ namespace DebugCommand
 	struct CommandInfo
 	{
 		xgc_lpcstr	lpCmdString;	///< 命令
-		xgc_bool( *pfnCmd )( xgc_size, xgc_lpstr const*, const CommandInfo* ); ///< 命令行解析回调
+		xgc_bool( *pfnCmd )(xgc_size, xgc_lpstr const*, const CommandInfo*); ///< 命令行解析回调
 		xgc_lpcstr	lpIntroduction;	///< 指令简介
 		xgc_lpcstr	lpUsage;		///< 指令帮助
 
@@ -152,7 +152,7 @@ namespace DebugCommand
 /// 初始化调试指令
 /// [10/7/2014] create by albert.xu
 ///
-xgc_bool InitDebugCmd( XGC::common::IniFile &ini );
+xgc_bool InitDebugCmd( ini_reader &ini );
 
 ///
 /// 重载GM指令配置

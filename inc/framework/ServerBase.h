@@ -1,12 +1,10 @@
 #ifndef _SERVER_BASE_H_
 #define _SERVER_BASE_H_
-#include "ServerDefines.h"
 #include "ServerService.h"
 #include "ServerCommand.h"
 #include "ServerDatabase.h"
 #include "ServerEventLog.h"
 #include "ServerParams.h"
-#include "MessageHandler.h"
 
 ///
 /// 初始化服务器
@@ -15,7 +13,7 @@
 /// @param InitConfiguration 配置初始化回调
 /// @param lpParam 配置初始化参数
 ///
-xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )( IniFile &, xgc_lpvoid ), xgc_lpvoid lpParam );
+xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )( xgc::common::ini_reader &, xgc_lpvoid ), xgc_lpvoid lpParam );
 
 ///
 /// 运行服务器
@@ -68,18 +66,6 @@ xgc_bool IsServerService();
 xgc_lpcstr GetServerName();
 
 ///
-/// 转换服务器ID为数值
-/// [11/27/2014] create by albert.xu
-///
-xgc_byte GetPipeType( xgc_uint32 nPipeID );
-
-///
-/// 转换服务器ID为数值
-/// [11/27/2014] create by albert.xu
-///
-xgc_byte GetPipeIndex( xgc_uint32 nPipeID );
-
-///
 /// 获取配置路径
 /// [11/29/2014] create by albert.xu
 ///
@@ -102,185 +88,6 @@ xgc_string LuaGetConfPath( xgc_lpcstr lpRelativePath );
 /// [12/3/2014] create by albert.xu
 ///
 xgc_lpcstr GetLogPath( xgc_lpstr szPath, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
-
-//////////////////////////////////////////////////////////////////////////
-// 网络相关的函数
-//////////////////////////////////////////////////////////////////////////
-// 管道相关的网络函数
-///
-/// 获取PipeSession
-/// [12/1/2014] create by albert.xu
-///
-CPipeSession* GetPipeSession( ServerType eType, xgc_byte byIndex = 1 );
-
-///
-/// 获取PipeSession
-/// [12/9/2014] create by albert.xu
-///
-CPipeSession* GetPipeSession( xgc_uint32 nPipeID );
-
-void GetPipeSession(ServerType eType, vector<CPipeSession*>&);
-
-///
-/// 根据过滤条件获取服务器连接对象
-/// [2/20/2014 albert.xu]
-///
-CPipeSession* GetPipeSession( const std::function< xgc_bool( xgc_uint32 ) > &fnFilter );
-
-///
-/// 获取PipeSession的PipeID
-/// [12/9/2014] create by albert.xu
-///
-xgc_uint32 GetPipeID( CPipeSession* pSession );
-
-///
-/// 获取PipeSession的PipeID（字符串形式）
-/// [12/11/2014] create by albert.xu
-///
-xgc_lpcstr GetPipeID( CPipeSession* pSession, xgc_lpstr lpOutput, xgc_size nSize = 0 );
-
-//////////////////////////////////////////////////////////////////////////
-// GameSession 相关的网络函数
-//////////////////////////////////////////////////////////////////////////
-///
-/// 设置用户数据
-/// [12/1/2014] create by albert.xu
-///
-xgc_void SetUserdata( CGameSession* pSession, xgc_lpvoid pUserdata );
-
-///
-/// 获取用户数据
-/// [12/1/2014] create by albert.xu
-///
-xgc_lpvoid GetUserdata( CGameSession* pSession );
-
-///
-/// 断开连接
-/// [12/1/2014] create by albert.xu
-///
-xgc_void Disconnect( CGameSession* pSession );
-
-///
-/// 获取远端地址
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint32 GetRemoteAddr( CGameSession* pSession );
-
-///
-/// 获取远端端口
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint16 GetRemotePort( CGameSession* pSession );
-
-///
-/// 获取远端地址
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint32 GetLocalAddr( CGameSession* pSession );
-
-///
-/// 获取远端端口
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint16 GetLocalPort( CGameSession* pSession );
-
-///
-/// 获取GameSession的GateID
-/// [1/16/2015] create by jianglei.kinly
-///
-xgc_uint32 GetGateID( CGameSession* pSession );
-
-///
-/// 设置GameSession的GateID
-/// [1/16/2015] create by albert.xu
-///
-xgc_void SetGateID( CGameSession* pSession, xgc_uint32 nGateID );
-
-///
-/// 获取GameSession的TransID
-/// [1/16/2015] create by jianglei.kinly
-///
-xgc_uint32 GetTransID( CGameSession* pSession );
-
-///
-/// 设置GameSession的TransID
-/// [1/16/2015] create by jianglei.kinly
-///
-xgc_void SetTransID( CGameSession* pSession, xgc_uint32 nTransID );
-
-//////////////////////////////////////////////////////////////////////////
-// GateSession 相关的网络函数
-//////////////////////////////////////////////////////////////////////////
-///
-/// 设置用户数据
-/// [12/1/2014] create by albert.xu
-///
-xgc_void SetUserdata( CGateSession* pSession, xgc_lpvoid pUserdata );
-
-///
-/// 获取用户数据
-/// [12/1/2014] create by albert.xu
-///
-xgc_lpvoid GetUserdata( CGateSession* pSession );
-
-///
-/// 断开连接
-/// [12/1/2014] create by albert.xu
-///
-xgc_void Disconnect( CGateSession* pSession );
-
-///
-/// 获取远端地址
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint32 GetRemoteAddr( CGateSession* pSession );
-
-///
-/// 获取远端端口
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint16 GetRemotePort( CGateSession* pSession );
-
-///
-/// 获取远端地址
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint32 GetLocalAddr( CGateSession* pSession );
-
-///
-/// 获取远端端口
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint16 GetLocalPort( CGateSession* pSession );
-
-///
-/// 设置Gate关联关系
-/// [12/1/2014] create by albert.xu
-///
-xgc_void RegistGateSession( xgc_uint32 nIndex, CGateSession* pSession );
-
-///
-/// 获取GateSession
-/// [12/1/2014] create by albert.xu
-///
-CGateSession* GetGateSession( xgc_uint32 nIndex );
-
-///
-/// 获取Gate的索引编号
-/// [6/28/2015] create by albert.xu
-///
-xgc_uint32 GetGateIndex( CGateSession* pSession );
-
-//////////////////////////////////////////////////////////////////////////
-// 监控相关操作
-//////////////////////////////////////////////////////////////////////////
-xgc_void WriteToMonitor( xgc_lpcstr format, ... );
-
-///
-/// 获取是否开启了Monitor功能
-/// [12/30/2014] create by jianglei.kinly
-///
-xgc_bool GetMonitorIsOpen();
 
 //////////////////////////////////////////////////////////////////////////
 // 刷新系统调用函数

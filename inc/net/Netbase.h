@@ -17,21 +17,6 @@ namespace xgc
 {
 	namespace net
 	{
-#pragma pack(1)
-
-		/// 消息头定义
-		struct MessageHeader
-		{
-			/// 消息包总长度
-			xgc_uint16	length;
-			/// 消息类型
-			xgc_byte	type;
-			/// 消息编号
-			xgc_byte	code;
-		};
-
-#pragma pack()
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 套接字消息
 		#define SOCKET_MESSAGE_TYPE	0xff
@@ -52,8 +37,10 @@ namespace xgc
 		#define EVENT_DATA		5
 		/// PING消息
 		#define EVENT_PING		6
+		/// PONG消息
+		#define EVENT_PONG		7
 		/// 计时器消息
-		#define EVENT_TIMER		7
+		#define EVENT_TIMER		8
 
 		#define NET_ERROR_CONNECT				0x87771000L
 		#define NET_ERROR_CONNECT_TIMEOUT		0x87771001L
@@ -332,11 +319,8 @@ namespace xgc
 		};
 		#define Operator_SetBufferSize	8
 
-		/// 消息处理函数指针类型
-		typedef xgc_void (*MsgProcessor)( network_t, xgc_lpvoid, xgc_size );
-
 		/// 创建连接会话
-		typedef INetworkSession* (*SessionCreator)();
+		typedef std::function< INetworkSession* () > SessionCreator;
 
 		/// 缓冲链定义
 		typedef std::list< std::tuple< xgc_lpvoid, xgc_size > > BufferChains;
@@ -423,22 +407,6 @@ namespace xgc
 			/// \date 2016/02/17 16:01
 			///
 			NETBASE_API xgc_void CloseLink( network_t handle );
-
-			///
-			/// \brief 设置定时器
-			///
-			/// \author albert.xu
-			/// \date 2017/03/14 17:17
-			///
-			NETBASE_API xgc_bool SetNetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter );
-
-			///
-			/// \brief 设置定时器
-			///
-			/// \author albert.xu
-			/// \date 2017/03/14 17:17
-			///
-			NETBASE_API xgc_bool DelNetTimer( xgc_uint32 nTimerId );
 
 			///
 			/// \brief 处理网络事件

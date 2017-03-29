@@ -68,7 +68,7 @@ namespace xgc
 
 		xgc_void asio_ServerBase::post_accept()
 		{
-			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, creator_, timeout_ );
+			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, xgc_nullptr, timeout_ );
 			acceptor_.async_accept( pSocket->socket_, std::bind( &asio_ServerBase::handle_accept, this, pSocket, std::placeholders::_1 ) );
 		}
 	}

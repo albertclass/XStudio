@@ -6,13 +6,13 @@
 /// 初始化EventLog
 /// [12/12/2014] create by albert.xu
 ///
-xgc_bool InitializeEventLog( IniFile &ini );
+xgc_bool InitializeEventLog( ini_reader &ini );
 
 ///
 /// 写事件日志到共享内存中
 /// [12/12/2014] create by albert.xu
 ///
-xgc_bool LogEvent( xgc_lpvoid lpData );
+xgc_bool LogEvent( xgc_lpvoid pData, xgc_size nSize );
 
 ///
 /// 写事件日志到共享内存中

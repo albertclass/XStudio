@@ -12,7 +12,7 @@ struct UnitTest
 	/// 单元测试初始化
 	/// [5/12/2015] create by albert.xu
 	///
-	virtual xgc_bool Init( IniFile &ini ) = 0;
+	virtual xgc_bool Init( ini_reader &ini ) = 0;
 
 	///
 	/// 单元测试入口
@@ -59,7 +59,7 @@ UnitTestManager& getUnitTestMgr();
 /// 单元测试初始化的接口转发函数
 /// [5/12/2015] create by albert.xu
 ///
-xgc_bool UTestInit( IniFile &ini, xgc_lpvoid params );
+xgc_bool UTestInit( ini_reader &ini, xgc_lpvoid params );
 
 ///
 /// 测试入口函数

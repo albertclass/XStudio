@@ -34,13 +34,13 @@
 	}\
 
 #define XGC_CHECK_REENTER_CALL( V ) \
-	TwiceEnterChecker __FUNCTION__##_CHECKER( __FILE__, __LINE__, V );\
+	TwiceEnterChecker XGC_CONCATENATE_MACRO( XGC_UNPAR(__func__), _CHECKER( __FILE__, __LINE__, V ) );\
 
 #if defined(_WINDOWS)
 	#define FUNCTION_BEGIN\
 		try\
 		{\
-			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __FILE__, __LINE__ ); \
+			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __func__, __FILE__, __LINE__ ); \
 
 	#define FUNCTION_CATCH( ... )\
 		}\
@@ -91,7 +91,7 @@
 	#define FUNCTION_BEGIN\
 		try\
 		{\
-			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __FILE__, __LINE__ ); \
+			xgc::InvokeWatcherWarp __InvokerWatcher__( xgc::getInvokeWatcher( ), __func__, __FILE__, __LINE__ ); \
 			sigjmp_buf_stack _save_point_##__LINE__();\
 			if( int sig = sigsetjmp(sigjmp_env, 1) != 0 )\
 			{\
@@ -206,13 +206,14 @@ namespace xgc
 		xgc_uint32 AddRef() { ++mRef; return mRef; }
 		xgc_uint32 Release() { --mRef; return mRef; }
 	public:
-		void FunctionBegin( const char* function, int line );
+		void FunctionBegin( const char* funcname, const char* filename, int line );
 		void FunctionEnd( xgc_time64 timeout );
 
 	private:
 		struct CallFrame
 		{
 			xgc_lpcstr lpFileName;
+			xgc_lpcstr lpFuncName;
 			volatile xgc_time64 nTime;
 			xgc_uint32 nLine;
 		}mStack[WATCH_STACKFRAME_MAX];
@@ -231,7 +232,7 @@ namespace xgc
 		/// 构造自动调用FunctionBegin
 		/// [12/4/2014] create by albert.xu
 		///
-		InvokeWatcherWarp( InvokeWatcher* pWatcher, xgc_lpcstr pFile, xgc_uint32 nLine );
+		InvokeWatcherWarp( InvokeWatcher* pWatcher, xgc_lpcstr pFunc, xgc_lpcstr pFile, xgc_uint32 nLine );
 
 		///
 		/// 析构自动调用FunctionEnd

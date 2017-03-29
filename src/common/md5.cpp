@@ -20,13 +20,15 @@ namespace xgc
 			return ( buf + 1 );
 		}
 
-		void Md5_text( char md5[16], char text[33] )
+		void Md5_text( char md5[16], char text[33], bool caps )
 		{
 			char* buf = text;
-			for( int i = 0; i < 16; i++ )
+			char* hex = caps ? "0123456789ABCDEF" : "0123456789abcdef";
+
+			for( int i = 0; i < 16; ++i )
 			{
-				sprintf( buf, "%02x", (unsigned int) (unsigned char) ( md5[i] ) );
-				buf += 2;
+				*buf++ = hex[( (unsigned char)md5[i] & 0xf0 ) >> 4];
+				*buf++ = hex[( (unsigned char)md5[i] & 0x0f )];
 			}
 		}
 
@@ -75,7 +77,7 @@ namespace xgc
 			return y ^ ( x | ( ~z ) );
 		}
 
-		static inline uint32_t Md5_S( uint32_t d, int n )		// �?�?位移
+		static inline uint32_t Md5_S( uint32_t d, int n )		// ��?��?位移
 		{
 			return ( d << n ) | ( ( ( d & 0xFFFFFFFF ) >> ( 32 - n ) ) );
 		}
@@ -214,11 +216,11 @@ namespace xgc
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		};
 
-		void Md5( const char *data, int data_len, char* digest, bool output_hex /*= false*/, bool bCap /*=true*/ )
+		void Md5( const char *data, int data_len, char md5[16] )
 		{
 			if( data_len < 0 )
 			{
-				memset( digest, 0, 16 );
+				memset( md5, 0, 16 );
 				return;
 			}
 
@@ -284,76 +286,140 @@ namespace xgc
 			}
 
 			//
-			char md5[16];
 			Md5_Put32( A, md5 );
 			Md5_Put32( B, md5 + 4 );
 			Md5_Put32( C, md5 + 8 );
 			Md5_Put32( D, md5 + 12 );
-
-			const char hexCap[] = "0123456789ABCDEF";
-			const char hex[] = "0123456789abcdef";
-			const char* pHex = bCap ? hexCap : hex;
-			if( output_hex )
-			{
-				for( int i = 0; i < XGC_COUNTOF( md5 ); ++i )
-				{
-					*digest++ = pHex[( md5[i] & 0xf0 ) >> 4];
-					*digest++ = pHex[( md5[i] & 0x0f )];
-				}
-			}
-			else
-			{
-				memcpy( digest, md5, 16 );
-			}
-			return;
 		}
 
 		///
-		/// \brief 获取文件Md5摘�??
+		/// \brief 获取文件Md5摘要
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:37
 		///
-		xgc_bool Md5_file( const char *filename, char *result )
+		xgc_bool Md5_file( const char *filename, char md5[16] )
 		{
-			bool res = false;
 			int fd;
-			unsigned long file_size, read_bytes;
-			char* file_buffer;
+			int retry = 5;
+			const unsigned long data_size = 8*1024*1024;
 
-			fd = _open(filename, O_RDONLY | S_IREAD);
-			if(fd < 0) 
+			if( (fd = _open(filename, O_RDONLY | S_IREAD)) < 0 )
 				return false;
 
-			struct stat statbuf;
-			if( fstat( fd, &statbuf ) < 0 )
+			struct stat s;
+			if( fstat( fd, &s ) < 0 )
 			{
 				_close( fd );
 				return false;
 			}
 
-			file_size = statbuf.st_size;
-			file_buffer = (char*)malloc(file_size);
-			read_bytes = 0;
-
-			while( read_bytes < file_size )
+			// record file size
+			unsigned long file_size = s.st_size;
+			if( file_size < 0 )
 			{
-				int ret = _read( fd, file_buffer + read_bytes, file_size - read_bytes );
-				if( ret == -1 )
-					break;
-
-				read_bytes += ret;
+				memset( md5, 0, 16 );
+				return false;
 			}
 
-			if( read_bytes == file_size )
+			// alloc data buffer
+			char* data_buffer = (char*)malloc( data_size );
+			// save read total bytes
+			unsigned long read_total = 0;
+
+			int r = file_size % 64;
+			int padding = ( r < 56 ) ? ( 56 - r ) : ( 56 + 64 - r );
+
+			char length[8];
+			Md5_Put64( file_size * 8, length );
+
+			//
+			uint32_t A = 0x67452301;
+			uint32_t B = 0xEFCDAB89;
+			uint32_t C = 0x98BADCFE;
+			uint32_t D = 0x10325476;
+
+			while( read_total < file_size && retry )
 			{
-				Md5( file_buffer, file_size, result );
-				res = true;
+				unsigned long read_bytes = 0;
+				unsigned long read_size = XGC_MIN( data_size, file_size - read_total );
+				while( read_bytes < read_size && retry )
+				{
+					int ret = _read( fd, data_buffer + read_bytes, data_size - read_bytes );
+					if( ret == -1 )
+					{
+						--retry;
+						continue;
+					}
+
+					read_bytes += ret;
+				}
+
+				if( retry )
+				{
+					int data_index = 0;
+
+					while( ( data_size - data_index ) >= 64 )
+					{
+						Md5_Process( A, B, C, D, data_buffer + data_index );
+						data_index += 64;
+					}
+
+					read_total += read_bytes;
+
+					if( read_total == file_size )
+					{
+						//
+						int remain = data_size - data_index;
+						assert(remain < 64);
+
+						if (remain < 56)	// remain 0 ~ 55 bytes, remain 1 message group
+						{
+							char msg[64];
+
+							memcpy(msg, data_buffer + data_index, remain);
+							if (padding > 0)
+							{
+								memcpy(msg + remain, Md5_Padding, padding);
+							}
+							memcpy(msg + remain + padding, length, 8);
+
+							assert((remain + padding + 8) == 64);
+
+							Md5_Process(A, B, C, D, msg);
+						}
+						else				// remain 56 ~ 63 bytes, remain 2 message groups
+						{
+							char msg[64];
+
+							//
+							memcpy(msg, data_buffer + data_index, remain);
+							memcpy(msg + remain, Md5_Padding, 64 - remain);
+
+							Md5_Process(A, B, C, D, msg);
+
+							//
+							memcpy(msg, Md5_Padding + 64 - remain, padding - (64 - remain));
+							memcpy(msg + padding - (64 - remain), length, 8);
+
+							assert((padding - (64 - remain) + 8) == 64);
+
+							Md5_Process(A, B, C, D, msg);
+						}
+
+						//
+						Md5_Put32(A, md5);
+						Md5_Put32(B, md5 + 4);
+						Md5_Put32(C, md5 + 8);
+						Md5_Put32(D, md5 + 12);
+					}
+
+				}
 			}
 
-			free( file_buffer );
+			free( data_buffer );
 			_close( fd );
-			return res;
+			return retry != 0;
 		}
 
 

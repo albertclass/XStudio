@@ -8,14 +8,14 @@
 /// @param lpContext 调用上下文
 /// [1/20/2015] create by albert.xu
 ///
-xgc_void OnServerRefresh( xgc_lpcstr lpInvoke, xgc_time32 nPrevInvokeTime, xgc_lpvoid lpContext );
+xgc_void OnServerRefresh( xgc_lpcstr lpInvoke, datetime dtPrevInvokeTime, xgc_lpvoid lpContext );
 
 ///
 /// 初始化刷新服务 
 /// @return 初始化结果
 /// [1/16/2015] create by guqiwei.weir
 ///
-xgc_bool InitServerRefresh( IniFile &ini );
+xgc_bool InitServerRefresh( ini_reader &ini );
 
 ///
 /// 载入刷新服务的配置

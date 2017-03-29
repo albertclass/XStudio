@@ -270,3 +270,87 @@ project "unittest"
         architecture "x64"
         defines { "LINUX64" }
 
+project "net_client"
+    kind "ConsoleApp"
+    language "C++"
+    location "prj/sample/net_client"
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+	    "sample/network/header.h",
+	    "sample/network/protocol.h",
+	    "sample/network/session.h",
+	    "sample/network/session.cpp",
+	    "sample/network/messages.h",
+	    "sample/network/messages.cpp",
+	    "sample/network/client/**",
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG" }
+        symbols "On"
+        optimize "On"
+    
+    filter "system:windows"
+    	libdirs { "lib/%{cfg.buildcfg}" }
+    	links { "common.lib", "net.lib", "net_module.lib" }
+        architecture "x64"
+        defines { "WIN64" }
+
+    filter "system:linux"
+       	libdirs { "bin/%{cfg.buildcfg}" }
+        links { "stdc++", "rt", "pthread", "common", "net", "net_module" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+
+project "net_server"
+    kind "ConsoleApp"
+    language "C++"
+    location "prj/sample/net_server"
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+    targetdir "bin/%{cfg.buildcfg}"
+    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    
+    flags { "C++11", "MultiProcessorCompile" }
+
+    files {
+        "sample/network/header.h",
+        "sample/network/protocol.h",
+        "sample/network/session.h",
+        "sample/network/session.cpp",
+        "sample/network/messages.h",
+        "sample/network/messages.cpp",
+        "sample/network/server/**",
+    }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_DEBUG_OUTPUT" }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_ASSERT_LOG" }
+        symbols "On"
+        optimize "On"
+    
+    filter "system:windows"
+    	libdirs { "lib/%{cfg.buildcfg}" }
+    	links { "common.lib", "net.lib", "net_module.lib" }
+        architecture "x64"
+        defines { "WIN64" }
+
+    filter "system:linux"
+       	libdirs { "bin/%{cfg.buildcfg}" }
+        links { "stdc++", "rt", "pthread", "common", "net", "net_module" }
+        buildoptions { "-pthread" }
+        architecture "x64"
+        defines { "LINUX64" }
+

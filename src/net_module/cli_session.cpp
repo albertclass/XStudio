@@ -1,7 +1,6 @@
 #include "config.h"
 #include "cli_session.h"
 #include "relay_session.h"
-#include "relay_manager.h"
 
 namespace net_module
 {

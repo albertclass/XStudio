@@ -130,7 +130,7 @@ namespace xgc
 	{
 	}
 
-	void InvokeWatcher::FunctionBegin( const char* function, int line )
+	void InvokeWatcher::FunctionBegin( const char* funcname, const char* filename, int line )
 	{
 		if( true == mIsClose )
 			return;
@@ -138,7 +138,8 @@ namespace xgc
 		mLastUpdate = datetime::now();
 		if( mCallDeep < XGC_COUNTOF( mStack ) )
 		{
-			mStack[mCallDeep].lpFileName = function;
+			mStack[mCallDeep].lpFileName = filename;
+			mStack[mCallDeep].lpFuncName = funcname;
 			mStack[mCallDeep].nTime = mLastUpdate.to_ftime();
 			mStack[mCallDeep].nLine = line;
 			mIsDirty = true;
@@ -164,7 +165,7 @@ namespace xgc
 					if( spn.to_millisecnods() > (xgc_int64)timeout )
 					{
 						mIsClose = true;
-						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].nLine, LOGLVL_SYS_WARNING, "º¯ÊýÖ´ÐÐ³¬Ê±%I64uºÁÃë", spn.to_millisecnods() );
+						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].lpFuncName, mStack[mCallDeep].nLine, "invoke watch", "º¯ÊýÖ´ÐÐ³¬Ê±%I64uºÁÃë", spn.to_millisecnods() );
 						mIsClose = false;
 					}
 				}
@@ -207,13 +208,13 @@ namespace xgc
 		}
 	}
 
-	InvokeWatcherWarp::InvokeWatcherWarp( InvokeWatcher* pWatcher, xgc_lpcstr pFile, xgc_uint32 nLine ) 
+	InvokeWatcherWarp::InvokeWatcherWarp( InvokeWatcher* pWatcher, xgc_lpcstr pFunc, xgc_lpcstr pFile, xgc_uint32 nLine ) 
 		: mWatcher( pWatcher )
 	{
 		if( mWatcher )
 		{
 			mWatcher->AddRef();
-			mWatcher->FunctionBegin( pFile, nLine );
+			mWatcher->FunctionBegin( pFunc, pFile, nLine );
 		}
 	}
 

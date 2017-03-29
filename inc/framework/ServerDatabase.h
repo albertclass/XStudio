@@ -15,13 +15,13 @@ xgc_bool SyncDBExecute( xgc_lpcstr lpSql );
 /// 同步执行数据库操作
 /// [12/18/2014] create by albert.xu
 ///
-xgc_void SyncDBExecute( const std::function< XGC::DB::respcall( XGC::DB::sql_connection ) > &fnPost );
+xgc_void SyncDBExecute( const postcall &post );
 
 ///
 /// 同步执行数据库操作，返回结果集
 /// [8/13/2014] create by albert.xu
 ///
-XGC::DB::sql_result SyncDBExecuteRc( xgc_lpcstr lpSql, XGC::DB::sql_recordset &pRs );
+sql_result SyncDBExecuteRc( xgc_lpcstr lpSql, sql_recordset &pRs );
 
 ///
 /// 转义字符串
@@ -61,7 +61,7 @@ xgc_size SyncDBAffectRow();
 /// 投递异步数据库操作
 /// [8/13/2014] create by albert.xu
 ///
-xgc_void AsyncDBExecutePost( const XGC::DB::postcall & );
+xgc_void AsyncDBExecutePost( const xgc::sql::postcall & );
 
 ///
 /// 执行已返回的数据库操作
