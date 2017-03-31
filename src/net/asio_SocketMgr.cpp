@@ -303,23 +303,20 @@ namespace xgc
 
 				do 
 				{
-					INetworkSession * pSession = xgc_nullptr;
-					auto pSocket = getSocket( hNet );
-					if( xgc_nullptr == pSocket )
-						break;
-
-					pSession = (INetworkSession*) pSocket->get_userdata();
-					if( xgc_nullptr == pSession )
-						break;
-
 					switch( pHeader->event )
 					{
 					case EVENT_HANGUP:
 						{
+							auto pSocket = getSocket( hNet );
+							if( xgc_nullptr == pSocket )
+								break;
+
 							auto srv = (asio_ServerBase*) pSocket->get_from();
 							auto session = srv->CreateSession();
 							if( !session )
+							{
 								pSocket->close();
+							}
 							else
 							{
 								pSocket->set_userdata( session );
@@ -329,37 +326,48 @@ namespace xgc
 						break;
 					case EVENT_ACCEPT:
 						{
-							if( pSession )
-								pSession->OnAccept( hNet );
-							else
-								pSocket->close();
+							auto pSession = (INetworkSession*)pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+
+							pSession->OnAccept( hNet );
 						}
 						break;
 					case EVENT_CONNECT:
 						{
-							if( pSession )
-								pSession->OnConnect( hNet );
-							else
-								pSocket->close();
+							auto pSession = (INetworkSession*) pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+							pSession->OnConnect( hNet );
 						}
 						break;
 					case EVENT_CLOSE:
 						{
+							auto pSession = (INetworkSession*) pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+
 							pSession->OnClose();
 						}
 						break;
 					case EVENT_ERROR:
 						{
-							pSession->OnError( (xgc_uint32) pHeader->bring );
+							auto pSession = (INetworkSession*) pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+
+							pSession->OnError( (xgc_uint32) pHeader->error );
 						}
 						break;
 					case EVENT_DATA:
 						{
-							pSession->OnRecv( pHeader + 1, pHeader->bring );
+							auto pSession = (INetworkSession*) pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+
+							pSession->OnRecv( pHeader + 1, pHeader->error );
 						}
 						break;
 					case EVENT_PING:
 						{
+							auto pSession = (INetworkSession*) pHeader->bring;
+							XGC_ASSERT_BREAK( pSession );
+
 							pSession->OnAlive();
 						}
 						break;
@@ -421,9 +429,10 @@ namespace xgc
 				return;
 
 			EventHeader evt;
-			evt.event = EVENT_TIMER;
 			evt.handle = handle;
-			evt.bring = id;
+			evt.event = EVENT_TIMER;
+			evt.error = id;
+			evt.bring = xgc_nullptr;
 
 			Push( CNetworkPacket::allocate( &evt, sizeof(evt), handle ) );
 

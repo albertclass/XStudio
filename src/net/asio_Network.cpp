@@ -22,6 +22,7 @@ namespace xgc
 
 		asio_Network::~asio_Network( void )
 		{
+			exit();
 		}
 
 		xgc_void asio_Network::run()

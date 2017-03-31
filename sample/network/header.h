@@ -5,6 +5,7 @@
 #include "datetime.h"
 #include "xsystem.h"
 #include "ini_reader.h"
+#include "md5.h"
 
 #include "Netbase.h"
 #include "net_module.h"

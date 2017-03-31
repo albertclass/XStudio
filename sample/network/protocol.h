@@ -39,7 +39,7 @@ struct MessageFileInfoReq
 struct MessageFileStreamReq
 {
 	xgc_uint32 file_sequence;
-	xgc_uint32 file_offset;
+	xgc_uint64 file_offset;
 };
 
 /// 文件回应
@@ -57,7 +57,7 @@ struct MessageFileInfoAck
 struct MessageFileStreamAck
 {
 	xgc_uint32 file_sequence;
-	xgc_uint32 file_offset;
+	xgc_uint64 file_offset;
 
 	xgc_long file_size;
 	xgc_char file[1];

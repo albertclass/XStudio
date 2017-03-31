@@ -94,7 +94,7 @@ namespace xgc
 			* \author albert.xu
 			* \date Ê®Ò»ÔÂ 2015
 			*/
-			xgc_void make_event( xgc_uint32 event, xgc_uint64 bring );
+			xgc_void make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring = xgc_nullptr );
 		private:
 			/*!
 			*

@@ -66,7 +66,7 @@ namespace xgc
 		xgc_bool ini_reader::load( xgc_lpcstr fpath, xgc_lpcstr fname )
 		{
 			xgc_char path[XGC_MAX_PATH] = { 0 };
-			xgc_lpcstr pathname = get_normal_path( path, sizeof( path ), "%s/%s", fpath, fname );
+			xgc_lpcstr pathname = get_absolute_path( path, sizeof( path ), "%s/%s", fpath, fname );
 
 			// 打开指定文件
 			int fd = -1;

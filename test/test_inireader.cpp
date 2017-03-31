@@ -8,7 +8,7 @@ using namespace xgc::common;
 static int testmain( int agrc, char * argv[] )
 {
 	xgc_char file[XGC_MAX_PATH];
-	get_normal_path( file, "../conf.ini" );
+	get_absolute_path( file, "../conf.ini" );
 
 	ini_reader ini;
 	ini.load( file );

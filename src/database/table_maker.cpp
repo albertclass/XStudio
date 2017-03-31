@@ -306,7 +306,7 @@ xgc_bool execute_tables( sql_connection conn, pugi::xml_node& node, xgc_lpcstr e
 xgc_bool make_tables( connection_cfg cfg, xgc_lpcstr fconfig, xgc_lpcstr environment )
 {
 	char fullpath[XGC_MAX_PATH] = { 0 };
-	xgc::get_normal_path( fullpath, fconfig );
+	xgc::get_absolute_path( fullpath, fconfig );
 
 	// ∂¡»°±Ì∏Ò≈‰÷√
 	pugi::xml_document doc;

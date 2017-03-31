@@ -16,9 +16,9 @@ struct stFileInfo
 	/// 文件名
 	xgc_char name[XGC_MAX_FNAME];
 	/// 文件长度
-	xgc_size file_length;
+	xgc_uint64 file_length;
 	/// 文件已写字节
-	xgc_size file_offset;
+	xgc_uint64 file_offset;
 
 	/// 文件序列号
 	xgc_uint32 file_sequence;
@@ -65,6 +65,17 @@ xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
 			net->SendPacket( SERVER_MESSAGE_TYPE, FILE_INFO_REQ, &req, sizeof( req ) );
 		}
 		break;
+	case EVENT_ERROR:
+		{
+			switch( code )
+			{
+			case NET_ERROR_CONNECT:
+			case NET_ERROR_CONNECT_TIMEOUT:
+				SAFE_DELETE( net );
+				break;
+			}
+		}
+		break;
 	case EVENT_CLOSE:
 		{
 			auto user = (stUserInfo*) net->GetUserdata();
@@ -82,6 +93,8 @@ xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
 
 				free( user );
 			}
+
+			SAFE_DELETE( net );
 		}
 		break;
 	}
@@ -105,17 +118,31 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 	XGC_ASSERT_RETURN( size >= sizeof( MessageFileInfoAck ), XGC_NONE );
 
 	MessageFileInfoAck &ack = *(MessageFileInfoAck*)data;
+	if( ack.error != 0 )
+	{
+		fprintf( stderr, "request file %s%s error, code = %u\r\n", ack.filepath, ack.filename, ack.error );
+		return;
+	}
+
 	auto file_length = ntohll( ack.file_length );
 	auto file_sequence = ntohl( ack.file_sequence );
 
-	xgc_char pathname[1024];
-	get_normal_path( pathname, "%s/%s/%s", root_path, ack.filepath, ack.filename );
+	xgc_char path[XGC_MAX_PATH] = { 0 };
+	auto ret = get_absolute_path( path, "%s/%s", root_path, ack.filepath );
+	XGC_ASSERT_RETURN( ret, XGC_NONE );
 	
-	if( _access( pathname, 6 ) != 0 )
+	if( _access( path, 6 ) != 0 )
 	{
-		fprintf( stderr, "file %s cannot open.", pathname );
-		return;
+		make_path( path, true );
+		if( _access( path, 6 ) != 0 )
+		{
+			fprintf( stderr, "file %s cannot open.", path );
+			return;
+		}
 	}
+
+	ret = get_absolute_path( path, "%s/%s/%s", root_path, ack.filepath, ack.filename );
+	XGC_ASSERT_RETURN( ret, XGC_NONE );
 
 	auto user = (stUserInfo*) net->GetUserdata();
 	if( user->busy == XGC_COUNTOF( user->idle ) )
@@ -130,10 +157,11 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 		if( file.file_sequence == ack.file_sequence )
 		{
 			fprintf( stderr, "file is in download queue. %s/%s - %u", file.path, file.name, file.file_sequence );
+			return;
 		}
 	}
 
-	int fd = _open( pathname, O_WRONLY, S_IWRITE );
+	int fd = _open( path, O_WRONLY | O_BINARY | O_TRUNC | O_CREAT , S_IWRITE );
 	if( fd == -1 )
 	{
 		fprintf( stderr, "file open failed. err = %d", errno );
@@ -153,6 +181,12 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 	strcpy_s( file.name, ack.filename );
 
 	++user->busy;
+
+	MessageFileStreamReq req;
+	req.file_sequence = ack.file_sequence;
+	req.file_offset = 0;
+
+	net->SendPacket( SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, &req, sizeof(req) );
 }
 
 xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
@@ -160,22 +194,23 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 	XGC_ASSERT_RETURN( size >= sizeof( MessageFileStreamAck ), XGC_NONE );
 
 	MessageFileStreamAck &ack = *(MessageFileStreamAck*) data;
-	auto file_sequence = htonl( ack.file_sequence );
-	auto file_offset = htonl( ack.file_offset );
-	auto file_size = htonl( ack.file_size );
+	auto file_sequence = ntohl( ack.file_sequence );
+	auto file_offset   = ntohll( ack.file_offset );
+	auto file_size     = ntohl( ack.file_size );
+
 	auto user = (stUserInfo*)net->GetUserdata();
 	for( xgc_size i = 0; i < user->busy; ++i )
 	{
 		auto &file = user->files[user->idle[i]];
-		if( file.file_sequence != ack.file_sequence )
+		if( file.file_sequence != file_sequence )
 			continue;
 		
-		XGC_ASSERT_RETURN( file.file_offset == ack.file_offset, XGC_NONE );
+		XGC_ASSERT_RETURN( file.file_offset == file_offset, XGC_NONE );
 
 		xgc_long bytes = 0;
-		while( bytes < ack.file_size )
+		while( bytes < file_size )
 		{
-			int ret = _write( file.fd, ack.file, ack.file_size );
+			int ret = _write( file.fd, ack.file, file_size );
 			if( ret < 0 )
 			{
 				// file download error
@@ -213,6 +248,14 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 
 			--user->busy;
 			std::swap( user->idle[i], user->idle[user->busy] );
+		}
+		else
+		{
+			MessageFileStreamReq req;
+			req.file_offset = htonll( file.file_offset );
+			req.file_sequence = ack.file_sequence;
+
+			net->SendPacket( SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, &req, sizeof(req) );
 		}
 	}
 }

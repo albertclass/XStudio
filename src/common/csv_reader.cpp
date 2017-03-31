@@ -1,5 +1,6 @@
 #include "csv_reader.h"
 #include "encoding.h"
+#include "xutility.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -272,6 +273,19 @@ namespace xgc
 				return true;
 			else
 				return value;
+		}
+
+		///
+		/// \brief 获取单元格数据，bool特化
+		///
+		/// \author albert.xu
+		/// \date 2015/12/16 18:02
+		///
+
+		xgc_bool csv_reader::get_value( xgc_size row, xgc_lpcstr title, xgc_bool value ) const throw()
+		{
+			XGC_ASSERT_RETURN( title, false );
+			return get_value( row, get_col( title ), value );
 		}
 
 	}

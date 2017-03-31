@@ -173,7 +173,7 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 	net::CreateNetwork( 4 );
 
 	char filename[1024] = { 0 };
-	if( xgc_nullptr == get_normal_path( filename, "%s", conf ) )
+	if( xgc_nullptr == get_absolute_path( filename, "%s", conf ) )
 	{
 		SYS_ERROR( "读取配置文件失败 - 文件路径解析失败。" );
 		return false;

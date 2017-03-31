@@ -290,5 +290,45 @@ namespace xgc
 
 		return std::uniform_real_distribution<NewT>( Min, std::nextafter( Max, std::numeric_limits<NewT>::max() ) )(get_random_driver());
 	}
+
+	///
+	/// \brief Í¨Åä·ûÆ¥ÅäËã·¨
+	///
+	/// \author albert.xu
+	/// \date 2017/03/30 18:31
+	///
+	COMMON_API xgc_bool string_match( const char *pattern, xgc_size patternLen, const char *string, xgc_size stringLen, int nocase );
+
+	///
+	/// \brief Í¨Åä·ûÆ¥ÅäËã·¨
+	///
+	/// \author albert.xu
+	/// \date 2017/03/30 18:31
+	///
+	COMMON_API xgc_bool string_match( const char *pattern, const char *string, int nocase );
+
+	///
+	/// \brief ÐÞ¼ô×Ö·û´®£¬²Ã¼ô×ó²àµÄ×Ö·û
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 14:23
+	///
+	COMMON_API xgc_size trim_string_left( xgc_lpstr str, xgc_lpcstr controls );
+
+	///
+	/// \brief ÐÞ¼ô×Ö·û´®£¬²Ã¼ôÓÒ²àµÄ×Ö·û
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 14:23
+	///
+	COMMON_API xgc_size trim_string_right( xgc_lpstr str, xgc_lpcstr controls );
+
+	///
+	/// \brief ÐÞ¼ô×Ö·û´®£¬²Ã¼ôËùÓÐµÄ×Ö·û
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 14:23
+	///
+	COMMON_API xgc_size trim_string_all( xgc_lpstr str, xgc_lpcstr controls );
 }
 #endif // _XUTILITY_H_

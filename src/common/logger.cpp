@@ -1,7 +1,3 @@
-#include "..\..\inc\common\logger.h"
-#include "..\..\inc\common\logger.h"
-#include "..\..\inc\common\logger.h"
-#include "..\..\inc\common\logger.h"
 #include "logger.h"
 #include "ini_reader.h"
 #include "xbuffer.h"
@@ -181,11 +177,11 @@ namespace xgc
 					char absolute[XGC_MAX_PATH] = { 0 };
 					if( split_size )
 					{
-						get_normal_path( absolute, "%s/%s%s(%d).%s", path, filename, date, split_size_sn, ext );
+						get_absolute_path( absolute, "%s/%s%s(%d).%s", path, filename, date, split_size_sn, ext );
 					}
 					else
 					{
-						get_normal_path( absolute, "%s/%s%s.%s", path, filename, date, ext );
+						get_absolute_path( absolute, "%s/%s%s.%s", path, filename, date, ext );
 					}
 
 					// get file size
@@ -233,7 +229,7 @@ namespace xgc
 
 					// normal path 
 					char absolute[XGC_MAX_PATH] = { 0 };
-					get_normal_path( absolute, "%s/%s%s(%d).%s", path, filename, date, ++split_size_sn, ext );
+					get_absolute_path( absolute, "%s/%s%s(%d).%s", path, filename, date, ++split_size_sn, ext );
 
 					// get file size
 					struct stat s;
@@ -322,7 +318,7 @@ namespace xgc
 			xgc_bool init()
 			{
 				#ifdef _WINDOWS
-				if( -1 == _pipe( fd, buffer_size, O_BINARY ) )
+				if( -1 == _pipe( fd, (unsigned int)buffer_size, O_BINARY ) )
 				{
 					write_file( "error.log", "open log pipe error." );
 					return false;
@@ -467,10 +463,10 @@ namespace xgc
 
 				// normal path
 				xgc_char absolute[XGC_MAX_PATH] = { 0 };
-				path = get_normal_path( absolute, "%s/", path );
+				path = get_absolute_path( absolute, "%s/", path );
 				XGC_ASSERT_RETURN(path, false, "shared memeory conf, path error.");
 
-				XGC_ASSERT_RETURN( 0 == makepath( path ), false );
+				XGC_ASSERT_RETURN( 0 == make_path( path ), false );
 				return XGC_NEW shared_adapter( name, size, path );
 			}
 			else if( strcasecmp( device, "file" ) == 0 )
@@ -486,10 +482,10 @@ namespace xgc
 
 				// normal path
 				xgc_char absolute[XGC_MAX_PATH] = { 0 };
-				path = get_normal_path( absolute, "%s/", path );
+				path = get_absolute_path( absolute, "%s/", path );
 				XGC_ASSERT_RETURN(path, false, "file conf, path error.");
 
-				XGC_ASSERT_RETURN( 0 == makepath( path ), false );
+				XGC_ASSERT_RETURN( 0 == make_path( path ), false );
 
 				return XGC_NEW file_adapter( file, path, split_size, split_date );
 			}
@@ -720,6 +716,60 @@ namespace xgc
 				adapter->write( log, len );
 			}
 			va_end( args );
+		}
+
+		inline xgc_size logger_impl::date( xgc_char * buf, xgc_size len )
+		{
+			tm stm;
+			time_t tt = (time_t)::time( xgc_nullptr );
+			localtime_s( &stm, &tt );
+			return strftime( buf, len, "%Y-%m-%d", &stm );
+		}
+
+		inline xgc_size logger_impl::time( xgc_char * buf, xgc_size len )
+		{
+			tm stm;
+			time_t tt = (time_t)::time( xgc_nullptr );
+			localtime_s( &stm, &tt );
+			return strftime( buf, len, "%H:%M:%S", &stm );
+		}
+
+		inline xgc_size logger_impl::datetime( xgc_char * buf, xgc_size len )
+		{
+			tm stm;
+			time_t tt = (time_t)::time( xgc_nullptr );
+			localtime_s( &stm, &tt );
+			return strftime( buf, len, "%Y-%m-%d %H:%M:%S", &stm );
+		}
+
+		inline xgc_size logger_impl::file( xgc_char * buf, xgc_size len )
+		{
+			return sprintf_s( buf, len, "%s", context.file );
+		}
+
+		inline xgc_size logger_impl::func( xgc_char * buf, xgc_size len )
+		{
+			return sprintf_s( buf, len, "%s", context.func );
+		}
+
+		inline xgc_size logger_impl::tags( xgc_char * buf, xgc_size len )
+		{
+			return sprintf_s( buf, len, "%s", context.tags );
+		}
+
+		inline xgc_size logger_impl::line( xgc_char * buf, xgc_size len )
+		{
+			return sprintf_s( buf, len, "%ul", context.line );
+		}
+
+		inline xgc_size logger_impl::span( xgc_char * buf, xgc_size len, const xgc_string & span )
+		{
+			return sprintf_s( buf, len, "%s", span.c_str() );
+		}
+
+		inline xgc_size logger_impl::message( xgc_char * buf, xgc_size len )
+		{
+			return vsprintf_s( buf, len, context.fmt, context.args );
 		}
 
 	}

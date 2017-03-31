@@ -11,15 +11,115 @@ CServerFiles::~CServerFiles()
 {
 }
 
-xgc_void CServerFiles::GenFileList(xgc_lpcstr root)
+xgc_long CServerFiles::GenIgnoreList( xgc_lpcstr root )
 {
-	
+	xgc_char absolute[XGC_MAX_PATH] = { 0 };
+	get_absolute_path( absolute, "%s/ignores", root );
+
+	FILE *fp = fopen( absolute, "r" );
+	if( fp == xgc_nullptr )
+		return -1;
+
+	ignore_files.push_back( "/ignores" );
+	ignore_files.push_back( "/filelist" );
+
+	char line[XGC_MAX_PATH + 64];
+	while( !feof( fp ) )
+	{
+		fgets( line, XGC_COUNTOF(line), fp );
+		trim_string_right( line, "\r\n" );
+		ignore_files.push_back( line );
+	}
+
+	fclose( fp );
+	return 0;
+}
+
+xgc_bool CServerFiles::IsIgnoreFile( xgc_lpcstr path, xgc_lpcstr name )
+{
+	xgc_char relative[XGC_MAX_PATH] = { 0 };
+
+	int cpy = 0;
+	if( name )
+		cpy = sprintf_s( relative, "%s/%s", path, name );
+	else
+		cpy = sprintf_s( relative, "%s", path );
+
+	XGC_ASSERT_RETURN( cpy < XGC_COUNTOF(relative), true );
+
+	std::transform( relative, relative + strlen(relative), relative, []( int _Ch ){
+		return _Ch == '\\' ? '/' : _Ch;
+	} );
+
+	for( auto &str : ignore_files )
+	{
+		xgc_lpcstr pattern = str.c_str();
+		if( string_match( pattern, relative, 1 ) )
+			return true;
+	}
+
+	return false;
+}
+
+xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
+{
+	xgc_char absolute[XGC_MAX_PATH] = { 0 };
+	get_absolute_path( absolute, "%s/filelist", root );
+
+	FILE *fp = fopen( absolute, "w+" );
+	if( fp == xgc_nullptr )
+		return -1;
+
+	list_directory( root, [fp, this]( xgc_lpcstr absolute, xgc_lpcstr relative, xgc_lpcstr name ){
+
+		// file
+		if( IsIgnoreFile( relative, name ) )
+		{
+			if( name )
+				fprintf( stdout, "ignore file %s%c%s\n", relative, SLASH, name );
+			else
+				fprintf( stdout, "ignore directory %s\n", relative );
+
+			return false;
+		}
+
+		if( name )
+		{
+			fprintf( stdout, "generate file %s%c%s", relative, SLASH, name );
+
+			xgc_time64 tick_1 = ticks< std::chrono::microseconds >();
+
+			xgc_char path[XGC_MAX_PATH] = { 0 };
+			sprintf_s( path, "%s%c%s", absolute, SLASH, name );
+
+			xgc_char md5[16];
+			xgc_char md5_text[33];
+			if( Encryption::Md5_file( path, md5 ) )
+			{
+				Encryption::Md5_text( md5, md5_text );
+				fprintf( fp, "%s - %s%c%s\n", md5_text, relative, SLASH, name );
+			}
+
+			xgc_time64 tick_2 = ticks< std::chrono::microseconds >();
+			fprintf( stdout, " using %llu microseconds\n", tick_2 - tick_1 );
+
+			return false;
+		}
+
+		return true;
+	}, 16 );
+
+	fprintf( stdout, "generate file complete!\n" );
+
+	fclose( fp );
+
+	return 0;
 }
 
 xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint64 *length )
 {
 	xgc_char pathname[1024];
-	sprintf_s( pathname, "%s/%s", path, name );
+	sprintf_s( pathname, "%s%s", path, name );
 
 	auto it1 = files_.find( pathname );
 	if( it1 != files_.end() )
@@ -27,7 +127,9 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 		return it1->second;
 	}
 
-	if( 0 != _access( pathname, 04 ) )
+	xgc_char absolute[1024];
+	get_absolute_path( absolute, "%s/%s", root_path, pathname );
+	if( 0 != _access( absolute, 04 ) )
 	{
 		return 1;
 	}
@@ -36,25 +138,22 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 
 	auto sequence = XGC_ADD_FLAGS( sequence_, 0x80000000 );
 	auto it2 = files_seq_.find( sequence );
-	if( it2 == files_seq_.end() )
+	if( it2 != files_seq_.end() )
 	{
 		return 2;
 	}
 
 	// open file
-
-	struct stat s;
-	memset( &s, 0, sizeof(s) );
-
-	if( 0 != stat( pathname, &s ) )
-		return 3;
-
-	int fd = _open( pathname, O_RDONLY, S_IREAD );
+	int fd = _open( absolute, O_RDONLY | O_BINARY, S_IREAD );
 
 	if( fd == -1 )
-	{
+		return 3;
+
+	struct _stat s;
+	memset( &s, 0, sizeof( s ) );
+
+	if( 0 != _fstat( fd, &s ) )
 		return 4;
-	}
 
 	fileinfo* info = xgc_nullptr;
 
@@ -73,7 +172,7 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 		int read_try = 5;
 		while( read_total < s.st_size )
 		{
-			auto read_bytes = _read( fd, info->file + read_total, (unsigned int) info->size - read_total );
+			auto read_bytes = _read( fd, info->file + read_total, (unsigned int) s.st_size - read_total );
 			if( read_bytes < 0 )
 			{
 				if( --read_try == 0 )
@@ -137,7 +236,7 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 	return sequence;
 }
 
-xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_size offset, xgc_lpvoid buffer, xgc_long length )
+xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_lpvoid buffer, xgc_long length )
 {
 	auto it = files_seq_.find( sequence );
 	if( it == files_seq_.end() )
@@ -154,7 +253,11 @@ xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_size offset, xgc_l
 	}
 	else
 	{
-		_lseek( info->fd, (long)offset, SEEK_SET );
+		if( _tell( info->fd ) != offset )
+		{
+			_lseek( info->fd, offset, SEEK_SET );
+		}
+
 		bytes = _read( info->fd, buffer, bytes );
 	}
 

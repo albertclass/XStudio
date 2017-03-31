@@ -57,8 +57,10 @@ namespace xgc
 			network_t handle;
 			/// 事件
 			xgc_uint32 event;
+			/// 错误码
+			xgc_uint32 error;
 			/// 携带(根据事件有不同含义)
-			xgc_uint64 bring;
+			xgc_lpvoid bring;
 		};
 
 		#pragma pack()

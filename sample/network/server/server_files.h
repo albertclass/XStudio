@@ -29,11 +29,30 @@ private:
 	/// 文件序列号
 	xgc_uint32 sequence_;
 
+	/// 文件忽略列表
+	std::list< xgc_string > ignore_files;
+	
 private:
 	CServerFiles();
 	~CServerFiles();
 
 public:
+	///
+	/// \brief 生成忽略列表
+	///
+	/// \author albert.xu
+	/// \date 2017/03/30 18:03
+	///
+	xgc_long GenIgnoreList( xgc_lpcstr root );
+
+	///
+	/// \brief 是否是忽略的文件
+	///
+	/// \author albert.xu
+	/// \date 2017/03/30 18:25
+	///
+	xgc_bool IsIgnoreFile( xgc_lpcstr path, xgc_lpcstr name );
+
 	///
 	/// \brief 生成文件列表
 	///
@@ -42,7 +61,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/27 15:25
 	///
-	xgc_void GenFileList( xgc_lpcstr root );
+	xgc_long GenFileList( xgc_lpcstr root );
 
 	///
 	/// \brief 获取文件信息
@@ -60,7 +79,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/27 15:25
 	///
-	xgc_int32 GetFileData( xgc_uint32 sequence, xgc_size offset, xgc_lpvoid buffer, xgc_long length );
+	xgc_int32 GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_lpvoid buffer, xgc_long length );
 };
 
 CServerFiles& getServerFiles();

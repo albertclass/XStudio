@@ -23,14 +23,79 @@ namespace xgc
 	static xgc_char g_exception_dmp[XGC_MAX_PATH] = { 0 };
 
 	///
-	/// 栈帧信息
-	/// [9/2/2014] create by albert.xu
+	/// \brief 栈帧信息
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 17:12
 	///
 	struct StackFrameSequence
 	{
 		void*		Frame[MAX_FRAME_SAVE];
 		uint32_t	Count;
 	};
+
+	xgc_void GetStackTrace( StackFrameSequence& FrameSequence );
+
+	///
+	/// \brief 栈帧信息
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 17:12
+	///
+	struct StackFrameRecoder
+	{
+	private:
+		StackFrameSequence StackFrame[MAX_FRAME_SIZE];
+		xgc_ulong dwSaveFramePoint;
+	public:
+		StackFrameRecoder()
+			: dwSaveFramePoint( 0 )
+		{
+			memset( StackFrame, 0, sizeof( StackFrame ) );
+		}
+
+		~StackFrameRecoder()
+		{
+		}
+
+		StackFrameSequence* IsFrameExist( const StackFrameSequence& FrameSequence )
+		{
+			for( auto i = 0; i < MAX_FRAME_SAVE; ++i )
+			{
+				StackFrameSequence &backtrace = StackFrame[i];
+				if( backtrace.Count != FrameSequence.Count )
+					continue;
+
+				uint32_t c = 0;;
+				while( backtrace.Count > c )
+				{
+					if( FrameSequence.Frame[c] != backtrace.Frame[c] )
+						break;
+
+					--c;
+				}
+
+				if( c == backtrace.Count )
+					return StackFrame + i;
+			}
+
+			return xgc_nullptr;
+		}
+
+		bool InsertFrame( StackFrameSequence &backtrace )
+		{
+			if( dwSaveFramePoint >= MAX_FRAME_SIZE )
+				dwSaveFramePoint = 0;
+
+			GetStackTrace( StackFrame[dwSaveFramePoint] );
+
+			++dwSaveFramePoint;
+
+			return true;
+		}
+	};
+
+	static StackFrameRecoder g_StackFrameRecoder;
 
 	#if defined(_WINDOWS)
 	static HANDLE hProcess = INVALID_HANDLE_VALUE;
@@ -51,9 +116,9 @@ namespace xgc
 		g_exception_translator = ::_set_se_translator( exception_translate );
 		# endif
 
-		get_normal_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception" );
-		get_normal_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "log" );
-		get_normal_path( g_exception_dmp, sizeof( g_exception_dmp ), "%s", "dmp" );
+		get_absolute_path( g_exception_log, sizeof( g_exception_log ), "%s", "exception" );
+		get_absolute_path( g_exception_ext, sizeof( g_exception_ext ), "%s", "log" );
+		get_absolute_path( g_exception_dmp, sizeof( g_exception_dmp ), "%s", "dmp" );
 
 		// 获取进程句柄
 		hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId() );
@@ -79,12 +144,12 @@ namespace xgc
 	{
 		# ifndef _DEBUG
 		
-		if( m_exception_filter )
+		if( g_exception_filter )
 		{
 			::SetUnhandledExceptionFilter( g_exception_filter );
 		}
 
-		if( m_exception_translator )
+		if( g_exception_translator )
 		{
 			::_set_se_translator( g_exception_translator );
 		}
@@ -878,7 +943,9 @@ namespace xgc
 	{
 		UINT nCount = 0;
 #ifndef _DEBUG
-		if( !g_StackFrameRecoder.InsertFrame( ( (UINT_PTR*) _AddressOfReturnAddress() ) - 1, &nCount ) )
+		StackFrameSequence FrameSequence;
+		GetStackTrace( FrameSequence );
+		if( !g_StackFrameRecoder.InsertFrame( FrameSequence ) )
 		{
 			return EXCEPTION_EXECUTE_HANDLER;
 		}
@@ -1115,57 +1182,4 @@ namespace xgc
 	{
 		strcpy_s( g_exception_dmp, pathname );
 	}
-
-	struct StackFrameRecoder
-	{
-	private:
-		StackFrameSequence StackFrame[MAX_FRAME_SIZE];
-		xgc_ulong dwSaveFramePoint;
-	public:
-		StackFrameRecoder()
-			: dwSaveFramePoint( 0 )
-		{
-			memset( StackFrame, 0, sizeof( StackFrame ) );
-		}
-
-		~StackFrameRecoder()
-		{
-		}
-
-		StackFrameSequence* IsFrameExist( const StackFrameSequence& FrameSequence )
-		{
-			for( auto i = 0; i < MAX_FRAME_SAVE; ++i )
-			{
-				StackFrameSequence &backtrace = StackFrame[i];
-				if( backtrace.Count != FrameSequence.Count )
-					continue;
-				
-				uint32_t c = 0;;
-				while( backtrace.Count > c )
-				{
-					if( FrameSequence.Frame[c] != backtrace.Frame[c] )
-						break;
-
-					--c;
-				}
-
-				if( c == backtrace.Count )
-					return StackFrame + i;
-			}
-
-			return xgc_nullptr;
-		}
-
-		bool InsertFrame( StackFrameSequence &backtrace )
-		{
-			if( dwSaveFramePoint >= MAX_FRAME_SIZE )
-				dwSaveFramePoint = 0;
-
-			GetStackTrace( StackFrame[dwSaveFramePoint] );
-
-			++dwSaveFramePoint;
-		}
-	};
-
-	static StackFrameRecoder g_StackFrameRecoder;
 }// end of namespace xgc

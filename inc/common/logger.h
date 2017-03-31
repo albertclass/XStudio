@@ -11,9 +11,6 @@
 #define _LOGGER_H_
 #include "defines.h"
 #include "exports.h"
-#include "datetime.h"
-
-#include <functional>
 
 #define LOGEND "\n"
 
@@ -139,7 +136,6 @@ namespace xgc
 			// ÃÌº”  ≈‰∆˜
 			xgc_void add_adapter( logger_adapter *adapter )
 			{
-				XGC_ASSERT( adapter );
 				adapters.push_back( adapter );
 			}
 
@@ -158,59 +154,23 @@ namespace xgc
 			xgc_void write( xgc_lpcstr file, xgc_lpcstr func, xgc_ulong line, xgc_lpcstr tags, xgc_lpcstr fmt, ... );
 
 		private:
-			xgc_size date( xgc_char* buf, xgc_size len )
-			{
-				tm stm;
-				time_t tt = (time_t)::time(xgc_nullptr);
-				localtime_s( &stm, &tt );
-				return strftime( buf, len, "%Y-%m-%d", &stm );
-			}
+			xgc_size date( xgc_char* buf, xgc_size len );
 
-			xgc_size time( xgc_char* buf, xgc_size len )
-			{
-				tm stm;
-				time_t tt = (time_t)::time(xgc_nullptr);
-				localtime_s( &stm, &tt );
-				return strftime( buf, len, "%H:%M:%S", &stm );
-			}
+			xgc_size time( xgc_char* buf, xgc_size len );
 
-			xgc_size datetime( xgc_char* buf, xgc_size len )
-			{
-				tm stm;
-				time_t tt = (time_t)::time(xgc_nullptr);
-				localtime_s( &stm, &tt );
-				return strftime( buf, len, "%Y-%m-%d %H:%M:%S", &stm );
-			}
+			xgc_size datetime( xgc_char* buf, xgc_size len );
 
-			xgc_size file( xgc_char* buf, xgc_size len )
-			{
-				return sprintf_s( buf, len, "%s", context.file );
-			}
+			xgc_size file( xgc_char* buf, xgc_size len );
 
-			xgc_size func( xgc_char* buf, xgc_size len )
-			{
-				return sprintf_s( buf, len, "%s", context.func );
-			}
+			xgc_size func( xgc_char* buf, xgc_size len );
 
-			xgc_size tags( xgc_char* buf, xgc_size len )
-			{
-				return sprintf_s( buf, len, "%s", context.tags );
-			}
+			xgc_size tags( xgc_char* buf, xgc_size len );
 
-			xgc_size line( xgc_char* buf, xgc_size len )
-			{
-				return sprintf_s( buf, len, "%ul", context.line );
-			}
+			xgc_size line( xgc_char* buf, xgc_size len );
 
-			xgc_size span( xgc_char* buf, xgc_size len, const xgc_string &span )
-			{
-				return sprintf_s( buf, len, "%s", span.c_str() );
-			}
+			xgc_size span( xgc_char* buf, xgc_size len, const xgc_string &span );
 
-			xgc_size message( xgc_char* buf, xgc_size len )
-			{
-				return vsprintf_s( buf, len, context.fmt, context.args );
-			}
+			xgc_size message( xgc_char* buf, xgc_size len );
 		};
 
 		/// get logger by logger name

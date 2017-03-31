@@ -8,7 +8,7 @@ using namespace xgc::common;
 static int testmain( int agrc, char * argv[] )
 {
 	xgc_char file[XGC_MAX_PATH];
-	get_normal_path( file, "../table.csv" );
+	get_absolute_path( file, "../table.csv" );
 
 	csv_reader csv;
 	csv.load( file, '\t', false );

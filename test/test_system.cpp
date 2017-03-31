@@ -14,7 +14,7 @@ static int testmain( int agrc, char * argv[] )
 	output( "module path = %s\n", module_path );
 
 	char path[XGC_MAX_PATH] = { 0 };
-	get_normal_path( path, sizeof(path), "%s", "../../src/" );
+	get_absolute_path( path, sizeof(path), "%s", "../../src/" );
 	output( "normal path = %s\n", path );
 
 	for( int i = 0; i < 100; ++i )

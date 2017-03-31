@@ -5,6 +5,18 @@
 #include "defines.h"
 #include "exports.h"
 
+#include <functional>
+
+#define SLASH_ALL "\\/"
+
+#ifdef _WINDOWS
+#	define SLASH '\\'
+#endif
+
+#ifdef _LINUX
+#	define SLASH '/'
+#endif
+
 namespace xgc
 {
 	///
@@ -26,7 +38,7 @@ namespace xgc
 	/// @param SplitWith 目录间的分割符
 	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
 	///
-	COMMON_API xgc_lpcstr get_normal_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... );
+	COMMON_API xgc_lpcstr get_absolute_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... );
 
 	///
 	/// [12/16/2013 albert.xu]
@@ -35,7 +47,7 @@ namespace xgc
 	/// @param SplitWith 目录间的分割符
 	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
 	///
-	COMMON_API xgc_lpcstr get_normal_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args );
+	COMMON_API xgc_lpcstr get_absolute_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args );
 
 	///
 	/// [12/16/2013 albert.xu]
@@ -45,21 +57,57 @@ namespace xgc
 	/// @return 若文件存在则返回文件的绝对路径，否则返回空指针
 	///
 	template< size_t size >
-	xgc_lpcstr get_normal_path( xgc_char( &absolute )[size], xgc_lpcstr relative, ... )
+	xgc_lpcstr get_absolute_path( xgc_char( &absolute )[size], xgc_lpcstr relative, ... )
 	{
 		va_list ap;
 		va_start( ap, relative );
-		auto ret = get_normal_path_args( absolute, size, relative, ap );
+		auto ret = get_absolute_path_args( absolute, size, relative, ap );
 		va_end( ap );
 
 		return ret;
 	}
 	
 	///
+	/// \brief 获取cwd目录的相对路径
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 10:46
+	///
+	COMMON_API xgc_lpcstr get_relative_path( xgc_lpstr relative, xgc_size size, xgc_lpcstr cwd, xgc_lpcstr dir );
+
+	///
+	/// \brief 获取cwd目录的相对路径
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 10:46
+	///
+	template< size_t size >
+	xgc_lpcstr get_relative_path( xgc_char( &relative )[size], xgc_lpcstr cwd, xgc_lpcstr dir )
+	{
+		return get_relative_path( relative, size, cwd, dir );
+	}
+
+	///
+	/// \brief 判定是否绝对路径
+	///
+	/// \author albert.xu
+	/// \date 2017/03/31 10:48
+	///
+	COMMON_API xgc_bool is_absolute_path( xgc_lpcstr path );
+
+	///
 	/// [12/16/2013 albert.xu]
 	/// 建立目录
 	///
-	COMMON_API xgc_ulong makepath( xgc_lpcstr path, xgc_bool recursion = true );
+	COMMON_API xgc_long make_path( xgc_lpcstr path, xgc_bool recursion = true );
+
+	///
+	/// \brief 遍历目录
+	///
+	/// \author albert.xu
+	/// \date 2017/03/30 16:05
+	///
+	COMMON_API xgc_long list_directory( xgc_lpcstr root, const std::function< xgc_bool(xgc_lpcstr, xgc_lpcstr, xgc_lpcstr) > &on_file, int deep_max = 1 );
 
 	///
 	/// [12/16/2013 albert.xu]

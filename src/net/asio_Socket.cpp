@@ -53,7 +53,7 @@ namespace xgc
 			// 设置来源
 			from_ = from;
 
-			make_event( EVENT_HANGUP, (xgc_uint64)from_ );
+			make_event( EVENT_HANGUP, 0, from_ );
 		}
 
 		xgc_bool asio_Socket::connect( xgc_lpcstr address, xgc_int16 port, xgc_bool async, xgc_uint16 timeout )
@@ -93,7 +93,7 @@ namespace xgc
 			{
 				if( !socket_.connect( asio::ip::tcp::endpoint( addr, port ), ec ) )
 				{
-					accept( EVENT_CONNECT );
+					handle_connect( asio::error_code() );
 					return true;
 				}
 			}
@@ -103,7 +103,7 @@ namespace xgc
 
 		xgc_void asio_Socket::accept( int event )
 		{
-			make_event( event, (xgc_uint64)from_ );
+			make_event( event, 0, userdata_ );
 
 			connect_status_ = 1;
 
@@ -122,11 +122,12 @@ namespace xgc
 		{
 			if( !error )
 			{
+				getSocketMgr().LinkUp( shared_from_this() );
 				accept( EVENT_CONNECT );
 			}
 			else
 			{
-				make_event( EVENT_ERROR, NET_ERROR_CONNECT );
+				make_event( EVENT_ERROR, NET_ERROR_CONNECT, userdata_ );
 			}
 		}
 
@@ -137,7 +138,7 @@ namespace xgc
 
 			if( !error )
 			{
-				make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT );
+				make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT, userdata_ );
 			}
 		}
 
@@ -148,7 +149,7 @@ namespace xgc
 				recv_buffer_.push( translate );
 
 				INetworkSession* session = (INetworkSession*) userdata_;
-				xgc_size packet_length = session->OnParsePacket( (char*) recv_buffer_.begin(), recv_buffer_.length() );
+				int packet_length = session->OnParsePacket( (char*) recv_buffer_.begin(), recv_buffer_.length() );
 
 				// 已接收到数据包
 				while( packet_length && recv_buffer_.length() >= packet_length )
@@ -157,7 +158,7 @@ namespace xgc
 					if( packet_length >= recv_buffer_.space() )
 					{
 						XGC_ASSERT( false );
-						make_event( EVENT_ERROR, NET_ERROR_NOT_ENOUGH_MEMROY );
+						make_event( EVENT_ERROR, NET_ERROR_NOT_ENOUGH_MEMROY, userdata_ );
 
 						close();
 						return;
@@ -167,8 +168,9 @@ namespace xgc
 					EventHeader evt;
 					evt.handle = handle_;
 					evt.event = EVENT_DATA;
-					evt.bring = packet_length;
-						
+					evt.error = packet_length;
+					evt.bring = userdata_;
+
 					auto packet = CNetworkPacket::allocate( sizeof(EventHeader) + packet_length );
 					packet->putn( &evt, sizeof(evt) );
 					packet->putn( recv_buffer_.begin(), packet_length );
@@ -189,7 +191,7 @@ namespace xgc
 			}
 			else
 			{
-				make_event( EVENT_ERROR, error.value() );
+				make_event( EVENT_ERROR, error.value(), userdata_ );
 
 				close();
 			}
@@ -204,7 +206,7 @@ namespace xgc
 			// 数据放入发送缓冲
 			if( send_buffer_.put( data, size ) != size )
 			{
-				make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL );
+				make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL, userdata_ );
 
 				close();
 				return;
@@ -239,7 +241,7 @@ namespace xgc
 				// 数据放入发送缓冲
 				if( send_buffer_.put( data, size ) != size )
 				{
-					make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL );
+					make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL, userdata_ );
 
 					close();
 					return;
@@ -283,7 +285,7 @@ namespace xgc
 			}
 			else
 			{
-				make_event( EVENT_ERROR, error.value() );
+				make_event( EVENT_ERROR, error.value(), userdata_ );
 
 				close();
 			}
@@ -305,7 +307,9 @@ namespace xgc
 
 				timer_.cancel( ec );
 
-				make_event( EVENT_CLOSE, 0 );
+				make_event( EVENT_CLOSE, 0, userdata_ );
+
+				userdata_ = xgc_nullptr;
 				getSocketMgr().LinkDown( shared_from_this() );
 			}
 		}
@@ -349,7 +353,7 @@ namespace xgc
 				if( is_connected() && timeout_ )
 				{
 					// check socket timeout
-					make_event( EVENT_PING, 0 );
+					make_event( EVENT_PING, 0, userdata_ );
 
 					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( timeout_.load(), 500 ) ) );
 					timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this(), std::placeholders::_1 ) );
@@ -357,11 +361,12 @@ namespace xgc
 			}
 		}
 
-		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint64 bring )
+		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring )
 		{
 			EventHeader evt;
 			evt.handle = handle_;
 			evt.event = event;
+			evt.error = error_code;
 			evt.bring = bring;
 
 			getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );

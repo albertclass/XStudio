@@ -8,8 +8,12 @@ char root_path[XGC_MAX_PATH] = {0};
 
 int main( int argc, char* argv[] )
 {
+	#ifdef _WINDOWS
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	#endif
+
 	char conf_path[1024] = { 0 };
-	if( xgc_nullptr == get_normal_path( conf_path, "../client.ini" ) )
+	if( xgc_nullptr == get_absolute_path( conf_path, "../client.ini" ) )
 	{
 		fprintf( stderr, "format conf path error %s", conf_path );
 		return -1;
@@ -27,7 +31,7 @@ int main( int argc, char* argv[] )
 	auto root = ini.get_item_value( "Client", "Root", xgc_nullptr );
 	XGC_ASSERT_RETURN( root, -1 );
 
-	makepath( root );
+	make_path( root );
 	strcpy_s( root_path, root );
 
 	if( false == net::CreateNetwork( 1 ) )

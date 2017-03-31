@@ -4,7 +4,6 @@
 
 #include "defines.h"
 #include "exports.h"
-#include "xutility.h"
 
 namespace xgc
 {
@@ -121,11 +120,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2015/12/16 18:02
 			///
-			xgc_bool get_value( xgc_size row, xgc_lpcstr title, xgc_bool value ) const throw()
-			{
-				XGC_ASSERT_RETURN( title, false );
-				return get_value( row, get_col(title), value );
-			}
+			xgc_bool get_value( xgc_size row, xgc_lpcstr title, xgc_bool value ) const throw();
 
 			///
 			/// \brief 获取单元格数据，数组特化

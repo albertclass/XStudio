@@ -84,6 +84,8 @@ project "net"
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
+        libdirs { "lib/%{cfg.buildcfg}" }
+        links { "common.lib" }
 
     filter "system:windows"
         implibdir "lib/%{cfg.buildcfg}"
@@ -285,8 +287,6 @@ project "net_client"
 	    "sample/network/protocol.h",
 	    "sample/network/session.h",
 	    "sample/network/session.cpp",
-	    "sample/network/messages.h",
-	    "sample/network/messages.cpp",
 	    "sample/network/client/**",
     }
 
@@ -327,8 +327,6 @@ project "net_server"
         "sample/network/protocol.h",
         "sample/network/session.h",
         "sample/network/session.cpp",
-        "sample/network/messages.h",
-        "sample/network/messages.cpp",
         "sample/network/server/**",
     }
 
@@ -343,13 +341,13 @@ project "net_server"
     
     filter "system:windows"
     	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib", "net_module.lib" }
+    	links { "common.lib", "net.lib" }
         architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
        	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common", "net", "net_module" }
+        links { "stdc++", "rt", "pthread", "common", "net" }
         buildoptions { "-pthread" }
         architecture "x64"
         defines { "LINUX64" }

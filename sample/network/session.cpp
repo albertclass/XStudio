@@ -32,7 +32,7 @@ int CNetSession::OnParsePacket( const void * data, xgc_size size )
 xgc_void CNetSession::OnAccept( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u accepted", handle_ );
+	fprintf( stdout, "net session %u accepted\r\n", handle_ );
 
 	OnEvent( this, EVENT_ACCEPT, handle_ );
 }
@@ -40,20 +40,20 @@ xgc_void CNetSession::OnAccept( net::network_t handle )
 xgc_void CNetSession::OnConnect( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u connected", handle_ );
+	fprintf( stdout, "net session %u connected\r\n", handle_ );
 
 	OnEvent( this, EVENT_CONNECT, handle_ );
 }
 
 xgc_void CNetSession::OnError( xgc_uint32 error_code )
 {
-	fprintf( stderr, "net session %u error, code = %u", handle_, error_code );
+	fprintf( stderr, "net session %u error, code = %u\r\n", handle_, error_code );
 	OnEvent( this, EVENT_ERROR, error_code );
 }
 
 xgc_void CNetSession::OnClose()
 {
-	fprintf( stderr, "net session %u closed", handle_ );
+	fprintf( stderr, "net session %u closed\r\n", handle_ );
 	OnEvent( this, EVENT_CLOSE, 0 );
 }
 

@@ -186,6 +186,205 @@ namespace xgc
 		return mt;
 	}
 
+	xgc_bool string_match( const char *pattern, xgc_size patternLen, const char *string, xgc_size stringLen, int nocase )
+	{
+		while( patternLen )
+		{
+			switch( pattern[0] )
+			{
+			case '*':
+				while( pattern[1] == '*' )
+				{
+					pattern++;
+					patternLen--;
+				}
+				if( patternLen == 1 )
+					return 1; /** match */
+				while( stringLen )
+				{
+					if( string_match( pattern + 1, patternLen - 1, string, stringLen, nocase ) )
+						return 1; /** match */
+					string++;
+					stringLen--;
+				}
+				return 0; /** no match */
+				break;
+			case '?':
+				if( stringLen == 0 )
+					return 0; /** no match */
+				string++;
+				stringLen--;
+				break;
+			case '[':
+				{
+					int inot, match;
+
+					pattern++;
+					patternLen--;
+					inot = pattern[0] == '^';
+					if( inot )
+					{
+						pattern++;
+						patternLen--;
+					}
+					match = 0;
+					while( 1 )
+					{
+						if( pattern[0] == '\\' )
+						{
+							pattern++;
+							patternLen--;
+							if( pattern[0] == string[0] )
+								match = 1;
+						}
+						else if( pattern[0] == ']' )
+						{
+							break;
+						}
+						else if( patternLen == 0 )
+						{
+							pattern--;
+							patternLen++;
+							break;
+						}
+						else if( pattern[1] == '-' && patternLen >= 3 )
+						{
+							int start = pattern[0];
+							int end = pattern[2];
+							int c = string[0];
+							if( start > end )
+							{
+								std::swap( start, end );
+							}
+
+							if( nocase )
+							{
+								start = tolower( start );
+								end = tolower( end );
+								c = tolower( c );
+							}
+
+							pattern += 2;
+							patternLen -= 2;
+							if( c >= start && c <= end )
+								match = 1;
+						}
+						else
+						{
+							if( !nocase )
+							{
+								if( pattern[0] == string[0] )
+									match = 1;
+							}
+							else
+							{
+								if( tolower( (int) pattern[0] ) == tolower( (int) string[0] ) )
+									match = 1;
+							}
+						}
+						pattern++;
+						patternLen--;
+					}
+					if( inot )
+						match = !match;
+					if( !match )
+						return 0; /** no match */
+					string++;
+					stringLen--;
+					break;
+				}
+			case '\\':
+				if( patternLen >= 2 )
+				{
+					pattern++;
+					patternLen--;
+				}
+				/** fall through */
+			default:
+				if( !nocase )
+				{
+					if( pattern[0] != string[0] )
+						return 0; /** no match */
+				}
+				else
+				{
+					if( tolower( (int) pattern[0] ) != tolower( (int) string[0] ) )
+						return 0; /** no match */
+				}
+				string++;
+				stringLen--;
+				break;
+			}
+			pattern++;
+			patternLen--;
+			if( stringLen == 0 )
+			{
+				while( *pattern == '*' )
+				{
+					pattern++;
+					patternLen--;
+				}
+				break;
+			}
+		}
+		
+		return patternLen == 0 && stringLen == 0;
+	}
+
+	xgc_bool string_match( const char *pattern, const char *string, int nocase )
+	{
+		return string_match( pattern, strlen( pattern ), string, strlen( string ), nocase );
+	}
+
+	xgc_size trim_string_left( xgc_lpstr str, xgc_lpcstr controls )
+	{
+		XGC_ASSERT_RETURN( str, -1 );
+
+		auto n = strspn( str, controls );
+		
+		xgc_size i = 0;
+		for( ; str[n]; ++i )
+			str[i++] = str[n++];
+
+		str[i] = 0;
+
+		return i;
+	}
+
+	xgc_size trim_string_right( xgc_lpstr str, xgc_lpcstr controls )
+	{
+		XGC_ASSERT_RETURN( str, -1 );
+
+		xgc_size n = strlen(str);
+
+		while( n )
+		{
+			if( strchr( controls, str[n] ) )
+				str[n] = 0;
+
+			--n;
+		};
+
+		return n;
+	}
+
+	xgc_size trim_string_all( xgc_lpstr str, xgc_lpcstr controls )
+	{
+		XGC_ASSERT_RETURN( str, -1 );
+
+		xgc_size i = 0, n = 0;
+		while( str[i] )
+		{
+			str[n] = str[i];
+
+			if( xgc_nullptr == strchr(controls, str[i] ) )
+				++n;
+
+			++i;
+		}
+
+		return i;
+	}
 }
 
 

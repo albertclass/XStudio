@@ -30,6 +30,7 @@ namespace xgc
 				*buf++ = hex[( (unsigned char)md5[i] & 0xf0 ) >> 4];
 				*buf++ = hex[( (unsigned char)md5[i] & 0x0f )];
 			}
+			*buf = 0;
 		}
 
 		static inline void Md5_Put64( uint64_t data, char buf[8] )
@@ -304,7 +305,7 @@ namespace xgc
 			int retry = 5;
 			const unsigned long data_size = 8*1024*1024;
 
-			if( (fd = _open(filename, O_RDONLY | S_IREAD)) < 0 )
+			if( (fd = _open(filename, O_RDONLY | O_BINARY, S_IREAD)) < 0 )
 				return false;
 
 			struct stat s;
@@ -339,11 +340,14 @@ namespace xgc
 			uint32_t C = 0x98BADCFE;
 			uint32_t D = 0x10325476;
 
+			int data_index = 0;
+			int remain = 0;
+
 			while( read_total < file_size && retry )
 			{
 				unsigned long read_bytes = 0;
 				unsigned long read_size = XGC_MIN( data_size, file_size - read_total );
-				while( read_bytes < read_size && retry )
+				while( 1 != _eof(fd) && read_bytes < read_size && retry )
 				{
 					int ret = _read( fd, data_buffer + read_bytes, data_size - read_bytes );
 					if( ret == -1 )
@@ -357,64 +361,63 @@ namespace xgc
 
 				if( retry )
 				{
-					int data_index = 0;
+					data_index = 0;
 
-					while( ( data_size - data_index ) >= 64 )
+					while( ( read_bytes - data_index ) >= 64 )
 					{
 						Md5_Process( A, B, C, D, data_buffer + data_index );
 						data_index += 64;
 					}
 
+					remain = read_bytes - data_index;
 					read_total += read_bytes;
-
-					if( read_total == file_size )
-					{
-						//
-						int remain = data_size - data_index;
-						assert(remain < 64);
-
-						if (remain < 56)	// remain 0 ~ 55 bytes, remain 1 message group
-						{
-							char msg[64];
-
-							memcpy(msg, data_buffer + data_index, remain);
-							if (padding > 0)
-							{
-								memcpy(msg + remain, Md5_Padding, padding);
-							}
-							memcpy(msg + remain + padding, length, 8);
-
-							assert((remain + padding + 8) == 64);
-
-							Md5_Process(A, B, C, D, msg);
-						}
-						else				// remain 56 ~ 63 bytes, remain 2 message groups
-						{
-							char msg[64];
-
-							//
-							memcpy(msg, data_buffer + data_index, remain);
-							memcpy(msg + remain, Md5_Padding, 64 - remain);
-
-							Md5_Process(A, B, C, D, msg);
-
-							//
-							memcpy(msg, Md5_Padding + 64 - remain, padding - (64 - remain));
-							memcpy(msg + padding - (64 - remain), length, 8);
-
-							assert((padding - (64 - remain) + 8) == 64);
-
-							Md5_Process(A, B, C, D, msg);
-						}
-
-						//
-						Md5_Put32(A, md5);
-						Md5_Put32(B, md5 + 4);
-						Md5_Put32(C, md5 + 8);
-						Md5_Put32(D, md5 + 12);
-					}
-
 				}
+			}
+
+			if( read_total == file_size )
+			{
+				//
+				assert( remain < 64 );
+
+				if( remain < 56 )	// remain 0 ~ 55 bytes, remain 1 message group
+				{
+					char msg[64];
+
+					memcpy( msg, data_buffer + data_index, remain );
+					if( padding > 0 )
+					{
+						memcpy( msg + remain, Md5_Padding, padding );
+					}
+					memcpy( msg + remain + padding, length, 8 );
+
+					assert( (remain + padding + 8) == 64 );
+
+					Md5_Process( A, B, C, D, msg );
+				}
+				else				// remain 56 ~ 63 bytes, remain 2 message groups
+				{
+					char msg[64];
+
+					//
+					memcpy( msg, data_buffer + data_index, remain );
+					memcpy( msg + remain, Md5_Padding, 64 - remain );
+
+					Md5_Process( A, B, C, D, msg );
+
+					//
+					memcpy( msg, Md5_Padding + 64 - remain, padding - (64 - remain) );
+					memcpy( msg + padding - (64 - remain), length, 8 );
+
+					assert( (padding - (64 - remain) + 8) == 64 );
+
+					Md5_Process( A, B, C, D, msg );
+				}
+
+				//
+				Md5_Put32( A, md5 );
+				Md5_Put32( B, md5 + 4 );
+				Md5_Put32( C, md5 + 8 );
+				Md5_Put32( D, md5 + 12 );
 			}
 
 			free( data_buffer );

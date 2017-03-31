@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <memory>
 
 #ifdef _WINDOWS
 #	include <direct.h>
@@ -12,19 +13,12 @@
 #endif
 
 #ifdef _LINUX
-#	include "sys/types.h"
-#	include "sys/stat.h"
-#	include "sys/sysinfo.h"
-#	include "sys/times.h"
-#	include "sys/vtimes.h"
-#endif
-
-#ifdef _WINDOWS
-#	define SLASH '\\'
-#endif
-
-#ifdef _LINUX
-#	define SLASH '/'
+#	include <dirent.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <sys/sysinfo.h>
+#	include <sys/times.h>
+#	include <sys/vtimes.h>
 #endif
 
 namespace xgc
@@ -81,19 +75,19 @@ namespace xgc
 		return g_module_path;
 	}
 
-	xgc_lpcstr get_normal_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... )
+	xgc_lpcstr get_absolute_path( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, ... )
 	{
 		xgc_lpcstr ret = xgc_nullptr;
 		
 		va_list args;
 		va_start( args, relative );
-		ret = get_normal_path_args( absolute, size, relative, args );
+		ret = get_absolute_path_args( absolute, size, relative, args );
 		va_end( args );
 
 		return ret;
 	}
 
-	xgc_lpcstr get_normal_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args )
+	xgc_lpcstr get_absolute_path_args( xgc_lpstr absolute, xgc_size size, xgc_lpcstr relative, va_list args )
 	{
 		int cpy1 = 0;
 		char absolute_path[XGC_MAX_PATH] = { 0 };
@@ -142,14 +136,111 @@ namespace xgc
 		return xgc_nullptr;
 		#endif
 	}
-	
-	COMMON_API xgc_ulong makepath( xgc_lpcstr path, xgc_bool recursion )
-	{
-		xgc_char absolute[XGC_MAX_PATH] = { 0 };
-		//if( xgc_nullptr == get_normal_path(absolute, "%s", path) )
-		//	return -1;
 
-		strcpy_s(absolute, path);
+	COMMON_API xgc_lpcstr get_relative_path( xgc_lpstr relative, xgc_size size, xgc_lpcstr cwd, xgc_lpcstr dir )
+	{
+		xgc_char absolute_cwd[XGC_MAX_PATH] = { 0 };
+		xgc_char absolute_dir[XGC_MAX_PATH] = { 0 };
+
+		xgc_lpcstr path = xgc_nullptr;
+		path = get_absolute_path( absolute_cwd, "%s", cwd );
+		XGC_ASSERT_RETURN( path, xgc_nullptr );
+
+		path = get_absolute_path( absolute_dir, "%s", dir );
+		XGC_ASSERT_RETURN( path, xgc_nullptr );
+
+		if( _access( absolute_cwd, 0 ) != 0 )
+			return xgc_nullptr;
+
+		if( _access( absolute_dir, 0 ) != 0 )
+			return xgc_nullptr;
+
+		// transform to lower case
+		std::transform( absolute_cwd, absolute_cwd + strlen(absolute_cwd), absolute_cwd, tolower );
+		std::transform( absolute_dir, absolute_dir + strlen(absolute_dir), absolute_dir, tolower );
+
+		xgc_lpstr r1 = absolute_cwd, r2 = absolute_dir;
+		#ifdef _WINDOWS
+		if( absolute_cwd[0] != absolute_dir[0] )
+			return xgc_nullptr;
+
+		r1 += 2;
+		r2 += 2;
+		#endif
+
+		// check root slash
+		if( xgc_nullptr == strchr( SLASH_ALL, r1[0] ) )
+			return xgc_nullptr;
+
+		if( xgc_nullptr == strchr( SLASH_ALL, r2[0] ) )
+			return xgc_nullptr;
+
+		// find same root
+		xgc_size i;
+		for( i = 0; r1[i] && r2[i]; ++i )
+		{
+			// all slash char
+			if( strchr( SLASH_ALL, r1[i] ) && strchr( SLASH_ALL, r2[i] ) )
+				continue;
+
+			if( r1[i] == r2[i] )
+				continue;
+
+			break;
+		}
+
+		// remove same parent path
+		r1 += i;
+		r2 += i;
+
+		int cpy = 0;
+		while( *r1 )
+		{
+			auto ret = sprintf_s( relative + cpy, size - cpy, "..%c", SLASH );
+			if( ret < 0 )
+				return xgc_nullptr;
+
+			cpy += ret;
+
+			auto slash = strpbrk( r1, SLASH_ALL );
+
+			if( xgc_nullptr == slash )
+				break;
+			
+			r1 = slash + 1;
+		}
+
+		auto ret = sprintf_s( relative + cpy, size - cpy, "%s", r2 );
+		if( ret < 0 )
+			return xgc_nullptr;
+
+		return relative;
+	}
+	
+	COMMON_API xgc_bool is_absolute_path( xgc_lpcstr path )
+	{
+		XGC_ASSERT_RETURN( path, false );
+		#ifdef _WINDOWS
+		if( path[1] != ':' )
+			return false;
+
+		if( xgc_nullptr == strchr( SLASH_ALL, path[2] ) )
+			return false;
+		#endif
+
+		#ifdef _LINUX
+		if( xgc_nullptr == strchr( SLASH_ALL, path[0] ) )
+			return false;
+		#endif
+
+		return true;
+	}
+
+	COMMON_API xgc_long make_path( xgc_lpcstr path, xgc_bool recursion )
+	{
+		auto absolute = strdup( path );
+
+		std::unique_ptr< char, void(*)(void*) > ptr( absolute, free );
 
 		if( recursion )
 		{
@@ -205,7 +296,102 @@ namespace xgc
 				return -1;
 			#endif
 		}
+
 		return 0;
+	}
+
+	xgc_long list_directory_real( xgc_lpcstr root, xgc_lpstr relative, xgc_size size, xgc_size length, const std::function< xgc_bool(xgc_lpcstr, xgc_lpcstr, xgc_lpcstr) > &on_file, int deep_max )
+	{
+		xgc_long count = 0;
+		#ifdef _LINUX
+		struct dirent* ent = xgc_nullptr;
+		DIR *dir = opendir( root );
+		if( dir == xgc_nullptr )
+		{
+			//被当作目录，但是执行opendir后发现又不是目录，比如软链接就会发生这样的情况。
+			return -1;
+		}
+
+		while( xgc_nullptr != (ent = readdir( dir )) )
+		{
+			if( ent->d_type == 8 )
+			{
+				//file  
+				on_file( root, relative, ent->d_name );
+			}
+			else
+			{
+				if( ent->d_name[0] == '.' )
+					continue;
+
+				//directory
+				int cpy = sprintf_s( relative + length, size - length, "%c%s", SLASH, ent->d_name );
+				if( cpy > 0 )
+				{
+					if( on_file( root, relative, xgc_nullptr ) )
+					{
+						if( deep_max != 0 )
+						{
+							count += list_directory_real( root, relative, size, length + cpy, on_file, deep_max - 1 );
+						}
+					}
+					relative[length] = 0;
+				}
+			}
+		}
+
+		closedir( dir );
+		#endif
+
+		#ifdef _WINDOWS
+		if( 0 > sprintf_s( relative + length, size - length, "%c*", SLASH ) )
+			return -1;
+
+		_finddata_t file_info;
+		intptr_t handle = _findfirst( root, &file_info );
+		if( handle == -1 )
+			return -2;
+
+		relative[length] = 0;
+
+		do 
+		{
+			if( !XGC_CHK_FLAGS( file_info.attrib, _A_SUBDIR ) )
+			{
+				// file
+				on_file( root, relative, file_info.name );
+			}
+			else
+			{
+				if( file_info.name[0] == '.' )
+					continue;
+
+				//directory
+				int cpy = sprintf_s( relative + length, size - length, "%c%s", SLASH, file_info.name );
+				if( cpy > 0 )
+				{
+					if( on_file( root, relative, xgc_nullptr ) )
+					{
+						if( deep_max != 0 )
+						{
+							count += list_directory_real( root, relative, size, length + cpy, on_file, deep_max - 1 );
+						}
+					}
+					relative[length] = 0;
+				}
+			}
+		} while( 0 == _findnext( handle, &file_info ) );
+		#endif // _WINDOWS
+
+		return count;
+	}
+
+	xgc_long list_directory( xgc_lpcstr root, const std::function< xgc_bool(xgc_lpcstr, xgc_lpcstr, xgc_lpcstr) > &on_file, int deep_max )
+	{
+		char _root[XGC_MAX_PATH] = { 0 };
+		strcpy_s( _root, root );
+
+		return list_directory_real( _root, _root+strlen(_root), XGC_COUNTOF(_root)-strlen(_root), 0, on_file, deep_max );
 	}
 
 	xgc_ulong get_process_id()
