@@ -234,6 +234,15 @@ namespace xgc
 					return 0;
 				}
 				break;
+			case Operator_SetPacketSize:
+				{
+					Param_SetBufferSize* pParam = (Param_SetBufferSize*) param;
+					set_send_packet_size( pParam->send_buffer_size );
+					set_recv_packet_size( pParam->recv_buffer_size );
+
+					return 0;
+				}
+				break;
 			}
 
 			return -1;

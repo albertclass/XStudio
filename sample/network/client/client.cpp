@@ -31,7 +31,7 @@ int main( int argc, char* argv[] )
 	auto root = ini.get_item_value( "Client", "Root", xgc_nullptr );
 	XGC_ASSERT_RETURN( root, -1 );
 
-	make_path( root );
+	make_dirs( root );
 	strcpy_s( root_path, root );
 
 	if( false == net::CreateNetwork( 1 ) )

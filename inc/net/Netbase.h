@@ -319,6 +319,21 @@ namespace xgc
 		};
 		#define Operator_SetBufferSize	8
 
+		///
+		/// \brief 缓冲设置，只影响更改后创建的套接字
+		///
+		/// \author albert.xu
+		/// \date 2016/02/26 16:08
+		///
+		struct Param_SetPacketSize
+		{
+			/// 发送缓冲大小
+			xgc_uint32	send_packet_size;
+			/// 接收缓冲大小
+			xgc_uint32	recv_packet_size;
+		};
+		#define Operator_SetPacketSize	9
+
 		/// 创建连接会话
 		typedef std::function< INetworkSession* () > SessionCreator;
 

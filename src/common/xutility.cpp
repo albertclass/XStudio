@@ -39,28 +39,6 @@ namespace xgc
 		}
 	}
 
-	xgc_vector<xgc_string> string_split( xgc_lpcstr src, xgc_lpcstr delim )
-	{
-		xgc_vector<xgc_string> v;
-		XGC_ASSERT_RETURN( src, v );
-
-		xgc_lpcstr str = src + strspn( src, delim );;
-		while( *str )
-		{
-			xgc_lpcstr brk = strpbrk( str, delim );
-			if( xgc_nullptr == brk )
-			{
-				v.push_back( str );
-				break;
-			}
-
-			v.push_back( xgc_string( str, brk ) );
-			str = brk + strspn( brk, delim );
-		}
-
-		return v;
-	}
-
 	xgc_size bin2hex( xgc_lpstr data, xgc_size size, xgc_lpstr out, xgc_size out_size, xgc_size flags )
 	{
 		XGC_ASSERT_RETURN( data && out && data != out, -1 );
@@ -336,7 +314,7 @@ namespace xgc
 		return string_match( pattern, strlen( pattern ), string, strlen( string ), nocase );
 	}
 
-	xgc_size trim_string_left( xgc_lpstr str, xgc_lpcstr controls )
+	xgc_size string_trim_left( xgc_lpstr str, xgc_lpcstr controls )
 	{
 		XGC_ASSERT_RETURN( str, -1 );
 
@@ -351,7 +329,7 @@ namespace xgc
 		return i;
 	}
 
-	xgc_size trim_string_right( xgc_lpstr str, xgc_lpcstr controls )
+	xgc_size string_trim_right( xgc_lpstr str, xgc_lpcstr controls )
 	{
 		XGC_ASSERT_RETURN( str, -1 );
 
@@ -368,7 +346,7 @@ namespace xgc
 		return n;
 	}
 
-	xgc_size trim_string_all( xgc_lpstr str, xgc_lpcstr controls )
+	xgc_size string_trim_all( xgc_lpstr str, xgc_lpcstr controls )
 	{
 		XGC_ASSERT_RETURN( str, -1 );
 

@@ -236,7 +236,7 @@ namespace xgc
 		return true;
 	}
 
-	COMMON_API xgc_long make_path( xgc_lpcstr path, xgc_bool recursion )
+	COMMON_API xgc_long make_dirs( xgc_lpcstr path, xgc_bool recursion )
 	{
 		auto absolute = strdup( path );
 
@@ -392,6 +392,33 @@ namespace xgc
 		strcpy_s( _root, root );
 
 		return list_directory_real( _root, _root+strlen(_root), XGC_COUNTOF(_root)-strlen(_root), 0, on_file, deep_max );
+	}
+
+	COMMON_API xgc_lpcstr path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname )
+	{
+		auto last_slash = fullname;
+		auto next_slash = fullname;
+		while( next_slash = strpbrk( last_slash + 1, SLASH_ALL ) )
+			last_slash = next_slash;
+
+		if( 0 == strncpy_s( path, size, fullname, last_slash - fullname ) )
+			return path;
+
+		return xgc_nullptr;
+	}
+
+	COMMON_API xgc_lpcstr path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname )
+	{
+		
+		auto last_slash = fullname;
+		auto next_slash = fullname;
+		while( next_slash = strpbrk( last_slash + 1, SLASH_ALL ) )
+			last_slash = next_slash;
+
+		if( 0 == strncpy_s( name, size, last_slash + 1, _TRUNCATE ) )
+			return name;
+
+		return xgc_nullptr;
 	}
 
 	xgc_ulong get_process_id()

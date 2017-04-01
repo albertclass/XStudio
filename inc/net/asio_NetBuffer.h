@@ -84,19 +84,29 @@ namespace xgc
 				return XGC_MIN( size_ - tag_ - len_, max );
 			}
 
+			XGC_INLINE xgc_bool enough( xgc_size reserve = 0 ) const
+			{
+				if( reserve > size_ )
+					return false;
+
+				return size_ - reserve >= tag_ + len_;
+			}
+
 			XGC_INLINE xgc_void reset()
 			{
 				memmove( base_, begin(), len_ );
 				tag_ = 0;
 			}
 
-			xgc_void push( xgc_size size )
+			XGC_INLINE xgc_bool push( xgc_size size )
 			{
-				XGC_ASSERT_RETURN( size < space(), XGC_NONE );
+				XGC_ASSERT_RETURN( size < space(), false );
 				len_ += size;
+
+				return true;
 			}
 
-			xgc_size put( xgc_lpvoid data, xgc_size size )
+			XGC_INLINE xgc_size put( xgc_lpvoid data, xgc_size size )
 			{
 				if( size > space() )
 				{

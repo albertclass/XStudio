@@ -11,6 +11,10 @@ namespace xgc
 		xgc_void set_send_buffer_size( xgc_size size );
 		// 设置接收缓冲大小
 		xgc_void set_recv_buffer_size( xgc_size size );
+		// 设置发送数据大小
+		xgc_void set_send_packet_size( xgc_size size );
+		// 设置接收数据大小
+		xgc_void set_recv_packet_size( xgc_size size );
 
 		class asio_ServerBase;
 		class asio_NetworkHandler;

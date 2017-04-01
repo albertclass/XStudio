@@ -12,8 +12,8 @@ namespace xgc
 		static xgc_size send_buffer_size = 1024 * 16;
 		static xgc_size recv_buffer_size = 1024 * 16;
 
-		static xgc_size send_package_max = 1024 * 4;
-		static xgc_size recv_package_max = 1024 * 4;
+		static xgc_size send_packet_max = 1024 * 4;
+		static xgc_size recv_packet_max = 1024 * 4;
 
 		// 设置发送缓冲大小
 		xgc_void set_send_buffer_size( xgc_size size )
@@ -27,6 +27,20 @@ namespace xgc
 		{
 			if( size > 1024 * 256 )
 				recv_buffer_size = size;
+		}
+
+		// 设置发送数据大小
+		xgc_void set_send_packet_size( xgc_size size )
+		{
+			if( size > 1024 * 8 )
+				send_packet_max = size;
+		}
+
+		// 设置接收数据大小
+		xgc_void set_recv_packet_size( xgc_size size )
+		{
+			if( size > 1024 * 8 )
+				recv_packet_max = size;
 		}
 
 		asio_Socket::asio_Socket( io_service& s, xgc_lpvoid userdata, xgc_uint16 timeout )
@@ -52,6 +66,7 @@ namespace xgc
 
 			// 设置来源
 			from_ = from;
+			connect_status_ = 1;
 
 			make_event( EVENT_HANGUP, 0, from_ );
 		}
@@ -103,12 +118,12 @@ namespace xgc
 
 		xgc_void asio_Socket::accept( int event )
 		{
-			make_event( event, 0, userdata_ );
-
 			connect_status_ = 1;
 
+			make_event( event, 0, userdata_ );
+
 			socket_.async_read_some(
-				buffer( recv_buffer_.end(), recv_buffer_.space( recv_package_max ) ),
+				buffer( recv_buffer_.end(), recv_buffer_.space( recv_packet_max ) ),
 				std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 
 			if( timeout_ )
@@ -146,24 +161,30 @@ namespace xgc
 		{
 			if( !error )
 			{
-				recv_buffer_.push( translate );
+				if( false == recv_buffer_.push( translate ) )
+				{
+					XGC_ASSERT( false );
+					make_event( EVENT_ERROR, NET_ERROR_PACKET_SPACE, userdata_ );
+
+					close();
+					return;
+				}
 
 				INetworkSession* session = (INetworkSession*) userdata_;
 				int packet_length = session->OnParsePacket( (char*) recv_buffer_.begin(), recv_buffer_.length() );
 
+				if( packet_length > recv_buffer_.capacity() )
+				{
+					XGC_ASSERT( false );
+					make_event( EVENT_ERROR, NET_ERROR_PACKET_SPACE, userdata_ );
+
+					close();
+					return;
+				}
+
 				// 已接收到数据包
 				while( packet_length && recv_buffer_.length() >= packet_length )
 				{
-					// 超出接收缓冲的消息包说明该连接发生异常，中断连接。
-					if( packet_length >= recv_buffer_.space() )
-					{
-						XGC_ASSERT( false );
-						make_event( EVENT_ERROR, NET_ERROR_NOT_ENOUGH_MEMROY, userdata_ );
-
-						close();
-						return;
-					}
-
 					// 将数据包发送到队列
 					EventHeader evt;
 					evt.handle = handle_;
@@ -184,9 +205,12 @@ namespace xgc
 					packet_length = session->OnParsePacket( (char*) recv_buffer_.begin(), recv_buffer_.length() );
 				}
 
+				if( false == recv_buffer_.enough( recv_packet_max ) )
+					recv_buffer_.reset();
+
 				// 继续读取协议体
 				socket_.async_read_some(
-					buffer( recv_buffer_.end(), recv_buffer_.space( recv_package_max ) ),
+					buffer( recv_buffer_.end(), recv_buffer_.space( recv_packet_max ) ),
 					std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 			}
 			else
@@ -363,13 +387,16 @@ namespace xgc
 
 		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring )
 		{
-			EventHeader evt;
-			evt.handle = handle_;
-			evt.event = event;
-			evt.error = error_code;
-			evt.bring = bring;
+			if( connect_status_ != 0 )
+			{
+				EventHeader evt;
+				evt.handle = handle_;
+				evt.event = event;
+				evt.error = error_code;
+				evt.bring = bring;
 
-			getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
+				getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
+			}
 		}
 	}
 }

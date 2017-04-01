@@ -27,7 +27,7 @@ xgc_long CServerFiles::GenIgnoreList( xgc_lpcstr root )
 	while( !feof( fp ) )
 	{
 		fgets( line, XGC_COUNTOF(line), fp );
-		trim_string_right( line, "\r\n" );
+		string_trim_right( line, "\r\n" );
 		ignore_files.push_back( line );
 	}
 
@@ -97,7 +97,7 @@ xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
 			if( Encryption::Md5_file( path, md5 ) )
 			{
 				Encryption::Md5_text( md5, md5_text );
-				fprintf( fp, "%s - %s%c%s\n", md5_text, relative, SLASH, name );
+				fprintf( fp, "%s:%s%c%s\n", md5_text, relative, SLASH, name );
 			}
 
 			xgc_time64 tick_2 = ticks< std::chrono::microseconds >();
@@ -119,7 +119,7 @@ xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
 xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint64 *length )
 {
 	xgc_char pathname[1024];
-	sprintf_s( pathname, "%s%s", path, name );
+	sprintf_s( pathname, "%s/%s", path, name );
 
 	auto it1 = files_.find( pathname );
 	if( it1 != files_.end() )

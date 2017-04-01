@@ -221,7 +221,53 @@ namespace xgc
 	/// \return 以数组的形式返回分割好的字符串
 	/// \date [5/30/2014]
 	///
-	COMMON_API xgc_vector<xgc_string> string_split( xgc_lpcstr src, xgc_lpcstr delim );
+	template< template< class, class > class _Container = xgc_vector, template< class > class _Ax = xgc_allocator >
+	typename _Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim )
+	{
+		typename _Container< std::string, _Ax< std::string > > r;
+		XGC_ASSERT_RETURN( src, r );
+
+		xgc_lpcstr str = src + strspn( src, delim );;
+		while( *str )
+		{
+			xgc_lpcstr brk = strpbrk( str, delim );
+			if( xgc_nullptr == brk )
+			{
+				r.push_back( str );
+				break;
+			}
+
+			r.push_back( xgc_string( str, brk ) );
+			str = brk + strspn( brk, delim );
+		}
+
+		return r;
+	}
+
+	///
+	/// \brief 字符串合并
+	///
+	/// \author albert.xu
+	/// \date 2017/04/01 12:26
+	///
+	template< class _Iterator >
+	xgc_string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
+	{
+		xgc_string r;
+		auto it = _Begin;
+		r += *it;
+
+		++it;
+
+		while( it != _End )
+		{
+			r += join;
+			r += *it;
+			++it;
+		}
+
+		return r;
+	}
 
 	///
 	/// \brief 将二进制数据转为16进制字符串
@@ -313,7 +359,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/03/31 14:23
 	///
-	COMMON_API xgc_size trim_string_left( xgc_lpstr str, xgc_lpcstr controls );
+	COMMON_API xgc_size string_trim_left( xgc_lpstr str, xgc_lpcstr controls );
 
 	///
 	/// \brief 修剪字符串，裁剪右侧的字符
@@ -321,7 +367,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/03/31 14:23
 	///
-	COMMON_API xgc_size trim_string_right( xgc_lpstr str, xgc_lpcstr controls );
+	COMMON_API xgc_size string_trim_right( xgc_lpstr str, xgc_lpcstr controls );
 
 	///
 	/// \brief 修剪字符串，裁剪所有的字符
@@ -329,6 +375,6 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/03/31 14:23
 	///
-	COMMON_API xgc_size trim_string_all( xgc_lpstr str, xgc_lpcstr controls );
+	COMMON_API xgc_size string_trim_all( xgc_lpstr str, xgc_lpcstr controls );
 }
 #endif // _XUTILITY_H_

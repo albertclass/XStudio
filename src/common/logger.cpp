@@ -5,6 +5,8 @@
 #include "pugixml.hpp"
 #include "datetime.h"
 
+#include "allocator.h"
+
 #ifdef _WINDOWS
 #	include <io.h>
 #	include <fcntl.h>
@@ -466,7 +468,7 @@ namespace xgc
 				path = get_absolute_path( absolute, "%s/", path );
 				XGC_ASSERT_RETURN(path, false, "shared memeory conf, path error.");
 
-				XGC_ASSERT_RETURN( 0 == make_path( path ), false );
+				XGC_ASSERT_RETURN( 0 == make_dirs( path ), false );
 				return XGC_NEW shared_adapter( name, size, path );
 			}
 			else if( strcasecmp( device, "file" ) == 0 )
@@ -485,7 +487,7 @@ namespace xgc
 				path = get_absolute_path( absolute, "%s/", path );
 				XGC_ASSERT_RETURN(path, false, "file conf, path error.");
 
-				XGC_ASSERT_RETURN( 0 == make_path( path ), false );
+				XGC_ASSERT_RETURN( 0 == make_dirs( path ), false );
 
 				return XGC_NEW file_adapter( file, path, split_size, split_date );
 			}
@@ -500,7 +502,7 @@ namespace xgc
 				XGC_ASSERT_RETURN( adapter, false, "pipe conf, create adapter failed." );
 				adapter->init();
 
-				auto outputs = string_split( output, " ," );
+				auto outputs = string_split< xgc_vector >( output, " ," );
 				for( auto &name : outputs )
 				{
 					auto redirect = create_logger_impl( ini, name.c_str() );

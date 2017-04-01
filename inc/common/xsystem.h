@@ -99,7 +99,7 @@ namespace xgc
 	/// [12/16/2013 albert.xu]
 	/// 建立目录
 	///
-	COMMON_API xgc_long make_path( xgc_lpcstr path, xgc_bool recursion = true );
+	COMMON_API xgc_long make_dirs( xgc_lpcstr path, xgc_bool recursion = true );
 
 	///
 	/// \brief 遍历目录
@@ -108,6 +108,34 @@ namespace xgc
 	/// \date 2017/03/30 16:05
 	///
 	COMMON_API xgc_long list_directory( xgc_lpcstr root, const std::function< xgc_bool(xgc_lpcstr, xgc_lpcstr, xgc_lpcstr) > &on_file, int deep_max = 1 );
+
+	///
+	/// \brief 获取路径的目录部分
+	///
+	/// \author albert.xu
+	/// \date 2017/04/01 15:07
+	///
+	COMMON_API xgc_lpcstr path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname );
+
+	template< size_t size >
+	xgc_lpcstr path_dirs( xgc_char( &path )[size], xgc_lpcstr fullname )
+	{
+		return path_dirs( path, size, fullname );
+	}
+
+	///
+	/// \brief 获取路径的目录部分
+	///
+	/// \author albert.xu
+	/// \date 2017/04/01 15:07
+	///
+	COMMON_API xgc_lpcstr path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname );
+
+	template< size_t size >
+	xgc_lpcstr path_name( xgc_char( &path )[size], xgc_lpcstr fullname )
+	{
+		return path_name( path, size, fullname );
+	}
 
 	///
 	/// [12/16/2013 albert.xu]

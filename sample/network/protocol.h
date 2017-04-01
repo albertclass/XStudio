@@ -31,36 +31,56 @@ struct MessagePing
 /// 文件请求
 struct MessageFileInfoReq
 {
+	/// 下载索引
+	xgc_byte file_id;
+	/// 文件路径
 	xgc_char filepath[XGC_MAX_PATH];
+	/// 文件名
 	xgc_char filename[XGC_MAX_FNAME];
 };
 
 /// 文件数据请求
 struct MessageFileStreamReq
 {
+	/// 下载索引
+	xgc_byte file_id;
+	/// 文件序列号
 	xgc_uint32 file_sequence;
+	/// 请求的偏移量
 	xgc_uint64 file_offset;
 };
 
 /// 文件回应
 struct MessageFileInfoAck
 {
+	/// 错误码
 	xgc_uint8 error;
+	/// 下载索引
+	xgc_byte file_id;
+	/// 文件路径
 	xgc_char filepath[XGC_MAX_PATH];
+	/// 文件名
 	xgc_char filename[XGC_MAX_FNAME];
 
+	/// 文件序列号
 	xgc_uint32 file_sequence;
+	/// 文件大小
 	xgc_uint64 file_length;
 };
 
 /// 文件流
 struct MessageFileStreamAck
 {
+	/// 下载索引
+	xgc_byte file_id;
+	/// 文件序列号
 	xgc_uint32 file_sequence;
+	/// 请求的偏移量
 	xgc_uint64 file_offset;
 
-	xgc_long file_size;
-	xgc_char file[1];
+	/// 数据大小
+	xgc_long data_size;
+	xgc_char data[1];
 };
 #pragma pack()
 
