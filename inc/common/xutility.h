@@ -222,9 +222,9 @@ namespace xgc
 	/// \date [5/30/2014]
 	///
 	template< template< class, class > class _Container = xgc_vector, template< class > class _Ax = xgc_allocator >
-	typename _Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim )
+	_Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim )
 	{
-		typename _Container< std::string, _Ax< std::string > > r;
+		_Container< std::string, _Ax< std::string > > r;
 		XGC_ASSERT_RETURN( src, r );
 
 		xgc_lpcstr str = src + strspn( src, delim );;

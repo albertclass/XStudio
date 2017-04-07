@@ -1,6 +1,5 @@
 #include "csv_reader.h"
 #include "encoding.h"
-#include "xutility.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>

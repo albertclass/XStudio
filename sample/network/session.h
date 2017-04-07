@@ -113,7 +113,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/27 11:36
 	///
-	xgc_lpvoid GetUserdata( xgc_void )
+	xgc_lpvoid GetUserdata()
 	{
 		return userdata_;
 	}

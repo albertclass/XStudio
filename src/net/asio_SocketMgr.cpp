@@ -58,6 +58,9 @@ namespace xgc
 				}
 
 			} while( counter > 0 && (tick() - start < timeout) );
+
+			// execute socket close event.
+			Exec( -1 );
 		}
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )

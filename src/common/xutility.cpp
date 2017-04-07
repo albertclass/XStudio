@@ -319,12 +319,16 @@ namespace xgc
 		XGC_ASSERT_RETURN( str, -1 );
 
 		auto n = strspn( str, controls );
-		
-		xgc_size i = 0;
-		for( ; str[n]; ++i )
-			str[i++] = str[n++];
 
-		str[i] = 0;
+		auto i = 0U;
+		
+		if( n > 0 )
+		{
+			for( ; str[n]; ++i, ++n )
+				str[i] = str[n];
+
+			str[i] = 0;
+		}
 
 		return i;
 	}

@@ -8,10 +8,15 @@
 using namespace xgc::net;
 using namespace xgc::common;
 
-#if defined( _WINDOWS )
+#if defined(_LINUX)
+#	include <arpa/inet.h>
+#	include <endian.h>
+#endif
+
+#if defined(_WINDOWS)
 #	include <WinSock2.h>
-#	pragma comment ( lib, "ws2_32.lib" )
-#endif 
+#	pragma comment( lib, "ws2_32.lib" )
+#endif
 
 class CNetworkSession : public INetworkSession
 {

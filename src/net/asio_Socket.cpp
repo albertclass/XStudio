@@ -259,8 +259,8 @@ namespace xgc
 
 			for( auto &t : buffers )
 			{
-				auto data = std::get< xgc_lpvoid >( t ) ;
-				auto size = std::get< xgc_size >( t ) ;
+				xgc_lpvoid data = std::get< 0 >( t ) ;
+				xgc_size   size = std::get< 1 >( t ) ;
 
 				// 数据放入发送缓冲
 				if( send_buffer_.put( data, size ) != size )
@@ -324,8 +324,6 @@ namespace xgc
 			if( connect_status_.compare_exchange_strong( status_1, 0 ) || 
 				connect_status_.compare_exchange_strong( status_2, 0 ) )
 			{
-				connect_status_ = 0;
-
 				socket_.shutdown( ip::tcp::socket::shutdown_both, ec );
 				socket_.close( ec );
 
@@ -387,7 +385,7 @@ namespace xgc
 
 		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring )
 		{
-			if( connect_status_ != 0 )
+			if( connect_status_ != 0 || event == EVENT_CLOSE )
 			{
 				EventHeader evt;
 				evt.handle = handle_;

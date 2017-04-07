@@ -23,7 +23,7 @@ namespace xgc
 		void Md5_text( char md5[16], char text[33], bool caps )
 		{
 			char* buf = text;
-			char* hex = caps ? "0123456789ABCDEF" : "0123456789abcdef";
+			const char* hex = caps ? "0123456789ABCDEF" : "0123456789abcdef";
 
 			for( int i = 0; i < 16; ++i )
 			{
@@ -305,7 +305,13 @@ namespace xgc
 			int retry = 5;
 			const unsigned long data_size = 8*1024*1024;
 
+			#ifdef _WINDOWS
 			if( (fd = _open(filename, O_RDONLY | O_BINARY, S_IREAD)) < 0 )
+			#endif
+
+			#ifdef _LINUX
+			if( (fd = _open(filename, O_RDONLY, S_IREAD)) < 0 )
+			#endif
 				return false;
 
 			struct stat s;
@@ -347,7 +353,7 @@ namespace xgc
 			{
 				unsigned long read_bytes = 0;
 				unsigned long read_size = XGC_MIN( data_size, file_size - read_total );
-				while( 1 != _eof(fd) && read_bytes < read_size && retry )
+				while( read_bytes < read_size && retry )
 				{
 					int ret = _read( fd, data_buffer + read_bytes, data_size - read_bytes );
 					if( ret == -1 )

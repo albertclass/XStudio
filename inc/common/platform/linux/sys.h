@@ -13,4 +13,7 @@
 
 #define gettid() syscall(SYS_gettid)
 
+#define htonll htobe64
+#define ntohll be64toh
+
 #endif // __XGC_SYSTEM_H__

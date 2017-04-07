@@ -189,6 +189,7 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 #define _lseek	lseek
 #define _close 	close
 #define _access access
+#define _tell(fd) _lseek(fd, 0, SEEK_CUR)
 
 #define _fstat fstat
 #define _stat stat
@@ -196,6 +197,6 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 #define memsize	malloc_usable_size
 
 #define XGC_ASSERT_MSG(expr, FMT, ...) \
-	if( !expr ) { fprintf( stderr, "%s:%d:" FMT "\n", __FILE__, __LINE__, ##__VA_ARGS__ ); }
+	if( !(expr) ) { fprintf( stderr, "%s:%d:" FMT "\n", __FILE__, __LINE__, ##__VA_ARGS__ ); }
 
 #endif  // __XGC_CPLUSPLUS_H__

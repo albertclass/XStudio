@@ -13,6 +13,11 @@
 using namespace xgc;
 using namespace xgc::common;
 
+#ifdef _LINUX
+#	include <arpa/inet.h>
+#	include <endian.h>
+#endif
+
 #ifdef _WINDOWS
 #	include <WinSock2.h>
 #	pragma comment( lib, "ws2_32.lib" )
@@ -23,6 +28,7 @@ using namespace xgc::common;
 
 #include <thread>
 #include <fstream>
+#include <algorithm>
 
 #include "protocol.h"
 #endif // _CLIENT_HEADER_H_

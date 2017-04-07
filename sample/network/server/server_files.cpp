@@ -13,6 +13,9 @@ CServerFiles::~CServerFiles()
 
 xgc_long CServerFiles::GenIgnoreList( xgc_lpcstr root )
 {
+	ignore_files.push_back( "/ignores" );
+	ignore_files.push_back( "/filelist" );
+
 	xgc_char absolute[XGC_MAX_PATH] = { 0 };
 	get_absolute_path( absolute, "%s/ignores", root );
 
@@ -20,13 +23,20 @@ xgc_long CServerFiles::GenIgnoreList( xgc_lpcstr root )
 	if( fp == xgc_nullptr )
 		return -1;
 
-	ignore_files.push_back( "/ignores" );
-	ignore_files.push_back( "/filelist" );
-
 	char line[XGC_MAX_PATH + 64];
 	while( !feof( fp ) )
 	{
+		line[0] = 0;
 		fgets( line, XGC_COUNTOF(line), fp );
+		string_trim_left( line, " " );
+
+		// # is comment
+		if( line[0] == '#' )
+			continue;
+
+		if( line[0] == '\0' )
+			continue;
+
 		string_trim_right( line, "\r\n" );
 		ignore_files.push_back( line );
 	}
@@ -66,7 +76,7 @@ xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
 	xgc_char absolute[XGC_MAX_PATH] = { 0 };
 	get_absolute_path( absolute, "%s/filelist", root );
 
-	FILE *fp = fopen( absolute, "w+" );
+	FILE *fp = fopen( absolute, "rw+" );
 	if( fp == xgc_nullptr )
 		return -1;
 
@@ -124,6 +134,15 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 	auto it1 = files_.find( pathname );
 	if( it1 != files_.end() )
 	{
+		if( length )
+		{
+			auto it2 = files_seq_.find( it1->second );
+			if( it2 != files_seq_.end() && it2->second )
+			{
+				*length = it2->second->size;
+			}
+		}
+
 		return it1->second;
 	}
 
@@ -144,8 +163,13 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 	}
 
 	// open file
+	#ifdef _WINDOWS
 	int fd = _open( absolute, O_RDONLY | O_BINARY, S_IREAD );
+	#endif
 
+	#ifdef _LINUX
+	int fd = _open( absolute, O_RDONLY, S_IREAD );
+	#endif
 	if( fd == -1 )
 		return 3;
 

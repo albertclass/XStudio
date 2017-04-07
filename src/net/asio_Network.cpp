@@ -43,14 +43,17 @@ namespace xgc
 
 		xgc_void asio_Network::exit()
 		{
-			service_->stop();
-
-			for( size_t i = 0; i < workthreads_.size(); ++i )
+			if( service_ )
 			{
-				workthreads_[i].join();
-			}
+				service_->stop();
 
-			SAFE_DELETE( service_ );
+				for( size_t i = 0; i < workthreads_.size(); ++i )
+				{
+					workthreads_[i].join();
+				}
+
+				SAFE_DELETE( service_ );
+			}
 		}
 
 		///////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 #include "client_messages.h"
 // �洢Ŀ¼
 extern char root_path[XGC_MAX_PATH];
+extern bool running;
 
 #define DOWNLOAD_MAX 64
 struct stFileInfo
@@ -110,7 +111,14 @@ int download_build( CNetSession* net )
 	auto path = get_absolute_path( filelist, "%s/filelist", root_path );
 	XGC_ASSERT_RETURN( path, -1 );
 
+	#ifdef _WINDOWS
 	int fd = _open( path, O_RDONLY | O_BINARY, S_IREAD );
+	#endif
+
+	#ifdef _LINUX
+	int fd = _open( path, O_RDONLY, 0 );
+	#endif
+	
 	XGC_ASSERT_RETURN( fd != -1, -2 );
 
 	struct _stat s;
@@ -212,7 +220,6 @@ int download_check( CNetSession* net, xgc_byte file_id )
 			return -3;
 	}
 
-	// do action on download finished
 	return file.action ? file.action( net ) : 0;
 }
 
@@ -390,6 +397,8 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 	auto file_length = ntohll( ack.file_length );
 	auto file_sequence = ntohl( ack.file_sequence );
 
+	XGC_ASSERT( file_length );
+
 	xgc_char path[XGC_MAX_PATH] = { 0 };
 	auto ret = get_absolute_path( path, "%s/%s", root_path, ack.filepath );
 	XGC_ASSERT_RETURN( ret, XGC_NONE );
@@ -436,7 +445,14 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 		return;
 	}
 
-	int fd = _open( path, O_WRONLY | O_BINARY | O_TRUNC | O_CREAT , S_IWRITE );
+	#ifdef _WINDOWS
+	int fd = _open( path, O_RDWR | O_TRUNC | O_CREAT | O_BINARY, S_IWRITE | S_IREAD );
+	#endif
+
+	#ifdef _LINUX
+	int fd = _open( path, O_RDWR | O_TRUNC | O_CREAT , 0666 );
+	#endif
+
 	if( fd == -1 )
 	{
 		fprintf( stderr, "file open failed. err = %d\n", errno );
@@ -507,7 +523,7 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 	// update file download bytes and progress
 	file.file_offset += bytes;
 
-	if( file.file_offset == file.file_length )
+	if( file.file_offset >= file.file_length )
 	{
 		// download finished
 		fprintf( stdout, "file %s/%s - %u download successful!\n", file.path, file.name, file.file_sequence );
@@ -520,7 +536,8 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 		else
 		{
 			download_close( net, file.id );
-			download_front( net );
+			if( 1 == download_front( net ) )
+				running = false;
 		}
 	}
 	else

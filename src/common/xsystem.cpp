@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <memory>
+#include <algorithm>
 
 #ifdef _WINDOWS
 #	include <direct.h>
@@ -314,29 +315,62 @@ namespace xgc
 
 		while( xgc_nullptr != (ent = readdir( dir )) )
 		{
-			if( ent->d_type == 8 )
+			if( ent->d_type == DT_UNKNOWN )
 			{
-				//file  
-				on_file( root, relative, ent->d_name );
-			}
-			else
-			{
-				if( ent->d_name[0] == '.' )
-					continue;
-
-				//directory
 				int cpy = sprintf_s( relative + length, size - length, "%c%s", SLASH, ent->d_name );
 				if( cpy > 0 )
 				{
-					if( on_file( root, relative, xgc_nullptr ) )
+					struct _stat s;
+					if( 0 == lstat( root, &s ) )
 					{
-						if( deep_max != 0 )
-						{
-							count += list_directory_real( root, relative, size, length + cpy, on_file, deep_max - 1 );
-						}
+						if( S_ISREG(s.st_mode) )
+							ent->d_type = DT_REG;
+						else if( S_ISDIR(s.st_mode) )
+							ent->d_type = DT_DIR;
+						else if( S_ISCHR(s.st_mode) )
+							ent->d_type = DT_CHR;
+						else if( S_ISBLK(s.st_mode) )
+							ent->d_type = DT_BLK;
+						else if( S_ISFIFO(s.st_mode) )
+							ent->d_type = DT_FIFO;
+						else if( S_ISLNK(s.st_mode) )
+							ent->d_type = DT_LNK;
+						else if( S_ISSOCK(s.st_mode) )
+							ent->d_type = DT_SOCK;						
 					}
-					relative[length] = 0;
 				}
+
+				relative[length] = 0;
+			}
+
+			switch( ent->d_type )
+			{
+				case DT_REG:
+				{
+					//file  
+					on_file( root, relative, ent->d_name );
+				}
+				break;
+				case DT_DIR:
+				{
+					if( ent->d_name[0] == '.' )
+						continue;
+
+					//directory
+					int cpy = sprintf_s( relative + length, size - length, "%c%s", SLASH, ent->d_name );
+					if( cpy > 0 )
+					{
+						if( on_file( root, relative, xgc_nullptr ) )
+						{
+							if( deep_max != 0 )
+							{
+								count += list_directory_real( root, relative, size, length + cpy, on_file, deep_max - 1 );
+							}
+						}
+						relative[length] = 0;
+					}
+				}
+				break;
 			}
 		}
 

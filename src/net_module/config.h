@@ -2,11 +2,8 @@
 #ifndef _NET_MODULE_CONFIG_H_
 #define _NET_MODULE_CONFIG_H_
 // crt
-#include <io.h>
-#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mbstring.h>
 
 // stl
 #include <thread>
@@ -25,6 +22,7 @@ using namespace xgc;
 
 #if defined(_LINUX)
 #	include <arpa/inet.h>
+#	include <endian.h>
 #endif
 
 #if defined(_WINDOWS)

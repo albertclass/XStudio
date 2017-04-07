@@ -1,7 +1,7 @@
 #include "header.h"
 #include "session.h"
 
-xgc_bool running = true;
+bool running = true;
 
 // �洢Ŀ¼
 char root_path[XGC_MAX_PATH] = {0};

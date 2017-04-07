@@ -4,7 +4,7 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/bin/Debug/unittest",
+            "program": "${workspaceRoot}/bin/Debug/net_client",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
@@ -24,8 +24,8 @@
             "name": "C++ Attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "${workspaceRoot}/../bin/debug/utest",
-            "processId": "${command.pickProcess}",
+            "program": "${workspaceRoot}/bin/Debug/net_server",
+            "processId": "${command.pickProcesss}",
             "linux": {
                 "MIMode": "gdb"
             },
