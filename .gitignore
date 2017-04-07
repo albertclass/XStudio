@@ -2,6 +2,8 @@
 
 /bin/Debug
 /bin/Release
+/bin/client_files/*
+/bin/server_files/*
 /lib
 /prj
 /obj
