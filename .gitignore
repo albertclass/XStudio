@@ -5,4 +5,6 @@
 /lib
 /prj
 /obj
-/src/framework
+/src/framework/
+/bin/client_files/
+/bin/server_files/

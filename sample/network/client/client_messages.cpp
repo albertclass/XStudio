@@ -527,6 +527,7 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 	{
 		// download going on
 		MessageFileStreamReq req;
+		req.file_id = ack.file_id;
 		req.file_offset = htonll( file.file_offset );
 		req.file_sequence = ack.file_sequence;
 

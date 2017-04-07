@@ -244,7 +244,7 @@ xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_l
 
 	auto info = it->second;
 	XGC_ASSERT_RETURN( info, -2 );
-	XGC_ASSERT_RETURN( offset < info->size, 0 );
+	XGC_ASSERT_RETURN( offset <= info->size, 0 );
 
 	auto bytes = XGC_MIN( (xgc_int32)(info->size - offset), length );
 	if( info->fd == -1 )

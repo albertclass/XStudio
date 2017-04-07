@@ -236,9 +236,9 @@ namespace xgc
 				break;
 			case Operator_SetPacketSize:
 				{
-					Param_SetBufferSize* pParam = (Param_SetBufferSize*) param;
-					set_send_packet_size( pParam->send_buffer_size );
-					set_recv_packet_size( pParam->recv_buffer_size );
+					Param_SetPacketSize* pParam = (Param_SetPacketSize*) param;
+					set_send_packet_size( pParam->send_packet_size );
+					set_recv_packet_size( pParam->recv_packet_size );
 
 					return 0;
 				}

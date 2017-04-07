@@ -41,11 +41,33 @@ int main( int argc, char* argv[] )
 	if( false == net::CreateNetwork( 1 ) )
 		return -1;
 
-	net::StartServer( addr, port, 0, [](){ return XGC_NEW CNetSession(); } );
+	struct net::Param_SetBufferSize param1;
+	param1.recv_buffer_size = 64 * 1024;
+	param1.send_buffer_size = 64 * 1024;
+
+	if( 0 != net::ExecuteState( Operator_SetBufferSize, &param1 ) )
+	{
+		net::DestroyNetwork();
+		return -1;
+	}
+
+	struct net::Param_SetPacketSize param2;
+	param2.recv_packet_size = 64 * 1024;
+	param2.send_packet_size = 64 * 1024;
+
+	if( 0 != net::ExecuteState( Operator_SetPacketSize, &param2 ) )
+	{
+		net::DestroyNetwork();
+		return -1;
+	}
+
+	auto srv = net::StartServer( addr, port, 0, [](){ return XGC_NEW CNetSession(); } );
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
 			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 	}
+
+	net::CloseServer( srv );
 	net::DestroyNetwork();
 }

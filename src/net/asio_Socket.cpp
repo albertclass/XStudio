@@ -18,14 +18,14 @@ namespace xgc
 		// 设置发送缓冲大小
 		xgc_void set_send_buffer_size( xgc_size size )
 		{
-			if( size > 1024 * 1024 )
+			if( size > 1024 * 16 )
 				send_buffer_size = size;
 		}
 
 		// 设置接收缓冲大小
 		xgc_void set_recv_buffer_size( xgc_size size )
 		{
-			if( size > 1024 * 256 )
+			if( size > 1024 * 16 )
 				recv_buffer_size = size;
 		}
 
