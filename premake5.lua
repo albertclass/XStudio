@@ -316,7 +316,7 @@ project "net_server"
     kind "ConsoleApp"
     language "C++"
     location "prj/sample/net_server"
-    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     
@@ -340,7 +340,7 @@ project "net_server"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}" }
+    	libdirs { "lib/%{cfg.buildcfg}", "dep/PDCurses/win32" }
     	links { "common.lib", "net.lib" }
         architecture "x64"
         defines { "WIN64" }
