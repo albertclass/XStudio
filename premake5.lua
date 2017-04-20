@@ -331,17 +331,19 @@ project "net_server"
     }
 
     filter "configurations:Debug"
+     	libdirs { "dep/PDCurses/win32/Debug" }
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
         symbols "On"
 
     filter "configurations:Release"
+    	libdirs { "dep/PDCurses/win32/Release" }
         defines { "NDEBUG", "_ASSERT_LOG" }
         symbols "On"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}", "dep/PDCurses/win32" }
-    	links { "common.lib", "net.lib" }
+    	libdirs { "lib/%{cfg.buildcfg}" }
+    	links { "common.lib", "net.lib", "pdcurses.lib", "panel.lib" }
         architecture "x64"
         defines { "WIN64" }
 

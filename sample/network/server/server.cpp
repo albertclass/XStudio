@@ -2,6 +2,9 @@
 #include "session.h"
 #include "server_files.h"
 
+#include "curses.h"
+#include "panel.h"
+
 /// 是否运行中
 xgc_bool running = true;
 
@@ -10,6 +13,24 @@ xgc_char root_path[XGC_MAX_PATH] = { 0 };
 
 int main( int argc, char* argv[] )
 {
+	initscr();
+
+	WINDOW *win_err = newwin( 15, 40, 0, 0 );
+	PANEL  *pel_err = new_panel(win_err);
+	set_panel_userptr( pel_err, "err" );
+
+	box( win_err, 0, 0 );
+	mvwprintw( win_err, 1, 1, "error output window" );
+
+	WINDOW *win_files = newwin( 40, 25, 41, 0 );
+	PANEL  *pel_files = new_panel(win_err);
+	set_panel_userptr( pel_files, "files" );
+
+	box( win_files, 0, 0 );
+
+	update_panels();
+	doupdate();
+
 	char conf_path[1024] = { 0 };
 	if( xgc_nullptr == get_absolute_path( conf_path, "../server.ini" ) )
 	{
@@ -70,4 +91,6 @@ int main( int argc, char* argv[] )
 
 	net::CloseServer( srv );
 	net::DestroyNetwork();
+
+	endwin();
 }
