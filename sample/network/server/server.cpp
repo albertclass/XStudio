@@ -13,21 +13,59 @@ xgc_char root_path[XGC_MAX_PATH] = { 0 };
 
 int main( int argc, char* argv[] )
 {
+	PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_X );
+
 	initscr();
 
-	WINDOW *win_err = newwin( 15, 40, 0, 0 );
-	PANEL  *pel_err = new_panel(win_err);
-	set_panel_userptr( pel_err, "err" );
+	start_color();
+	init_pair( 1, COLOR_WHITE, COLOR_BLUE);
+	init_pair( 2, COLOR_WHITE, COLOR_BLACK);
 
-	box( win_err, 0, 0 );
-	mvwprintw( win_err, 1, 1, "error output window" );
+	cbreak();
+	noecho();
+	clear();
+	nodelay( stdscr, 1 );
+	curs_set(0);
+	refresh();
 
-	WINDOW *win_files = newwin( 40, 25, 41, 0 );
-	PANEL  *pel_files = new_panel(win_err);
-	set_panel_userptr( pel_files, "files" );
+	keypad( stdscr, TRUE );
+	mousemask( ALL_MOUSE_EVENTS, NULL );
+	int max_row, max_col;
+	getmaxyx( stdscr, max_row, max_col );
 
-	box( win_files, 0, 0 );
+	WINDOW *win_err = newwin( 15, 40, 0, max_col - 40 );
+	if( win_err )
+	{
+		PANEL  *pel_err = new_panel( win_err );
+		set_panel_userptr( pel_err, "err" );
+		wattrset( win_err, COLOR_PAIR( 1 & A_CHARTEXT ) );
+		wbkgd( win_err, COLOR_PAIR( 1 & A_CHARTEXT ) );
 
+		box( win_err, 0, 0 );
+		mvwprintw( win_err, 0, 1, "error output window" );
+	}
+
+	WINDOW *win_err_inner = subwin( win_err, 13, 38, 1, 1 );
+	if( win_err_inner )
+	{
+		scrollok( win_err_inner, 1 );
+		wmove( win_err_inner, 0, 0 );
+		wprintw( win_err_inner, "error messages ... \n" );
+	}
+
+	WINDOW *win_files = newwin( max_row - 15, 40, 15, max_col - 40 );
+	if( win_files )
+	{
+		PANEL  *pel_files = new_panel(win_files);
+		set_panel_userptr( pel_files, "files" );
+
+		wattrset( win_files, COLOR_PAIR( 1 & A_CHARTEXT ) );
+		wbkgd( win_files, COLOR_PAIR( 1 & A_CHARTEXT ) );
+
+		box( win_files, 0, 0 );
+		mvwprintw( win_files, 0, 1, "files infomation" );
+	}
+	
 	update_panels();
 	doupdate();
 
@@ -57,7 +95,7 @@ int main( int argc, char* argv[] )
 	XGC_ASSERT_RETURN( exist == 0, -1 );
 
 	getServerFiles().GenIgnoreList( root_path );
-	getServerFiles().GenFileList( root_path );
+	//getServerFiles().GenFileList( root_path );
 
 	if( false == net::CreateNetwork( 1 ) )
 		return -1;
@@ -83,10 +121,24 @@ int main( int argc, char* argv[] )
 	}
 
 	auto srv = net::StartServer( addr, port, 0, [](){ return XGC_NEW CNetSession(); } );
+
+	printf( "server is running.\n" );
+	int n = 0;
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
-			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+		{
+			char buffer[1024];
+			int read_bytes = fread( buffer, XGC_COUNTOF(buffer), 1, stdout );
+			if( read_bytes > 0 )
+			{
+				waddnstr( stdscr, buffer, read_bytes );
+			}
+			napms( 1 );
+			// std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+			if( getch() == ALT_X )
+				break;
+		}
 	}
 
 	net::CloseServer( srv );

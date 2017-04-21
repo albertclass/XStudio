@@ -7,3 +7,6 @@
 [submodule "dep/asio"]
 	path = dep/asio
 	url = https://github.com/albertclass/asio.git
+[submodule "dep/PDCurses"]
+	path = dep/PDCurses
+	url = git@github.com:albertclass/PDCurses.git
