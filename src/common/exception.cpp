@@ -7,6 +7,7 @@
 #if defined(_WINDOWS)
 #	include <io.h>
 #	include <direct.h>
+#	include <intrin.h>
 #	define _NO_CVCONST_H
 #	include "dbghelp.h"
 #	pragma comment( lib, "dbghelp.lib")

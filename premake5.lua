@@ -313,7 +313,7 @@ project "net_client"
         defines { "LINUX64" }
 
 project "net_server"
-    kind "ConsoleApp"
+    kind "WindowedApp"
     language "C++"
     location "prj/sample/net_server"
     includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }

@@ -11,12 +11,32 @@ xgc_bool running = true;
 /// ¸ùÂ·¾¶
 xgc_char root_path[XGC_MAX_PATH] = { 0 };
 
-int main( int argc, char* argv[] )
+int dummy_main( int argc, char* argv[] );
+
+int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
+					  LPSTR lpszCmdLine, int nCmdShow)
+{
+	char *argv[30];
+	int i, argc = 1;
+
+	argv[0] = "newtest";
+	for( i = 0; lpszCmdLine[i]; i++)
+		if( lpszCmdLine[i] != ' ' && (!i || lpszCmdLine[i - 1] == ' '))
+			argv[argc++] = lpszCmdLine + i;
+
+	for( i = 0; lpszCmdLine[i]; i++)
+		if( lpszCmdLine[i] == ' ')
+			lpszCmdLine[i] = '\0';
+
+	return dummy_main( argc, (char **)argv);
+}
+
+int dummy_main( int argc, char* argv[] )
 {
 	PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_X );
 
 	initscr();
-
+	resize_term( 30, 120 );
 	start_color();
 	init_pair( 1, COLOR_WHITE, COLOR_BLUE);
 	init_pair( 2, COLOR_WHITE, COLOR_BLACK);
@@ -33,7 +53,7 @@ int main( int argc, char* argv[] )
 	int max_row, max_col;
 	getmaxyx( stdscr, max_row, max_col );
 
-	WINDOW *win_err = newwin( 15, 40, 0, max_col - 40 );
+	WINDOW *win_err = newwin( 15, max_col, 0, 0 );
 	if( win_err )
 	{
 		PANEL  *pel_err = new_panel( win_err );
@@ -42,10 +62,11 @@ int main( int argc, char* argv[] )
 		wbkgd( win_err, COLOR_PAIR( 1 & A_CHARTEXT ) );
 
 		box( win_err, 0, 0 );
-		mvwprintw( win_err, 0, 1, "error output window" );
+		char title[] = "[error output window]";
+		mvwprintw( win_err, 0, (getmaxx(win_err) - XGC_COUNTOF(title))/2, title );
 	}
 
-	WINDOW *win_err_inner = subwin( win_err, 13, 38, 1, 1 );
+	WINDOW *win_err_inner = subwin( win_err, 13, max_col - 2, 1, 1 );
 	if( win_err_inner )
 	{
 		scrollok( win_err_inner, 1 );
@@ -53,7 +74,7 @@ int main( int argc, char* argv[] )
 		wprintw( win_err_inner, "error messages ... \n" );
 	}
 
-	WINDOW *win_files = newwin( max_row - 15, 40, 15, max_col - 40 );
+	WINDOW *win_files = newwin( max_row - 16, max_col, 15, 0 );
 	if( win_files )
 	{
 		PANEL  *pel_files = new_panel(win_files);
@@ -63,7 +84,8 @@ int main( int argc, char* argv[] )
 		wbkgd( win_files, COLOR_PAIR( 1 & A_CHARTEXT ) );
 
 		box( win_files, 0, 0 );
-		mvwprintw( win_files, 0, 1, "files infomation" );
+		char title[] = "[files infomation]";
+		mvwprintw( win_files, 0, (getmaxx(win_files) - XGC_COUNTOF(title))/2, title );
 	}
 	
 	update_panels();
