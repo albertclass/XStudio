@@ -79,7 +79,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/27 15:25
 	///
-	xgc_int32 GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_lpvoid buffer, xgc_long length );
+	xgc_int32 GetFileData( xgc_uint32 sequence, xgc_int64 offset, xgc_lpvoid buffer, xgc_int32 length );
 };
 
 CServerFiles& getServerFiles();

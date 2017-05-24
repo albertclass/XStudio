@@ -131,7 +131,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/03/20 15:34
 			///
-			xgc_bool SetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter );
+			xgc_bool SetTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer );
 
 			///
 			/// \brief 删除一个定时器
@@ -247,7 +247,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/03/14 17:32
 			///
-			xgc_void OnTimer( const asio::error_code &e, network_t handle, xgc_uint32 id, xgc_real64 period );
+			xgc_void OnTimer( const asio::error_code &e, xgc_uint32 id, xgc_real64 period );
 		private:
 			typedef std::queue< network_t > CFreeHandleList;
 			typedef std::unordered_map< group_t, CSocketGroup* > CGroupMap;
@@ -272,8 +272,15 @@ namespace xgc
 
 			/// 多线程定时器锁
 			std::mutex		lock_timer_;
+
+			struct timer_info
+			{
+				asio::steady_timer* timer;
+				std::function< void() > on_timer;
+			};
+
 			/// 定时器映射表
-			xgc_unordered_map< xgc_uint32, asio::steady_timer* > mTimerMap;
+			xgc_unordered_map< xgc_uint32, timer_info > mTimerMap;
 		};
 	}
 }

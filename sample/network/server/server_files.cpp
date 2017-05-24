@@ -260,7 +260,7 @@ xgc_uint32 CServerFiles::GetFileInfo( xgc_lpcstr path, xgc_lpcstr name, xgc_uint
 	return sequence;
 }
 
-xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_lpvoid buffer, xgc_long length )
+xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_int64 offset, xgc_lpvoid buffer, xgc_int32 length )
 {
 	auto it = files_seq_.find( sequence );
 	if( it == files_seq_.end() )
@@ -268,9 +268,9 @@ xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_l
 
 	auto info = it->second;
 	XGC_ASSERT_RETURN( info, -2 );
-	XGC_ASSERT_RETURN( offset <= info->size, 0 );
+	XGC_ASSERT_RETURN( offset <= (xgc_int64)info->size, 0 );
 
-	auto bytes = XGC_MIN( (xgc_int32)(info->size - offset), length );
+	xgc_int32 bytes = XGC_MIN( (xgc_int32)(info->size - offset), length );
 	if( info->fd == -1 )
 	{
 		memcpy( buffer, info->file + offset, bytes );
@@ -279,10 +279,10 @@ xgc_int32 CServerFiles::GetFileData( xgc_uint32 sequence, xgc_long offset, xgc_l
 	{
 		if( _tell( info->fd ) != offset )
 		{
-			_lseek( info->fd, offset, SEEK_SET );
+			_lseek( info->fd, (xgc_long)offset, SEEK_SET );
 		}
 
-		bytes = _read( info->fd, buffer, bytes );
+		bytes = _read( info->fd, buffer, (int)bytes );
 	}
 
 	return bytes;

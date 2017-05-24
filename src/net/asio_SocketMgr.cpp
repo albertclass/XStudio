@@ -70,18 +70,20 @@ namespace xgc
 			return handles[handle];
 		}
 
-		xgc_bool asio_SocketMgr::SetTimer( network_t hHandle, xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter )
+		xgc_bool asio_SocketMgr::SetTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer )
 		{
 			std::lock_guard< std::mutex > _lock( lock_timer_ );
 
 			auto it = mTimerMap.find( nTimerId );
 			if( it == mTimerMap.end() )
 			{
-				auto timer = XGC_NEW asio::steady_timer( getNetwork().Ref() );
-				timer->expires_after( std::chrono::milliseconds( (xgc_uint32)(fAfter * 1000) ) );
-				timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, hHandle, nTimerId, fPeriod ) );
+				timer_info info = mTimerMap[nTimerId];
+				info.on_timer = onTimer;
 
-				mTimerMap[nTimerId] = timer;
+				info.timer = XGC_NEW asio::steady_timer( getNetwork().Ref() );
+				info.timer->expires_after( std::chrono::milliseconds( (xgc_uint32)(fAfter * 1000) ) );
+				info.timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, nTimerId, fPeriod ) );
+
 				return true;
 			}
 
@@ -95,12 +97,12 @@ namespace xgc
 			auto it = mTimerMap.find( nTimerId );
 			if( it != mTimerMap.end() )
 			{
-				auto timer = it->second;
+				timer_info &info = it->second;
 				asio::error_code ec;
-				if( timer->cancel( ec ) )
+				if( info.timer->cancel( ec ) )
 				{
+					SAFE_DELETE( info.timer );
 					mTimerMap.erase( it );
-					SAFE_DELETE( timer );
 				}
 			}
 
@@ -374,6 +376,18 @@ namespace xgc
 							pSession->OnAlive();
 						}
 						break;
+					case EVENT_TIMER:
+						{
+							std::lock_guard< std::mutex > _lock( lock_timer_ );
+
+							auto it = mTimerMap.find( pHeader->handle );
+							if( it != mTimerMap.end() )
+							{
+								timer_info &info = it->second;
+								info.on_timer();
+							}
+						}
+						break;
 					}
 				} while (false);
 
@@ -426,26 +440,26 @@ namespace xgc
 			}
 		}
 
-		xgc_void asio_SocketMgr::OnTimer( const asio::error_code & e, network_t handle, xgc_uint32 id, xgc_real64 period )
+		xgc_void asio_SocketMgr::OnTimer( const asio::error_code & e, xgc_uint32 id, xgc_real64 period )
 		{
 			if( e == asio::error::operation_aborted )
 				return;
 
 			EventHeader evt;
-			evt.handle = handle;
+			evt.handle = id;
 			evt.event = EVENT_TIMER;
-			evt.error = id;
+			evt.error = 0;
 			evt.bring = xgc_nullptr;
 
-			Push( CNetworkPacket::allocate( &evt, sizeof(evt), handle ) );
+			Push( CNetworkPacket::allocate( &evt, sizeof(evt), INVALID_NETWORK_HANDLE ) );
 
 			std::lock_guard< std::mutex > _lock( lock_timer_ );
 			auto it = mTimerMap.find( id );
 			if( it != mTimerMap.end() )
 			{
-				auto timer = it->second;
-				timer->expires_after( std::chrono::milliseconds( (xgc_uint32) (period * 1000) ) );
-				timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, handle, id, period ) );
+				timer_info &info = it->second;
+				info.timer->expires_after( std::chrono::milliseconds( (xgc_uint32) (period * 1000) ) );
+				info.timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, id, period ) );
 			}
 		}
 	}

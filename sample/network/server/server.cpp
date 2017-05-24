@@ -151,7 +151,7 @@ int dummy_main( int argc, char* argv[] )
 		if( net::ProcessNetEvent( 100 ) == 100 )
 		{
 			char buffer[1024];
-			int read_bytes = fread( buffer, XGC_COUNTOF(buffer), 1, stdout );
+			int read_bytes = (int)fread( buffer, XGC_COUNTOF(buffer), 1, stdout );
 			if( read_bytes > 0 )
 			{
 				waddnstr( stdscr, buffer, read_bytes );
@@ -167,4 +167,6 @@ int dummy_main( int argc, char* argv[] )
 	net::DestroyNetwork();
 
 	endwin();
+
+	return 0;
 }
