@@ -168,14 +168,14 @@ project "database"
         defines { "LINUX64" }
 
 project "framework"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++11"
     location "prj/framework"
-    includedirs { "inc/framework", "inc/common", "inc/net", "inc/database"}
+    includedirs { "inc/framework", "inc/common", "inc/net", "inc/database", "inc/net_module"}
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     libdirs { "lib/%{cfg.buildcfg}" }
-    links { "common", "net", "database" }
+    links { "common", "net", "net_module", "database" }
 
     flags { "MultiProcessorCompile" }
 
