@@ -9,6 +9,7 @@
 #	include <direct.h>
 #	define _NO_CVCONST_H
 #	include "dbghelp.h"
+#	include <intrin.h>
 #	pragma comment( lib, "dbghelp.lib")
 #	pragma comment (lib, "version.lib")
 #endif
