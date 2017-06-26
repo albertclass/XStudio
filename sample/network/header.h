@@ -10,6 +10,7 @@
 #include "Netbase.h"
 #include "net_module.h"
 
+#include "curses.h"
 using namespace xgc;
 using namespace xgc::common;
 

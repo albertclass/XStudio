@@ -65,9 +65,14 @@ int main( int argc, char* argv[] )
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
+		{
 			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+			napms(1);
+		}
 	}
 
 	net::CloseServer( srv );
 	net::DestroyNetwork();
+
+	return 0;
 }

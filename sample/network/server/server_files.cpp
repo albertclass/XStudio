@@ -76,7 +76,7 @@ xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
 	xgc_char absolute[XGC_MAX_PATH] = { 0 };
 	get_absolute_path( absolute, "%s/filelist", root );
 
-	FILE *fp = fopen( absolute, "rw+" );
+	FILE *fp = fopen( absolute, "w" );
 	if( fp == xgc_nullptr )
 		return -1;
 
