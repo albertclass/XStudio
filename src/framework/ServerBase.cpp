@@ -3,7 +3,7 @@
 
 #include "ServerDefines.h"
 #include "ServerBase.h"
-
+#include "ServerDatabase.h"
 #include "ServerLogger.h"
 #include "ServerRefresh.h"
 #include "ServerAsyncEvt.h"
@@ -13,18 +13,6 @@ const char* __version__ = "1.0.0.0";
 const char* __version_svn__ = "37687";
 const char* __version_url__ = "github.com/albertclass/XStudio";
 const char* __version_build__ = "37686";
-
-///
-/// 初始化数据库连接
-/// [1/15/2014 albert.xu]
-///
-extern xgc_bool InitServerDatabase( ini_reader &ini );
-
-///
-/// 清理数据库连接模块
-/// [1/15/2014 albert.xu]
-///
-extern xgc_void FiniServerDatabase();
 
 // 服务器配置
 /// @var 服务器名
@@ -83,17 +71,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 			if( xgc_nullptr == get_absolute_path( szConfigPath, sizeof( szConfigPath ), "%s", lpValue ) )
 				throw std::runtime_error( "ServerCfg.ConfigPath path string too long." );
 
-			lpValue = ini.get_item_value( "ServerCfg", "UseSequence", "false" );
-			if( strcasecmp( lpValue, "true" ) != 0 )
-			{
-				bUseSequence = false;
-				SYS_INFO( "不需要Sequence！" );
-			}
-			else
-			{
-				bUseSequence = true;
-				SYS_INFO( "需要Sequence！" );
-			}
+			bUseSequence = ini.get_item_value( "ServerCfg", "UseSequence", false );
 		}
 		catch( std::runtime_error e )
 		{

@@ -132,12 +132,13 @@ static const xgc_uint64 crc64_tab[256] = {
     xgc_uint64(0x536fa08fdfd90e51), xgc_uint64(0x29b7d047efec8728),
 };
 
-xgc_uint64 crc64( xgc_void *data, xgc_uint64 size, xgc_uint64 crc ) 
+uint64_t crc64(uint64_t crc, const unsigned char *s, uint64_t l) 
 {
-    for (xgc_uint64 j = 0; j < size; j++) 
-    {
-        xgc_byte byte = data[j];
-        crc = crc64_tab[(xgc_byte)crc ^ byte] ^ (crc >> 8);
-    }
-    return crc;
+	uint64_t j;
+
+	for (j = 0; j < l; j++) {
+		uint8_t byte = s[j];
+		crc = crc64_tab[(uint8_t)crc ^ byte] ^ (crc >> 8);
+	}
+	return crc;
 }

@@ -20,13 +20,14 @@ project "common"
     files {
         "inc/common/**.h",
         "inc/common/**.hpp",
+        "src/common/**.c",
         "src/common/**.cpp",
         "src/common/**.inl",
     }
 
     vpaths {
         ["Header Files/*"] = { "inc/common/**.h", "inc/common/**.hpp" },
-        ["Source Files/*"] = { "src/common/**.cpp", "src/common/**.inl" }
+        ["Source Files/*"] = { "src/common/**.c", "src/common/**.cpp", "src/common/**.inl" }
     }
 
     filter "configurations:Debug"
@@ -37,6 +38,7 @@ project "common"
         optimize "On"
 
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
@@ -77,6 +79,7 @@ project "net"
         optimize "On"
 
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
@@ -115,6 +118,7 @@ project "net_module"
         optimize "On"
 
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
@@ -154,6 +158,7 @@ project "database"
         optimize "On"
 
     filter "system:windows"
+       	systemversion "10.0.14393.0"
     	includedirs "$(MYSQL56)/include"
         implibdir "lib/%{cfg.buildcfg}"
         libdirs { "lib/%{cfg.buildcfg}", "$(MYSQL56)/lib" }
@@ -197,6 +202,7 @@ project "framework"
         optimize "On"
     
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
@@ -231,6 +237,7 @@ project "unittest"
         optimize "On"
     
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
@@ -266,6 +273,7 @@ project "net_client"
         optimize "On"
     
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
@@ -304,6 +312,7 @@ project "net_server"
         optimize "On"
     
     filter "system:windows"
+       	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
