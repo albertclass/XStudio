@@ -37,7 +37,6 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	keypad( stdscr, TRUE );
 	mousemask( ALL_MOUSE_EVENTS, NULL );
 
-	PDC_set_function_key( FUNCTION_KEY_ABORT, KEY_ALT_L & KEY_F(4) );
 	int _exit_code = main( argc, (char **)argv);
 	endwin();
 

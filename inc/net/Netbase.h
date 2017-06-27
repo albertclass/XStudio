@@ -424,6 +424,22 @@ namespace xgc
 			NETBASE_API xgc_void CloseLink( network_t handle );
 
 			///
+			/// \brief 关闭连接
+			///
+			/// \author albert.xu
+			/// \date 2017/05/24 15:06
+			///
+			NETBASE_API xgc_void SetTimer( xgc_uint32 id, xgc_real64 period, xgc_real64 after, const std::function< void() > &on_timer );
+
+			///
+			/// \brief 关闭连接
+			///
+			/// \author albert.xu
+			/// \date 2017/05/24 15:06
+			///
+			NETBASE_API xgc_void DelTimer( xgc_uint32 id );
+
+			///
 			/// \brief 处理网络事件
 			///
 			/// \author albert.xu

@@ -92,7 +92,7 @@ xgc_void OnFileStreamReq( CNetSession * net, xgc_lpvoid data, xgc_size size )
 		ack.data, 
 		sizeof( ack_buffer ) - sizeof( ack ) );
 
-	ack.data_size = htonl( length );
+	ack.data_size = htonl( (xgc_long)length );
 
 	net->SendPacket( CLIENT_MESSAGE_TYPE, FILE_STREAM_ACK, &ack, sizeof(ack) + length );
 }

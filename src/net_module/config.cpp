@@ -53,12 +53,11 @@ namespace net_module
 	NETWORK_ID _Str2NetworkID( xgc_lpcstr pNetworkId )
 	{
 		xgc_lpcstr p = pNetworkId;
-		xgc_uint32 s = 0;
-		xgc_uint8 *c = (xgc_uint8*) &s;
-		for( int i = 0; i < sizeof( s ) && *p; ++i, ++p, ++c )
+		NETWORK_ID s = 0;
+		NETWORK_REGION *c = (NETWORK_REGION*) &s;
+		for( int i = 0; i < sizeof( NETWORK_ID )/sizeof( NETWORK_REGION ) && *p; ++i, ++p, ++c )
 		{
 			xgc_long v = strtoul( p, (char**) &p, 10 );
-			XGC_ASSERT_MESSAGE( v != 0 && v < 256U, "·þÎñÆ÷IDÉèÖÃ´íÎó%s", pNetworkId );
 			*c = (xgc_byte) v;
 		}
 
@@ -73,7 +72,7 @@ namespace net_module
 	///
 	xgc_lpcstr _NetworkID2Str( NETWORK_ID nNetworkId, xgc_char szOutput[NETWORK_REGION_S] )
 	{
-		NETWORK_ID ID = _GetNetworkID();
+		NETWORK_ID ID = nNetworkId;
 		NETWORK_REGION *N = (NETWORK_REGION*) &ID;
 
 		int cpy = sprintf_s( szOutput, 16, "%d-%d-%d-%d", N[0], N[1], N[2], N[3] );

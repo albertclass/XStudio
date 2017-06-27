@@ -2,26 +2,20 @@ solution "xgc"
     configurations { "Debug", "Release" }
     location "prj"
     characterset "MBCS"
+    architecture "x64"
 
-    filter { 
-    	"system:windows", 
-    	"configurations:Relase" 
-    }
-    
-    flags { 
-    	"NoIncrementalLink", 
-    	"LinkTimeOptimization" 
-   	}
+    symbols "On"
 
 project "common"
     kind "SharedLib"
-    language "C++"
+    language "C++11"
     location "prj/common"
     includedirs "inc/common"
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    implibdir "lib/%{cfg.buildcfg}"
 
-    flags { "C++11", "MultiProcessorCompile" }
+    flags { "MultiProcessorCompile" }
 
     files {
         "inc/common/**.h",
@@ -37,33 +31,31 @@ project "common"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
 
     filter "system:windows"
-        implibdir "lib/%{cfg.buildcfg}"
-        architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
-        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "net"
     kind "SharedLib"
-    language "C++"
+    language "C++11"
     location "prj/net"
     includedirs { "inc/net", "inc/common", "dep/asio/asio/include" }
     targetdir "bin/%{cfg.buildcfg}"
+    libdirs { "lib/%{cfg.buildcfg}" }
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    implibdir "lib/%{cfg.buildcfg}"
+    links { "common" }
 
-    flags { "C++11", "MultiProcessorCompile" }
+    flags { "MultiProcessorCompile" }
 
     files {
         "inc/net/**.h",
@@ -79,35 +71,31 @@ project "net"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
-        libdirs { "lib/%{cfg.buildcfg}" }
-        links { "common.lib" }
 
     filter "system:windows"
-        implibdir "lib/%{cfg.buildcfg}"
-        architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
-        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "net_module"
     kind "SharedLib"
-    language "C++"
+    language "C++11"
     location "prj/net"
     includedirs { "inc/net_module", "inc/net", "inc/common" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+    implibdir "lib/%{cfg.buildcfg}"
+    libdirs "lib/%{cfg.buildcfg}"
+    links { "common", "net" }
 
-    flags { "C++11", "MultiProcessorCompile" }
+    flags { "MultiProcessorCompile" }
 
     files {
         "inc/net_module/**.h",
@@ -121,36 +109,28 @@ project "net_module"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_LIB_EXPORTS", "_DLL" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG", "_LIB_EXPORTS", "_DLL" }
         optimize "On"
 
     filter "system:windows"
-        implibdir "lib/%{cfg.buildcfg}"
-        libdirs { "lib/%{cfg.buildcfg}" }
-        links { "common.lib", "net.lib" }
-
-        architecture "x64"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
-        implibdir "bin/%{cfg.buildcfg}"
-        links { "stdc++", "common", "net" }
+        links { "stdc++" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "database"
     kind "SharedLib"
-    language "C++"
+    language "C++11"
     location "prj/database"
     includedirs { "inc/database", "inc/common"}
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
-    flags { "C++11", "MultiProcessorCompile" }
+    flags { "MultiProcessorCompile" }
 
     files {
         "inc/database/**.h",
@@ -168,7 +148,6 @@ project "database"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT", "_DB_EXPORTS", "_DLL" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG", "_DB_EXPORTS", "_DLL" }
@@ -178,27 +157,27 @@ project "database"
     	includedirs "$(MYSQL56)/include"
         implibdir "lib/%{cfg.buildcfg}"
         libdirs { "lib/%{cfg.buildcfg}", "$(MYSQL56)/lib" }
-        links { "common.lib", "libmysql.lib" }
-        architecture "x64"
+        links { "common", "libmysql.lib" }
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
-        implibdir "bin/%{cfg.buildcfg}"
+        implibdir "lib/%{cfg.buildcfg}"
         libdirs { "/usr/lib64/mysql" }
         links { "stdc++", "common", "mysqlclient" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "framework"
-    kind "SharedLib"
-    language "C++"
+    kind "StaticLib"
+    language "C++11"
     location "prj/framework"
-    includedirs { "inc/framework", "inc/common", "inc/net", "inc/database"}
+    includedirs { "inc/framework", "inc/common", "inc/net", "inc/database", "inc/net_module"}
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    
-    flags { "C++11", "MultiProcessorCompile" }
+    libdirs { "lib/%{cfg.buildcfg}" }
+    links { "common", "net", "net_module", "database" }
+
+    flags { "MultiProcessorCompile" }
 
     files {
         "inc/framework/**.h",
@@ -212,36 +191,30 @@ project "framework"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG" }
-        symbols "On"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib", "database.lib" }
-        architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
-       	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common", "net", "database" }
+        links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
-
 
 project "unittest"
     kind "ConsoleApp"
-    language "C++"
+    language "C++11"
     location "prj/unittest"
     includedirs {"inc/common", "inc/net", "inc/database" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    
-    flags { "C++11", "MultiProcessorCompile" }
+    libdirs { "lib/%{cfg.buildcfg}" }
+    links { "common", "net", "database" }
+
+    flags { "MultiProcessorCompile" }
 
     files {
         "test/**.h",
@@ -252,35 +225,30 @@ project "unittest"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG" }
-        symbols "On"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib", "database.lib" }
-        architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
-       	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common", "net", "database" }
+        links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "net_client"
     kind "ConsoleApp"
-    language "C++"
+    language "C++11"
     location "prj/sample/net_client"
     includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    
-    flags { "C++11", "MultiProcessorCompile" }
+    libdirs { "lib/%{cfg.buildcfg}" }
+    links { "common", "net", "net_module" }
+
+    flags { "MultiProcessorCompile" }
 
     files {
 	    "sample/network/header.h",
@@ -292,35 +260,31 @@ project "net_client"
 
     filter "configurations:Debug"
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
-        symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", "_ASSERT_LOG" }
-        symbols "On"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib", "net_module.lib" }
-        architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
-       	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common", "net", "net_module" }
+        links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 
 project "net_server"
-    kind "ConsoleApp"
-    language "C++"
+    kind "WindowedApp"
+    language "C++11"
     location "prj/sample/net_server"
-    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    
-    flags { "C++11", "MultiProcessorCompile" }
+    libdirs { "lib/%{cfg.buildcfg}" }
+    links { "common", "net", "pdcurses.lib" }
+    defines { "PDC_WIDE" }
+
+    flags { "MultiProcessorCompile" }
 
     files {
         "sample/network/header.h",
@@ -331,24 +295,19 @@ project "net_server"
     }
 
     filter "configurations:Debug"
+     	libdirs { "dep/PDCurses/win32a/Debug" }
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
-        symbols "On"
 
     filter "configurations:Release"
+    	libdirs { "dep/PDCurses/win32a/Release" }
         defines { "NDEBUG", "_ASSERT_LOG" }
-        symbols "On"
         optimize "On"
     
     filter "system:windows"
-    	libdirs { "lib/%{cfg.buildcfg}" }
-    	links { "common.lib", "net.lib" }
-        architecture "x64"
         defines { "WIN64" }
 
     filter "system:linux"
-       	libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread", "common", "net" }
+        links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
-        architecture "x64"
         defines { "LINUX64" }
 

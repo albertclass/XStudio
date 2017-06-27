@@ -7,6 +7,11 @@ typedef xgc_uint16 NETWORK_REGION;
 #define NETWORK_REGION_N 4
 #define NETWORK_REGION_S 32
 
+#define NETWORK_AREA( ID )	(((NETWORK_REGION*)ID)[0])
+#define NETWORK_GROUP( ID )	(((NETWORK_REGION*)ID)[1])
+#define NETWORK_CLASS( ID )	(((NETWORK_REGION*)ID)[2])
+#define NETWORK_INDEX( ID )	(((NETWORK_REGION*)ID)[3])
+
 #if defined( _WINDOWS )
 #	ifdef _LIB_EXPORTS
 #	 ifdef _DLL
