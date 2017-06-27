@@ -1,3 +1,7 @@
+#ifndef _SERVER_SERVICE_H_
+#define _SERVER_SERVICE_H_
+
+#ifdef _WINDOWS
 //
 //  Values are 32 bit values laid out as follows:
 //
@@ -60,3 +64,72 @@
 //
 #define SVC_INFOMATION                   ((DWORD)0x40000002L)
 
+#endif
+
+#define SERVICE_STATUS_STOPED	(0)
+#define SERVICE_STATUS_RUNNING	(1)
+#define SERVICE_STATUS_PAUSE	(2)
+
+///
+/// 服务是否已安装
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsInstalled( xgc_lpcstr lpServiceName );
+
+///
+/// 安装服务
+/// [11/28/2014] create by albert.xu
+///
+int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcstr lpServiceDisp, xgc_lpcstr lpServiceDesc );
+
+///
+/// 卸载服务
+/// [11/28/2014] create by albert.xu
+///
+int UnInstallService( xgc_lpcstr lpServiceName );
+
+///
+/// 报告服务状态
+/// [11/28/2014] create by albert.xu
+///
+xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint32 nWaitHint );
+
+///
+/// 报告服务器事件
+/// @param nEventType EVENTLOG_
+/// @param nErrorCode ServerService.h defined.
+/// [11/28/2014] create by albert.xu
+///
+xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_lpcstr lpInfomation );
+
+///
+/// 服务器是否已停止
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsServerStoped();
+
+///
+/// 服务器是否已暂停
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsServerPaused();
+
+///
+/// 是否通过服务启动
+/// [12/5/2014] create by albert.xu
+///
+xgc_bool IsServerService();
+
+///
+/// 是否通过服务启动
+/// [12/5/2014] create by albert.xu
+///
+xgc_void RunService( int argc, char ** argv );
+
+///
+/// 留给服务器实现的入口函数
+/// [11/28/2014] create by albert.xu
+///
+extern int ServiceMain( int argc, char *argv[] );
+
+#endif // _SERVER_SERVICE_H_

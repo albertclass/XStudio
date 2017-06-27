@@ -19,6 +19,17 @@
 #include <memory>
 #include <xutility>
 
+
+#ifdef _WINDOWS
+#	include <WinSock2.h>
+#	pragma comment( lib, "ws2_32.lib")
+#endif
+
+#ifdef _LINUX
+#	include<sys/wait.h>  
+#	include<signal.h> 
+#endif
+
 // Common
 #include "defines.h"
 #include "pugixml.hpp"
@@ -43,11 +54,6 @@
 // Net
 #include "Netbase.h"
 #include "net_module.h"
-
-#ifdef _WINDOWS
-#	include <WinSock2.h>
-#	pragma comment( lib, "ws2_32.lib")
-#endif
 
 using namespace xgc;
 using namespace xgc::net;

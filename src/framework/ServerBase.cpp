@@ -14,6 +14,18 @@ const char* __version_svn__ = "37687";
 const char* __version_url__ = "github.com/albertclass/XStudio";
 const char* __version_build__ = "37686";
 
+///
+/// 初始化数据库连接
+/// [1/15/2014 albert.xu]
+///
+extern xgc_bool InitServerDatabase( ini_reader &ini );
+
+///
+/// 清理数据库连接模块
+/// [1/15/2014 albert.xu]
+///
+extern xgc_void FiniServerDatabase();
+
 // 服务器配置
 /// @var 服务器名
 static xgc_char szServerName[32];

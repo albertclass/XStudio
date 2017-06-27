@@ -1,22 +1,23 @@
 #include "ServerDefines.h"
 #include "ServerService.h"
-#include "UnitTest.h"
+
+/// @var 服务是否暂停
+xgc_uint32 g_nServiceStatus = SERVICE_STATUS_STOPED;
+
+/// @var 是否服务启动
+extern xgc_bool g_bService;
+
+#ifdef _WINDOWS
 
 xgc_char gServiceLog[_MAX_PATH] = { 0 };
 #define SVC_LOG( FMT, ... ) xgc::common::write_file( gServiceLog, FMT, __VA_ARGS__ )
+
 static SERVICE_STATUS_HANDLE gServiceHandle = NULL;
-/// @var 服务是否暂停
-static xgc_bool g_bPaused = false;
-/// @var 服务是否停止
-static xgc_bool g_bStoped = false;
-/// @var 是否服务启动
-static xgc_bool g_bService = false;
 ////////////////////////////////////////////////////////////////////////////////////////
 xgc_bool IsInstalled( xgc_lpcstr lpServiceName )
 {
 	xgc_bool bResult = FALSE;
 
-#ifdef _WINDOWS
 	SC_HANDLE hSCM = ::OpenSCManager( NULL, NULL, SC_MANAGER_ALL_ACCESS );
 	if( hSCM )
 	{
@@ -29,7 +30,7 @@ xgc_bool IsInstalled( xgc_lpcstr lpServiceName )
 
 		::CloseServiceHandle( hSCM );
 	}
-#endif
+
 	return bResult;
 }
 
@@ -39,7 +40,12 @@ xgc_bool IsInstalled( xgc_lpcstr lpServiceName )
 ///
 int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcstr lpServiceDisp, xgc_lpcstr lpServiceDesc )
 {
-#ifdef _WINDOWS
+	SVC_LOG( "install params name=%s, display name=%s, description=%s, config=%s\n", 
+			 lpServiceName,
+			 lpServiceDisp,
+			 lpServiceDesc,
+			 lpConfigFile );
+
 	SC_HANDLE hSCM = ::OpenSCManager( NULL, NULL, SC_MANAGER_ALL_ACCESS );
 	if( !hSCM )
 	{
@@ -105,7 +111,6 @@ int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcst
 	::CloseServiceHandle( hService );
 	::CloseServiceHandle( hSCM );
 
-#endif
 	return 0;
 }
 
@@ -115,7 +120,8 @@ int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcst
 ///
 int UnInstallService( xgc_lpcstr lpServiceName )
 {
-#ifdef _WINDOWS
+	SVC_LOG( "uninstall params name=%s\n", lpServiceName );
+
 	SC_HANDLE hSCM = ::OpenSCManager( NULL, NULL, SC_MANAGER_ALL_ACCESS );
 	if( !hSCM )
 		return FALSE;
@@ -135,7 +141,6 @@ int UnInstallService( xgc_lpcstr lpServiceName )
 	}
 
 	::CloseServiceHandle( hSCM );
-#endif
 	return nReturn;
 }
 
@@ -145,7 +150,6 @@ int UnInstallService( xgc_lpcstr lpServiceName )
 ///
 xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint32 nWaitHint )
 {
-#ifdef _WINDOWS
 	static volatile unsigned long long dwCheckPoint = 0;
 
 	SERVICE_STATUS status;
@@ -182,7 +186,6 @@ xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint3
 		SVC_LOG( "SetServiceStatus invoke error. \"%s\"", (LPSTR)pMsgBuf );
 		LocalFree( pMsgBuf );
 	}
-#endif
 }
 
 ///
@@ -193,7 +196,6 @@ xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint3
 ///
 xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_lpcstr lpInfomation )
 {
-#ifdef _WINDOWS
 	HANDLE hEventSource = INVALID_HANDLE_VALUE;
 	xgc_lpcstr lpStrings[2] = { xgc_nullptr, xgc_nullptr };
 	xgc_char szMsg[256] = { 0 };
@@ -217,7 +219,6 @@ xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_l
 
 		DeregisterEventSource( hEventSource );
 	}
-#endif
 }
 
 VOID WINAPI ServiceHandler( DWORD dwOpcode )
@@ -225,17 +226,17 @@ VOID WINAPI ServiceHandler( DWORD dwOpcode )
 	switch( dwOpcode )
 	{
 		case SERVICE_CONTROL_STOP: // 1
-		g_bStoped = true;
+		g_nServiceStatus = SERVICE_STATUS_STOPED;
 		ReportServiceStatus( SERVICE_STOP_PENDING, NO_ERROR, 5 * 60 * 1000 );
 		break;
 
 		case SERVICE_CONTROL_PAUSE: // 2
-		g_bPaused = true;
+		g_nServiceStatus = SERVICE_STATUS_PAUSE;
 		ReportServiceStatus( SERVICE_PAUSED, NO_ERROR, 0 );
 		break;
 
 		case SERVICE_CONTROL_CONTINUE: // 3
-		g_bPaused = false;
+		g_nServiceStatus = SERVICE_STATUS_RUNNING;
 		ReportServiceStatus( SERVICE_RUNNING, NO_ERROR, 0 );
 		break;
 
@@ -243,11 +244,8 @@ VOID WINAPI ServiceHandler( DWORD dwOpcode )
 		break;
 
 		case SERVICE_CONTROL_SHUTDOWN: // 5
-		g_bStoped = true;
+		g_nServiceStatus = SERVICE_STATUS_STOPED;
 		ReportServiceStatus( SERVICE_STOP_PENDING, NO_ERROR, 5 * 60 * 1000 );
-		break;
-
-		default:
 		break;
 	}
 }
@@ -256,39 +254,171 @@ static int		gnArgc = 1;
 static char **	gpArgv = xgc_nullptr;
 
 ///
-/// 留给服务器实现的入口函数
-/// [11/28/2014] create by albert.xu
-///
-extern int ServiceMain( int argc, char *argv[] );
-
-///
 /// 开启服务
 /// [11/28/2014] create by albert.xu
 ///
-VOID WINAPI ServiceRun( DWORD dwArgc, LPSTR lpArgv[] )
+static VOID WINAPI ServiceEntry( DWORD dwArgc, LPSTR lpArgv[] )
 {
-#ifdef _WINDOWS
-	gServiceHandle = RegisterServiceCtrlHandler( "", ServiceHandler );
+	gServiceHandle = RegisterServiceCtrlHandlerA( "", ServiceHandler );
 
 	if( NULL == gServiceHandle )
 	{
 		ReportServiceEvent( EVENTLOG_INFORMATION_TYPE, SVC_ERROR, __FUNCTION__ );
+		return;
 	}
-	else
-	{
-		ReportServiceStatus( SERVICE_START_PENDING, NO_ERROR, 30000 );
-		ServiceMain( gnArgc, gpArgv );
-	}
-#endif
+
+	ReportServiceStatus( SERVICE_START_PENDING, NO_ERROR, 30000 );
+	ServiceMain( gnArgc, gpArgv );
 }
 
+xgc_void RunService( int argc, char ** argv )
+{
+	gnArgc = argc - 1;
+	gpArgv = argv + 1;
+
+	xgc_char szDateTime[64] = { 0 };
+	SVC_LOG( "service start at %s config file=%s\n",
+			 datetime::now().to_string( szDateTime, sizeof(szDateTime) ),
+			 argv[2] );
+
+	g_bService = true;
+	SERVICE_TABLE_ENTRY st[] =
+	{
+		{ "Service", ServiceEntry },
+		{ NULL, NULL }
+	};
+
+	if( !::StartServiceCtrlDispatcher( st ) )
+	{
+		ReportServiceEvent( EVENTLOG_INFORMATION_TYPE, SVC_ERROR, __FUNCTION__ );
+	}
+
+	SVC_LOG( "service stop at %s\n", datetime::now().to_string( szDateTime, sizeof( szDateTime ) ) );
+}
+
+#endif
+
+#ifdef _LINUX
+///
+/// 服务是否已安装
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsInstalled( xgc_lpcstr lpServiceName )
+{
+	return true;
+}
+
+///
+/// 安装服务
+/// [11/28/2014] create by albert.xu
+///
+int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcstr lpServiceDisp, xgc_lpcstr lpServiceDesc )
+{
+	return 0;
+}
+
+///
+/// 卸载服务
+/// [11/28/2014] create by albert.xu
+///
+int UnInstallService( xgc_lpcstr lpServiceName )
+{
+	return 0;
+}
+
+///
+/// 报告服务状态
+/// [11/28/2014] create by albert.xu
+///
+xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint32 nWaitHint )
+{
+}
+
+///
+/// 报告服务器事件
+/// @param nEventType EVENTLOG_
+/// @param nErrorCode ServerService.h defined.
+/// [11/28/2014] create by albert.xu
+///
+xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_lpcstr lpInfomation )
+{
+}
+
+
+// signal handler  
+void sigterm_handler(int arg)  
+{  
+	g_nServiceStatus = SERVICE_STATUS_STOPED;
+}
+
+xgc_void RunService( int argc, char ** argv )
+{
+	pid_t pid;  
+	char *buf = "This is a Daemon, wcdj\n";  
+
+	/* 屏蔽一些有关控制终端操作的信号 
+	* 防止在守护进程没有正常运转起来时，因控制终端受到干扰退出或挂起 
+	* */  
+	signal(SIGINT,  SIG_IGN);// 终端中断  
+	signal(SIGHUP,  SIG_IGN);// 连接挂断  
+	signal(SIGQUIT, SIG_IGN);// 终端退出  
+	signal(SIGPIPE, SIG_IGN);// 向无读进程的管道写数据  
+	signal(SIGTTOU, SIG_IGN);// 后台程序尝试写操作  
+	signal(SIGTTIN, SIG_IGN);// 后台程序尝试读操作  
+	signal(SIGTERM, SIG_IGN);// 终止  
+
+	// test  
+	//sleep(20);// try cmd: ./test &; kill -s SIGTERM PID  
+
+	// [1] fork child process and exit father process  
+	pid = fork();
+	if(pid < 0)  
+	{  
+		perror("fork error!");  
+		exit(1);  
+	}
+	else if(pid > 0)  
+	{
+		exit(0);  
+	}  
+
+	// [2] create a new session  
+	setsid();
+
+	// [3] set current path  
+	char szPath[1024];
+	if(getcwd(szPath, sizeof(szPath)) == NULL)
+	{  
+		perror("getcwd");  
+		exit(1);  
+	}  
+	else
+	{
+		chdir(szPath);
+		printf("set current path succ [%s]\n", szPath);  
+	}  
+
+	// [4] umask 0  
+	umask(0);
+
+	/* [5] Close out the standard file descriptors */
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+
+	// [6] set termianl signal  
+	signal(SIGTERM, sigterm_handler);  
+
+	ServiceMain( argc, argv );
+}
+#endif
 ///
 /// 服务器是否已停止
 /// [11/28/2014] create by albert.xu
 ///
 xgc_bool IsServerStoped()
 {
-	return g_bStoped;
+	return g_nServiceStatus == SERVICE_STATUS_STOPED;
 }
 
 ///
@@ -297,7 +427,7 @@ xgc_bool IsServerStoped()
 ///
 xgc_bool IsServerPaused()
 {
-	return g_bPaused;
+	return g_nServiceStatus == SERVICE_STATUS_PAUSE;
 }
 
 ///
@@ -307,194 +437,4 @@ xgc_bool IsServerPaused()
 xgc_bool IsServerService()
 {
 	return g_bService;
-}
-
-///
-/// InvalidParameterHandler
-/// 异常参数调用时的处理函数，由此函数则不调用dr.waston！
-/// \author xufeng04
-/// \date [6/6/2014]
-///
-void InvalidParameterHandler( const wchar_t* expr
-	, const wchar_t* func
-	, const wchar_t* file
-	, unsigned int   line
-	, uintptr_t      resv )
-{
-	if( func && file && expr )
-	{
-		SYS_ERROR(
-			"Invalid parameter detected in: Function:%S File:%S Line:%d Expression:%S"
-			, func
-			, file
-			, line
-			, expr );
-	}
-
-	DumpStackFrame();
-	XGC_DEBUG_MESSAGE( "非法的参数调用，请检查调用项并排除BUG。" );
-	// _invoke_watson( expr, func, file, line, resv );
-	throw std::runtime_error( "invalid parameter detected" );
-}
-
-///
-/// 虚调用处理函数
-/// \author xufeng04
-/// \date [6/6/2014]
-///
-void __cdecl PureCallHandler()
-{
-	DumpStackFrame();
-	XGC_DEBUG_MESSAGE( "PURECALL" );
-	SYS_ERROR( "PURECALL" );
-	throw std::exception( "pure call" );
-}
-
-///
-/// 主函数入口
-/// [11/28/2014] create by albert.xu
-///
-int main( int argc, char *argv[] )
-{
-#ifdef _WINDOWS
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-
-	_set_invalid_parameter_handler( InvalidParameterHandler );
-	_set_purecall_handler( PureCallHandler );
-#endif
-
-	setlocale( LC_ALL, "chs" );
-
-	get_absolute_path( gServiceLog, sizeof( gServiceLog ), "%s", "service.log" );
-
-	if( argc > 1 )
-	{
-		if( strcasecmp( argv[1], "-install" ) == 0 )
-		{
-			SVC_LOG( "%s", "install service.\n" );
-			xgc_lpcstr lpServiceName = xgc_nullptr;
-			xgc_lpcstr lpServiceDisp = xgc_nullptr;
-			xgc_lpcstr lpServiceDesc = xgc_nullptr;
-
-			xgc_lpcstr lpConfigFile = "Config.ini";
-			if( argc > 2 )
-				lpConfigFile = argv[2];
-
-			char szConfPath[_MAX_PATH];
-			get_absolute_path( szConfPath, sizeof( szConfPath ), "%s", lpConfigFile );
-			ini_reader ini;
-			if( false == ini.load( szConfPath ) )
-			{
-				printf( "read config file %s failed. please check and try again.", szConfPath );
-				return -1;
-			}
-
-			lpServiceName = ini.get_item_value( "ServiceCfg", "ServiceName", xgc_nullptr );
-			if( xgc_nullptr == lpServiceName )
-			{
-				printf( "section 'ServiceCfg' key 'ServiceName' is empty. it must configuration" );
-				return -1;
-			}
-
-
-			lpServiceDisp = ini.get_item_value( "ServiceCfg", "DisplayName", lpServiceName );
-			lpServiceDesc = ini.get_item_value( "ServiceCfg", "Description", "这个人很懒注册服务的时候都不写服务描述。" );
-
-			SVC_LOG( "install params name=%s, display name=%s, description=%s, config=%s\n", 
-				lpServiceName,
-				lpServiceDisp,
-				lpServiceDesc,
-				lpConfigFile );
-
-			return InstallService( lpConfigFile, lpServiceName, lpServiceDisp, lpServiceDesc );
-		}
-		else if( strcasecmp( argv[1], "-uninstall" ) == 0 )
-		{
-			xgc_lpcstr lpServiceName = xgc_nullptr;
-
-			if( argc > 2 )
-				lpServiceName = argv[2];
-			else
-				lpServiceName = get_module_name();
-
-			SVC_LOG( "uninstall params name=%s\n", lpServiceName );
-
-			return UnInstallService( lpServiceName );
-		}
-		else if( strcasecmp( argv[1], "-service" ) == 0 )
-		{
-			gnArgc = argc - 1;
-			gpArgv = argv + 1;
-
-			xgc_char szDateTime[64] = { 0 };
-			SVC_LOG( "service start at %s config file=%s\n",
-				datetime::now().to_string( szDateTime, sizeof(szDateTime) ),
-				argv[2] );
-
-			g_bService = true;
-#ifdef _WINDOWS
-			SERVICE_TABLE_ENTRY st[] =
-			{
-				{ "Service", ServiceRun },
-				{ NULL, NULL }
-			};
-
-			if( !::StartServiceCtrlDispatcher( st ) )
-			{
-				ReportServiceEvent( EVENTLOG_INFORMATION_TYPE, SVC_ERROR, __FUNCTION__ );
-			}
-#endif
-
-#ifdef _LINUX
-#endif
-			SVC_LOG( "service stop at %s\n", datetime::now().to_string( szDateTime, sizeof( szDateTime ) ) );
-			return 0;
-		}
-		else if( _stricmp( argv[1], "-debug" ) == 0 )
-		{
-			char path[_MAX_PATH] = { 0 };
-			get_absolute_path( path, sizeof( path ), "config*.ini" );
-
-			char choice = 0;
-			int n = 0;
-			_finddata_t stat[8];
-
-			do
-			{
-				memset( stat, 0, sizeof( stat ) );
-
-				intptr_t fd = _findfirst( path, &stat[0] );
-				if( fd == -1 )
-				{
-					puts( "search path error!" );
-					return 0;
-				}
-
-				puts( "debug mode" );
-				puts( "choice your config file:" );
-				n = 0;
-				do
-				{
-					printf( "%d. %s\n", n, stat[n].name );
-				} while( n < _countof( stat ) && _findnext( fd, &stat[++n] ) == 0 );
-
-
-				printf( "q. exit\n" );
-				printf( "press menu number to continue ..." );
-				_findclose( fd );
-				if( ( choice = _getch() ) == 'q' )
-					return 1;
-
-			} while( false == isdigit( choice ) || ( choice - '0' >= n ) );
-
-			argv[1] = stat[choice - '0'].name;
-			return ServiceMain( argc, argv );
-		}
-		else if( _stricmp( argv[1], "-test" ) == 0 )
-		{
-			return UTestMain( argc - 1, argv + 1 );
-		}
-	}
-
-	return ServiceMain( argc, argv );
 }
