@@ -28,38 +28,6 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam );
 
 ///
-/// 报告服务状态
-/// [11/28/2014] create by albert.xu
-///
-xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint32 nWaitHint );
-
-///
-/// 报告服务器事件
-/// @param nEventType EVENTLOG_
-/// @param nErrorCode ServerService.h defined.
-/// [11/28/2014] create by albert.xu
-///
-xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_lpcstr lpInfomation );
-
-///
-/// 服务器是否已停止
-/// [11/28/2014] create by albert.xu
-///
-xgc_bool IsServerStoped();
-
-///
-/// 服务器是否已暂停
-/// [11/28/2014] create by albert.xu
-///
-xgc_bool IsServerPaused();
-
-///
-/// 是否通过服务启动
-/// [12/5/2014] create by albert.xu
-///
-xgc_bool IsServerService();
-
-///
 /// 获取服务器名
 /// [11/27/2014] create by albert.xu
 ///
