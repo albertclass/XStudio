@@ -110,7 +110,7 @@ int main( int argc, char *argv[] )
 		}
 		else if( strcasecmp( argv[1], "-service" ) == 0 )
 		{
-			ServiceRun( argc - 1, argv + 1 );
+			RunService( argc - 1, argv + 1 );
 			return 0;
 		}
 		else if( strcasecmp( argv[1], "-debug" ) == 0 )
