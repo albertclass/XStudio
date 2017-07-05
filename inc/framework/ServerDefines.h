@@ -6,19 +6,23 @@
 #pragma once
 
 // crt
-#include <io.h>
-#include <conio.h>
+#ifdef _WINDOWS
+#   include <io.h>
+#   include <conio.h>
+#   include <mbstring.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <mbstring.h>
 
 // msvcp
 #include <functional>
 #include <fstream>
-#include <filesystem>
 #include <memory>
-#include <xutility>
 
+#ifdef _WINDOWS
+#   include <xutility>
+#endif
 
 #ifdef _WINDOWS
 #	include <WinSock2.h>

@@ -34,34 +34,6 @@ xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 xgc_lpcstr GetServerName();
 
 ///
-/// 获取配置路径
-/// [11/29/2014] create by albert.xu
-///
-xgc_lpcstr GetConfPath( xgc_lpstr szPath, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
-
-///
-///  获取配置路径
-/// [1/4/2015] create by wuhailin.jerry
-///
-xgc_string GetConfPath( xgc_lpcstr lpRelativePath, ... );
-
-///
-/// 获取配置路径
-/// [8/6/2015] create by jianglei.kinly
-///
-xgc_string LuaGetConfPath( xgc_lpcstr lpRelativePath );
-
-///
-/// 获取日志路径
-/// [12/3/2014] create by albert.xu
-///
-xgc_lpcstr GetLogPath( xgc_lpstr szPath, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
-
-//////////////////////////////////////////////////////////////////////////
-// 刷新系统调用函数
-//////////////////////////////////////////////////////////////////////////
-
-///
 /// 处理刷新子系统事件
 /// @param lpSystem 系统名称
 /// @param lpContext 调用上下文

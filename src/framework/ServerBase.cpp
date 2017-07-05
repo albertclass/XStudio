@@ -191,7 +191,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 	{
 		if( IsServerPaused() )
 		{
-			Sleep( 1 );
+			std::this_thread::sleep_for( std::chrono::millisecond(1) );
 			continue;
 		}
 
@@ -213,7 +213,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 
 		// 是否空闲，空闲的时候要主动挂起服务器
 		if( bBusy == false )
-			Sleep( 1 );
+			std::this_thread::sleep_for( std::chrono::millisecond(1) );
 
 		if( datetime::now() - tLast >= timespan::from_minutes( 5 ) )
 		{
@@ -270,78 +270,6 @@ xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 xgc_lpcstr GetServerName()
 {
 	return szServerName;
-}
-
-xgc_lpcstr GetConfPath( xgc_lpstr szPath, xgc_size nSize, xgc_lpcstr lpRelativePath, ... )
-{
-	int cpy1 = sprintf_s( szPath, nSize, "%s", szConfigPath );
-	XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
-
-	va_list args;
-	va_start( args, lpRelativePath );
-	int cpy2 = vsprintf_s( szPath + cpy1, nSize - cpy1, lpRelativePath, args );
-	va_end( args );
-
-	if( cpy2 < 0 )
-		return xgc_nullptr;
-
-	if( cpy2 == sizeof(szPath) -cpy1 )
-	{
-		return xgc_nullptr;
-	}
-
-	return _fullpath( szPath, szPath, nSize );
-}
-
-xgc_string GetConfPath( xgc_lpcstr lpRelativePath, ... )
-{
-	xgc_char szPath[_MAX_PATH] = { 0 };
-
-	auto nSize = sizeof( szPath );
-
-	int cpy1 = sprintf_s( szPath, nSize, "%s", szConfigPath );
-	XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
-
-	va_list args;
-	va_start( args, lpRelativePath );
-	int cpy2 = vsprintf_s( szPath + cpy1, nSize - cpy1, lpRelativePath, args );
-	va_end( args );
-
-	if( cpy2 < 0 )
-		return xgc_nullptr;
-
-	if( cpy2 == sizeof(szPath) -cpy1 )
-	{
-		return xgc_nullptr;
-	}
-
-	_fullpath( szPath, szPath, nSize );
-
-	return szPath;
-}
-
-xgc_string LuaGetConfPath( xgc_lpcstr lpRelativePath )
-{
-	xgc_char szPath[_MAX_PATH] = { 0 };
-
-	auto nSize = sizeof( szPath );
-
-	int cpy1 = sprintf_s( szPath, nSize, "%s", szConfigPath );
-	XGC_ASSERT_RETURN( cpy1 >= 0, xgc_nullptr );
-
-	int cpy2 = sprintf_s( szPath + cpy1, nSize - cpy1, "%s", lpRelativePath );
-
-	if( cpy2 < 0 )
-		return xgc_nullptr;
-
-	if( cpy2 == sizeof( szPath ) - cpy1 )
-	{
-		return xgc_nullptr;
-	}
-
-	_fullpath( szPath, szPath, nSize );
-
-	return szPath;
 }
 
 xgc_uint64 GetSequenceID()

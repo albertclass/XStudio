@@ -9,12 +9,11 @@ solution "xgc"
 project "common"
     kind "SharedLib"
     language "C++"
-    cppdialect "C++11"
+    cppdialect "C++14"
     location "prj/common"
     includedirs "inc/common"
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    implibdir "lib/%{cfg.buildcfg}"
 
     flags { "MultiProcessorCompile" }
 
@@ -39,10 +38,12 @@ project "common"
         optimize "On"
 
     filter "system:windows"
+        implibdir "lib/%{cfg.buildcfg}"
        	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
+        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -54,9 +55,7 @@ project "net"
     location "prj/net"
     includedirs { "inc/net", "inc/common", "dep/asio/asio/include" }
     targetdir "bin/%{cfg.buildcfg}"
-    libdirs { "lib/%{cfg.buildcfg}" }
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    implibdir "lib/%{cfg.buildcfg}"
     links { "common" }
 
     flags { "MultiProcessorCompile" }
@@ -81,10 +80,14 @@ project "net"
         optimize "On"
 
     filter "system:windows"
+        libdirs { "lib/%{cfg.buildcfg}" }
+        implibdir "lib/%{cfg.buildcfg}"
        	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
+        libdirs { "bin/%{cfg.buildcfg}" }
+        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -97,8 +100,6 @@ project "net_module"
     includedirs { "inc/net_module", "inc/net", "inc/common" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    implibdir "lib/%{cfg.buildcfg}"
-    libdirs "lib/%{cfg.buildcfg}"
     links { "common", "net" }
 
     flags { "MultiProcessorCompile" }
@@ -121,10 +122,14 @@ project "net_module"
         optimize "On"
 
     filter "system:windows"
+        implibdir "lib/%{cfg.buildcfg}"
        	systemversion "10.0.14393.0"
         defines { "WIN64", "_IMAGEHLP64" }
+        libdirs "lib/%{cfg.buildcfg}"
 
     filter "system:linux"
+        libdirs "bin/%{cfg.buildcfg}"
+        implibdir "bin/%{cfg.buildcfg}"
         links { "stdc++" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -170,7 +175,7 @@ project "database"
         defines { "WIN64", "_IMAGEHLP64" }
 
     filter "system:linux"
-        implibdir "lib/%{cfg.buildcfg}"
+        implibdir "bin/%{cfg.buildcfg}"
         libdirs { "/usr/lib64/mysql" }
         links { "stdc++", "common", "mysqlclient" }
         buildoptions { "-pthread" }
@@ -182,9 +187,8 @@ project "framework"
     cppdialect "C++11"
     location "prj/framework"
     includedirs { "inc/framework", "inc/common", "inc/net", "inc/database", "inc/net_module"}
-    targetdir "bin/%{cfg.buildcfg}"
+    targetdir "lib/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    libdirs { "lib/%{cfg.buildcfg}" }
     links { "common", "net", "net_module", "database" }
 
     flags { "MultiProcessorCompile" }
@@ -207,10 +211,12 @@ project "framework"
         optimize "On"
     
     filter "system:windows"
+        libdirs { "lib/%{cfg.buildcfg}" }
        	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
+        libdirs { "bin/%{cfg.buildcfg}" }
         links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -223,7 +229,6 @@ project "unittest"
     includedirs {"inc/common", "inc/net", "inc/database" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    libdirs { "lib/%{cfg.buildcfg}" }
     links { "common", "net", "database" }
 
     flags { "MultiProcessorCompile" }
@@ -243,10 +248,12 @@ project "unittest"
         optimize "On"
     
     filter "system:windows"
+        libdirs { "lib/%{cfg.buildcfg}" }
        	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
+        libdirs { "bin/%{cfg.buildcfg}", "lib/%{cfg.buildcfg}" }
         links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -259,7 +266,6 @@ project "net_client"
     includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    libdirs { "lib/%{cfg.buildcfg}" }
     links { "common", "net", "net_module" }
 
     flags { "MultiProcessorCompile" }
@@ -280,10 +286,12 @@ project "net_client"
         optimize "On"
     
     filter "system:windows"
+        libdirs { "lib/%{cfg.buildcfg}" }
        	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
+        libdirs { "bin/%{cfg.buildcfg}" }
         links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
@@ -296,7 +304,6 @@ project "net_server"
     includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    libdirs { "lib/%{cfg.buildcfg}" }
     links { "common", "net", "pdcurses.lib" }
     defines { "PDC_WIDE" }
 
@@ -320,10 +327,12 @@ project "net_server"
         optimize "On"
     
     filter "system:windows"
+        libdirs { "lib/%{cfg.buildcfg}" }
        	systemversion "10.0.14393.0"
         defines { "WIN64" }
 
     filter "system:linux"
+        libdirs { "bin/%{cfg.buildcfg}" }
         links { "stdc++", "rt", "pthread" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }

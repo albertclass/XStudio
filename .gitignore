@@ -7,3 +7,6 @@
 /obj
 /bin/client_files/
 /bin/server_files/
+
+*.swp
+*.swo
