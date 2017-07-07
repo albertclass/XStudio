@@ -4,6 +4,7 @@
 //
 
 #pragma once
+#include "config.h"
 
 // crt
 #ifdef _WINDOWS

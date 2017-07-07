@@ -171,9 +171,6 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 ///
 xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam )
 {
-	// 报告运行状态
-	ReportServiceStatus( SERVICE_STATUS_RUNNING, SERVICE_ERROR_NONE, 0 );
-
 	// 开启超时监控
 	getInvokeWatcherMgr().Start();
 	SYS_INFO( "服务器初始化成功" );
@@ -181,13 +178,16 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 	xgc_bool bBusy = false;
 	datetime tLast = datetime::now();
 
-	while( false == IsServerStoped() )
+	while( false == IsServerStatus( SERVICE_STATUS_STOP_PENDING ) )
 	{
 		if( IsServerPaused() )
 		{
 			std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 			continue;
 		}
+
+		// 报告运行状态
+		ReportServiceStatus( SERVICE_STATUS_RUNNING, SERVICE_ERROR_NONE, 0 );
 
 		bBusy = false;
 
@@ -197,9 +197,11 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 		// 处理数据库操作
 		bBusy = AsyncDBExecuteResp( 50 ) > 0 || bBusy;
 
+		// 处理服务器逻辑
 		if( OnServerStep( bBusy, lpParam ) )
 			break;
 
+		// 处理刷新事件
 		StepServerRefresh();
 
 		// 处理需要的异步逻辑操作
@@ -209,6 +211,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 		if( bBusy == false )
 			std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 
+		// 每五分钟报告一次内存状态
 		if( datetime::now() - tLast >= timespan::from_minutes( 5 ) )
 		{
 			xgc_uint64 nMem = 0;

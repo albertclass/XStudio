@@ -294,6 +294,7 @@ namespace xgc
 			#else
 			int i = mbtowc( &ucs, ptr, MB_CUR_MAX );
 			#endif
+			
 			if( i < 0 )
 				return -1;
 

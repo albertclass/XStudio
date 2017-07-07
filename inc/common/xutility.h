@@ -295,7 +295,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2015/12/16 17:00
 	///
-	COMMON_API xgc_bool hex2bin( xgc_lpstr data, xgc_size size, xgc_lpstr out, xgc_size out_size );
+	COMMON_API xgc_bool hex2bin( xgc_lpcstr data, xgc_size size, xgc_lpstr out, xgc_size out_size/* = 0*/ );
 
 	///
 	/// \brief 获取随机数发生引擎

@@ -2,9 +2,6 @@
 #include "ServerService.h"
 #include "UnitTest.h"
 
-/// @var 是否服务启动
-xgc_bool g_bService = false;
-
 #if defined(_WINDOWS)
 ///
 /// InvalidParameterHandler
@@ -55,12 +52,17 @@ void __cdecl PureCallHandler()
 int main( int argc, char *argv[] )
 {
 	#ifdef _WINDOWS
+
+	// open memleak report
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
+	// invalid parameter callback set.
 	_set_invalid_parameter_handler( InvalidParameterHandler );
+	// purecall set
 	_set_purecall_handler( PureCallHandler );
 	#endif
 
+	// set default locale
 	setlocale( LC_ALL, "chs" );
 
 	if( argc > 1 )
@@ -110,7 +112,7 @@ int main( int argc, char *argv[] )
 		}
 		else if( strcasecmp( argv[1], "-service" ) == 0 )
 		{
-			RunService( argc - 1, argv + 1 );
+			ServiceRun( argc - 1, argv + 1 );
 			return 0;
 		}
 		else if( strcasecmp( argv[1], "-debug" ) == 0 )
@@ -138,6 +140,8 @@ int main( int argc, char *argv[] )
 
 						++n;
 					}
+
+					return true;
 				});
 
 				printf( "q. exit\n" );
@@ -148,8 +152,10 @@ int main( int argc, char *argv[] )
 
 			} while( false == isdigit( choice ) || ( choice - '0' >= n ) );
 
-			argv[1] = (char*)choice_list[choice - '0'].c_str();
-			return ServiceMain( argc, argv );
+			char config_file[256] = {};
+			strcpy_s( config_file, choice_list[choice - '0'].c_str() );
+			argv[1] = config_file;
+			return ServerMain( argc, argv );
 		}
 		else if( strcasecmp( argv[1], "-test" ) == 0 )
 		{
@@ -157,5 +163,5 @@ int main( int argc, char *argv[] )
 		}
 	}
 
-	return ServiceMain( argc, argv );
+	return ServerMain( argc, argv );
 }

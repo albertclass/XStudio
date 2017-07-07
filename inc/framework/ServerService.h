@@ -109,6 +109,12 @@ xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint3
 xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_lpcstr lpInfomation );
 
 ///
+/// 检查服务器状态
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsServerStatus( xgc_uint32 nStatus );
+
+///
 /// 服务器是否已停止
 /// [11/28/2014] create by albert.xu
 ///
@@ -130,12 +136,12 @@ xgc_bool IsServerService();
 /// 是否通过服务启动
 /// [12/5/2014] create by albert.xu
 ///
-xgc_void RunService( int argc, char ** argv );
+xgc_void ServiceRun( int argc, char ** argv );
 
 ///
 /// 留给服务器实现的入口函数
 /// [11/28/2014] create by albert.xu
 ///
-extern int ServiceMain( int argc, char *argv[] );
+extern int ServerMain( int argc, char ** argv );
 
 #endif // _SERVER_SERVICE_H_

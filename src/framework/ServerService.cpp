@@ -2,15 +2,16 @@
 #include "ServerService.h"
 
 /// @var 服务是否暂停
-xgc_uint32 g_nServiceStatus = SERVICE_STATUS_STOPED;
+static xgc_uint32 g_nServiceStatus = SERVICE_STATUS_STOPPED;
 
-/// @var 是否服务启动
-extern xgc_bool g_bService;
+/// 是否服务启动
+static xgc_bool g_bService;
+
+/// 
+static xgc_char gServiceLog[_MAX_PATH] = { 0 };
+#define SVC_LOG( FMT, ... ) xgc::common::write_file( gServiceLog, FMT, __VA_ARGS__ )
 
 #ifdef _WINDOWS
-
-xgc_char gServiceLog[_MAX_PATH] = { 0 };
-#define SVC_LOG( FMT, ... ) xgc::common::write_file( gServiceLog, FMT, __VA_ARGS__ )
 
 static SERVICE_STATUS_HANDLE gServiceHandle = NULL;
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +81,19 @@ int InstallService( xgc_lpcstr lpConfigFile, xgc_lpcstr lpServiceName, xgc_lpcst
 	strcpy_s( szDescription, lpServiceDesc );
 	Description.lpDescription = szDescription;
 	ChangeServiceConfig2A( hService, SERVICE_CONFIG_DESCRIPTION, &Description );
+
+	SC_ACTION _action[1];
+	_action[0].Type = SC_ACTION_RESTART;
+	_action[0].Delay = 10000;
+	SERVICE_FAILURE_ACTIONS sfa;
+	ZeroMemory(&sfa, sizeof(SERVICE_FAILURE_ACTIONS));
+	sfa.lpsaActions = _action;
+	sfa.cActions = 1;
+	sfa.dwResetPeriod = INFINITE;
+	ChangeServiceConfig2A(
+		hService,                               // handle to service
+		SERVICE_CONFIG_FAILURE_ACTIONS,         // information level
+		&sfa);                                  // new data
 
 	char szKey[256];
 	HKEY hKey = NULL;
@@ -186,6 +200,8 @@ xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint3
 		SVC_LOG( "SetServiceStatus invoke error. \"%s\"", (LPSTR)pMsgBuf );
 		LocalFree( pMsgBuf );
 	}
+
+	g_nServiceStatus = nState;
 }
 
 ///
@@ -226,17 +242,14 @@ VOID WINAPI ServiceHandler( DWORD dwOpcode )
 	switch( dwOpcode )
 	{
 		case SERVICE_CONTROL_STOP: // 1
-		g_nServiceStatus = SERVICE_STATUS_STOPED;
 		ReportServiceStatus( SERVICE_STOP_PENDING, NO_ERROR, 5 * 60 * 1000 );
 		break;
 
 		case SERVICE_CONTROL_PAUSE: // 2
-		g_nServiceStatus = SERVICE_STATUS_PAUSE;
 		ReportServiceStatus( SERVICE_PAUSED, NO_ERROR, 0 );
 		break;
 
 		case SERVICE_CONTROL_CONTINUE: // 3
-		g_nServiceStatus = SERVICE_STATUS_RUNNING;
 		ReportServiceStatus( SERVICE_RUNNING, NO_ERROR, 0 );
 		break;
 
@@ -244,13 +257,12 @@ VOID WINAPI ServiceHandler( DWORD dwOpcode )
 		break;
 
 		case SERVICE_CONTROL_SHUTDOWN: // 5
-		g_nServiceStatus = SERVICE_STATUS_STOPED;
 		ReportServiceStatus( SERVICE_STOP_PENDING, NO_ERROR, 5 * 60 * 1000 );
 		break;
 	}
 }
 
-static int		gnArgc = 1;
+static int		gnArgc = 0;
 static char **	gpArgv = xgc_nullptr;
 
 ///
@@ -268,13 +280,17 @@ static VOID WINAPI ServiceEntry( DWORD dwArgc, LPSTR lpArgv[] )
 	}
 
 	ReportServiceStatus( SERVICE_START_PENDING, NO_ERROR, 30000 );
-	ServiceMain( gnArgc, gpArgv );
+	ServerMain( gnArgc, gpArgv );
 }
 
-xgc_void RunService( int argc, char ** argv )
+xgc_void ServiceRun( int argc, char ** argv )
 {
 	gnArgc = argc - 1;
 	gpArgv = argv + 1;
+
+	auto pServiceLog = get_absolute_path( gServiceLog, "service.log" );
+	if( nullptr == pServiceLog )
+		return;
 
 	xgc_char szDateTime[64] = { 0 };
 	SVC_LOG( "service start at %s config file=%s\n",
@@ -332,6 +348,7 @@ int UnInstallService( xgc_lpcstr lpServiceName )
 ///
 xgc_void ReportServiceStatus( xgc_uint32 nState, xgc_uint32 nExitCode, xgc_uint32 nWaitHint )
 {
+	g_nServiceStatus = nState;
 }
 
 ///
@@ -348,13 +365,13 @@ xgc_void ReportServiceEvent( xgc_uint16 nEventType, xgc_uint32 nErrorCode, xgc_l
 // signal handler  
 void sigterm_handler(int arg)  
 {  
-	g_nServiceStatus = SERVICE_STATUS_STOPED;
+	ReportServiceStatus( SERVICE_STATUS_STOP_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 }
 
-xgc_void RunService( int argc, char ** argv )
+xgc_void ServiceRun( int argc, char ** argv )
 {
 	pid_t pid;  
-	char *buf = "This is a Daemon, wcdj\n";  
+	char *buf = "This is a Daemon, wcdj\n";
 
 	/* 屏蔽一些有关控制终端操作的信号 
 	* 防止在守护进程没有正常运转起来时，因控制终端受到干扰退出或挂起 
@@ -377,10 +394,10 @@ xgc_void RunService( int argc, char ** argv )
 		perror("fork error!");  
 		exit(1);  
 	}
-	else if(pid > 0)  
+	else if(pid > 0)
 	{
-		exit(0);  
-	}  
+		exit(0);
+	}
 
 	// [2] create a new session  
 	setsid();
@@ -389,16 +406,16 @@ xgc_void RunService( int argc, char ** argv )
 	char szPath[1024];
 	if(getcwd(szPath, sizeof(szPath)) == NULL)
 	{  
-		perror("getcwd");  
-		exit(1);  
-	}  
+		perror("getcwd");
+		exit(1);
+	}
 	else
 	{
 		chdir(szPath);
-		printf("set current path succ [%s]\n", szPath);  
-	}  
+		printf("set current path succ [%s]\n", szPath);
+	}
 
-	// [4] umask 0  
+	// [4] umask 0
 	umask(0);
 
 	/* [5] Close out the standard file descriptors */
@@ -407,18 +424,28 @@ xgc_void RunService( int argc, char ** argv )
 	close(STDERR_FILENO);
 
 	// [6] set termianl signal  
-	signal(SIGTERM, sigterm_handler);  
+	signal(SIGTERM, sigterm_handler);
 
-	ServiceMain( argc, argv );
+	ServerMain( argc, argv );
 }
 #endif
+
+///
+/// 检查服务器状态
+/// [11/28/2014] create by albert.xu
+///
+xgc_bool IsServerStatus( xgc_uint32 nStatus )
+{
+	return g_nServiceStatus == nStatus;
+}
+
 ///
 /// 服务器是否已停止
 /// [11/28/2014] create by albert.xu
 ///
 xgc_bool IsServerStoped()
 {
-	return g_nServiceStatus == SERVICE_STATUS_STOPED;
+	return g_nServiceStatus == SERVICE_STATUS_STOPPED;
 }
 
 ///
@@ -427,7 +454,7 @@ xgc_bool IsServerStoped()
 ///
 xgc_bool IsServerPaused()
 {
-	return g_nServiceStatus == SERVICE_STATUS_PAUSE;
+	return g_nServiceStatus == SERVICE_STATUS_PAUSED;
 }
 
 ///

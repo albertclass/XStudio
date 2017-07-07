@@ -97,73 +97,32 @@ XGC_INLINE int snprintf_s( char (&buffer)[size], size_t count, const char * form
 	return write;
 }
 
-XGC_INLINE errno_t strcpy_s( char *destination, size_t count, const char *source )
-{
-	if( nullptr == source )
-		return -1;
+// strcpy safe version
+errno_t strcpy_s( char *destination, size_t count, const char *source );
 
-	size_t i = 0;
-	while( i < count - 1 && source[i] )
-	{
-		destination[i] = source[i];
-		++i;
-	}
-
-	destination[i] = 0;
-
-	return 0;
-}
-
+// strcpy template safe version
 template< size_t count >
 XGC_INLINE errno_t strcpy_s( char (&destnation)[count], const char *source )
 {
 	return strcpy_s( destnation, count, source );
 }
 
-XGC_INLINE errno_t strncpy_s( char *destination, size_t count, const char *source, size_t copied )
-{
-	if( nullptr == source )
-		return -1;
+// strncpy safe version
+errno_t strncpy_s( char *destination, size_t count, const char *source, size_t copied );
 
-	size_t i = 0;
-	while( i < count - 1 && i < copied && source[i] )
-	{
-		destination[i] = source[i];
-		++i;
-	}
-
-	destination[i] = 0;
-
-	return 0;
-}
-
+// strncpy template safe version
 template< size_t count >
 XGC_INLINE errno_t strncpy_s( char (&destnation)[count], const char *source, size_t copied )
 {
 	return strncpy_s( destnation, count, source, copied );
 }
 
-XGC_INLINE errno_t strcat_s( char *destination, size_t count, const char *source )
-{
-	if( nullptr == source )
-		return -1;
+// string connection safe version
+errno_t strcat_s( char *destination, size_t count, const char *source );
 
-	size_t i = strlen(destination);
-	size_t p = 0;
-	while( i < count - 1 && source[p] )
-	{
-		destination[i] = source[p];
-		++i;
-		++p;
-	}
-
-	destination[i] = 0;
-
-	return 0;
-}
-
+// string connection template safe version
 template< size_t count >
-XGC_INLINE errno_t strcat_s( char (&destnation)[count], const char *source )
+errno_t strcat_s( char (&destnation)[count], const char *source )
 {
 	return strcat_s( destnation, count, source );
 }
