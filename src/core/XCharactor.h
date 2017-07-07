@@ -902,7 +902,7 @@ namespace XGC
 		/// 重置角色状态 
 		/// [12/23/2010 Albert]
 		/////
-		xgc_void ResetActorStatus( timer_t handle, ActorStatus eStatus );
+		xgc_void ResetActorStatus( timer_h handle, ActorStatus eStatus );
 
 		///
 		/// 受击时调用
@@ -962,7 +962,7 @@ namespace XGC
 
 	protected:
 		xgc_uint32		mEyeshotGroup;	///< 视野组
-		timer_t			mResetStatusTimerHandler;
+		timer_h			mResetStatusTimerHandler;
 		xObject			mFirstAttackMeTarget;	///< 第一个攻击我的玩家,一定在仇恨列表中，但是第一个进入仇恨列表的目标不一定是首击者
 		struct
 		{

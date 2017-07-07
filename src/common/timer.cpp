@@ -28,7 +28,7 @@ namespace xgc
 		COMMON_API xgc_time64 (*steady_tickcount)(void) = timer_tickcount< std::chrono::steady_clock >;
 		COMMON_API xgc_time64 (*system_tickcount)(void) = timer_tickcount< std::chrono::system_clock >;
 
-		static xgc_void event_dispatcher( timer_t h, en_event_t e )
+		static xgc_void event_dispatcher( timer_h h, en_event_t e )
 		{
 			//xgc_lpcstr tname = "unknowe";
 			//switch( e )
@@ -44,7 +44,7 @@ namespace xgc
 		};
 
 		// 默认的事件分发
-		xgc_void(*timer_event_dispatcher)( timer_t, en_event_t ) = event_dispatcher;
+		xgc_void(*timer_event_dispatcher)( timer_h, en_event_t ) = event_dispatcher;
 
 		/// 
 		/// \brief 设置事件接口
@@ -52,7 +52,7 @@ namespace xgc
 		/// \author xufeng04
 		/// \date 十一月 2015
 		/// 
-		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_t, en_event_t) )
+		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_h, en_event_t) )
 		{
 			timer_event_dispatcher = cb ? cb : event_dispatcher;
 		}
@@ -115,7 +115,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2015/12/04 14:37
 		///
-		timespan timer::remove( timer_t handle )
+		timespan timer::remove( timer_h handle )
 		{
 			std::unique_ptr< timer_event > evtptr( timer_event::handle_exchange( handle ) );
 
@@ -133,7 +133,7 @@ namespace xgc
 		/// \author xufeng04
 		/// \date 十一月 2015
 		/// 
-		timespan timer::get_remain_over( timer_t handle )
+		timespan timer::get_remain_over( timer_h handle )
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
@@ -150,7 +150,7 @@ namespace xgc
 		/// \author xufeng04
 		/// \date 十一月 2015
 		/// 
-		timespan timer::get_remain_exec( timer_t handle )
+		timespan timer::get_remain_exec( timer_h handle )
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
@@ -164,7 +164,7 @@ namespace xgc
 		///
 		/// \brief 暂停更新 
 		///
-		xgc_void timer::pause( timer_t handle )
+		xgc_void timer::pause( timer_h handle )
 		{
 			if( handle == INVALID_TIMER_HANDLE )
 				return;
@@ -177,7 +177,7 @@ namespace xgc
 		///
 		/// \brief 恢复更新 
 		///
-		xgc_bool timer::resume( timer_t handle, timespan delay )
+		xgc_bool timer::resume( timer_h handle, timespan delay )
 		{
 			if( handle == INVALID_TIMER_HANDLE )
 				return false;
@@ -189,12 +189,12 @@ namespace xgc
 			return true;
 		}
 
-		xgc_void timer::step_list( xgc_list< timer_t >& lst )
+		xgc_void timer::step_list( xgc_list< timer_h >& lst )
 		{
 			auto iter = lst.begin();
 			while( iter != lst.end() )
 			{
-				timer_t handle = *iter;
+				timer_h handle = *iter;
 
 				// 有效性检查
 				timer_event* evtptr = timer_event::handle_exchange( handle );
@@ -272,7 +272,7 @@ namespace xgc
 		/// 获取指定时间执行的事件
 		/// [9/7/2015] create by albert.xu
 		///
-		xgc_list< timer_t > timer::get_event_list( datetime stime )const
+		xgc_list< timer_h > timer::get_event_list( datetime stime )const
 		{
 			timer_clock t1 = { stime.to_milliseconds() / TIMER_PRECISION  };
 			timer_clock t2 = { tickcount_ };
@@ -318,9 +318,9 @@ namespace xgc
 		/// 获取指定时间执行的事件
 		/// [9/7/2015] create by albert.xu
 		///
-		xgc_list< timer_t > timer::get_event_list( xgc_lpcstr pname )const
+		xgc_list< timer_h > timer::get_event_list( xgc_lpcstr pname )const
 		{
-			xgc_list< timer_t > lst;
+			xgc_list< timer_h > lst;
 			for( auto &wheel : time_wheel_ )
 			{
 				for( auto &it : wheel )
@@ -518,7 +518,7 @@ namespace xgc
 			return false;
 		}
 
-		timer_t timer::insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata, xgc_lpcstr name )
+		timer_h timer::insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata, xgc_lpcstr name )
 		{
 			xgc_uint16 type = timer_event::e_unknown;
 			xgc_uint64 data = 0;

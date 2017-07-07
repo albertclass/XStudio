@@ -8,7 +8,7 @@ static xgc_uint32 g_nServiceStatus = SERVICE_STATUS_STOPPED;
 static xgc_bool g_bService;
 
 /// 
-static xgc_char gServiceLog[_MAX_PATH] = { 0 };
+static xgc_char gServiceLog[XGC_MAX_PATH] = { 0 };
 #define SVC_LOG( FMT, ... ) xgc::common::write_file( gServiceLog, FMT, __VA_ARGS__ )
 
 #ifdef _WINDOWS
@@ -315,6 +315,7 @@ xgc_void ServiceRun( int argc, char ** argv )
 #endif
 
 #ifdef _LINUX
+#include <sys/stat.h>
 ///
 /// 服务是否已安装
 /// [11/28/2014] create by albert.xu
@@ -371,7 +372,7 @@ void sigterm_handler(int arg)
 xgc_void ServiceRun( int argc, char ** argv )
 {
 	pid_t pid;  
-	char *buf = "This is a Daemon, wcdj\n";
+	// char *buf = "This is a Daemon, wcdj\n";
 
 	/* 屏蔽一些有关控制终端操作的信号 
 	* 防止在守护进程没有正常运转起来时，因控制终端受到干扰退出或挂起 

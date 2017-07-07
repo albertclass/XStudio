@@ -213,7 +213,7 @@ xgc_vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const s
 {
 	xgc_vector< stGlobalParam > Container;
 	FUNCTION_BEGIN;
-	for each ( auto const &it in gGlobalParams )
+	for ( auto const &it : gGlobalParams )
 	{
 		if( fnFillter( it.second ) )
 			Container.push_back( it.second );

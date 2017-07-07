@@ -16,7 +16,7 @@ namespace xgc
 		using std::function;
 		
 		// 定时器句柄
-		typedef pool_handle< pool_handle_base > timer_t;
+		typedef pool_handle< pool_handle_base > timer_h;
 
 		# define INVALID_TIMER_HANDLE _my_invalid_handle_value_
 		# define DURATION_FOREVER timespan(0xefffffffffffffffULL)
@@ -37,14 +37,14 @@ namespace xgc
 			e_delete,
 		};
 
-		typedef std::function < xgc_void( timer_t, intptr_t& ) > timer_cb;
+		typedef std::function < xgc_void( timer_h, intptr_t& ) > timer_cb;
 
 		#if defined(_WINDOWS)
-		template class COMMON_API std::function < xgc_void( timer_t ) > ;
-		template class COMMON_API std::function < xgc_void( timer_t, en_event_t ) > ;
+		template class COMMON_API std::function < xgc_void( timer_h ) > ;
+		template class COMMON_API std::function < xgc_void( timer_h, en_event_t ) > ;
 		#endif
 		
-		extern xgc_void(*timer_event_dispatcher)( timer_t, en_event_t );
+		extern xgc_void(*timer_event_dispatcher)( timer_h, en_event_t );
 
 		/// 
 		/// \brief 设置事件接口
@@ -52,7 +52,7 @@ namespace xgc
 		/// \author xufeng04
 		/// \date 十一月 2015
 		/// 
-		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_t, en_event_t) );
+		xgc_void set_event_dispatcher( xgc_void( *cb )(timer_h, en_event_t) );
 
 		//////////////////////////////////////////////////////////////////////////
 		/// 定时器事件接口
@@ -207,7 +207,7 @@ namespace xgc
 		class COMMON_API timer
 		{
 		protected:
-			typedef xgc_list< timer_t >		event_s;
+			typedef xgc_list< timer_h >		event_s;
 			typedef xgc_vector< event_s >	wheel_s;
 
 			///< 时间轮
@@ -236,7 +236,7 @@ namespace xgc
 			/// \param deadline 时间发生的时间
 			/// \param param 事件参数,用于描述类型及该类型所需要的参数
 			///
-			timer_t insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata = 0, xgc_lpcstr name = "noname" );
+			timer_h insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata = 0, xgc_lpcstr name = "noname" );
 
 			/// 
 			/// \brief 重新校时，取当前时间的下一次更新
@@ -269,7 +269,7 @@ namespace xgc
 			/// [7/24/2008] Write by Albert.xu
 			/// @param handle 事件句柄
 			///
-			timespan remove( timer_t handle );
+			timespan remove( timer_h handle );
 
 			/// 
 			/// \brief 获取剩余持续时间
@@ -277,7 +277,7 @@ namespace xgc
 			/// \author xufeng04
 			/// \date 十一月 2015
 			/// 
-			timespan get_remain_over( timer_t handle );
+			timespan get_remain_over( timer_h handle );
 
 			/// 
 			/// \brief 获取下次执行时间
@@ -285,13 +285,13 @@ namespace xgc
 			/// \author xufeng04
 			/// \date 十一月 2015
 			/// 
-			timespan get_remain_exec( timer_t handle );
+			timespan get_remain_exec( timer_h handle );
 
 			///
 			/// \brief 暂停更新 
 			/// \date [11/29/2010 Albert]
 			///
-			xgc_void pause( timer_t handle );
+			xgc_void pause( timer_h handle );
 
 			///
 			/// \brief 恢复更新 
@@ -300,19 +300,19 @@ namespace xgc
 			/// \return 是否恢复成功
 			/// \date [11/29/2010 Albert]
 			///
-			xgc_bool resume( timer_t handle, timespan delay = timespan( 0 ) );
+			xgc_bool resume( timer_h handle, timespan delay = timespan( 0 ) );
 
 			///
 			/// \brief 获取指定时间执行的事件
 			/// \date [9/7/2015] create by albert.xu
 			///
-			xgc_list< timer_t > get_event_list( datetime stime )const;
+			xgc_list< timer_h > get_event_list( datetime stime )const;
 
 			///
 			/// \brief 获取指定时间执行的事件
 			/// \date [9/7/2015] create by albert.xu
 			///
-			xgc_list< timer_t > get_event_list( xgc_lpcstr pname )const;
+			xgc_list< timer_h > get_event_list( xgc_lpcstr pname )const;
 
 		private:
 			/// 
@@ -349,7 +349,7 @@ namespace xgc
 			/// \brief 执行一个链表内的事件
 			/// [7/18/2014] create by albert.xu
 			///
-			xgc_void step_list( xgc_list< timer_t >& lst );
+			xgc_void step_list( xgc_list< timer_h >& lst );
 
 			///
 			/// \brief 插入对象到定时器列表中

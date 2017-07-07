@@ -177,7 +177,7 @@ namespace XGC
 			if( FnRealCompareZeroInState( GetAttribute( attrStateOverlapSubTimeval ).toReal() ) == enMoreThan )
 			{
 				// 插入一个新的定时器，并且更新map
-				timer_t tx = getTimer().insert_event(
+				timer_h tx = getTimer().insert_event(
 					bind( &XStateBase::OnOverlapSub, this, GetAttribute( attrStateCurrOverlapNum ).toUnsigned(), 1 ),
 					1,
 					0.0f,
@@ -198,7 +198,7 @@ namespace XGC
 				for( xgc_uint32 one = 0; one < realAddNum; ++one )
 				{
 					// 设定延迟多久调sub，tx保存下来，跳GS的时候拿到剩余时间传出去
-					timer_t tx = getTimer().insert_event(
+					timer_h tx = getTimer().insert_event(
 						bind( &XStateBase::OnOverlapSub, this, 1, GetUnsignedAttr( attrStateCurrOverlapTimes ) ),
 						1,
 						0.0f,
@@ -296,7 +296,7 @@ namespace XGC
 				if( FnRealCompareZeroInState( GetAttribute( attrStateOverlapSubTimeval ).toReal() ) == enMoreThan )
 				{
 					// 插入一个新的定时器，并且更新map
-					timer_t tx = getTimer().insert_event(
+					timer_h tx = getTimer().insert_event(
 						bind( &XStateBase::OnOverlapSub, this, GetAttribute( attrStateCurrOverlapNum ).toUnsigned(), 1 ),
 						1,
 						0.0f,

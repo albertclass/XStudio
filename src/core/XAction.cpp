@@ -217,12 +217,12 @@ namespace XGC
 
 	}
 
-	xgc_void XStatus::OnUpdate( timer_t handle )
+	xgc_void XStatus::OnUpdate( timer_h handle )
 	{
 		mInstance->DoStatus( GetParent(), m_Userdata, status_active );
 	}
 
-	xgc_void XStatus::OnStatusOver( timer_t handle )
+	xgc_void XStatus::OnStatusOver( timer_h handle )
 	{
 		getTimer().remove_event( mUpdateTimerHandler );
 		getTimer().remove_event( mLifetimeHandler );

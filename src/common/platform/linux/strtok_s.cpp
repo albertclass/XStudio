@@ -1,11 +1,7 @@
-#ifdef _LINUX
+#if defined( __GNUC__ )
 #include <string.h>
 
-extern "C" char* __cdecl strtok_s(
-	_Inout_opt_z_                 char*       string,
-	_In_z_                        char const* control,
-	_Inout_ _Deref_prepost_opt_z_ char**      context
-)
+char* strtok_s( char* string, char const* control, char** context )
 {
 	if( nullptr == string )
 		return nullptr;

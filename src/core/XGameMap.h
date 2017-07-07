@@ -146,8 +146,8 @@ namespace XGC
 
 		typedef xgc_unordered_map< xgc_string, xgc_tuple< xgc_long, xgc_long, xgc_long > > MapCounter;
 		typedef xgc_unordered_map< xgc_string, xgc_long > MapSwitch;
-		typedef xgc_unordered_map< xgc_string, timer_t > MapTimer;
-		typedef xgc_unordered_map< xgc_string, timer_t > MapClock;
+		typedef xgc_unordered_map< xgc_string, timer_h > MapTimer;
+		typedef xgc_unordered_map< xgc_string, timer_h > MapClock;
 
 	protected:
 		///

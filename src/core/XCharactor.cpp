@@ -226,7 +226,7 @@ namespace XGC
 	// [12/23/2010 Albert]
 	// Description:	ÖØÖÃ½ÇÉ«×´Ì¬ 
 	//---------------------------------------------------//
-	xgc_void XCharactor::ResetActorStatus( timer_t handle, ActorStatus eStatus )
+	xgc_void XCharactor::ResetActorStatus( timer_h handle, ActorStatus eStatus )
 	{
 		if( GetActorStatus() != ActorStatus_Dead )
 			SetAttrValue<xgc_byte>( attrActorStatus, eStatus );

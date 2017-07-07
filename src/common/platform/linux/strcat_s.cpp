@@ -1,7 +1,7 @@
-#ifdef _LINUX
+#if defined( __GNUC__ )
 #include <string.h>
 
-errno_t strcat_s( char *destination, size_t count, const char *source )
+int strcat_s( char *destination, size_t count, const char *source )
 {
 	if( nullptr == source )
 		return -1;

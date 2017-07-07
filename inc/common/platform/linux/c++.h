@@ -146,6 +146,9 @@ int _getch();
 // get a char be echo and block
 int _getche();
 
+// string token safe version
+char* strtok_s( char* string, char const* control, char** context );
+
 // low level file function
 #define _eof 	eof
 #define _open 	open

@@ -1,7 +1,24 @@
 {
     "version": "0.2.0",
     "configurations": [{
-            "name": "C++ Launch",
+            "name": "net_server Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/bin/Debug/net_server",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [{
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            }]
+        },
+        {
+            "name": "net_client Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/bin/Debug/net_client",
@@ -10,22 +27,14 @@
             "cwd": "${workspaceRoot}",
             "environment": [],
             "externalConsole": true,
-            "linux": {
-                "MIMode": "gdb"
-            },
-            "osx": {
-                "MIMode": "lldb"
-            },
-            "windows": {
-                "MIMode": "gdb"
-            }
+            "MIMode": "gdb"
         },
         {
             "name": "C++ Attach",
             "type": "cppdbg",
             "request": "attach",
             "program": "${workspaceRoot}/bin/Debug/net_server",
-            "processId": "${command.pickProcesss}",
+            "processId": "${command:pickProcess}",
             "linux": {
                 "MIMode": "gdb"
             },

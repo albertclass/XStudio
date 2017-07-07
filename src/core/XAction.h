@@ -253,13 +253,13 @@ namespace XGC
 		// [12/14/2010 Albert]
 		// Description:	¸üÐÂ×´Ì¬ 
 		//---------------------------------------------------//
-		xgc_void OnUpdate( timer_t handle );
+		xgc_void OnUpdate( timer_h handle );
 
 		//---------------------------------------------------//
 		// [12/15/2010 Albert]
 		// Description:	×´Ì¬½áÊø 
 		//---------------------------------------------------//
-		xgc_void OnStatusOver( timer_t handle );
+		xgc_void OnStatusOver( timer_h handle );
 
 		//---------------------------------------------------//
 		// [9/13/2009 Albert]
@@ -278,8 +278,8 @@ namespace XGC
 
 	private:
 		XStatusInstance* mInstance;
-		timer_t mUpdateTimerHandler;
-		timer_t mLifetimeHandler;
+		timer_h mUpdateTimerHandler;
+		timer_h mLifetimeHandler;
 
 		union
 		{

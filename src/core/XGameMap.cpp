@@ -493,7 +493,7 @@ namespace XGC
 			return;
 		}
 
-		auto TimerCall = [hSender]( timer_t hTimer, xObject hMap, xgc_lpcstr lpName )->xgc_void
+		auto TimerCall = [hSender]( timer_h hTimer, xObject hMap, xgc_lpcstr lpName )->xgc_void
 		{
 			XGameMap* pMap = ObjectCast< XGameMap >( hMap );
 			XGC_ASSERT_RETURN( pMap, xgc_void( 0 ) );

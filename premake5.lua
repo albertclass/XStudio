@@ -303,11 +303,10 @@ project "net_server"
     language "C++"
     cppdialect "C++11"
     location "prj/sample/net_server"
-    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-    links { "common", "net", "pdcurses.lib" }
-    defines { "PDC_WIDE" }
+    links { "common", "net" }
 
     flags { "MultiProcessorCompile" }
 
@@ -320,22 +319,26 @@ project "net_server"
     }
 
     filter "configurations:Debug"
-     	libdirs { "dep/PDCurses/win32a/Debug" }
         defines { "_DEBUG", "_DEBUG_OUTPUT" }
 
     filter "configurations:Release"
-    	libdirs { "dep/PDCurses/win32a/Release" }
         defines { "NDEBUG", "_ASSERT_LOG" }
         optimize "On"
     
     filter "system:windows"
         libdirs { "lib/%{cfg.buildcfg}" }
+        links { "pdcurses.lib" }
        	systemversion "10.0.14393.0"
-        defines { "WIN64" }
+        defines { "WIN64", "PDC_WIDE" }
 
     filter "system:linux"
         libdirs { "bin/%{cfg.buildcfg}" }
-        links { "stdc++", "rt", "pthread" }
+        links { "stdc++", "rt", "pthread", "ncurses", "panel" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
 
+    filter { "system:windows", "configurations:Debug" }
+     	libdirs { "dep/PDCurses/win32a/Debug" }
+
+    filter { "system:windows", "configurations:Release" }
+     	libdirs { "dep/PDCurses/win32a/Release" }

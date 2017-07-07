@@ -88,12 +88,12 @@ namespace XGC
 		/// Trigger的Timer
 		/// [8/30/2014] create by jianglei.kinly
 		///
-		timer_t GetStateTimer() { return m_StateTimer; };
+		timer_h GetStateTimer() { return m_StateTimer; };
 		///
 		/// Overlap的Timer
 		/// [8/30/2014] create by jianglei.kinly
 		///
-		xgc_unordered_map<xgc_uint16, timer_t>& GetOverlapTimer() { return mMapOverlapTimer; };
+		xgc_unordered_map<xgc_uint16, timer_h>& GetOverlapTimer() { return mMapOverlapTimer; };
 
 		///
 		/// 光环类检测
@@ -165,11 +165,11 @@ namespace XGC
 		virtual xgc_void OnDestroy() {}
 
 	private:
-		timer_t m_StateTimer;   // 状态的句柄
-		timer_t m_StateCheckTimer; 
+		timer_h m_StateTimer;   // 状态的句柄
+		timer_h m_StateCheckTimer; 
 	public:
 		Json::Value mJsonRoot;
 	private:
-		xgc_unordered_map<xgc_uint16, timer_t> mMapOverlapTimer;  ///< 叠加用的定时器
+		xgc_unordered_map<xgc_uint16, timer_h> mMapOverlapTimer;  ///< 叠加用的定时器
 	};
 }

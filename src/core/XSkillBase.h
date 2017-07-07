@@ -148,7 +148,7 @@ namespace XGC
 		/// [1/24/2014 jianglei.kinly]
 		/// 设定技能产生效果中的状态
 		/// ------------------------------------------------ //
-		xgc_void MarkAttack( timer_t handle );
+		xgc_void MarkAttack( timer_h handle );
 		/////
 		/// [12/6/2010 Albert]
 		/// Description:	重置技能释放状态 
@@ -213,19 +213,19 @@ namespace XGC
 		/// [3/11/2014 jianglei.kinly]
 		/// 结束聚气，置标志位，等待客户端发聚气结束的消息
 		/// ------------------------------------------------ //
-		xgc_void EndCasting( timer_t handle );
+		xgc_void EndCasting( timer_h handle );
 
 		/////
 		/// [12/11/2010 Albert]
 		/// Description:	重置技能冷却状态 
 		/////
-		xgc_void ResetCooldown( timer_t handle );
+		xgc_void ResetCooldown( timer_h handle );
 
 		/////
 		/// [12/6/2010 Albert]
 		/// Description:	重置技能释放状态 
 		/////
-		xgc_void ResetLifetime( timer_t handle );
+		xgc_void ResetLifetime( timer_h handle );
 
 	protected:
 		/////
@@ -261,10 +261,10 @@ namespace XGC
 		virtual xgc_void OnDestroy() {}
 	public:
 	private:
-		timer_t mCasting;   ///< 技能吟唱
-		timer_t mCooldown;  ///< 技能冷却
-		timer_t mLifetime;  ///< 技能持续
-		timer_t mAttack;    ///< 技能释放中（重复）,mLifetime结束的时候mAttack需要同时结束
+		timer_h mCasting;   ///< 技能吟唱
+		timer_h mCooldown;  ///< 技能冷却
+		timer_h mLifetime;  ///< 技能持续
+		timer_h mAttack;    ///< 技能释放中（重复）,mLifetime结束的时候mAttack需要同时结束
 
 		xgc_int8 mCastingStatus;  // 技能吟唱的状态
 	public:

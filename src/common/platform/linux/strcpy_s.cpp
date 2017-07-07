@@ -1,7 +1,8 @@
-#ifdef _LINUX
+#include "config.h"
+#if defined( __GNUC__ )
 #include <string.h>
 
-errno_t strcpy_s( char *destination, size_t count, const char *source )
+int strcpy_s( char *destination, size_t count, const char *source )
 {
 	if( nullptr == source )
 		return -1;
@@ -18,7 +19,7 @@ errno_t strcpy_s( char *destination, size_t count, const char *source )
 	return 0;
 }
 
-errno_t strncpy_s( char *destination, size_t count, const char *source, size_t copied )
+int strncpy_s( char *destination, size_t count, const char *source, size_t copied )
 {
 	if( nullptr == source )
 		return -1;

@@ -267,7 +267,7 @@ namespace XGC
 	// [3/11/2014 jianglei.kinly]
 	// 结束聚气，置标志位，等待客户端发聚气结束的消息
 	// ------------------------------------------------ //
-	xgc_void XSkillBase::EndCasting( timer_t handle )
+	xgc_void XSkillBase::EndCasting( timer_h handle )
 	{
 		getTimer().remove_event( mCasting );
 		mCasting = INVALID_TIMER_HANDLE;
@@ -280,7 +280,7 @@ namespace XGC
 	// [12/6/2010 Albert]
 	// Description:	重置技能冷却状态 
 	//---------------------------------------------------//
-	xgc_void XSkillBase::ResetCooldown( timer_t handle )
+	xgc_void XSkillBase::ResetCooldown( timer_h handle )
 	{
 		ClearCooldown( true );
 	}
@@ -289,7 +289,7 @@ namespace XGC
 	// [12/6/2010 Albert]
 	// Description:	重置技能释放状态 
 	//---------------------------------------------------//
-	xgc_void XSkillBase::ResetLifetime( timer_t handle )
+	xgc_void XSkillBase::ResetLifetime( timer_h handle )
 	{
 		ClearLifetime( true, true );
 	}
@@ -299,7 +299,7 @@ namespace XGC
 	// 设定技能产生效果中的状态
 	// TriggerCode_SkillCasting 这个事件里面做目标选取
 	// ------------------------------------------------ //
-	xgc_void XSkillBase::MarkAttack( timer_t handle )
+	xgc_void XSkillBase::MarkAttack( timer_h handle )
 	{
 		TriggerSkillAttack();
 		auto _event = getTimer().get_event( handle );

@@ -27,7 +27,7 @@ struct RefreshInfo
 	/// @var 检查调用
 	xgc_char check_invoke[128];
 	/// @var 定时器句柄
-	timer_t  handle;
+	timer_h  handle;
 };
 
 /// @var 刷新信息
@@ -35,7 +35,7 @@ static xgc_unordered_map< xgc_string, xgc_vector< RefreshInfo* > > gRefreshInfos
 
 /// @var 刷新系统配置
 static xgc_char szConfName[64] = { 0 };
-static xgc_char szConfPath[_MAX_PATH] = { 0 };
+static xgc_char szConfPath[XGC_MAX_PATH] = { 0 };
 
 xgc_bool InitServerRefresh( ini_reader &ini )
 {
@@ -168,7 +168,7 @@ xgc_bool LoadServerRefresh()
 			{
 				// 填充刷新项结构
 				RefreshInfo * pInfo = XGC_NEW RefreshInfo;
-				memset( pInfo, 0, _msize( pInfo ) );
+				memset( pInfo, 0, memsize( pInfo ) );
 				strcpy_s( pInfo->sysname, sysname );
 
 				auto start = item_node.attribute( "start" ).as_string( xgc_nullptr );
@@ -218,7 +218,7 @@ xgc_bool LoadServerRefresh()
 
 				DBG_INFO( "刷新类型为 %s 上一次调用时间为[%s]，下一次调用时间为[%s]", pInfo->type, szPrevInvokeTime, szNextInvokeTime );
 
-				auto func = [pInfo]( timer_t, intptr_t& )->xgc_void
+				auto func = [pInfo]( timer_h, intptr_t& )->xgc_void
 				{
 					OnServerRefresh( (xgc_lpcstr) pInfo->clock_invoke, pInfo->prev_invoke_time, xgc_nullptr );
 
@@ -230,7 +230,7 @@ xgc_bool LoadServerRefresh()
 
 				if( INVALID_TIMER_HANDLE == pInfo->handle )
 				{
-					XGC_ASSERT_MESSAGE( bRet, "insert clock error %I64u, %s", pInfo->prev_invoke_time, pInfo->type );
+					XGC_ASSERT_MESSAGE( bRet, "insert clock error %llu, %s", pInfo->prev_invoke_time.to_ctime(), pInfo->type );
 					SAFE_DELETE( pInfo );
 					break;
 				}
@@ -261,9 +261,9 @@ xgc_void StepServerRefresh()
 xgc_void FiniServerRefresh()
 {
 	FUNCTION_BEGIN;
-	for each( auto &itr in gRefreshInfos )
+	for( auto &itr : gRefreshInfos )
 	{
-		for each( auto ptr in itr.second )
+		for( auto ptr : itr.second )
 		{
 			if( ptr->handle != INVALID_TIMER_HANDLE )
 			{
@@ -281,12 +281,12 @@ xgc_void FiniServerRefresh()
 xgc_void UpdateServerRefresh( xgc_lpcstr lpSystem, xgc_lpvoid lpContext )
 {
 	FUNCTION_BEGIN;
-	for each( auto &it in gRefreshInfos )
+	for( auto &it : gRefreshInfos )
 	{
 		if( strcasecmp( it.first.c_str(), lpSystem ) != 0 )
 			continue;
 		
-		for each( auto ptr in it.second )
+		for( auto ptr : it.second )
 		{
 			OnServerRefresh( ptr->check_invoke, ptr->prev_invoke_time, lpContext );
 		}
