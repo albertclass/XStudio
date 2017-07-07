@@ -181,6 +181,12 @@ XGC_INLINE errno_t fopen_s( FILE **fp, const char *filename, const char *mode )
 	return 0;
 }
 
+// get a char no echo and block
+int _getch();
+
+// get a char be echo and block
+int _getche();
+
 // low level file function
 #define _eof 	eof
 #define _open 	open

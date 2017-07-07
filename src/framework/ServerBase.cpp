@@ -191,7 +191,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 	{
 		if( IsServerPaused() )
 		{
-			std::this_thread::sleep_for( std::chrono::millisecond(1) );
+			std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 			continue;
 		}
 
@@ -213,7 +213,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 
 		// 是否空闲，空闲的时候要主动挂起服务器
 		if( bBusy == false )
-			std::this_thread::sleep_for( std::chrono::millisecond(1) );
+			std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 
 		if( datetime::now() - tLast >= timespan::from_minutes( 5 ) )
 		{

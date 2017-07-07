@@ -263,10 +263,11 @@ project "net_client"
     language "C++"
     cppdialect "C++11"
     location "prj/sample/net_client"
-    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+    includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module", "dep/PDCurses" }
     targetdir "bin/%{cfg.buildcfg}"
     objdir "obj/%{prj.name}/%{cfg.buildcfg}"
     links { "common", "net", "net_module" }
+    defines { "PDC_WIDE" }
 
     flags { "MultiProcessorCompile" }
 
@@ -279,9 +280,11 @@ project "net_client"
     }
 
     filter "configurations:Debug"
-        defines { "_DEBUG", "_DEBUG_OUTPUT" }
+        libdirs { "dep/PDCurses/win32a/Debug" }
+		defines { "_DEBUG", "_DEBUG_OUTPUT" }
 
     filter "configurations:Release"
+	    libdirs { "dep/PDCurses/win32a/Release" }
         defines { "NDEBUG", "_ASSERT_LOG" }
         optimize "On"
     

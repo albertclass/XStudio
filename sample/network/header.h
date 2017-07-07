@@ -11,6 +11,8 @@
 #include "net_module.h"
 
 #include "curses.h"
+#include "panel.h"
+
 using namespace xgc;
 using namespace xgc::common;
 

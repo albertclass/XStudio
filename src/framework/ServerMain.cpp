@@ -145,7 +145,7 @@ int main( int argc, char *argv[] )
 				printf( "q. exit\n" );
 				printf( "press menu number to continue ..." );
 				_findclose( fd );
-				if( ( choice = _getch() ) == 'q' )
+				if( ( choice = getchar() ) == 'q' )
 					return 1;
 
 			} while( false == isdigit( choice ) || ( choice - '0' >= n ) );

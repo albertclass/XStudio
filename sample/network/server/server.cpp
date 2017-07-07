@@ -2,9 +2,6 @@
 #include "session.h"
 #include "server_files.h"
 
-#include "curses.h"
-#include "panel.h"
-
 /// 是否运行中
 xgc_bool running = true;
 
@@ -134,4 +131,22 @@ int main( int argc, char* argv[] )
 	endwin();
 
 	return 0;
+}
+
+int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
+					  LPSTR lpszCmdLine, int nCmdShow)
+{
+	char *argv[30];
+	int i, argc = 1;
+
+	argv[0] = "newtest";
+	for( i = 0; lpszCmdLine[i]; i++)
+		if( lpszCmdLine[i] != ' ' && (!i || lpszCmdLine[i - 1] == ' '))
+			argv[argc++] = lpszCmdLine + i;
+
+	for( i = 0; lpszCmdLine[i]; i++)
+		if( lpszCmdLine[i] == ' ')
+			lpszCmdLine[i] = '\0';
+
+	return main( argc, (char **)argv);
 }
