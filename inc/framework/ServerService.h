@@ -53,7 +53,7 @@
 //
 // An error has occurred (%2).
 //
-#define SVC_ERROR                        ((DWORD)0xC0000001L)
+#define SVC_ERROR                        ((xgc_uint32)0xC0000001L)
 
 //
 // MessageId: SVC_INFOMATION
@@ -62,13 +62,19 @@
 //
 // Infomation (%2).
 //
-#define SVC_INFOMATION                   ((DWORD)0x40000002L)
+#define SVC_INFOMATION                   ((xgc_uint32)0x40000002L)
 
 #endif
 
-#define SERVICE_STATUS_STOPED	(0)
-#define SERVICE_STATUS_RUNNING	(1)
-#define SERVICE_STATUS_PAUSE	(2)
+#define SERVICE_STATUS_STOPPED              0x00000001
+#define SERVICE_STATUS_START_PENDING        0x00000002
+#define SERVICE_STATUS_STOP_PENDING         0x00000003
+#define SERVICE_STATUS_RUNNING              0x00000004
+#define SERVICE_STATUS_CONTINUE_PENDING     0x00000005
+#define SERVICE_STATUS_PAUSE_PENDING        0x00000006
+#define SERVICE_STATUS_PAUSED               0x00000007
+
+#define SERVICE_ERROR_NONE					(0)
 
 ///
 /// 服务是否已安装

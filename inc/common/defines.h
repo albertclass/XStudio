@@ -7,19 +7,19 @@
 // 安全删除定义
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #ifndef SAFE_DELETE
-#	define SAFE_DELETE( p )			do{delete(p);(p) = NULL;}while(false);
+#	define SAFE_DELETE( p )			do{delete(p);(p) = NULL;}while(false)
 #endif
 
 #ifndef SAFE_DELETE_TYPE
-#	define SAFE_DELETE_TYPE( p, t )	do{delete((t*)p);(p) = NULL;}while(false);
+#	define SAFE_DELETE_TYPE( p, t )	do{delete((t*)p);(p) = NULL;}while(false)
 #endif
 
 #ifndef SAFE_DELETE_ARRAY
-#	define SAFE_DELETE_ARRAY( p )	do{delete[] (p); (p) = NULL;}while(false);
+#	define SAFE_DELETE_ARRAY( p )	do{delete[] (p); (p) = NULL;}while(false)
 #endif
 
 #ifndef SAFE_RELEASE
-#	define SAFE_RELEASE( p )		do{if(p){ (p)->Release(); (p) = NULL; }}while(false);
+#	define SAFE_RELEASE( p )		do{if(p){ (p)->Release(); (p) = NULL; }}while(false)
 #endif
 
 #define SUB(x,y) ((x)=(x)>(y)? ((x)-(y)): 0)

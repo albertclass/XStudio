@@ -49,7 +49,7 @@ int __cdecl PrintMemReport( xgc_lpcstr fmt, ... )
 xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc::common::ini_reader &, xgc_lpvoid), xgc_lpvoid lpParam )
 {
 	FUNCTION_BEGIN;
-	ReportServiceStatus( SERVICE_START_PENDING, NO_ERROR, 5 * 60 * 1000 );
+	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 
 	xgc_lpcstr pInitNode = MemMark( "Initialize" );
 
@@ -133,12 +133,6 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 
 	SYS_INFO( "调试指令系统初始化成功！" );
 
-	MemMark( "eventlogger", pInitNode );
-	if( false == InitializeEventLog( ini ) )
-		return false;
-
-	SYS_INFO( "事件日志系统初始化成功！" );
-
 	if( bUseSequence )
 	{
 		MemMark( "sequence", pInitNode );
@@ -148,7 +142,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 		SYS_INFO( "Sequence 初始化成功！" );
 	}
 
-	ReportServiceStatus( SERVICE_START_PENDING, NO_ERROR, 5 * 60 * 1000 );
+	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 	MemMark( "configuration", pInitNode );
 	if( false == InitConfiguration( ini, lpParam ) )
 	{
@@ -178,7 +172,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam )
 {
 	// 报告运行状态
-	ReportServiceStatus( SERVICE_RUNNING, NO_ERROR, 0 );
+	ReportServiceStatus( SERVICE_STATUS_RUNNING, SERVICE_ERROR_NONE, 0 );
 
 	// 开启超时监控
 	getInvokeWatcherMgr().Start();
@@ -233,12 +227,9 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam )
 {
 	FUNCTION_BEGIN;
-	ReportServiceStatus( SERVICE_STOP_PENDING, NO_ERROR, 5 * 60 * 1000 );
+	ReportServiceStatus( SERVICE_STATUS_STOP_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 	FinializeNetwork();
 	SYS_INFO( "网络库清理完成..." );
-
-	FinializeEventLog();
-	SYS_INFO( "Evt清理完成..." );
 
 	FiniConfiguration( lpParam );
 	SYS_INFO( "配置项清理完成..." );
@@ -259,7 +250,7 @@ xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 	FinializeLogger();
 
 	MemMarkClear();
-	ReportServiceStatus( SERVICE_STOPPED, NO_ERROR, 0 );
+	ReportServiceStatus( SERVICE_STATUS_STOPPED, SERVICE_ERROR_NONE, 0 );
 	FUNCTION_END;
 }
 

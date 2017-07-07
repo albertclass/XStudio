@@ -9,7 +9,7 @@ solution "xgc"
 project "common"
     kind "SharedLib"
     language "C++"
-    cppdialect "C++14"
+    cppdialect "C++11"
     location "prj/common"
     includedirs "inc/common"
     targetdir "bin/%{cfg.buildcfg}"
@@ -44,7 +44,6 @@ project "common"
 
     filter "system:linux"
         implibdir "bin/%{cfg.buildcfg}"
-        links { "stdc++" }
         buildoptions { "-pthread" }
         defines { "LINUX64" }
 

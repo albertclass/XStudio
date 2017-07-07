@@ -3,7 +3,6 @@
 #include "ServerService.h"
 #include "ServerCommand.h"
 #include "ServerDatabase.h"
-#include "ServerEventLog.h"
 #include "ServerParams.h"
 
 ///

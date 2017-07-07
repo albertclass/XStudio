@@ -72,7 +72,7 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	xgc_lpcstr lpConf = ini.get_item_value( "Database", "TableMaker", xgc_nullptr );
 	if( lpConf )
 	{
-		xgc_char szTableConf[_MAX_PATH];
+		xgc_char szTableConf[XGC_MAX_PATH];
 		get_absolute_path( szTableConf, sizeof( szTableConf ), "%s", lpConf );
 		if( false == make_tables( conn, szTableConf, xgc_nullptr ) )
 			return false;
