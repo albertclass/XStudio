@@ -12,6 +12,23 @@ int main( int argc, char* argv[] )
 {
 	PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_X );
 
+	initscr();
+	start_color();
+	init_pair( 1, COLOR_WHITE, COLOR_BLUE);
+	init_pair( 2, COLOR_WHITE, COLOR_BLACK);
+
+	cbreak();
+	noecho();
+	clear();
+	nodelay( stdscr, 1 );
+	curs_set(0);
+	refresh();
+	scrollok( stdscr, true );
+
+	raw();
+	keypad( stdscr, TRUE );
+	mousemask( ALL_MOUSE_EVENTS, NULL );
+
 	int max_row, max_col;
 	getmaxyx( stdscr, max_row, max_col );
 
