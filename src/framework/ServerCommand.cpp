@@ -40,9 +40,9 @@ namespace DebugCommand
 		/// @var 配置名
 		xgc_lpcstr mEntryName;
 		/// @var 配置文件路径
-		xgc_char mConfigPath[_MAX_PATH];
+		xgc_char mConfigPath[XGC_MAX_PATH];
 		/// @var 批处理文件路径
-		xgc_char mScriptPath[_MAX_PATH];
+		xgc_char mScriptPath[XGC_MAX_PATH];
 		/// @var 权限映射表
 		xgc_map< xgc_uint32, Group > mGroupMap;
 		/// @var 别名映射表
@@ -192,7 +192,7 @@ static struct DebugCommand::Command* ReadCommands( pugi::xml_node &node, DebugCo
 static xgc_void FiniDebugCmd( DebugCommand::Command* pCommands )
 {
 	XGC_ASSERT_RETURN( pCommands, XGC_NONE );
-	for each( auto &it in pCommands->mChildren )
+	for( auto &it : pCommands->mChildren )
 	{
 		FiniDebugCmd( it.second );
 	}
@@ -339,7 +339,7 @@ xgc_bool ReloadDebugCmd( xgc_lpcstr lpTableName )
 {
 	if( xgc_nullptr == lpTableName )
 	{
-		for each( auto &it in gCommandInstMap )
+		for( auto &it : gCommandInstMap )
 		{
 			if( false == ReloadDebugCmd( it.second ) )
 				return false;
@@ -356,7 +356,7 @@ xgc_bool ReloadDebugCmd( xgc_lpcstr lpTableName )
 
 xgc_void FiniDebugCmd()
 {
-	for each( auto it in gCommandInstMap )
+	for( auto it : gCommandInstMap )
 	{
 		FiniDebugCmd( it.second );
 		SAFE_DELETE( it.second );
@@ -426,7 +426,7 @@ namespace DebugCommand
 		xgc_char szMessage[4096];
 		va_list args;
 		va_start( args, lpFmt );
-		int cnt = _vsnprintf_s( szMessage, sizeof(szMessage) -1, lpFmt, args );
+		int cnt = vsnprintf_s( szMessage, sizeof(szMessage) -1, lpFmt, args );
 		if( cnt > 0 )
 			Print( gpCurrent->user, szMessage );
 		va_end( args );
@@ -454,7 +454,7 @@ namespace DebugCommand
 	{
 		std::sort( lpCmdTable->pFirst, lpCmdTable->pLast,
 			[]( const CommandInfo& lhs, const CommandInfo& rhs ){
-			return _stricmp( lhs.lpCmdString, rhs.lpCmdString ) < 0;
+			return strcasecmp( lhs.lpCmdString, rhs.lpCmdString ) < 0;
 		} );
 
 		return true;
@@ -480,7 +480,7 @@ namespace DebugCommand
 			// 即，只要有和输入的字符串结束符前的全部匹配则认为匹配。
 			CommandInfo* pCmdInfo = std::lower_bound( lpCmdTable->pFirst, lpCmdTable->pLast, argv[0],
 				[]( const CommandInfo& lhs, xgc_lpcstr lpCmdString ){
-				return _stricmp( lhs.lpCmdString, lpCmdString ) < 0;
+				return strcasecmp( lhs.lpCmdString, lpCmdString ) < 0;
 			} );
 
 			// 验证是否找到，lower_bound返回等于或者大于
@@ -490,7 +490,7 @@ namespace DebugCommand
 				break;
 			}
 
-			if( _strnicmp( argv[0], pCmdInfo->lpCmdString, strlen( argv[0] ) ) == 0 )
+			if( strncasecmp( argv[0], pCmdInfo->lpCmdString, strlen( argv[0] ) ) == 0 )
 			{
 				// 该指令有额外参数的，则处理参数
 				if( pCmdInfo->pfnCmd && false == pCmdInfo->pfnCmd( argc, argv, pCmdInfo ) )
@@ -538,7 +538,7 @@ namespace DebugCommand
 		{
 			pCmdInfo = std::lower_bound( lpCmdTable->pFirst, lpCmdTable->pLast, argv[1],
 				[]( const CommandInfo& lhs, xgc_lpcstr lpCmdString ){
-				return _stricmp( lhs.lpCmdString, lpCmdString ) < 0;
+				return strcasecmp( lhs.lpCmdString, lpCmdString ) < 0;
 			} );
 
 			// 验证是否找到，lower_bound返回等于或者大于
@@ -553,7 +553,7 @@ namespace DebugCommand
 
 			lpCmdTable = pCmdInfo->lpSubCommands;
 
-			if( _strnicmp( argv[0], pCmdInfo->lpCmdString, strlen( argv[0] ) ) == 0 )
+			if( strncasecmp( argv[0], pCmdInfo->lpCmdString, strlen( argv[0] ) ) == 0 )
 			{
 				// 没有子指令了，直接显示该语句的帮助
 				PrintUsage( pCmdInfo );
@@ -654,7 +654,7 @@ namespace DebugCommand
 						s = match_quote2;
 						argv[argc++] = ++str;
 					}
-					else if( !isblank( *str ) && ( isprint( *str ) || _ismbslead( (xgc_byte*) str, (xgc_byte*) str ) ) )
+					else if( !isblank( *str ) && ( isprint( *str ) /*|| _ismbslead( (xgc_byte*) str, (xgc_byte*) str )*/ ) )
 					{
 						s = match_end;
 						argv[argc++] = str;
@@ -761,7 +761,7 @@ namespace DebugCommand
 
 		if( gpInstance )
 		{
-			for each( auto &it in gpInstance->mAliasMap )
+			for( auto &it : gpInstance->mAliasMap )
 				Container.push_back( it.first + "=" + it.second );
 		}
 		FUNCTION_END;
@@ -840,7 +840,7 @@ namespace DebugCommand
 		PrintClient( "server name : %s", GetServerName() );
 		PrintClient( "server code : %s", GetNetworkId() );
 
-		xgc_char szPath[_MAX_PATH] = { 0 };
+		xgc_char szPath[XGC_MAX_PATH] = { 0 };
 		PrintClient( "server path : %s", get_module_path() );
 		PrintClient( "server conf : %s", GetConfPath( szPath, sizeof( szPath ), "" ) );
 
@@ -870,16 +870,14 @@ namespace DebugCommand
 	xgc_bool OnCmd_RunBatch( xgc_size argc, xgc_lpstr const *argv, const CommandInfo* pCmdInfo )
 	{
 		FUNCTION_BEGIN;
-		xgc_char szPath[_MAX_PATH] = { 0 };
+		xgc_char szPath[XGC_MAX_PATH] = { 0 };
 		if( argc > 1 )
-			sprintf_s( szPath, "%s\\%s", gpInstance->mScriptPath, argv[1] );
+			get_absolute_path( szPath, "%s\\%s", gpInstance->mScriptPath, argv[1] );
 		else
-			sprintf_s( szPath, "%s", gpInstance->mScriptPath );
+			get_absolute_path( szPath, "%s", gpInstance->mScriptPath );
 
-		_fullpath( szPath, szPath, sizeof( szPath ) );
-
-		struct _stat stat;
-		if( 0 != _stat( szPath, &stat ) )
+		struct _stat s;
+		if( 0 != _stat( szPath, &s ) )
 		{
 			PrintClient( "无效的路径或文件名! %s", szPath );
 			return false;
@@ -887,34 +885,24 @@ namespace DebugCommand
 
 		PrintClient( "%s", szPath );
 
-		if( stat.st_mode & _S_IFDIR )
+		if( s.st_mode & S_IFDIR )
 		{
+			list_directory( szPath, []( xgc_lpcstr root, xgc_lpcstr relative, xgc_lpcstr fname ){
+				if( fname )
+					PrintClient( "%s\n", fname );
+				else
+					PrintClient( "%s\n", relative );
 
-			strcat_s( szPath, "\\*" );
-			_finddata_t fdata;
-			memset( &fdata, 0, sizeof( fdata ) );
-
-			intptr_t fd = _findfirst( szPath, &fdata );
-			if( fd == -1 )
-			{
-				PrintClient( "无效的目录!" );
-				return false;
-			}
-
-			do
-			{
-				PrintClient( "%s\n", fdata.name );
-			} while( _findnext( fd, &fdata ) == 0 );
-
-			_findclose( fd );
+				return true;
+			});
 		}
-		else if( stat.st_mode & _S_IFREG )
+		else if( s.st_mode & S_IFREG )
 		{
 			FILE *fp = xgc_nullptr;
 			fopen_s( &fp, szPath, "r" );
 			if( xgc_nullptr == fp )
 			{
-				PrintClient( "批量执行GM指令,打开文件:[%s]失败,dwErr:[%d]", szPath, GetLastError() );
+				PrintClient( "批量执行GM指令,打开文件:[%s]失败,dwErr:[%d]", szPath, errno );
 				return false;
 			}
 

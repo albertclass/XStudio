@@ -45,7 +45,7 @@ private:
 	}
 
 public:
-	template< class _Ty, std::enable_if_t< std::is_base_of< UnitTest, _Ty >::value, xgc_bool > = true >
+	template< class _Ty, typename std::enable_if< std::is_base_of< UnitTest, _Ty >::value, xgc_bool >::type = true >
 	xgc_bool Regist( xgc_lpcstr lpClassName, UnitTest *pTest = XGC_NEW _Ty() )
 	{
 		push_back( std::make_tuple( lpClassName, pTest ) );
