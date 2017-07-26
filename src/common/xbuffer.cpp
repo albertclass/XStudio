@@ -1,9 +1,5 @@
 #include "xbuffer.h"
-
-#include "logger.h"
-#include "datetime.h"
 #include "xsystem.h"
-#include "xutility.h"
 
 #ifdef _LINUX
 #	include <sys/mman.h>
@@ -99,7 +95,7 @@ namespace xgc
 		xgc_long shared_memory_buffer::create( xgc_lpcstr shared_memory_name, xgc_size size, xgc_lpcstr file_path )
 		{
 			strcpy_s( shared_file_name, shared_memory_name );
-			strcpy_s( shared_file_path, file_path );
+			get_absolute_path( shared_file_path, "%s/%s.shm", file_path, shared_memory_name );
 
 			size_ = size;
 
@@ -114,12 +110,10 @@ namespace xgc
 			sa.lpSecurityDescriptor = &sd;
 			sa.bInheritHandle = TRUE;
 
-			if( file_path && file_path[0] )
+			if( shared_file_path && shared_file_path[0] )
 			{
-				xgc_char sz_path[XGC_MAX_PATH] = { 0 };
-				get_absolute_path( sz_path, "%s/%s", file_path, shared_memory_name );
 				shared_file_h = CreateFileA(
-					sz_path,
+					shared_file_path,
 					GENERIC_READ | GENERIC_WRITE,
 					FILE_SHARE_READ | FILE_SHARE_WRITE,
 					NULL,
@@ -129,7 +123,7 @@ namespace xgc
 
 				if( shared_file_h == xgc_invalid_handle )
 				{
-					SYS_ERROR( "CreateFile %s failed. err = %u", file_path, GetLastError() );
+					SYS_ERROR( "CreateFile %s failed. err = %u", shared_file_path, GetLastError() );
 					return -1;
 				}
 			}
@@ -139,7 +133,7 @@ namespace xgc
 				&sa,											// default security 
 				PAGE_READWRITE,									// read/write access
 				0,												// max. object size 
-				(DWORD) ( size ),									// buffer size  
+				(DWORD) ( size ),								// buffer size  
 				shared_memory_name );							// name of mapping object
 
 			if( shared_memory_ == NULL || shared_memory_ == INVALID_HANDLE_VALUE )

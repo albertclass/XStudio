@@ -131,7 +131,6 @@ typedef xgc_lpvoid			xgc_handle;
 #	define XGC_VERIFY(expr)						XGC_ASSERT_MSG((expr),"")
 #	define XGC_DEBUG_CODE( ... )				__VA_ARGS__
 #elif defined( _ASSERT_LOG )
-#	include "logger.h"
 #	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
 #	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); return ret; }
 #	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); throw( ret ); }
@@ -170,9 +169,12 @@ typedef xgc_lpvoid			xgc_handle;
 #define XGC_ADD_FLAGS(v,flags)	(((v)|(flags)))
 #define XGC_CLR_FLAGS(v,flags)	(((v)&(~(flags))))
 
+// 内存对齐
 #define XGC_ALIGN_MEM(x, align) (((x) + (align) - 1) & ~((align)-1))
 
+// 向上取整
 #define XGC_ALIGN_UP(x, align) ((x)&(-align))
+// 向下取整
 #define XGC_ALIGN_DOWN(x, align) (-(-(x)&-(align)))
 
 #define XGC_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
@@ -186,4 +188,8 @@ typedef xgc_lpvoid			xgc_handle;
 #define XGC_NONE xgc_void( 0 )
 
 #define XGC_HEADER_FROM_MEMBER( TYPE, MEMBER_POINT, MEMBER_NAME ) ((TYPE *)( MEMBER_POINT - (((TYPE *)0)->MEMBER_NAME) ))
+
+#include "logger.h"
+#include "datetime.h"
+
 #endif //_MACRO_DEFINE_H

@@ -254,13 +254,7 @@ namespace xgc
 			}
 		};
 
-		template< class T >
-		void DestroyContainer( const T& v )
-		{
-			ContainerDestroyer< T >::Destroy( v );
-		}
-
-		template< class T, template < class > class D >
+		template< class T, template < class > class D = ContainerDestroyer >
 		void DestroyContainer( const T& v )
 		{
 			D< T >::Destroy( v );
@@ -269,7 +263,7 @@ namespace xgc
 		template< class T, class D >
 		void DestroyContainer( const T& v, D pFn )
 		{
-			for( auto it : v ) pFn( it );
+			for( auto &it : v ) pFn( it );
 		}
 	}
 }

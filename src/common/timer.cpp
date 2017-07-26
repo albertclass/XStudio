@@ -11,10 +11,8 @@
 /// 2. 基于固定时间的
 ///
 ///////////////////////////////////////////////////////////////
-#include <numeric>
 #include "timer.h"
 #include "xutility.h"
-#include "destructor.h"
 
 namespace xgc
 {

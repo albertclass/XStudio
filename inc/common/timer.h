@@ -1,13 +1,9 @@
 #pragma once
 #ifndef _TIMER_MANAGER_H_
 #define _TIMER_MANAGER_H_
-#include <functional>
-#include <chrono>
-
 #include "defines.h"
 #include "exports.h"
 #include "auto_handle.h"
-#include "datetime.h"
 
 namespace xgc
 {

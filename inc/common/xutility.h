@@ -11,7 +11,6 @@
 ///////////////////////////////////////////////////////////////
 #ifndef _XUTILITY_H_
 #define _XUTILITY_H_
-
 #include "defines.h"
 #include "exports.h"
 

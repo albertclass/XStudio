@@ -5,10 +5,6 @@
 
 #include "defines.h"
 #include "exports.h"
-#include "xutility.h"
-
-#include <time.h>
-#include <chrono>
 
 namespace xgc
 {
@@ -39,32 +35,11 @@ namespace xgc
 		};
 
 		#ifdef __GNUC__
-		XGC_INLINE error_t localtime_s( struct tm *tt, const time_t *t )
-		{
-			auto ptt = localtime( t );
-			if( tt && ptt )
-			{
-				*tt = *ptt;
-				return 0;
-			}
-
-			return -1;
-		}
-
-		XGC_INLINE error_t gmtime_s( struct tm *tt, const time_t *t )
-		{
-			auto ptt = gmtime( t );
-			if( tt && ptt )
-			{
-				*tt = *ptt;
-				return 0;
-			}
-
-			return -1;
-		}
+		error_t localtime_s( struct tm *tt, const time_t *t );
+		error_t gmtime_s( struct tm *tt, const time_t *t );
 		#endif
 
-		struct timespan
+		struct COMMON_API timespan
 		{
 			volatile int64_t span;
 
@@ -210,41 +185,7 @@ namespace xgc
 			/// 将字符串时间转换为时间片
 			/// [7/23/2014] create by albert.xu
 			///
-			static timespan convert( xgc_lpcstr str )
-			{
-				uint16_t time[] = { 0, 0, 0, 0 };
-				xgc_lpcstr cursor = str + strlen( str );
-				xgc_lpcstr splitc = ":. ";
-
-				xgc_size it = 0;
-				while( cursor > str )
-				{
-					xgc_lpcstr pc = strchr( splitc, *cursor );
-
-					if( pc ) switch( *pc )
-					{
-						case '.':
-						it = XGC_RNG( it, 0, 0 );
-						time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );
-						break;
-						case ' ':
-						it = 3;
-						case ':':
-						it = XGC_RNG( it, 1, 3 );
-						time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );
-						break;
-					}
-
-					--cursor;
-				}
-
-				if( it < XGC_COUNTOF( time ) )
-				{
-					time[it] = str2numeric<uint16_t>( cursor, xgc_nullptr, 10 );
-				}
-
-				return timespan( int64_t( ( ( ( ( time[3] * 60 + time[2] ) * 60 ) + time[1] ) * 1000 + time[0] ) * 10000ULL ) );
-			}
+			static timespan convert( xgc_lpcstr str );
 
 			// 时间片段转为单位时间
 			xgc_int32 to_days()const 
@@ -273,7 +214,7 @@ namespace xgc
 			}
 		};
 
-		struct datetime
+		struct COMMON_API datetime
 		{
 			filetime storage; // is mill seconds
 
@@ -295,11 +236,11 @@ namespace xgc
 			{
 				#ifdef _WINDOWS
 					BOOL bRet = 0;
-					bRet = SystemTimeToFileTime( (LPSYSTEMTIME) &st, (LPFILETIME) &storage );
-					XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
-					bRet = LocalFileTimeToFileTime( (LPFILETIME) &storage, (LPFILETIME) &storage );
-					XGC_ASSERT_MESSAGE( bRet, "System Error Code = %d", GetLastError() );
-				#elif defined( _LINUX )
+					SystemTimeToFileTime( (LPSYSTEMTIME) &st, (LPFILETIME) &storage );
+					LocalFileTimeToFileTime( (LPFILETIME) &storage, (LPFILETIME) &storage );
+				#endif
+
+				#ifdef _LINUX
 					struct tm gtime = {
 						st.seconds,
 						st.minute,
@@ -483,65 +424,19 @@ namespace xgc
 			/// 取当前时间
 			/// [6/22/2014] create by albert.xu
 			///
-			XGC_INLINE systime to_systime() const
-			{
-				time_t t = to_ctime();
-
-				tm gtime = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-				
-				if( 0 != localtime_s( &gtime, &t ) )
-					return { 0,0,0,0,0,0,0,0 };
-
-				return { 
-					uint16_t(gtime.tm_year + 1900),
-					uint16_t(gtime.tm_mon + 1),
-					uint16_t(gtime.tm_wday), 
-					uint16_t(gtime.tm_mday), 
-					uint16_t(gtime.tm_hour), 
-					uint16_t(gtime.tm_min), 
-					uint16_t(gtime.tm_sec), 
-					uint16_t(to_milliseconds() - t * 1000)
-				};
-			}
+			XGC_INLINE systime to_systime() const;
 
 			///
 			/// 取当前时间
 			/// [6/22/2014] create by albert.xu
 			///
-			XGC_INLINE systime to_utctime() const
-			{
-				time_t t = to_ctime();
-
-				tm gtime = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-				if( 0 != gmtime_s( &gtime, &t ) )
-					return { 0,0,0,0,0,0,0,0 };
-				
-				return {
-					uint16_t(gtime.tm_year + 1900),
-					uint16_t(gtime.tm_mon + 1),
-					uint16_t(gtime.tm_wday), 
-					uint16_t(gtime.tm_mday), 
-					uint16_t(gtime.tm_hour), 
-					uint16_t(gtime.tm_min), 
-					uint16_t(gtime.tm_sec), 
-					uint16_t(to_milliseconds() - t * 1000)
-				};
-			}
+			XGC_INLINE systime to_utctime() const;
 
 			///
 			/// 转换为字符串
 			/// [7/15/2015] create by albert.xu
 			///
-			xgc_lpcstr to_string( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" ) const
-			{
-				tm stm;
-				time_t tt = (time_t)to_ctime();
-				localtime_s( &stm, &tt );
-				strftime( output, size, format, &stm );
-
-				return output;
-			}
+			xgc_lpcstr to_string( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" ) const;
 
 			///
 			/// 转换为字符串 - template
@@ -568,14 +463,17 @@ namespace xgc
 			/// 获取当前时间字符串
 			/// [7/15/2015] create by albert.xu
 			///
-			static xgc_lpcstr now( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" );
+			static xgc_size now( xgc_lpstr output, xgc_size size, xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" );
 
 			///
 			/// 获取当前时间字符串 - template 
 			/// [7/15/2015] create by albert.xu
 			///
 			template< size_t S >
-			static xgc_lpcstr now( xgc_char (&output)[S], xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" );
+			static xgc_size now( xgc_char (&output)[S], xgc_lpcstr format = "%Y-%m-%d %H:%M:%S" )
+			{
+				return now( output, S, format );
+			}
 
 			///
 			/// 获取当前时间的相对时间
@@ -588,49 +486,7 @@ namespace xgc
 			/// [7/23/2014] create by albert.xu
 			/// @param str 日期时间格式的字符串。格式匹配必须右对齐，YYYY-MM-DD hh::mm::ss.ms
 			///
-			static datetime convert( xgc_lpcstr str, datetime now = datetime::now() )
-			{
-				systime st = now.to_systime();
-
-				if (str)
-				{
-					xgc_lpcstr cursor = str + strlen( str );
-					xgc_lpcstr splitc = "-:. ";
-
-					uint16_t *ptr[] = { &st.milliseconds, &st.seconds, &st.minute, &st.hour, &st.day, &st.month, &st.year };
-					xgc_size idt = 0;
-					while( cursor > str )
-					{
-						xgc_lpcstr pc = strchr( splitc, *cursor );
-
-						if( pc ) switch( *pc )
-						{
-							case '.':
-							idt = XGC_RNG( idt, 0, 0 );
-							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
-							break;
-							case ' ':
-							idt = 3;
-							case ':':
-							idt = XGC_RNG( idt, 1, 3 );
-							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
-							break;
-							case '-':
-							idt = XGC_RNG( idt, 4, 6 );
-							*ptr[idt++] = (uint16_t) strtoul( cursor + 1, xgc_nullptr, 10 );
-							break;
-						}
-
-						--cursor;
-					}
-
-					if( idt < XGC_COUNTOF( ptr ) )
-					{
-						*ptr[idt] = (uint16_t) strtoul( cursor, xgc_nullptr, 10 );
-					}
-				}
-				return datetime( st );
-			}
+			static datetime convert( xgc_lpcstr str, datetime now = datetime::now() );
 		};
 
 		XGC_INLINE datetime operator + ( const datetime& dt, const timespan& sp )
@@ -670,46 +526,6 @@ namespace xgc
 			return timespan( xgc_time64( lhs.span / rhs ) );
 		}
 
-		XGC_INLINE datetime datetime::now()
-		{
-			filetime ft;
-			#if defined(_WINDOWS)
-			GetSystemTimeAsFileTime( (LPFILETIME) &ft );
-			#elif defined(_LINUX)
-			struct timeval v;
-			gettimeofday( &v, xgc_nullptr );
-			ft.dt = v.tv_sec * 10000000ULL + v.tv_usec * 10ULL + _Time_T_Diff;
-			#endif
-
-			return ft;
-		}
-
-		XGC_INLINE xgc_lpcstr datetime::now( xgc_lpstr output, xgc_size size, xgc_lpcstr format )
-		{
-			tm stm;
-			time_t tt = (time_t) now().to_ctime();
-			localtime_s( &stm, &tt );
-			strftime( output, size, format, &stm );
-
-			return output;
-		}
-
-		template< size_t S >
-		XGC_INLINE xgc_lpcstr datetime::now( xgc_char (&output)[S], xgc_lpcstr format )
-		{
-			tm stm;
-			time_t tt = (time_t) now().to_ctime();
-			localtime_s( &stm, &tt );
-			strftime( output, S, format, &stm );
-
-			return output;
-		}
-
-		XGC_INLINE datetime datetime::relative_time( timespan span )
-		{
-			return datetime::now() + span;
-		}
-
 		XGC_INLINE xgc_time64 current_time()
 		{
 			return datetime::now().to_ctime();
@@ -726,11 +542,11 @@ namespace xgc
 		}
 
 		template< class _Duration >
-		xgc_time64 ticks()
+		XGC_INLINE xgc_time64 ticks()
 		{
 			return std::chrono::duration_cast<_Duration>(
 				std::chrono::steady_clock::now().time_since_epoch()
-			).count();
+				).count();
 		}
 	}  // end namespace common
 }  // end namespace xgc

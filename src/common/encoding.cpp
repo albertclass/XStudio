@@ -142,7 +142,7 @@ namespace xgc
 
 	xgc_size utf8_to_ucs( xgc_lpcvoid utf8, xgc_ulong *ucs )
 	{
-		xgc_lpcstr str = (xgc_lpcstr)utf8;
+		const xgc_byte* str = (const xgc_byte*)utf8;
 		
 		if( (str[0] & 0x80) == 0 )
 		{
@@ -150,31 +150,31 @@ namespace xgc
 			if( ucs ) *ucs = str[0];
 			return 1;
 		}
-		else if( (str[0] & 0xC0) == 0xC0 )
+		else if( (str[0] & 0xDF) == str[0] )
 		{
 			// 2 bytes
 			if( ucs ) *ucs = ( (str[0] & 0x1f) << 6 ) | ( str[1] & 0x3f );
 			return 2;
 		}
-		else if( (str[0] & 0xE0) == 0xE0 )
+		else if( (str[0] & 0xEF) == str[0] )
 		{
 			// 3 bytes
 			if( ucs ) *ucs = ( (str[0] & 0x0f) << 12 ) | ( ( str[1] & 0x3f ) << 6 ) | ( str[2] & 0x3f );
 			return 3;
 		}
-		else if( (str[0] & 0xF0) == 0xF0 )
+		else if( (str[0] & 0xF7) == str[0] )
 		{
 			// 4 bytes
 			if( ucs ) *ucs = ( (str[0] & 0x07) << 18 ) | ( (str[1] & 0x3f) << 12 ) | ( ( str[2] & 0x3f ) << 6 ) | ( str[3] & 0x3f );
 			return 4;
 		}
-		else if( (str[0] & 0xF8) == 0xF8 )
+		else if( (str[0] & 0xFB) == str[0] )
 		{
 			// 5 bytes
 			if( ucs ) *ucs = ( (str[0] & 0x03) << 24 ) | ( (str[1] & 0x3f) << 18 ) | ( (str[2] & 0x3f) << 12 ) | ( ( str[3] & 0x3f ) << 6 ) | ( str[4] & 0x3f );
 			return 5;
 		}
-		else if( (str[0] & 0xFC) == 0xFC )
+		else if( (str[0] & 0xFD) == str[0] )
 		{
 			// 6 bytes
 			if( ucs ) *ucs = ( (str[0] & 0x01) << 30 ) | ( (str[1] & 0x3f) << 24 ) | ( (str[2] & 0x3f) << 18 ) | ( ( str[3] & 0x3f ) << 12 ) | ( ( str[3] & 0x3f ) << 6 ) | ( str[5] & 0x3f );
@@ -341,9 +341,11 @@ namespace xgc
 		xgc_size cch = 0;
 		xgc_size add = 0;
 
+		xgc_char mbc[32];
+
 		#if defined(_LINUX)
 		mbstate_t mbstat;
-		memset(&mbstat, 0, sizeof(mbstat));
+		mbrlen (nullptr,0,&mbstat);
 		#endif
 
 		while( *str )
@@ -352,18 +354,16 @@ namespace xgc
 			if( add == 0 )
 				return -1;
 
-			if( mbs && (xgc_lpstr)mbs + size - poi < MB_CUR_MAX )
-				return -1;
-
 			#if defined(_LINUX)
-			cch = wcrtomb( mbs ? poi : (xgc_lpstr)mbs, (xgc_wchar)ucs, &mbstat );
+			cch = wcrtomb( mbs ? mbc : xgc_nullptr, (xgc_wchar)ucs, &mbstat );
 			if( cch == -1 )
 				return -1;
 			#elif defined(_WINDOWS)
 			int ich = 0;
-			wctomb_s( &ich, mbs ? poi : xgc_nullptr, size ? size - (poi-(xgc_lpstr)mbs) : 0, (xgc_wchar)ucs );
+			wctomb_s( &ich, mbs ? mbc : xgc_nullptr, mbs ? MB_CUR_MAX : 0, (xgc_wchar)ucs );
 			if( ich == -1 )
 				return -1;
+
 			cch = ich;
 			#else
 			// wctomb not thread safety
@@ -371,6 +371,10 @@ namespace xgc
 			if( cch == -1 )
 				return -1;
 			#endif
+
+			if( mbs )
+				for( int i = 0; i < cch; ++i )
+					poi[i] = mbc[i];
 
 			poi += cch;
 			str += add;

@@ -1,16 +1,13 @@
 #ifndef _SINGLETON_H_
 #define _SINGLETON_H_
+#include "defines.h"
+
 #include <algorithm>
 #include <stdexcept>
 #include <cassert>
 #include <cstdlib>
 #include <new>
-#include <vector>
-#include <list>
-#include <memory>
 #include <mutex>
-
-#include "defines.h"
 
 namespace xgc
 {

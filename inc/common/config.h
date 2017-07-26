@@ -31,6 +31,7 @@
 #endif
 
 #ifdef _WINDOWS
+#	define _CRTDBG_MAP_ALLOC
 #	define _CRT_SECURE_NO_WARNINGS
 #	include "platform/windows/sys.h"
 #endif
@@ -45,8 +46,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-
-#include <functional>
+#include <time.h>
 
 #include <set>
 #include <map>
@@ -61,16 +61,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <chrono>
+#include <memory>
+#include <functional>
+
 #if defined(XGC_ALLOCATOR)
 #	include "allocator.h"
 #	define xgc_allocator xgc::common::allocator
 #	define xgc_allocator_fast xgc::common::allocator
-#elif defined(BOOST_ALLOCATOR)
-#	include "boost/pool/pool_alloc.hpp"
-#	include "boost/pool/singleton_pool.hpp"
-#	include "boost/pool/detail/mutex.hpp"
-#	define xgc_allocator boost::pool_allocator
-#	define xgc_allocator_fast boost::fast_pool_allocator
 #else
 #	define xgc_allocator std::allocator
 #	define xgc_allocator_fast std::allocator

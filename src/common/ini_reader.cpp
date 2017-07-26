@@ -34,8 +34,8 @@ namespace xgc
 
 		xgc_bool ini_reader::load( xgc_lpcstr fpath )
 		{
-			xgc_char path[XGC_MAX_PATH]  = {0};
-			xgc_char file[XGC_MAX_FNAME] = {0};
+			xgc_char path[XGC_MAX_PATH] = { 0 };
+			xgc_char file[XGC_MAX_FNAME] = { 0 };
 
 			xgc_lpcstr slash = "\\/";
 			xgc_lpcstr last_slash = xgc_nullptr;
@@ -95,7 +95,7 @@ namespace xgc
 			if( buffer_read < 0 )
 				return false;
 
-			xgc_size buffer_size = (xgc_size)buffer_read;
+			xgc_size buffer_size = (xgc_size) buffer_read;
 
 			if( buffer_size != fst.st_size )
 				return false;
@@ -104,7 +104,7 @@ namespace xgc
 			buffer[buffer_size] = 0;
 
 			// 根据文件猜测编码方式
-			encoding enc = guess_encoding( (xgc_lpvoid*)&buffer, buffer_size );
+			encoding enc = guess_encoding( (xgc_lpvoid*) &buffer, buffer_size );
 
 			// 对UTF-8的编码进行转换
 			if( enc == encoding_utf8 )
@@ -126,8 +126,8 @@ namespace xgc
 			}
 
 			file_info* info_ptr = XGC_NEW file_info;
-			info_ptr->file_buffer	= buffer;
-			info_ptr->file_size		= buffer_size;
+			info_ptr->file_buffer = buffer;
+			info_ptr->file_size = buffer_size;
 
 			strcpy_s( info_ptr->file_path, fpath );
 			strcpy_s( info_ptr->file_name, fname );
@@ -161,7 +161,10 @@ namespace xgc
 			xgc_lpstr pCur = pFileInfo->file_buffer;
 			xgc_lpstr pMem = xgc_nullptr;
 
-			enum LineType { eNewLine, eEndLine, eError, eCommit, eSection, ePairKey, ePairEqu, ePairValue, eSearchValue, eRealValue, eTransValue };
+			enum LineType
+			{
+				eNewLine, eEndLine, eError, eCommit, eSection, ePairKey, ePairEqu, ePairValue, eSearchValue, eRealValue, eTransValue
+			};
 			LineType eType = eNewLine;
 
 			xgc_size nMemSize = memsize( storage );
@@ -177,14 +180,15 @@ namespace xgc
 					memset( pNew + nMemSize, 0, memsize( pNew ) - nMemSize );
 					nMemSize = memsize( pNew );
 
-					section_ptr    = (section*)( pNew + ( (xgc_lpstr) section_ptr - storage ) );
-					keypair_ptr    = (key_val*)( pNew + ( (xgc_lpstr) keypair_ptr - storage ) );
+					section_ptr = (section*) (pNew + ((xgc_lpstr) section_ptr - storage));
+					keypair_ptr = (key_val*) (pNew + ((xgc_lpstr) keypair_ptr - storage));
 					storage = pNew;
 				}
 
 				// 处理多字节字符集
-				int mbl = mblen(pCur, (pFileInfo->file_buffer + nBufSize) - pCur);
-				if( mbl < 0 ) return false;
+				int mbl = mblen( pCur, (pFileInfo->file_buffer + nBufSize) - pCur );
+				if( mbl < 0 )
+					return false;
 				// 单字节情况下才分析
 				switch( eType )
 				{
@@ -206,7 +210,7 @@ namespace xgc
 						eType = eCommit;
 						break;
 					default:
-						if( keypair_ptr && (mbl > 1 || isgraph(*pCur)) )
+						if( keypair_ptr && (mbl > 1 || isgraph( *pCur )) )
 						{
 							// *pCur not in ignores character set
 							keypair_ptr->key = pCur;
@@ -218,7 +222,7 @@ namespace xgc
 				case eSection:
 					switch( *pCur )
 					{
-						case ']':
+					case ']':
 						*pCur = 0;
 						eType = eNewLine;
 
@@ -246,10 +250,10 @@ namespace xgc
 							++section_count;
 						}
 						break;
-						case ' ':
-						case '\t':
-						case '\r':
-						case '\n':
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
 						// *pCur in ignores character set
 						*pCur = 0;
 						eType = eError;
@@ -259,15 +263,16 @@ namespace xgc
 				case ePairKey:
 					switch( *pCur )
 					{
-						case '=':
+					case '=':
 						*pCur = 0;
 						eType = ePairValue;
 						break;
-						case ' ':
-						case '\t':
+					case ' ':
+					case '\t':
 						*pCur = 0;
 						break;
-						case '\n':
+					case '\r':
+					case '\n':
 						*pCur = 0;
 						eType = eError;
 						break;
@@ -276,14 +281,14 @@ namespace xgc
 				case ePairValue:
 					switch( *pCur )
 					{
-						case ' ':
-						case '\t':
-						case '\r':
+					case ' ':
+					case '\t':
+					case '\r':
 						{
 							*pCur = 0;
 						}
 						break;
-						case '\n':
+					case '\n':
 						{
 							keypair_ptr->val = pCur;
 							++section_ptr->pair_count;
@@ -293,10 +298,18 @@ namespace xgc
 							eType = eNewLine;
 						}
 						break;
-						default:
-						if( mbl > 1 || isgraph(*pCur) )
+					case ';':
+					case '#':
+						{
+							*pCur = 0;
+							eType = eCommit;
+						}
+						break;
+					default:
+						if( mbl > 1 || isgraph( *pCur ) )
 						{
 							keypair_ptr->val = pCur;
+							++section_ptr->pair_count;
 							eType = eRealValue;
 						}
 						break;
@@ -312,54 +325,67 @@ namespace xgc
 					{
 						*pCur = 0;
 
-						++section_ptr->pair_count;
 						++keypair_ptr;
 
 						eType = eNewLine;
 					}
-					else if( mbl == 1 && !isprint(*pCur) )
+					else if( ';' == *pCur || '#' == *pCur )
+					{
+						*pCur = 0;
+
+						++keypair_ptr;
+
+						eType = eCommit;
+					}
+					else if( mbl == 1 && !isprint( *pCur ) )
 					{
 						*pCur = 0;
 					}
 					break;
 				case eTransValue:
+					if( strchr( " \t\r\n", *pCur ) )
 					{
-						if( strchr(" \t\r\n", *pCur) )
+						*pCur = 0;
+						eType = eNewLine;
+					}
+					else if( strchr( ";#", *pCur ) )
+					{
+						*pCur = 0;
+						eType = eCommit;
+					}
+
+					if( eType != eTransValue )
+					{
+						auto cpy = transform( trans_buffer + trans_offset, memsize( trans_buffer ) - trans_offset, keypair_ptr->val );
+						while( cpy < 0 )
 						{
-							*pCur = 0;
+							auto pNew = realloc( trans_buffer, memsize( trans_buffer ) + 4096 );
+							if( pNew == xgc_nullptr )
+								return false;
 
-							auto cpy = transform( trans_buffer + trans_offset, memsize( trans_buffer ) - trans_offset, keypair_ptr->val );
-							while( cpy < 0 )
-							{
-								auto pNew = realloc( trans_buffer, memsize( trans_buffer ) + 4096 );
-								if( pNew == xgc_nullptr )
-									return false;
+							trans_buffer = (xgc_lpstr) pNew;
 
-								trans_buffer = (xgc_lpstr) pNew;
-
-								cpy = transform( trans_buffer + trans_offset, memsize( trans_buffer ) - trans_offset, keypair_ptr->val );
-							}
-
-							// 增加结束符
-							trans_offset += cpy;
-							XGC_ASSERT_RETURN( trans_offset < memsize( trans_buffer ), false );
-
-							if( trans_offset == memsize( trans_buffer ) )
-							{
-								auto pNew = realloc( trans_buffer, memsize( trans_buffer ) + 4096 );
-								if( pNew == xgc_nullptr )
-									return false;
-
-								trans_buffer = (xgc_lpstr) pNew;
-							}
-
-							trans_buffer[trans_offset++] = 0;
-
-							++section_ptr->pair_count;
-							++keypair_ptr;
-
-							eType = eNewLine;
+							cpy = transform( trans_buffer + trans_offset, memsize( trans_buffer ) - trans_offset, keypair_ptr->val );
 						}
+
+						// 增加结束符
+						trans_offset += cpy;
+						XGC_ASSERT_RETURN( trans_offset < memsize( trans_buffer ), false );
+
+						if( trans_offset == memsize( trans_buffer ) )
+						{
+							auto pNew = realloc( trans_buffer, memsize( trans_buffer ) + 4096 );
+							if( pNew == xgc_nullptr )
+								return false;
+
+							trans_buffer = (xgc_lpstr) pNew;
+						}
+
+						trans_buffer[trans_offset++] = 0;
+
+						++keypair_ptr;
+
+						eType = eNewLine;
 					}
 					break;
 				case eError:
@@ -387,7 +413,7 @@ namespace xgc
 				if( strcmp( lpSection, pSection->name ) == 0 )
 					return pSection;
 
-				pSection = (const section*) ( storage + pSection->next );
+				pSection = (const section*) (storage + pSection->next);
 			} while( pSection != (const section*) storage );
 
 			return xgc_nullptr;
@@ -414,7 +440,7 @@ namespace xgc
 				if( nSection-- == 0 )
 					return pSection;
 
-				pSection = (const section*) ( storage + pSection->next );
+				pSection = (const section*) (storage + pSection->next);
 			} while( pSection != (const section*) storage );
 
 			return xgc_nullptr;
@@ -428,7 +454,7 @@ namespace xgc
 				if( strcmp( pSection->name, lpSection ) == 0 )
 					return pSection;
 
-				pSection = (const section*) ( storage + pSection->next );
+				pSection = (const section*) (storage + pSection->next);
 			} while( pSection != (const section*) storage );
 
 			return xgc_nullptr;
@@ -498,7 +524,7 @@ namespace xgc
 				}
 
 				nIndex -= pSection->pair_count;
-				pSection = find_section(lpSection, pSection);
+				pSection = find_section( lpSection, pSection );
 			}
 
 			return xgc_nullptr;
@@ -695,7 +721,7 @@ namespace xgc
 				if( bSearch )
 				{
 					// 正在搜索匹配的过程中发现，则认为已找到匹配项
-					if( *lpValue == '%' && *( lpValue + 1 ) != '%' )
+					if( *lpValue == '%' && *(lpValue + 1) != '%' )
 					{
 						loMem[nMem].assign( lpMem, lpValue );
 						lpMem = xgc_nullptr; nMem = 0;
@@ -712,12 +738,12 @@ namespace xgc
 						loMem[nMem++].assign( lpMem, lpValue );
 						lpMem = lpValue + 1;
 					}
-					
+
 					++lpValue;
 				}
 				else
 				{
-					if( *lpValue == '%' && *( lpValue + 1 ) == '%' )
+					if( *lpValue == '%' && *(lpValue + 1) == '%' )
 					{
 						// 双百分号则认为是转义符
 						++lpValue;

@@ -1,4 +1,3 @@
-#include "defines.h"
 #include "singleton.h"
 
 namespace xgc

@@ -1,6 +1,5 @@
 #include "defines.h"
 #include "exports.h"
-#include "logger.h"
 
 #if defined(_WINDOWS)
 #include <wininet.h>

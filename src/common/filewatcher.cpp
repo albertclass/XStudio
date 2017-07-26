@@ -7,8 +7,6 @@
 
 #include "filewatcher.h"
 #include "xsystem.h"
-#include "datetime.h"
-#include "logger.h"
 
 #if defined(_WINDOWS)
 namespace xgc

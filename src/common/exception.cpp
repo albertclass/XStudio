@@ -1,7 +1,5 @@
 #include "exception.h"
 #include "debuger.h"
-#include "logger.h"
-#include "datetime.h"
 #include "xsystem.h"
 
 #if defined(_WINDOWS)

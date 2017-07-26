@@ -6,9 +6,6 @@
 /// \author albert.xu windxu@126.com
 /// \brief MD5 ժҪ�㷨
 /// 
-
-
-
 #ifndef _MD5_H_
 #define _MD5_H_
 #include "defines.h"
