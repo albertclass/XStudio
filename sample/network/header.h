@@ -7,7 +7,7 @@
 #include "ini_reader.h"
 #include "md5.h"
 
-#include "Netbase.h"
+#include "net.h"
 #include "net_module.h"
 
 #include "curses.h"

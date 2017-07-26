@@ -57,7 +57,7 @@ int main( int argc, char* argv[] )
 		return -1;
 	}
 
-	net::ConnectAsync( addr, port, 0, XGC_NEW CNetSession() );
+	net::Connect( addr, port, NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_RECONNECT, 1000, XGC_NEW CNetSession() );
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )

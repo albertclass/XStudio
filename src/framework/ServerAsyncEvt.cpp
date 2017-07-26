@@ -28,6 +28,9 @@ xgc_void PostServerEvent( const function<xgc_void()>& func )
 
 xgc_void StepServerEvent()
 {
+	if( xgc_nullptr == g_ServerEvent )
+		return;
+
 	std::lock_guard< std::mutex > lock( g_ServerEvent->mSecAsyncEvt );
 	while( !g_ServerEvent->gAsyncEvt.empty() )
 	{

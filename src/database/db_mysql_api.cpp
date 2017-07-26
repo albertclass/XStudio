@@ -101,7 +101,7 @@ namespace xgc
 			{
 				if( rs == xgc_nullptr )
 				{
-					rs.reset( new CMySQLRecordSet() );
+					rs.reset( XGC_NEW CMySQLRecordSet() );
 				}
 
 				return conn->Execute( cmd, *rs );

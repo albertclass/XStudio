@@ -5,6 +5,15 @@
 
 using namespace xgc::sql;
 
+///
+/// 需要用户实现，处理刷新事件
+/// @param lpInvoke 调用参数
+/// @param nPrevInvokeTime 上一次调用时间
+/// @param lpContext 调用上下文
+/// [1/20/2015] create by albert.xu
+///
+extern xgc_void OnServerRefresh( xgc_lpcstr lpInvoke, datetime dtPrevInvokeTime, xgc_lpvoid lpContext );
+
 /// @var 刷新系统使用的专有定时器
 static timer refresh_clock;
 
@@ -40,22 +49,22 @@ static xgc_char szConfPath[XGC_MAX_PATH] = { 0 };
 xgc_bool InitServerRefresh( ini_reader &ini )
 {
 	FUNCTION_BEGIN;
-	if( ini.is_exist_section( "RefreshConf" ) )
+	if( !ini.is_exist_section( "RefreshConf" ) )
+		return true;
+	
+	xgc_lpcstr lpConfName = ini.get_item_value( "RefreshConf", "ConfigName", xgc_nullptr );
+	XGC_ASSERT_RETURN( lpConfName, false, "未配置RefreshConf.ConfigName" );
+	xgc_lpcstr lpConfPath = ini.get_item_value( "RefreshConf", "ConfigPath", xgc_nullptr );
+	XGC_ASSERT_RETURN( lpConfName, false, "未配置RefreshConf.ConfigPath" );
+
+	strcpy_s( szConfName, lpConfName );
+
+	get_absolute_path( szConfPath, sizeof( szConfPath ), "%s", lpConfPath );
+
+	if( !LoadServerRefresh() )
 	{
-		xgc_lpcstr lpConfName = ini.get_item_value( "RefreshConf", "ConfigName", xgc_nullptr );
-		XGC_ASSERT_RETURN( lpConfName, false, "未配置RefreshConf.ConfigName" );
-		xgc_lpcstr lpConfPath = ini.get_item_value( "RefreshConf", "ConfigPath", xgc_nullptr );
-		XGC_ASSERT_RETURN( lpConfName, false, "未配置RefreshConf.ConfigPath" );
-
-		strcpy_s( szConfName, lpConfName );
-
-		get_absolute_path( szConfPath, sizeof( szConfPath ), "%s", lpConfPath );
-
-		if( !LoadServerRefresh() )
-		{
-			USR_ERROR( "refresh init failed." );
-			return false;
-		}
+		USR_ERROR( "refresh init failed." );
+		return false;
 	}
 
 	FUNCTION_END;

@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 
 #define ECHO_MESSAGE_LENGTH 4096
-extern xgc_lpcstr GetConfPath( xgc_lpstr szPath, xgc_size nSize, xgc_lpcstr lpRelativePath, ... );
 
 namespace DebugCommand
 {
@@ -276,12 +275,12 @@ static xgc_bool ReloadDebugCmd( DebugCommand::CommandInstance* pInst )
 /// 初始化指令表
 /// [10/7/2014] create by albert.xu
 ///
-xgc_bool InitDebugCmd( ini_reader &ini )
+xgc_bool InitDebugCmd( ini_reader &ini, const DebugCommand::CommandEntry* pMainEntry )
 {
 	FUNCTION_BEGIN;
 
 	// 遍历所有指令表配置
-	for( auto pEntry = DebugCommand::GetCommandEntry(); pEntry && pEntry->lpEntryName; ++pEntry )
+	for( auto pEntry = pMainEntry; pEntry && pEntry->lpEntryName; ++pEntry )
 	{
 		xgc_lpcstr lpConfigPath = ini.get_item_value( "Debug", pEntry->lpEntryName, xgc_nullptr );
 		xgc_lpcstr lpScriptPath = ini.get_item_value( "Debug", "ScriptPath", "" );
@@ -837,12 +836,13 @@ namespace DebugCommand
 	///
 	xgc_bool OnCmd_ServerInfo( xgc_size argc, xgc_lpstr const *argv, const CommandInfo* pCmdInfo )
 	{
-		PrintClient( "server name : %s", GetServerName() );
+		PrintClient( "server name : %s", ServerName() );
 		PrintClient( "server code : %s", GetNetworkId() );
 
 		xgc_char szPath[XGC_MAX_PATH] = { 0 };
+		ServerConfigFile( szPath, sizeof(szPath) );
 		PrintClient( "server path : %s", get_module_path() );
-		PrintClient( "server conf : %s", GetConfPath( szPath, sizeof( szPath ), "" ) );
+		PrintClient( "server conf : %s", szPath );
 
 		xgc_char szDate[32] = { 0 };
 		xgc_char szTime[32] = { 0 };

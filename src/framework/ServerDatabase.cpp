@@ -1,6 +1,6 @@
 #include "ServerDefines.h"
 #include "ServerDatabase.h"
-#include "ServerLogger.h"
+#include "ServerBase.h"
 
 using namespace xgc;
 using namespace xgc::sql;
@@ -12,6 +12,10 @@ static sql_connection	g_sync_h = 0;
 xgc_bool InitServerDatabase( ini_reader &ini )
 {
 	FUNCTION_BEGIN;
+
+	// 没有配置数据库，则认为成功
+	if( !ini.is_exist_section( "Database") )
+		return true;
 
 	connection_cfg conn;
 	// 数据库配置
@@ -35,10 +39,10 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 		SYS_ERROR( "%s", "数据库配置项 Database.Password 没有正确配置。" );
 		return false;
 	}
-	conn.schema = ini.get_item_value( "Database", "Database", xgc_nullptr );
+	conn.schema = ini.get_item_value( "Database", "Schema", xgc_nullptr );
 	if( xgc_nullptr == conn.schema )
 	{
-		SYS_ERROR( "%s", "数据库配置项 Database.Database 没有正确配置。" );
+		SYS_ERROR( "%s", "数据库配置项 Database.Schema 没有正确配置。" );
 		return false;
 	}
 	conn.character = ini.get_item_value( "Database", "Character", "latin1" );
@@ -73,6 +77,7 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	if( lpConf )
 	{
 		xgc_char szTableConf[XGC_MAX_PATH];
+
 		get_absolute_path( szTableConf, sizeof( szTableConf ), "%s", lpConf );
 		if( false == make_tables( conn, szTableConf, xgc_nullptr ) )
 			return false;

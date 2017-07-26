@@ -7,7 +7,7 @@ xgc_bool InitializeLogger( ini_reader &ini )
 	FUNCTION_BEGIN;
 	// 日志配置
 	xgc_lpcstr lpLogPath = ini.get_item_value( "Log", "Path", "Log" );
-	xgc_lpcstr lpLogName = ini.get_item_value( "Log", "Name", GetServerName() );
+	xgc_lpcstr lpLogName = ini.get_item_value( "Log", "Name", ServerName() );
 
 	// 创建日志目录
 	xgc_char szLoggerPath[XGC_MAX_PATH];
@@ -20,19 +20,19 @@ xgc_bool InitializeLogger( ini_reader &ini )
 	}
 
 	xgc_char szExceptionLog[XGC_MAX_PATH];
-	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "exception\\exception.log" );
+	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "%s\\exception.log", lpLogPath );
 	SetExceptionLog( szExceptionLog );
 
-	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "exception\\exception.more.log" );
+	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "%s\\exception.more.log", lpLogPath );
 	SetExceptionExt( szExceptionLog );
 
-	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "exception\\exception.dmp" );
+	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "%s\\exception.dmp", lpLogPath );
 	SetExceptionDmp( szExceptionLog );
 
-	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "debuger.log" );
+	get_absolute_path( szExceptionLog, sizeof( szExceptionLog ), "%s\\debuger.log", lpLogPath );
 	SetDebugerLog( szExceptionLog );
 
-	if( init_logger( szLoggerPath ) == false )
+	if( init_logger( ini ) == false )
 	{
 		SYS_ERROR( "初始化文件日志模块失败。日志路径%s", szLoggerPath );
 		return false;
@@ -40,8 +40,9 @@ xgc_bool InitializeLogger( ini_reader &ini )
 
 	SYS_INFO( "初始化文件日志模块成功。日志路径%s", szLoggerPath );
 
-	FUNCTION_END;
 	return true;
+	FUNCTION_END;
+	return false;
 }
 
 xgc_void FinializeLogger()

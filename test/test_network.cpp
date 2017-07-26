@@ -1,5 +1,5 @@
 #include "frame.h"
-#include "Netbase.h"
+#include "net.h"
 #include <thread>
 #include <chrono>
 #include "xbuffer.h"
@@ -131,7 +131,7 @@ static void server()
 
 static void client()
 {
-	if( Connect( "127.0.0.1", 25000, 0, XGC_NEW CNetworkSession() ) )
+	if( Connect( "127.0.0.1", 25000, 0, 0, XGC_NEW CNetworkSession() ) )
 	{
 		while(true )
 		{

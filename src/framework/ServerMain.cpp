@@ -112,49 +112,61 @@ int main( int argc, char *argv[] )
 		}
 		else if( strcasecmp( argv[1], "-service" ) == 0 )
 		{
-			ServiceRun( argc - 1, argv + 1 );
+			argv[1] = argv[0];
+			++argv;
+			--argc;
+
+			ServiceRun( argc, argv );
 			return 0;
 		}
 		else if( strcasecmp( argv[1], "-debug" ) == 0 )
 		{
+			argv[1] = argv[0];
+			++argv;
+			--argc;
+
 			char path[XGC_MAX_PATH] = { 0 };
-			get_absolute_path( path, sizeof( path ), "config*.ini" );
+			get_absolute_path( path, sizeof( path ), "%s", argv[1] );
 
-			char choice = 0;
-			int n = 0;
-
-			std::vector< std::string > choice_list;
-
-			do
+			if( argc > 1 && _access( path, 0 ) != 0 )
 			{
-				puts( "debug mode" );
-				puts( "choice your config file:" );
+				char choice = 0;
+				int n = 0;
 
-				n = 0;
+				std::vector< std::string > choice_list;
 
-				list_directory( path, [&choice_list, &n]( xgc_lpcstr root, xgc_lpcstr rel, xgc_lpcstr fname )->bool{
-					if( fname )
-					{
-						choice_list.push_back( fname );
-						printf( "%d. %s\n", n, fname );
+				do
+				{
+					puts( "debug mode" );
+					puts( "choice your config file:" );
 
-						++n;
-					}
+					n = 0;
 
-					return true;
-				});
+					list_directory( path, [&choice_list, &n]( xgc_lpcstr root, xgc_lpcstr rel, xgc_lpcstr fname )->bool{
+						if( fname )
+						{
+							choice_list.push_back( fname );
+							printf( "%d. %s\n", n, fname );
 
-				printf( "q. exit\n" );
-				printf( "press menu number to continue ..." );
+							++n;
+						}
 
-				if( ( choice = _getch() ) == 'q' )
-					return 1;
+						return true;
+					});
 
-			} while( false == isdigit( choice ) || ( choice - '0' >= n ) );
+					printf( "q. exit\n" );
+					printf( "press menu number to continue ..." );
 
-			char config_file[256] = {};
-			strcpy_s( config_file, choice_list[choice - '0'].c_str() );
-			argv[1] = config_file;
+					if( ( choice = _getch() ) == 'q' )
+						return 1;
+
+				} while( false == isdigit( choice ) || ( choice - '0' >= n ) );
+
+				char config_file[256] = {};
+				strcpy_s( config_file, choice_list[choice - '0'].c_str() );
+				argv[1] = config_file;
+			}
+
 			return ServerMain( argc, argv );
 		}
 		else if( strcasecmp( argv[1], "-test" ) == 0 )

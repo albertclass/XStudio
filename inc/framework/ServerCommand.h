@@ -152,7 +152,7 @@ namespace DebugCommand
 /// 初始化调试指令
 /// [10/7/2014] create by albert.xu
 ///
-xgc_bool InitDebugCmd( ini_reader &ini );
+xgc_bool InitDebugCmd( ini_reader &ini, const DebugCommand::CommandEntry* pMainEntry );
 
 ///
 /// 重载GM指令配置

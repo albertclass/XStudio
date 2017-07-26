@@ -57,7 +57,7 @@
 #include "database.h"
 
 // Net
-#include "Netbase.h"
+#include "net.h"
 #include "net_module.h"
 
 using namespace xgc;

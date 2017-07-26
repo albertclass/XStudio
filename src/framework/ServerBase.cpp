@@ -1,13 +1,7 @@
 // ServerBase.cpp : Defines the exported functions for the DLL application.
 //
-
 #include "ServerDefines.h"
 #include "ServerBase.h"
-#include "ServerDatabase.h"
-#include "ServerLogger.h"
-#include "ServerRefresh.h"
-#include "ServerAsyncEvt.h"
-#include "ServerSequence.h"
 
 const char* __version__ = "1.0.0.0";
 const char* __version_svn__ = "37687";
@@ -46,7 +40,7 @@ int __cdecl PrintMemReport( xgc_lpcstr fmt, ... )
 	return cpy;
 }
 
-xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc::common::ini_reader &, xgc_lpvoid), xgc_lpvoid lpParam )
+xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc::common::ini_reader &, xgc_lpvoid), xgc_lpvoid lpParam )
 {
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
@@ -101,7 +95,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 	SYS_INFO( "服务器版本编号:%s", __version_svn__ );
 	SYS_INFO( "服务器版本路径:%s", __version_url__ );
 	SYS_INFO( "服务器编译日期:%s", __version_build__ );
-	SYS_INFO( "日志系统初始化成功。服务器[%s]正在启动……", GetServerName() );
+	SYS_INFO( "日志系统初始化成功。服务器[%s]正在启动……", ServerName() );
 	SYS_INFO( "服务器配置文件[%s]", lpConfigPath );
 	SYS_INFO( "服务器配置路径[%s]", szConfigPath );
 	SYS_INFO( "服务器进程ID[0x%0x:%u],线程ID[0x%x:%u]", get_process_id(), get_process_id(), get_thread_id(), get_thread_id() );
@@ -128,7 +122,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 	SYS_INFO( "异步逻辑处理初始化成功！" );
 
 	MemMark( "debugcommand", pInitNode );
-	if( false == InitDebugCmd( ini ) )
+	if( false == InitDebugCmd( ini, xgc_nullptr ) )
 		return false;
 
 	SYS_INFO( "调试指令系统初始化成功！" );
@@ -152,7 +146,8 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 	SYS_INFO( "配置数据初始化成功！" );
 
 	MemMark( "network", pInitNode );
-	if( false == InitializeNetwork( szPath ) )
+	xgc_lpcstr network = ini.get_item_value( "Network", "config", "network.xml" );
+	if( false == InitializeNetwork( network ) )
 		return false;
 
 	SYS_INFO( "网络初始化成功！" );
@@ -169,7 +164,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 /// 运行服务器
 /// [11/29/2014] create by albert.xu
 ///
-xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam )
+xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam )
 {
 	// 开启超时监控
 	getInvokeWatcherMgr().Start();
@@ -227,7 +222,7 @@ xgc_void RunServer( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoi
 	getInvokeWatcherMgr().Stop();
 }
 
-xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam )
+xgc_void ServerFini( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam )
 {
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_STOP_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
@@ -257,19 +252,20 @@ xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 	FUNCTION_END;
 }
 
+xgc_void ServerConfigFile( xgc_lpstr szPath, xgc_size nSize )
+{
+	strcpy_s( szPath, nSize, szConfigPath );
+}
+
+xgc_void ServerConfigPath( xgc_lpstr szPath, xgc_size nSize )
+{
+	path_dirs( szPath, nSize, szConfigPath );
+}
 ///
 /// 获取服务器名
 /// [11/27/2014] create by albert.xu
 ///
-xgc_lpcstr GetServerName()
+xgc_lpcstr ServerName()
 {
 	return szServerName;
-}
-
-xgc_uint64 GetSequenceID()
-{
-	FUNCTION_BEGIN;
-	return ServerSequence::GetSID();
-	FUNCTION_END;
-	return 0;
 }
