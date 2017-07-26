@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<events>
+	<event name='application.init'>
+		<invoke func='createTimerEvent'>
+			<string>00:00:00</string>
+			<string>everyday</string>
+			<string>reset_replica_all</string>
+		</invoke>
+	</event>
+
+	<!--重置每日副本-->
+	<event name='role.login'>
+		<judged func='isTimeUp'>
+			<string>00:00:00</string>
+		</judged>
+
+		<invoke func='Refresh.ResetReplicaInfo'>
+			<string>replica_reset_time</string>
+		</invoke>
+	</event>
+
+	<!--重置每日任务-->
+	<event name='role.login'>
+		<judged func='isTimeUp'>
+			<string>00:00:00</string>
+		</judged>
+
+		<invoke func='Refresh.ResetReplicaInfo'>
+			<param>dailytask_reset_time</param>
+		</invoke>
+	</event>
+</events>
