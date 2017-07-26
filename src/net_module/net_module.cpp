@@ -38,6 +38,7 @@ static xgc_vector< xgc_lpvoid > g_listener;
 
 xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 {
+	auto attr_inet = node.attribute( "id" );
 	auto attr_addr = node.attribute( "address" );
 	auto attr_port = node.attribute( "port" );
 	auto attr_timeout = node.attribute( "timeout" );
@@ -54,6 +55,7 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 		return false;
 	}
 
+	auto inet = attr_inet.as_string();
 	auto addr = attr_addr.as_string();
 	auto port = attr_port.as_uint();
 
@@ -65,9 +67,10 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 	case net_module::eMode_Normal:
 	case net_module::eMode_Gate:
 		{
-			ret = net::ConnectAsync(
+			ret = net::Connect(
 				addr,
 				port,
+				NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_TIMEOUT,
 				timeout,
 				XGC_NEW CClientSession() );
 		}
@@ -82,7 +85,7 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 				return false;
 			}
 
-			ret = net_module::getPipeMgr().PipeConnect( GetNetworkId(), addr, port, timeout );
+			ret = net_module::PipeConnect( Str2NetworkId(inet), addr, port, timeout );
 		}
 		break;
 	}
@@ -170,6 +173,12 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 {
 	FUNCTION_BEGIN;
 
+	if( false == net_module::InitPipeManager() )
+	{
+		SYS_ERROR( "初始化管道管理器失败。" );
+		return false;
+	}
+
 	net::CreateNetwork( 4 );
 
 	char filename[1024] = { 0 };
@@ -217,6 +226,8 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 			if( false == make_connect( node, net_module::eMode_Pipe ) )
 				return false;
 		}
+
+		node = node.next_sibling();
 	}
 
 	SYS_INFO( "初始化网络模块完成" );
@@ -235,6 +246,8 @@ xgc_void FinializeNetwork()
 	}
 
 	net::DestroyNetwork();
+
+	net_module::FiniPipeManager();
 }
 
 xgc_bool ProcessNetwork()
@@ -290,7 +303,7 @@ NETWORK_ID Str2NetworkId( xgc_lpcstr pNetworkId )
 
 xgc_void MakeVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken )
 {
-	auto pPipe =  net_module::getPipeMgr().GetPipe( nNetworkID );
+	auto pPipe =  net_module::GetPipe( nNetworkID );
 	if( pPipe )
 	{
 		pPipe->RelayConnect( pSession );
@@ -299,7 +312,7 @@ xgc_void MakeVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_
 
 xgc_void KickVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken )
 {
-	auto pPipe = net_module::getPipeMgr().GetPipe( nNetworkID );
+	auto pPipe = net_module::GetPipe( nNetworkID );
 	if( pPipe )
 	{
 		pPipe->RelayDisconnect( pSession );
@@ -316,22 +329,14 @@ xgc_void RegistClientHandler( ClientMsgHandler fnMsgHandler, ClientEvtHandler fn
 /// 注册管道消息处理函数
 /// [11/27/2014] create by albert.xu
 ///
-xgc_void RegistPipeHandler( NETWORK_ID nNetworkId, PipeMsgHandler fnMsgHandler, PipeEvtHandler fnEvtHandler )
+xgc_void RegistPipeHandler( xgc_lpcstr lpNetworkId, PipeMsgHandler fnMsgHandler, PipeEvtHandler fnEvtHandler )
 {
-	auto pPipe = net_module::getPipeMgr().GetPipe( nNetworkId );
-	if( pPipe )
-	{
-		pPipe->SetPipeHandler( fnMsgHandler, fnEvtHandler );
-	}
+	net_module::RegistPipeHandler( lpNetworkId, fnMsgHandler, fnEvtHandler );
 }
 
-xgc_void RegistVirtualSockHandler( NETWORK_ID nNetworkId, SockMsgHandler fnMsgHandler, SockEvtHandler fnEvtHandler )
+xgc_void RegistVirtualSockHandler( xgc_lpcstr lpNetworkId, SockMsgHandler fnMsgHandler, SockEvtHandler fnEvtHandler )
 {
-	auto pPipe = net_module::getPipeMgr().GetPipe( nNetworkId );
-	if( pPipe )
-	{
-		pPipe->SetSockHandler( fnMsgHandler, fnEvtHandler );
-	}
+	net_module::RegistSockHandler( lpNetworkId, fnMsgHandler, fnEvtHandler );
 }
 
 xgc_void SendPacket( CClientSession * pSession, xgc_lpvoid pData, xgc_size nSize )

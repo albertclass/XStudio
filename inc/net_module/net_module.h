@@ -93,7 +93,7 @@ extern "C"
 	/// \author albert.xu
 	/// \date 2017/03/08 15:10
 	///
-	NET_MODULE_API xgc_void RegistPipeHandler( NETWORK_ID nNetworkId, PipeMsgHandler fnMsgHandler, PipeEvtHandler fnEvtHandler );
+	NET_MODULE_API xgc_void RegistPipeHandler( xgc_lpcstr lpNetworkId, PipeMsgHandler fnMsgHandler, PipeEvtHandler fnEvtHandler );
 
 	///
 	/// \brief 注册中继处理函数
@@ -101,7 +101,7 @@ extern "C"
 	/// \author albert.xu
 	/// \date 2017/03/08 15:11
 	///
-	NET_MODULE_API xgc_void RegistVirtualSockHandler( NETWORK_ID nNetworkId, SockMsgHandler fnMsgHandler, SockEvtHandler fnEvtHandler );
+	NET_MODULE_API xgc_void RegistVirtualSockHandler( xgc_lpcstr lpNetworkId, SockMsgHandler fnMsgHandler, SockEvtHandler fnEvtHandler );
 }
 
 ///

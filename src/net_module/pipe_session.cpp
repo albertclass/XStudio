@@ -326,7 +326,7 @@ namespace net_module
 					mEvtHandler( this, EVENT_CONNECT, mPipeID );
 					net::SendPacket( mHandle, &ack, sizeof( ack ) );
 
-					auto connected = getPipeMgr().OnPipeConnect( mPipeID, this );
+					auto connected = OnPipeConnect( mPipeID, this );
 					XGC_ASSERT( connected );
 				}
 			}
@@ -345,7 +345,7 @@ namespace net_module
 					mPipeID = ack->network;
 					mEvtHandler( this, EVENT_ACCEPT, mPipeID );
 
-					auto connected = getPipeMgr().OnPipeConnect( mPipeID, this );
+					auto connected = OnPipeConnect( mPipeID, this );
 					XGC_ASSERT( connected );
 				}
 			}

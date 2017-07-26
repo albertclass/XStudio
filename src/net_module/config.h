@@ -14,11 +14,14 @@
 #include "logger.h"
 #include "pugixml.hpp"
 #include "exception.h"
+#include "destructor.h"
+#include "xutility.h"
 
 // net
-#include "Netbase.h"
+#include "net.h"
 
 using namespace xgc;
+using namespace xgc::common;
 
 #if defined(_LINUX)
 #	include <arpa/inet.h>
