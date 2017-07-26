@@ -24,7 +24,7 @@
 #include "asio/strand.hpp"
 #include "asio/deadline_timer.hpp"
 
-#include "Netbase.h"
+#include "net.h"
 #include "NetworkPacket.h"
 #include "asio_NetBuffer.h"
 #include "asio_Socket.h"

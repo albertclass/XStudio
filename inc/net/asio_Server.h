@@ -25,7 +25,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/02/26 15:49
 		///
-		class asio_ServerBase
+		class asio_Server
 		{
 		public:
 			///
@@ -34,7 +34,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			asio_ServerBase( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator );
+			asio_Server( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator );
 
 			///
 			/// \brief 析构
@@ -42,7 +42,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			virtual ~asio_ServerBase();
+			virtual ~asio_Server();
 
 			///
 			/// \brief 开启服务器
@@ -58,7 +58,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			xgc_void StopServer( xgc_bool bCloseAllLink = true );
+			xgc_void StopServer();
 
 			///
 			/// \brief 创建连接会话
@@ -95,7 +95,7 @@ namespace xgc
 			/// 超时时间
 			xgc_uint16			timeout_;
 			/// 连接队列数
-			xgc_uint16			acceptor_count_;
+			std::atomic< xgc_uint16 > acceptor_count_;
 			/// 网络消息处理句柄
 			SessionCreator		creator_;
 		};

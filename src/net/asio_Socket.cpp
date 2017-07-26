@@ -43,27 +43,27 @@ namespace xgc
 				recv_packet_max = size;
 		}
 
-		asio_Socket::asio_Socket( io_service& s, xgc_lpvoid userdata, xgc_uint16 timeout )
+		asio_Socket::asio_Socket( io_service& s, xgc_uint16 timeout, xgc_lpvoid userdata, xgc_lpvoid from )
 			: socket_( s )
+			, connect_info_( xgc_nullptr )
 			, handle_( INVALID_NETWORK_HANDLE )
 			, send_buffer_( send_buffer_size )
 			, recv_buffer_( recv_buffer_size )
 			, connect_status_( 0 )
 			, timeout_( timeout )
 			, timer_( s )
-			, from_( xgc_nullptr )
+			, from_( from )
 			, userdata_( userdata )
 		{
 		}
 
 		asio_Socket::~asio_Socket()
 		{
+			SAFE_DELETE( connect_info_ );
 		}
 
 		xgc_void asio_Socket::hangup( xgc_lpvoid from )
 		{
-			getSocketMgr().LinkUp( shared_from_this() );
-
 			// 设置来源
 			from_ = from;
 			connect_status_ = 1;
@@ -71,16 +71,33 @@ namespace xgc
 			make_event( EVENT_HANGUP, 0, from_ );
 		}
 
-		xgc_bool asio_Socket::connect( xgc_lpcstr address, xgc_int16 port, xgc_bool async, xgc_uint16 timeout )
+		xgc_bool asio_Socket::connect( xgc_lpcstr address, xgc_int16 port, xgc_uint16 options, xgc_uint16 timeout )
 		{
+			// 错误码
 			asio::error_code ec;
-			ip::address_v4 addr( ip::address_v4::from_string( address, ec ) );
-			if( ec )
-				return false;
 
-			if( async )
+			asio::ip::tcp::endpoint ep( ip::address_v4::from_string( address, ec ), port );
+			XGC_ASSERT_RETURN( !ec, false );
+
+			return connect( ep, options, timeout );
+		}
+
+		xgc_bool asio_Socket::connect( const asio::ip::tcp::endpoint& address, xgc_uint32 options, xgc_uint16 timeout )
+		{
+			// 创建连接对象
+			if( xgc_nullptr == connect_info_ )
 			{
-				if( timeout )
+				connect_info_ = XGC_NEW connect_info;
+			}
+
+			// 设置连接对象属性
+			connect_info_->address = address;
+			connect_info_->options = options;
+			connect_info_->timeout = timeout;
+
+			if( XGC_CHK_FLAGS( connect_info_->options, NET_CONNECT_OPTION_ASYNC ) )
+			{
+				if( XGC_CHK_FLAGS( connect_info_->options, NET_CONNECT_OPTION_TIMEOUT ) && connect_info_->timeout )
 				{
 					// 通过strand对象保证超时函数和连接函数是串行的。
 					asio::io_service::strand strand( socket_.get_io_service() );
@@ -90,42 +107,45 @@ namespace xgc
 						strand.wrap( std::bind( &asio_Socket::handle_timeout, shared_from_this(), std::placeholders::_1 ) ) );
 
 					// async connect server.
-					socket_.async_connect(
-						asio::ip::tcp::endpoint( addr, port ),
-						strand.wrap( std::bind( &asio_Socket::handle_connect, shared_from_this(), std::placeholders::_1 ) ) );
+					socket_.async_connect( connect_info_->address, strand.wrap( std::bind( &asio_Socket::handle_connect, shared_from_this(), std::placeholders::_1 ) ) );
 				}
 				else
 				{
 					// async connect server.
-					socket_.async_connect(
-						asio::ip::tcp::endpoint( addr, port ),
-						std::bind( &asio_Socket::handle_connect, shared_from_this(), std::placeholders::_1 ) );
+					socket_.async_connect( connect_info_->address, std::bind( &asio_Socket::handle_connect, shared_from_this(), std::placeholders::_1 ) );
 				}
 
 				return true;
 			}
 			else
 			{
-				if( !socket_.connect( asio::ip::tcp::endpoint( addr, port ), ec ) )
-				{
-					handle_connect( asio::error_code() );
-					return true;
-				}
-			}
+				asio::error_code ec;
 
-			return false;
+				if( socket_.connect( connect_info_->address, ec ) )
+					accept( EVENT_CONNECT );
+				else
+					close();
+
+				return !ec;
+			}
 		}
 
 		xgc_void asio_Socket::accept( int event )
 		{
+			// 设置连接状态
 			connect_status_ = 1;
 
+			// 提交事件 CONNECT / ACCEPT
 			make_event( event, 0, userdata_ );
 
+			// 提交异步读取
 			socket_.async_read_some(
 				buffer( recv_buffer_.end(), recv_buffer_.space( recv_packet_max ) ),
 				std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
 
+			timer_.cancel();
+
+			// 如果需要保活，提交保活定时器
 			if( timeout_ )
 			{
 				timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( 500, timeout_.load() ) ) );
@@ -135,9 +155,11 @@ namespace xgc
 
 		xgc_void asio_Socket::handle_connect( const asio::error_code& error )
 		{
+			if( !socket_.is_open() )
+				return;
+
 			if( !error )
 			{
-				getSocketMgr().LinkUp( shared_from_this() );
 				accept( EVENT_CONNECT );
 			}
 			else
@@ -148,12 +170,24 @@ namespace xgc
 
 		xgc_void asio_Socket::handle_timeout( const asio::error_code& error )
 		{
+			if( connect_status_ == 2 )
+				return;
+
 			if( is_connected() )
 				return;
 
-			if( !error )
+			if ( !error )
 			{
-				make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT, userdata_ );
+				// 连接超时
+				if ( connect_info_ && XGC_CHK_FLAGS( connect_info_->options, NET_CONNECT_OPTION_RECONNECT ) && socket_.is_open() )
+				{
+					// 对于允许重连的，尝试重连
+					connect( connect_info_->address, connect_info_->options, connect_info_->timeout );
+				}
+				else
+				{
+					make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT, userdata_ );
+				}
 			}
 		}
 
@@ -319,21 +353,26 @@ namespace xgc
 		{
 			asio::error_code ec;
 
-			xgc_uint16 status_1 = 1;
-			xgc_uint16 status_2 = 2;
-			if( connect_status_.compare_exchange_strong( status_1, 0 ) || 
-				connect_status_.compare_exchange_strong( status_2, 0 ) )
+			if( socket_.is_open() )
 			{
+				connect_status_ = 2;
+
+				// 先取消定时器
+				timer_.cancel( ec );
+				XGC_ASSERT( !ec );
+
 				socket_.shutdown( ip::tcp::socket::shutdown_both, ec );
 				socket_.close( ec );
-
-				timer_.cancel( ec );
+				XGC_ASSERT( !ec );
 
 				make_event( EVENT_CLOSE, 0, userdata_ );
 
 				userdata_ = xgc_nullptr;
-				getSocketMgr().LinkDown( shared_from_this() );
+
+				connect_status_ = 0;
 			}
+
+			LinkDown( shared_from_this() );
 		}
 
 		xgc_ulong asio_Socket::get_socket_info( xgc_int16 mask, xgc_byte * data )
@@ -370,6 +409,9 @@ namespace xgc
 
 		xgc_void asio_Socket::handle_timer( const asio::error_code& e )
 		{
+			if( connect_status_ == 2 )
+				return;
+
 			if( e != asio::error::operation_aborted )
 			{
 				if( is_connected() && timeout_ )
@@ -385,16 +427,13 @@ namespace xgc
 
 		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring )
 		{
-			if( connect_status_ != 0 || event == EVENT_CLOSE )
-			{
-				EventHeader evt;
-				evt.handle = handle_;
-				evt.event = event;
-				evt.error = error_code;
-				evt.bring = bring;
+			EventHeader evt;
+			evt.handle = handle_;
+			evt.event = event;
+			evt.error = error_code;
+			evt.bring = bring;
 
-				getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
-			}
+			getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
 		}
 	}
 }

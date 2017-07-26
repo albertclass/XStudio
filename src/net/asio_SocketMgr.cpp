@@ -1,5 +1,6 @@
 #include "Header.h"
 #include "asio_SocketMgr.h"
+#include "asio_Network.h"
 
 #include <thread>
 #include <chrono>
@@ -8,6 +9,11 @@ namespace xgc
 {
 	namespace net
 	{
+		const int handle_count = 0xffff;
+
+		/// SocketMgr 对象是否激活
+		static xgc_long SocketMgrAlive = -1;
+
 		asio_SocketMgr::asio_SocketMgr()
 		{
 		}
@@ -27,6 +33,9 @@ namespace xgc
 			{
 				free_groups.push( i );
 			}
+
+			// 设置状态为已初始化
+			SocketMgrAlive = 0;
 		}
 
 		///
@@ -61,6 +70,9 @@ namespace xgc
 
 			// execute socket close event.
 			Exec( -1 );
+
+			// 设置状态为已关闭
+			SocketMgrAlive = 1;
 		}
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )
@@ -316,7 +328,7 @@ namespace xgc
 							if( xgc_nullptr == pSocket )
 								break;
 
-							auto srv = (asio_ServerBase*) pSocket->get_from();
+							auto srv = (asio_Server*) pSocket->get_from();
 							auto session = srv->CreateSession();
 							if( !session )
 							{
@@ -405,7 +417,7 @@ namespace xgc
 		/// \date 2016/02/24 18:07
 		///
 
-		xgc_bool asio_SocketMgr::LinkUp( asio_SocketPtr pSocket )
+		xgc_bool asio_SocketMgr::LinkUp( asio_SocketPtr &pSocket )
 		{
 			std::lock_guard< std::mutex > _guard( lock_ );
 			if( free_handles.empty() )
@@ -427,7 +439,7 @@ namespace xgc
 		/// \date 2016/02/24 18:07
 		///
 
-		xgc_void asio_SocketMgr::LinkDown( asio_SocketPtr pSocket )
+		xgc_void asio_SocketMgr::LinkDown( asio_SocketPtr &pSocket )
 		{
 			// 为防止 锁定顺序导致的死锁问题，这里不是用关键区锁保护。
 			auto handle = pSocket->get_handle();
@@ -461,6 +473,41 @@ namespace xgc
 				info.timer->expires_after( std::chrono::milliseconds( (xgc_uint32) (period * 1000) ) );
 				info.timer->async_wait( std::bind( &asio_SocketMgr::OnTimer, this, std::placeholders::_1, id, period ) );
 			}
+		}
+
+		///
+		/// \brief 连接建立
+		///
+		/// \author albert.xu
+		/// \date 2017/07/18 18:07
+		///
+		xgc_bool LinkUp( asio_SocketPtr &pSocket )
+		{
+			XGC_ASSERT_RETURN( IsValidSocketMgr(), false );
+			return getSocketMgr().LinkUp( pSocket );
+		}
+
+		///
+		/// \brief 连接断开
+		///
+		/// \author albert.xu
+		/// \date 2016/02/24 18:07
+		///
+		xgc_void LinkDown( asio_SocketPtr &pSocket )
+		{
+			XGC_ASSERT_RETURN( IsValidSocketMgr(), XGC_NONE );
+			getSocketMgr().LinkDown( pSocket );
+		}
+
+		///
+		/// \brief 管理器是否有效
+		///
+		/// \author albert.xu
+		/// \date 2017/07/18 18:07
+		///
+		xgc_bool IsValidSocketMgr()
+		{
+			return SocketMgrAlive == 0;
 		}
 	}
 }

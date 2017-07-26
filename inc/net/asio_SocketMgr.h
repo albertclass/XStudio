@@ -20,7 +20,6 @@ namespace xgc
 	{
 		class asio_Socket;
 		using asio_SocketPtr = std::shared_ptr< asio_Socket >;
-
 		///
 		/// \brief 套接字管理类
 		///
@@ -29,7 +28,8 @@ namespace xgc
 		///
 		class asio_SocketMgr
 		{
-		friend class asio_Socket;
+		friend xgc_bool LinkUp( asio_SocketPtr &pSocket );
+		friend xgc_void LinkDown( asio_SocketPtr &pSocket );
 		friend asio_SocketMgr& getSocketMgr();
 		public:
 			struct CSocketGroup : public std::unordered_set< group_t >
@@ -231,7 +231,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/24 18:07
 			///
-			xgc_bool LinkUp( asio_SocketPtr pSocket );
+			xgc_bool LinkUp( asio_SocketPtr &pSocket );
 
 			///
 			/// \brief 连接断开
@@ -239,7 +239,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/24 18:07
 			///
-			xgc_void LinkDown( asio_SocketPtr pSocket );
+			xgc_void LinkDown( asio_SocketPtr &pSocket );
 
 			///
 			/// \brief 定时器响应
@@ -282,6 +282,30 @@ namespace xgc
 			/// 定时器映射表
 			xgc_unordered_map< xgc_uint32, timer_info > mTimerMap;
 		};
+
+		///
+		/// \brief 连接建立
+		///
+		/// \author albert.xu
+		/// \date 2017/07/18 18:07
+		///
+		xgc_bool LinkUp( asio_SocketPtr &pSocket );
+
+		///
+		/// \brief 连接断开
+		///
+		/// \author albert.xu
+		/// \date 2017/07/18 18:07
+		///
+		xgc_void LinkDown( asio_SocketPtr &pSocket );
+
+		///
+		/// \brief 管理器是否有效
+		///
+		/// \author albert.xu
+		/// \date 2017/07/18 18:07
+		///
+		xgc_bool IsValidSocketMgr();
 	}
 }
 #endif // _ASIO_SOCKETMGR_H_
