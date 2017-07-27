@@ -11,6 +11,7 @@
 #define _INI_H_
 #include "defines.h"
 #include "exports.h"
+#include "xutility.h"
 
 namespace xgc
 {

@@ -84,7 +84,7 @@ namespace xgc
 			_fstat( fd, &fst );
 
 			// 分配文件缓冲区
-			xgc_lpstr palloc = (xgc_lpstr) realloc( buffer, fst.st_size + 1 );
+			xgc_lpstr palloc = (xgc_lpstr) realloc( buffer, fst.st_size + 2 );
 			XGC_ASSERT_RETURN( palloc, false );
 
 			// 读取文件内容
@@ -95,13 +95,14 @@ namespace xgc
 			if( buffer_read < 0 )
 				return false;
 
-			xgc_size buffer_size = (xgc_size) buffer_read;
-
-			if( buffer_size != fst.st_size )
+			if( buffer_read != fst.st_size )
 				return false;
 
+			xgc_size buffer_size = (xgc_size)buffer_read;
+
 			// 封闭缓冲区
-			buffer[buffer_size] = 0;
+			buffer[buffer_size++] = '\n';
+			buffer[buffer_size++] = '\0';
 
 			// 根据文件猜测编码方式
 			encoding enc = guess_encoding( (xgc_lpvoid*) &buffer, buffer_size );
@@ -112,7 +113,10 @@ namespace xgc
 				// 计算转换后需要的内存
 				auto len = utf8_to_mbs( buffer, xgc_nullptr, 0 );
 				if( len == -1 )
+				{
+					free( palloc );
 					return false;
+				}
 
 				// 转换编码
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
@@ -187,8 +191,9 @@ namespace xgc
 
 				// 处理多字节字符集
 				int mbl = mblen( pCur, (pFileInfo->file_buffer + nBufSize) - pCur );
-				if( mbl < 0 )
-					return false;
+				if( mbl < 0 ) return false;
+				if( mbl == 0 ) return *pCur == 0;
+
 				// 单字节情况下才分析
 				switch( eType )
 				{

@@ -255,7 +255,7 @@ namespace xgc
 				}
 
 				// write log to file
-				if( 1 != fwrite( data, size, 1, file_p ) )
+				if( size != fwrite( data, 1, size, file_p ) )
 				{
 					XGC_ASSERT( false );
 					write_file( "error.log", "write file error total = %ul.", split_size_total );
@@ -290,6 +290,9 @@ namespace xgc
 			/// adapters lock guard.
 			std::mutex		guard;
 
+			/// write lock
+			std::mutex		write_grard_;
+
 			// 日志输出上下文
 			struct context
 			{
@@ -298,19 +301,16 @@ namespace xgc
 				/// 函数名
 				xgc_lpcstr func;
 				/// 标签
-				xgc_lpstr tags;
+				xgc_lpcstr tags;
 				/// 行号
 				xgc_ulong line;
+				/// 缓冲区
+				xgc_ulong size;
+			} context_;
 
-				/// 日志长度
-				xgc_size size;
-				/// 日志
-				xgc_lpstr message;
 
-				/// 默认的缓冲
-				xgc_char cache[256];
-			};
-
+			/// 发送缓冲结构
+			struct chunk { xgc_lpvoid data; xgc_size size; };
 		public:
 			pipe_adapter( xgc_uint32 _buffer_size )
 				: fd{ -1, -1 }
@@ -363,99 +363,74 @@ namespace xgc
 				// 读缓冲
 				xgc_byte* buffer = (xgc_byte*)malloc(pipe_cache_size);
 
-				int read_bytes = 0;
-				int read_total = 0;
+				context* _ctx = xgc_nullptr;
+
+				auto read_bytes = [this]( xgc_lpvoid buffer, int bytes )->xgc_long {
+					int read_bytes = 0;
+					int read_total = 0;
+
+					while( read_total < bytes )
+					{
+						read_bytes = _read( fd[0], (xgc_lpstr)buffer + read_total, bytes - read_total );
+						if( read_bytes < 0 )
+							return -1;
+
+						read_total += read_bytes;
+					}
+
+					return read_total;
+				};
 
 				while( work_thread_exit == 0 )
 				{
-					read_total = _read( fd[0], buffer, 1 );
+					xgc_long bytes = 0;
+					xgc_long total = 0;
 
-					if( read_total != 1 )
-						continue;
+					bytes = read_bytes( buffer + total, sizeof( context ) );
+					if( bytes < 0 )
+						break;
 
-					switch( buffer[0] )
+					total += bytes;
+
+					context* _ctx = (context*)buffer;
+
+					if( total + _ctx->size >= pipe_cache_size )
 					{
-						case 0xff: // 日志上下文
+						auto siz = XGC_ALIGN_MEM( total + _ctx->size, 128 );
+						auto ptr = malloc( siz + 4 ); // 留给字符串结束符
+						XGC_ASSERT_BREAK( ptr );
+
+						pipe_cache_size = siz;
+
+						buffer = (xgc_byte*)ptr;
+						// 内存重新分配后要将_ctx重置
+						_ctx = (context*)buffer;
+					}
+
+					bytes = read_bytes( buffer + total, _ctx->size );
+					if( bytes < 0 )
+						break;
+
+					xgc_lpcstr message = ( xgc_lpcstr )buffer + total;
+					total += bytes;
+
+					buffer[total] = 0;
+
+					logger_formater::context ctx;
+					ctx.file = _ctx->file;
+					ctx.func = _ctx->file;
+					ctx.line = _ctx->line;
+					ctx.tags = _ctx->tags;
+					ctx.fmt = "%s";
+					va_copy( ctx.args, (va_list)( &message ) );
+
+					int len = -1;
+					std::lock_guard< std::mutex > lock( guard );
+					for( auto adapter : adapters )
+					{
+						if( -1 == adapter->write( ctx ) )
 						{
-							while( read_total < sizeof( void* ) + 1 )
-							{
-								read_bytes = _read( fd[0], buffer + read_total, sizeof( void* ) );
-								if( read_bytes > 0 )
-									read_total += read_bytes;
-							}
-
-							context* _ctx = *(context**)( buffer + 1 );
-
-							logger_formater::context ctx;
-							ctx.file = _ctx->file;
-							ctx.func = _ctx->file;
-							ctx.line = _ctx->line;
-							ctx.tags = _ctx->tags;
-							ctx.fmt = "%s";
-							va_copy( ctx.args, ( va_list)&_ctx->message );
-
-							int len = -1;
-							std::lock_guard< std::mutex > lock( guard );
-							for( auto adapter : adapters )
-							{
-								if( -1 == adapter->write( ctx ) )
-								{
-									if( -1 == len )
-										len = formater.parse_message( ctx );
-
-									if( -1 != len )
-										adapter->write( formater.log(), len );
-								}
-							}
-
-							// 检查是否在优化缓冲内
-							auto in = [_ctx]( xgc_lpvoid ptr ){
-								if( ptr < _ctx->cache )
-									return false;
-
-								if( ptr >= _ctx->cache + sizeof( _ctx->cache ) )
-									return false;
-
-								return true;
-							};
-
-							// 不在则释放
-							if( ! in( _ctx->tags ) )
-								free( _ctx->tags );
-
-							if( ! in( _ctx->message ) )
-								free( _ctx->message );
-
-							free( _ctx );
-							break;
-						}
-						case 0xfe: // 日志数据
-						{
-							while( read_total < sizeof( xgc_size ) + 1 )
-							{
-								read_bytes = _read( fd[0], buffer + read_total, sizeof( xgc_size ) );
-								if( read_bytes > 0 )
-									read_total += read_bytes;
-							}
-
-							xgc_size data_size = *(xgc_size*)( buffer + 1 );
-
-							// 读取数据
-							while( data_size )
-							{
-								read_bytes = _read( fd[0], buffer, XGC_MIN( (xgc_uint32)data_size, pipe_cache_size ) );
-								if( read_bytes > 0 )
-								{
-									std::unique_lock< std::mutex > lock( guard );
-									for( auto adapter : adapters )
-									{
-										adapter->write( buffer, read_bytes );
-									}
-
-									data_size -= read_bytes;
-								}
-							}
-							break;
+							adapter->write( (xgc_lpvoid)message, _ctx->size );
 						}
 					}
 				}
@@ -548,72 +523,52 @@ namespace xgc
 				return total_write;
 			}
 
+			xgc_size real_write( struct chunk chunks[], int count )
+			{
+				xgc_size total_write = 0;
+
+				std::lock_guard< decltype( write_grard_ ) > _lock( write_grard_ );
+
+				for( int i = 0; i < count; ++i )
+				{
+					auto data = chunks[i].data;
+					auto size = chunks[i].size;
+
+					int write_bytes = (int)real_write( data, size );
+					XGC_ASSERT_BREAK( -1 != write_bytes );
+					total_write += write_bytes;
+				}
+
+				return total_write;
+			}
+
 			virtual xgc_long write( const logger_formater::context& ctx )
 			{
 				// 准备传输的日志上下文
-				context* _ctx = (context*)malloc( sizeof( context ) );
-				_ctx->file = ctx.file;
-				_ctx->line = ctx.line;
-				_ctx->func = ctx.func;
+				context_.file = ctx.file;
+				context_.line = ctx.line;
+				context_.func = ctx.func;
+				context_.tags = ctx.tags;
 
-				_ctx->size = 0;
-				_ctx->message = xgc_nullptr;
+				if( formater.empty() )
+					return -1;
 
-				int tags = sprintf_s( _ctx->cache, sizeof( _ctx->cache ), ctx.tags );
-				if( tags < 0 )
-				{
-					tags = 0;
-					_ctx->tags = strdup( ctx.tags );
-				}
-				else
-				{
-					_ctx->tags = _ctx->cache;
-				}
+				xgc_long len = formater.parse_message( ctx );
+				if( len > 0 )
+					write( formater.log(), len );
 
-				int text = vsprintf_s( _ctx->cache + tags + 1, sizeof( _ctx->cache ) - tags - 1, ctx.fmt, ctx.args );
-				if( text < 0 )
-				{
-					// 格式化日志消息
-					auto size = 256;
-					do
-					{
-						// 先分配内存
-						auto message = (xgc_lpstr)realloc( _ctx->message, size + 128 );
-						if( xgc_nullptr == message )
-						{
-							// 别忘记释放
-							free( _ctx->message );
-							return -1;
-						}
-
-						// 长度和指针都要修改
-						size += 128;
-						_ctx->message = message;
-
-						// 格式化字符串
-						text = vsprintf_s( _ctx->message, size, ctx.fmt, ctx.args );
-						// 这里要验证一下
-					} while( text < 0 );
-
-					_ctx->size = text;
-				}
-				else
-				{
-					_ctx->message = _ctx->cache + tags + 1;
-					_ctx->size = text;
-				}
-				 
-				real_write( "\xff", 1 );
-				real_write( &_ctx, sizeof(_ctx) );
-
-				return text;
+				return len;
 			}
 
 			virtual xgc_void write( xgc_lpvoid data, xgc_size size )
 			{
-				real_write( "\xfe", 1 );
-				real_write( &size, sizeof(size) );
-				real_write( data, size );
+				context_.size = (xgc_ulong)size;
+				struct chunk chunks[] = {
+					{ &context_, sizeof( context_ ) },
+					{ data, size }
+				};
+
+				real_write( chunks, 2 );
 			}
 		};
 
@@ -887,8 +842,6 @@ namespace xgc
 			if( xgc_nullptr == this )
 				return;
 
-			xgc_size len = -1;
-
 			va_list args;
 			va_start( args, fmt );
 
@@ -901,6 +854,7 @@ namespace xgc
 			ctx.fmt = fmt;
 			va_copy( ctx.args, args );
 
+			xgc_size len = -1;
 			for( auto adapter : adapters )
 			{
 				if( -1 == adapter->write( ctx ) )
@@ -959,52 +913,52 @@ namespace xgc
 				{
 					if( ptr > beg )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::span ), _1, _3, _4, xgc_string( beg, ptr - beg ) ) );
+						format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc_string( beg, ptr - beg ) ) );
 					}
 
 					if( strncmp( ptr, "$(date)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::date ), _1, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::date, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(time)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::time ), _1, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::time, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(datetime)", 13 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::datetime ), _1, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::datetime, _2, _3 ) );
 						beg = ptr += 13;
 					}
 					else if( strncmp( ptr, "$(tags)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::tags ), _1, _2, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::tags, _1, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(file)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::file ), _1, _2, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::file, _1, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(func)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::func ), _1, _2, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::func, _1, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(line)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::line ), _1, _2, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::line, _1, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(endl)", 7 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::endl ), _1, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::endl, _2, _3 ) );
 						beg = ptr += 7;
 					}
 					else if( strncmp( ptr, "$(message)", 10 ) == 0 )
 					{
-						format.emplace_back( std::bind( std::mem_fn( &logger_formater::message ), _1, _2, _3, _4 ) );
+						format.emplace_back( std::bind( &logger_formater::message, _1, _2, _3 ) );
 						beg = ptr += 10;
 					}
 				}
@@ -1016,7 +970,7 @@ namespace xgc
 
 			if( ptr > beg )
 			{
-				format.emplace_back( std::bind( std::mem_fn( &logger_formater::span ), _1, _3, _4, xgc_string( beg, ptr - beg ) ) );
+				format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc_string( beg, ptr - beg ) ) );
 			}
 		}
 
@@ -1027,8 +981,21 @@ namespace xgc
 		///
 		xgc_long logger_formater::parse_message( const context &ctx )
 		{
-			auto buf = message_;
-			auto len = memsize( message_ );
+			return parse_message( ctx, &message_ );
+		}
+
+		///
+		/// \brief 解析格式化字符串
+		/// \author Albert.xu
+		/// \date 2017/07/25
+		///
+		xgc_long logger_formater::parse_message( const context &ctx, xgc_char** message )
+		{
+			if( message == xgc_nullptr )
+				return -1;
+
+			auto buf = *message;
+			auto len = *message ? memsize( *message ) : 0;
 
 			// 复制的字节数
 			int cpy = 0;
@@ -1041,19 +1008,50 @@ namespace xgc
 			{
 				do
 				{
-					cpy = (int)span( this, std::ref( ctx ), buf + pos, len - pos );
+					cpy = (int)span( std::ref( ctx ), buf + pos, len - pos );
 					if( cpy >= len - pos - 1 )
 					{
-						buf = (xgc_lpstr)realloc( message_, len + 1024 );
+						buf = (xgc_lpstr)realloc( *message, len + 256 );
 						if( buf == xgc_nullptr )
-							return pos;
+						{
+							if( *message != message_ )
+							{
+								free( *message );
+								*message = xgc_nullptr;
+							}
+
+							return -1;
+						}
 
 						len += 1024;
-						message_ = buf;
+						*message = buf;
 
 						continue;
 					}
 				} while( false );
+
+				pos += cpy;
+			}
+
+			return pos;
+		}
+
+		///
+		/// \brief 解析格式化字符串
+		/// \author Albert.xu
+		/// \date 2017/07/25
+		///
+		xgc_long logger_formater::parse_message( const context &ctx, xgc_char* message, xgc_size size )
+		{
+			int pos = 0;
+			int cpy = 0;
+
+			// 循环写入
+			for( auto &span : format )
+			{
+				cpy = (int)span( std::ref( ctx ), message + pos, size - pos );
+				if( cpy < 0 )
+					return -1;
 
 				pos += cpy;
 			}
@@ -1093,7 +1091,7 @@ namespace xgc
 
 		inline xgc_size logger_formater::line( const context &ctx, xgc_char * buf, xgc_size len )
 		{
-			return sprintf_s( buf, len, "%lu", ctx.line );
+			return sprintf_s( buf, len, "(%lu)", ctx.line );
 		}
 
 		inline xgc_size logger_formater::span( xgc_char * buf, xgc_size len, const xgc_string & span )

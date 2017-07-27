@@ -71,14 +71,15 @@ namespace xgc
 			// 日志输出上下文
 			struct context
 			{
+				/// 行号
+				xgc_ulong line;
+
 				/// 文件名
 				xgc_lpcstr file;
 				/// 函数名
 				xgc_lpcstr func;
 				/// 标签
 				xgc_lpcstr tags;
-				/// 行号
-				xgc_ulong line;
 
 				/// 消息格式串
 				xgc_lpcstr fmt;
@@ -91,7 +92,7 @@ namespace xgc
 			///
 			/// [01/16/2017 albert.xu]
 			///
-			typedef std::function< xgc_size( logger_formater*, const context &, xgc_char*, xgc_size ) > format_span;
+			typedef std::function< xgc_size( const context &, xgc_char*, xgc_size ) > format_span;
 
 		protected:
 			// 日志缓冲
@@ -99,27 +100,26 @@ namespace xgc
 
 			// 消息格式化序列
 			xgc_vector< format_span > format;
-
 		protected:
-			xgc_size date( xgc_char* buf, xgc_size len );
+			static xgc_size date( xgc_char* buf, xgc_size len );
 
-			xgc_size time( xgc_char* buf, xgc_size len );
+			static xgc_size time( xgc_char* buf, xgc_size len );
 
-			xgc_size datetime( xgc_char* buf, xgc_size len );
+			static xgc_size datetime( xgc_char* buf, xgc_size len );
 
-			xgc_size file( const context &ctx, xgc_char* buf, xgc_size len );
+			static xgc_size file( const context &ctx, xgc_char* buf, xgc_size len );
 
-			xgc_size func( const context &ctx, xgc_char* buf, xgc_size len );
+			static xgc_size func( const context &ctx, xgc_char* buf, xgc_size len );
 
-			xgc_size tags( const context &ctx, xgc_char* buf, xgc_size len );
+			static xgc_size tags( const context &ctx, xgc_char* buf, xgc_size len );
 
-			xgc_size line( const context &ctx, xgc_char* buf, xgc_size len );
+			static xgc_size line( const context &ctx, xgc_char* buf, xgc_size len );
 
-			xgc_size endl( xgc_char* buf, xgc_size len );
+			static xgc_size endl( xgc_char* buf, xgc_size len );
 
-			xgc_size span( xgc_char* buf, xgc_size len, const xgc_string &span );
+			static xgc_size span( xgc_char* buf, xgc_size len, const xgc_string &span );
 
-			xgc_size message( const context &ctx, xgc_char* buf, xgc_size len );
+			static xgc_size message( const context &ctx, xgc_char* buf, xgc_size len );
 
 		public:
 			///
@@ -149,6 +149,20 @@ namespace xgc
 			/// \date 2017/07/25
 			///
 			xgc_long parse_message( const context &ctx );
+
+			///
+			/// \brief 解析格式化字符串
+			/// \author Albert.xu
+			/// \date 2017/07/25
+			///
+			xgc_long parse_message( const context &ctx, xgc_char** message );
+
+			///
+			/// \brief 解析格式化字符串
+			/// \author Albert.xu
+			/// \date 2017/07/25
+			///
+			xgc_long parse_message( const context &ctx, xgc_char* message, xgc_size size );
 
 			///
 			/// \brief 是否为空
@@ -190,6 +204,11 @@ namespace xgc
 			{
 			}
 
+			///
+			/// \brief 设置适配器输出格式
+			/// \author Albert.xu
+			/// \date 2017/07/27
+			///
 			xgc_void parse_format( xgc_lpcstr format )
 			{
 				if( xgc_nullptr == format )
@@ -198,6 +217,25 @@ namespace xgc
 				formater.parse_format( format );
 			}
 
+			///
+			/// \brief 关闭日志适配器
+			/// \author Albert.xu
+			/// \date 2017/07/27
+			///
+			virtual xgc_void join() = 0;
+
+			///
+			/// \brief 写日志
+			/// \author Albert.xu
+			/// \date 2017/07/27
+			///
+			virtual xgc_void write( xgc_lpvoid data, xgc_size size ) = 0;
+
+			///
+			/// \brief 写格式化日志
+			/// \author Albert.xu
+			/// \date 2017/07/27
+			///
 			virtual xgc_long write( const logger_formater::context& ctx )
 			{
 				if( formater.empty() )
@@ -209,9 +247,6 @@ namespace xgc
 
 				return len;
 			}
-
-			virtual xgc_void join() = 0;
-			virtual xgc_void write( xgc_lpvoid data, xgc_size size ) = 0;
 		};
 
 		///
@@ -230,7 +265,7 @@ namespace xgc
 			/// 过滤排除关键字的消息
 			xgc_unordered_set<xgc_string> filter_exclude;
 			/// 输出适配器
-			xgc_list< logger_adapter* > adapters;
+			xgc_vector< logger_adapter* > adapters;
 			/// 格式化器
 			logger_formater formater;
 
@@ -275,6 +310,7 @@ namespace xgc
 			// 添加适配器
 			xgc_void add_adapter( logger_adapter* adapter )
 			{
+				XGC_ASSERT_RETURN( adapter, XGC_NONE );
 				adapters.push_back( adapter );
 			}
 
