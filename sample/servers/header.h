@@ -1,7 +1,8 @@
 #pragma once
 #ifndef _CLIENT_HEADER_H_ 
 #define _CLIENT_HEADER_H_ 
-#ifdef _DEBUG
+
+#if defined( _WINDOWS) && defined( _DEBUG )
 #	include "vld.h"
 #endif
 

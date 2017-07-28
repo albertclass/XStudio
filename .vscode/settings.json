@@ -44,7 +44,16 @@
         "algorithm": "cpp",
         "hash_map": "cpp",
         "chrono": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "buildvm_peobj.c": "cpp",
+        "minilua.c": "cpp",
+        "lj_alloc.c": "cpp",
+        "lj_gdbjit.c": "cpp",
+        "lj_load.c": "cpp",
+        "lj_mcode.c": "cpp",
+        "array": "cpp",
+        "initializer_list": "cpp",
+        "system_error": "cpp"
     },
 
     // The default character set encoding to use when reading and writing files.

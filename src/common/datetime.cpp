@@ -7,7 +7,7 @@ namespace xgc
 	{
 
 #ifdef __GNUC__
-		error_t xgc::common::localtime_s( tm * tt, const time_t * t )
+		error_t localtime_s( tm * tt, const time_t * t )
 		{
 			auto ptt = localtime( t );
 			if( tt && ptt )
@@ -19,7 +19,7 @@ namespace xgc
 			return -1;
 		}
 
-		error_t xgc::common::gmtime_s( tm * tt, const time_t * t )
+		error_t gmtime_s( tm * tt, const time_t * t )
 		{
 			auto ptt = gmtime( t );
 			if( tt && ptt )
