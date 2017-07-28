@@ -107,6 +107,8 @@ namespace xgc
 
 			static xgc_size datetime( xgc_char* buf, xgc_size len );
 
+			static xgc_size path( const context &ctx, xgc_char* buf, xgc_size len );
+
 			static xgc_size file( const context &ctx, xgc_char* buf, xgc_size len );
 
 			static xgc_size func( const context &ctx, xgc_char* buf, xgc_size len );

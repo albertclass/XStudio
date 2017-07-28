@@ -941,6 +941,11 @@ namespace xgc
 						format.emplace_back( std::bind( &logger_formater::file, _1, _2, _3 ) );
 						beg = ptr += 7;
 					}
+					else if( strncmp( ptr, "$(path)", 7 ) == 0 )
+					{
+						format.emplace_back( std::bind( &logger_formater::path, _1, _2, _3 ) );
+						beg = ptr += 7;
+					}
 					else if( strncmp( ptr, "$(func)", 7 ) == 0 )
 					{
 						format.emplace_back( std::bind( &logger_formater::func, _1, _2, _3 ) );
@@ -1074,9 +1079,19 @@ namespace xgc
 			return datetime::now( buf, len, "%Y-%m-%d %H:%M:%S" );
 		}
 
-		inline xgc_size logger_formater::file( const context &ctx, xgc_char * buf, xgc_size len )
+		inline xgc_size logger_formater::path( const context &ctx, xgc_char * buf, xgc_size len )
 		{
 			return sprintf_s( buf, len, "%s", ctx.file );
+		}
+
+		inline xgc_size logger_formater::file( const context &ctx, xgc_char * buf, xgc_size len )
+		{
+			auto last_slash = ctx.file;
+			auto next_slash = ctx.file;
+			while( next_slash = strpbrk( last_slash + 1, SLASH_ALL ) )
+				last_slash = next_slash;
+
+			return sprintf_s( buf, len, "%s", last_slash + 1 );
 		}
 
 		inline xgc_size logger_formater::func( const context &ctx, xgc_char * buf, xgc_size len )
