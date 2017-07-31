@@ -424,13 +424,13 @@ namespace xgc
 			/// 取当前时间
 			/// [6/22/2014] create by albert.xu
 			///
-			XGC_INLINE systime to_systime() const;
+			systime to_systime() const;
 
 			///
 			/// 取当前时间
 			/// [6/22/2014] create by albert.xu
 			///
-			XGC_INLINE systime to_utctime() const;
+			systime to_utctime() const;
 
 			///
 			/// 转换为字符串

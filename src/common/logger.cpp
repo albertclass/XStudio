@@ -344,7 +344,7 @@ namespace xgc
 					write_file( "error.log", "open log pipe error." );
 					return false;
 				}
-				fcntl(fd[1], F_SETPIPE_SZ, buffer_size);
+				fcntl(fd[1], F_SETPIPE_SZ, pipe_cache_size);
 				#endif
 
 				work_thread = std::thread( &pipe_adapter::thread, this );
@@ -411,7 +411,7 @@ namespace xgc
 					if( bytes < 0 )
 						break;
 
-					xgc_lpcstr message = ( xgc_lpcstr )buffer + total;
+					xgc_lpstr message = ( xgc_lpstr )buffer + total;
 					total += bytes;
 
 					buffer[total] = 0;
@@ -421,18 +421,31 @@ namespace xgc
 					ctx.func = _ctx->file;
 					ctx.line = _ctx->line;
 					ctx.tags = _ctx->tags;
-					ctx.fmt = "%s";
-					va_copy( ctx.args, (va_list)( &message ) );
 
-					int len = -1;
-					std::lock_guard< std::mutex > lock( guard );
-					for( auto adapter : adapters )
-					{
-						if( -1 == adapter->write( ctx ) )
+					auto dispatch_adapter = [&ctx, this]( xgc_lpcstr fmt, ... ){
+						va_list args;
+						va_start( args, fmt );
+
+						ctx.fmt = fmt;
+						va_copy( ctx.args, args );
+
+						auto text = va_arg( args, void* );
+						auto size = va_arg( args, size_t );
+
+						int len = -1;
+						std::lock_guard< std::mutex > lock( guard );
+						for( auto adapter : adapters )
 						{
-							adapter->write( (xgc_lpvoid)message, _ctx->size );
+							if( -1 == adapter->write( ctx ) )
+							{
+								adapter->write( text, size );
+							}
 						}
-					}
+
+						va_end(args);
+					};
+
+					dispatch_adapter( "%s", message, _ctx->size );
 				}
 
 				work_thread_exit = clock();
@@ -442,10 +455,10 @@ namespace xgc
 				//设置fd为非阻塞模式
 				fcntl(fd[0],F_SETFL, flags | O_NONBLOCK);
 
-				while( clock() - work_thread_exit < (buffer_size >> 10) )
+				while( clock() - work_thread_exit < (pipe_cache_size >> 10) )
 				{
 					// check is end of pipe
-					int readbytes = _read( fd[0], buffer, (xgc_uint32) buffer_size );
+					int readbytes = _read( fd[0], buffer, (xgc_uint32) pipe_cache_size );
 					if( readbytes > 0 )
 					{
 						std::unique_lock< std::mutex > lock( guard );
@@ -1121,7 +1134,7 @@ namespace xgc
 
 		inline xgc_size logger_formater::message( const context &ctx, xgc_char * buf, xgc_size len )
 		{
-			return vsprintf_s( buf, len, ctx.fmt, ctx.args );
+			return vsprintf_s( buf, len, ctx.fmt, const_cast< context& >(ctx).args );
 		}
 	}
 }

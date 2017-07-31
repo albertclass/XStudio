@@ -372,7 +372,8 @@ namespace xgc
 				connect_status_ = 0;
 			}
 
-			LinkDown( shared_from_this() );
+			auto pSocket = shared_from_this();
+			LinkDown( pSocket );
 		}
 
 		xgc_ulong asio_Socket::get_socket_info( xgc_int16 mask, xgc_byte * data )

@@ -63,7 +63,22 @@ int main( int argc, char *argv[] )
 	#endif
 
 	// set default locale
-	setlocale( LC_ALL, "chs" );
+	#ifdef _WINDOWS
+	auto local = setlocale( LC_ALL, "chs" );
+	#endif
+
+	#ifdef _LINUX
+	auto local = setlocale( LC_ALL, "zh_CN.GBK" );
+	#endif
+	if( xgc_nullptr == local )
+	{
+		puts( "local set error." );
+		return -1;
+	}
+
+	puts( local );
+	puts( "output a locale string, an error if cannot seen" );
+	puts( "ÖÐÎÄÊä³ö²âÊÔ¡£\n" );
 
 	if( argc > 1 )
 	{

@@ -345,7 +345,7 @@ namespace xgc
 
 		#if defined(_LINUX)
 		mbstate_t mbstat;
-		mbrlen (nullptr,0,&mbstat);
+		mbsinit( &mbstat );
 		#endif
 
 		while( *str )

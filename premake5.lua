@@ -314,7 +314,7 @@ group "servers"
 		    includedirs { "sample/servers", "inc/common", "inc/database", "inc/net", "inc/net_module", "inc/framework" }
 		    targetdir "bin/%{cfg.buildcfg}"
 		    objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-		    links { "framework" }
+		    links { "common", "database", "net", "net_module", "framework" }
 		    -- pchheader "sample/servers/header.h"
 		    -- pchsource "sample/servers/header.cpp"
 

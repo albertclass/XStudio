@@ -120,12 +120,16 @@ namespace xgc
 
 				// ×ª»»±àÂë
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
-				utf8_to_mbs( buffer, ptr, len );
+				auto siz = utf8_to_mbs( buffer, ptr, len );
 
-				buffer = ptr;
-				buffer_size = len;
+				if( siz == len )
+				{
+					buffer = ptr;
+					buffer_size = len;
 
-				buffer[buffer_size] = 0;
+					buffer[buffer_size] = 0;
+				}
+				
 				free( palloc );
 			}
 
