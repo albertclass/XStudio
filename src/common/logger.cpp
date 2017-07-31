@@ -148,10 +148,12 @@ namespace xgc
 		private:
 			virtual xgc_void join()
 			{
+				fflush( file_p );
 			}
 
 			virtual xgc_void write( xgc_lpvoid data, xgc_size size )
 			{
+				printf( "file - %s\n", data );
 				if( split_date && datetime::now().date() != create_time.date() )
 				{
 					// split by date
@@ -296,6 +298,8 @@ namespace xgc
 			// 日志输出上下文
 			struct context
 			{
+				/// 命令标示
+				xgc_byte command;
 				/// 文件名
 				xgc_lpcstr file;
 				/// 函数名
@@ -306,6 +310,7 @@ namespace xgc
 				xgc_ulong line;
 				/// 缓冲区
 				xgc_ulong size;
+				
 			} context_;
 
 
@@ -372,13 +377,36 @@ namespace xgc
 					while( read_total < bytes )
 					{
 						read_bytes = _read( fd[0], (xgc_lpstr)buffer + read_total, bytes - read_total );
-						if( read_bytes < 0 )
+						if( read_bytes < 0 && errno != EAGAIN )
 							return -1;
 
 						read_total += read_bytes;
 					}
 
 					return read_total;
+				};
+
+				auto dispatch_adapter = [this]( logger_formater::context &ctx, xgc_lpcstr fmt, ... ){
+					va_list args;
+					va_start( args, fmt );
+
+					ctx.fmt = fmt;
+					va_copy( ctx.args, args );
+
+					auto text = va_arg( args, void* );
+					auto size = va_arg( args, size_t );
+
+					int len = -1;
+					std::lock_guard< std::mutex > lock( guard );
+					for( auto adapter : adapters )
+					{
+						if( -1 == adapter->write( ctx ) )
+						{
+							adapter->write( text, size );
+						}
+					}
+
+					va_end(args);
 				};
 
 				while( work_thread_exit == 0 )
@@ -394,121 +422,49 @@ namespace xgc
 
 					context* _ctx = (context*)buffer;
 
-					if( total + _ctx->size >= pipe_cache_size )
+					// check it is exit command
+					switch( _ctx->command )
 					{
-						auto siz = XGC_ALIGN_MEM( total + _ctx->size, 128 );
-						auto ptr = malloc( siz + 4 ); // 留给字符串结束符
-						XGC_ASSERT_BREAK( ptr );
-
-						pipe_cache_size = siz;
-
-						buffer = (xgc_byte*)ptr;
-						// 内存重新分配后要将_ctx重置
-						_ctx = (context*)buffer;
-					}
-
-					bytes = read_bytes( buffer + total, _ctx->size );
-					if( bytes < 0 )
-						break;
-
-					xgc_lpstr message = ( xgc_lpstr )buffer + total;
-					total += bytes;
-
-					buffer[total] = 0;
-
-					logger_formater::context ctx;
-					ctx.file = _ctx->file;
-					ctx.func = _ctx->file;
-					ctx.line = _ctx->line;
-					ctx.tags = _ctx->tags;
-
-					auto dispatch_adapter = [&ctx, this]( xgc_lpcstr fmt, ... ){
-						va_list args;
-						va_start( args, fmt );
-
-						ctx.fmt = fmt;
-						va_copy( ctx.args, args );
-
-						auto text = va_arg( args, void* );
-						auto size = va_arg( args, size_t );
-
-						int len = -1;
-						std::lock_guard< std::mutex > lock( guard );
-						for( auto adapter : adapters )
+						case 1: // normal write.
 						{
-							if( -1 == adapter->write( ctx ) )
+							if( total + _ctx->size >= pipe_cache_size )
 							{
-								adapter->write( text, size );
+								auto siz = XGC_ALIGN_MEM( total + _ctx->size, 128 );
+								auto ptr = malloc( siz + 4 ); // 留给字符串结束符
+								XGC_ASSERT_BREAK( ptr );
+
+								pipe_cache_size = siz;
+
+								buffer = (xgc_byte*)ptr;
+								// 内存重新分配后要将_ctx重置
+								_ctx = (context*)buffer;
 							}
+
+							bytes = read_bytes( buffer + total, _ctx->size );
+							if( bytes < 0 )
+								break;
+
+							xgc_lpstr message = ( xgc_lpstr )buffer + total;
+							total += bytes;
+
+							buffer[total] = 0;
+
+							logger_formater::context ctx;
+							ctx.file = _ctx->file;
+							ctx.func = _ctx->file;
+							ctx.line = _ctx->line;
+							ctx.tags = _ctx->tags;
+
+							dispatch_adapter( ctx, "%s", message, _ctx->size );
 						}
-
-						va_end(args);
-					};
-
-					dispatch_adapter( "%s", message, _ctx->size );
-				}
-
-				work_thread_exit = clock();
-				#ifdef _LINUX
-				//先获取原先的flags
-				int flags = fcntl(fd[0], F_GETFL);
-				//设置fd为非阻塞模式
-				fcntl(fd[0],F_SETFL, flags | O_NONBLOCK);
-
-				while( clock() - work_thread_exit < (pipe_cache_size >> 10) )
-				{
-					// check is end of pipe
-					int readbytes = _read( fd[0], buffer, (xgc_uint32) pipe_cache_size );
-					if( readbytes > 0 )
-					{
-						std::unique_lock< std::mutex > lock( guard );
-						for( auto adapter : adapters )
+						break;
+						case 0xff:
 						{
-							adapter->write( buffer, readbytes );
+							work_thread_exit = 1;
 						}
-						// refresh delay clock
-						work_thread_exit = clock();
-					}
-					else if( errno == EAGAIN )
-					{	
-						std::this_thread::sleep_for( std::chrono::milliseconds(1) );
-					}
-					else
-					{
 						break;
 					}
 				}
-
-				#endif 
-
-				#ifdef _WINDOWS
-				// delay exit read maybe wait a moment
-				while( clock() - work_thread_exit < (pipe_cache_size >> 10) )
-				{
-					// check is end of pipe
-					if( !_eof(fd[0]) )
-					{
-						// block read pipe date
-						int readbytes = _read( fd[0], buffer, (xgc_uint32) pipe_cache_size );
-						if( readbytes > 0 )
-						{
-							std::unique_lock< std::mutex > lock( guard );
-							for( auto adapter : adapters )
-							{
-								adapter->write( buffer, readbytes );
-							}
-						}
-
-						// refresh delay clock
-						work_thread_exit = clock();
-					}
-					else
-					{
-						std::this_thread::sleep_for( std::chrono::milliseconds(1) );
-					}
-				}
-				#endif
-
 
 				free( buffer );
 			}
@@ -517,8 +473,8 @@ namespace xgc
 			{
 				if( work_thread_exit == 0 )
 				{
-					work_thread_exit = clock();
-					write( (xgc_lpvoid)"##############\n", 15 );
+					context_.command = 0xff;
+					write( xgc_nullptr, 0 );
 					work_thread.join();
 				}
 			}
@@ -558,6 +514,7 @@ namespace xgc
 			virtual xgc_long write( const logger_formater::context& ctx )
 			{
 				// 准备传输的日志上下文
+				context_.command = 1;
 				context_.file = ctx.file;
 				context_.line = ctx.line;
 				context_.func = ctx.func;
@@ -873,12 +830,18 @@ namespace xgc
 				if( -1 == adapter->write( ctx ) )
 				{
 					if( -1 == len )
+					{
 						len = formater.parse_message( ctx );
+					}
 
 					if( -1 != len )
+					{
 						adapter->write( formater.log(), len );
+					}
 				}
 			}
+
+			va_end( ctx.args );
 			va_end( args );
 		}
 
@@ -1134,7 +1097,10 @@ namespace xgc
 
 		inline xgc_size logger_formater::message( const context &ctx, xgc_char * buf, xgc_size len )
 		{
-			return vsprintf_s( buf, len, ctx.fmt, const_cast< context& >(ctx).args );
+			va_list args;
+			va_copy( args, const_cast< context& >( ctx ).args );
+			return vsprintf_s( buf, len, ctx.fmt, args );
+			va_end( args );
 		}
 	}
 }

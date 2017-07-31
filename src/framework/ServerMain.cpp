@@ -143,6 +143,7 @@ int main( int argc, char *argv[] )
 			char path[XGC_MAX_PATH] = { 0 };
 			get_absolute_path( path, sizeof( path ), "%s", argv[1] );
 
+			printf( "config file is %s\n", path );
 			if( argc > 1 && _access( path, 0 ) != 0 )
 			{
 				char choice = 0;
