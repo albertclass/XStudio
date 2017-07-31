@@ -122,9 +122,10 @@ namespace xgc
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
 				auto siz = utf8_to_mbs( buffer, ptr, len );
 
+				free( palloc );
+
 				if( siz != len )
 				{
-					free( palloc );
 					free( ptr );
 					return false;
 				}

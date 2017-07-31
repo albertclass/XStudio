@@ -153,7 +153,6 @@ namespace xgc
 
 			virtual xgc_void write( xgc_lpvoid data, xgc_size size )
 			{
-				printf( "file - %s\n", data );
 				if( split_date && datetime::now().date() != create_time.date() )
 				{
 					// split by date
@@ -394,7 +393,7 @@ namespace xgc
 					va_copy( ctx.args, args );
 
 					auto text = va_arg( args, void* );
-					auto size = va_arg( args, size_t );
+					auto size = va_arg( args, xgc_ulong );
 
 					int len = -1;
 					std::lock_guard< std::mutex > lock( guard );
