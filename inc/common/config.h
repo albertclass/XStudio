@@ -32,7 +32,9 @@
 
 #ifdef _WINDOWS
 #	define _CRTDBG_MAP_ALLOC
-#	define _CRT_SECURE_NO_WARNINGS
+#	ifndef _CRT_SECURE_NO_WARNINGS
+#		define _CRT_SECURE_NO_WARNINGS
+#	endif
 #	include "platform/windows/sys.h"
 #endif
 

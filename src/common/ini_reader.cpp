@@ -122,15 +122,18 @@ namespace xgc
 				auto ptr = (xgc_lpstr) malloc( len + 1 );
 				auto siz = utf8_to_mbs( buffer, ptr, len );
 
-				if( siz == len )
-				{
-					buffer = ptr;
-					buffer_size = len;
-
-					buffer[buffer_size] = 0;
-				}
-				
 				free( palloc );
+
+				if( siz != len )
+				{
+					free( ptr );
+					return false;
+				}
+
+				buffer = ptr;
+				buffer_size = len;
+
+				buffer[buffer_size] = 0;
 			}
 
 			file_info* info_ptr = XGC_NEW file_info;

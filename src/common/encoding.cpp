@@ -346,6 +346,7 @@ namespace xgc
 		#if defined(_LINUX)
 		mbstate_t mbstat;
 		mbsinit( &mbstat );
+		wcrtomb( xgc_nullptr, L'\0', &mbstat );
 		#endif
 
 		while( *str )
@@ -355,7 +356,7 @@ namespace xgc
 				return -1;
 
 			#if defined(_LINUX)
-			cch = wcrtomb( mbs ? mbc : xgc_nullptr, (xgc_wchar)ucs, &mbstat );
+			cch = wcrtomb( mbc, (xgc_wchar)ucs, &mbstat );
 			if( cch == -1 )
 				return -1;
 			#elif defined(_WINDOWS)

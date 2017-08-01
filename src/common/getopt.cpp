@@ -23,9 +23,7 @@ PROFITS, BUSINESS INTERRUPTION, LOSS OF PROGRAMS OR OTHER DATA ON
 YOUR INFORMATION HANDLING SYSTEM OR OTHERWISE, EVEN If WE ARE
 EXPRESSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <malloc.h>
+#include "defines.h"
 #include "getopt.h"
 
 namespace xgc

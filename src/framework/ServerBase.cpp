@@ -212,10 +212,12 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 			xgc_uint64 nMem = 0;
 			xgc_uint64 nVMem = 0;
 			get_process_memory_usage( &nMem, &nVMem );
-			SYS_INFO( "Mem: %I64u  VMem : %I64u", nMem, nVMem );
+			SYS_INFO( "Mem: %llu  VMem : %llu", nMem, nVMem );
 
 			tLast = datetime::now();
 		}
+
+		break;
 	}
 
 	SYS_INFO( "¹Ø±Õ³¬Ê±¼ì²â..." );

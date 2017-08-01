@@ -1083,6 +1083,8 @@ namespace xgc
 		sigaction(SIGFPE ,  &sa, NULL);
 		sigaction(SIGSEGV,  &sa, NULL); 
 		sigaction(SIGUSR1,  &sa, NULL);
+
+		return true;
 	}
 
 	xgc_void FiniException()

@@ -53,7 +53,9 @@
         "lj_mcode.c": "cpp",
         "array": "cpp",
         "initializer_list": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "lib_string.c": "cpp",
+        "luajit.c": "cpp"
     },
 
     // The default character set encoding to use when reading and writing files.
