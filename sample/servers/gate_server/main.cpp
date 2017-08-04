@@ -1,8 +1,7 @@
 #include "header.h"
-#include "session.h"
 #include "protocol.h"
 #include "game_message.h"
-//static long brk = _CrtSetBreakAlloc( 47461 );
+#include "client_message.h"
 
 xgc_bool InitConfiguration( ini_reader &ini, xgc_lpvoid params );
 xgc_bool MainLoop( xgc_bool busy, xgc_lpvoid params );
@@ -23,8 +22,10 @@ int ServerMain( int argc, char **argv )
 
 xgc_bool InitConfiguration( ini_reader &ini, xgc_lpvoid params )
 {
-	RegistPipeHandler( "*-*-10-*", OnPipeMsg, OnPipeEvt );
-	RegistVirtualSockHandler( "*-*-10-*", OnVirtualSockMsg, OnVirtualSockEvt );
+	RegistPipeHandler( "*-*-0-*", OnPipeMsg, OnPipeEvt );
+	RegistVirtualSockHandler( "*-*-0-*", OnVirtualSockMsg, OnVirtualSockEvt );
+
+	RegistClientHandler( OnClientMsg, OnClientEvt, DefaultPacketParser );
 
 	return true;
 }

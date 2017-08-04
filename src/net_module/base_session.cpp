@@ -5,6 +5,7 @@ namespace net_module
 {
 	CBaseSession::CBaseSession()
 		: handle_( INVALID_NETWORK_HANDLE )
+		, userdata_( xgc_nullptr )
 	{
 	}
 

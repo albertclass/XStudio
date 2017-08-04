@@ -9,9 +9,9 @@ struct MessageHeader
 	/// 消息包总长度
 	xgc_uint16	length;
 	/// 消息类型
-	xgc_byte	type;
+	xgc_uint16	type : 4;
 	/// 消息编号
-	xgc_byte	code;
+	xgc_uint16	code : 12;
 };
 
 /// Ping消息

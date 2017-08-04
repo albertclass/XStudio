@@ -531,12 +531,12 @@ namespace xgc
 			return datetime::now().to_ctime();
 		}
 
-		XGC_INLINE xgc_time64 current_millisecond()
+		XGC_INLINE xgc_time64 current_milliseconds()
 		{
 			return datetime::now().to_milliseconds();
 		}
 
-		XGC_INLINE xgc_time64 current_microsecond()
+		XGC_INLINE xgc_time64 current_microseconds()
 		{
 			return datetime::now().to_microseconds();
 		}

@@ -7,6 +7,8 @@ using net_module::CClientSession;
 using net_module::CRelaySession;
 using net_module::CPipeSession;
 
+using net_module::ClientMsgParser;
+
 using net_module::ClientMsgHandler;
 using net_module::PipeMsgHandler;
 using net_module::SockMsgHandler;
@@ -69,7 +71,7 @@ extern "C"
 	/// \author albert.xu
 	/// \date 2017/03/08 12:09
 	///
-	NET_MODULE_API xgc_void MakeVirtualSock( CClientSession* pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken );
+	NET_MODULE_API xgc_void MakeVirtualSock( CClientSession* pSession, NETWORK_ID nNetworkID );
 
 	///
 	/// \brief 断开虚拟连接
@@ -77,7 +79,7 @@ extern "C"
 	/// \author albert.xu
 	/// \date 2017/03/08 12:09
 	///
-	NET_MODULE_API xgc_void KickVirtualSock( CClientSession* pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken );
+	NET_MODULE_API xgc_void KickVirtualSock( CClientSession* pSession, NETWORK_ID nNetworkID );
 
 	///
 	/// \brief 注册客户端连接处理函数
@@ -85,7 +87,7 @@ extern "C"
 	/// \author albert.xu
 	/// \date 2017/03/08 15:09
 	///
-	NET_MODULE_API xgc_void RegistClientHandler( ClientMsgHandler fnMsgHandler, ClientEvtHandler fnEvtHandler );
+	NET_MODULE_API xgc_void RegistClientHandler( ClientMsgHandler fnMsgHandler, ClientEvtHandler fnEvtHandler, ClientMsgParser fnMsgParser );
 
 	///
 	/// \brief 注册管道处理函数
@@ -102,7 +104,17 @@ extern "C"
 	/// \date 2017/03/08 15:11
 	///
 	NET_MODULE_API xgc_void RegistVirtualSockHandler( xgc_lpcstr lpNetworkId, SockMsgHandler fnMsgHandler, SockEvtHandler fnEvtHandler );
+
+	///
+	/// \brief 默认的数据分包回调
+	///
+	/// \author albert.xu
+	/// \date 2017/03/20 15:19
+	///
+	NET_MODULE_API int DefaultPacketParser( const void* data, size_t size );
 }
+
+/// extern "C" 不支持重载
 
 ///
 /// \brief 发送数据到客户端会话
@@ -127,5 +139,21 @@ NET_MODULE_API xgc_void SendPacket( CPipeSession* pSession, xgc_lpvoid pData, xg
 /// \date 2017/03/20 15:19
 ///
 NET_MODULE_API xgc_void SendPacket( CRelaySession* pSession, xgc_lpvoid pData, xgc_size nSize );
+
+///
+/// \brief 转发数据
+///
+/// \author albert.xu
+/// \date 2017/08/01
+///
+NET_MODULE_API xgc_void RelayPacket( CClientSession* pSession, xgc_lpvoid pData, xgc_size nSize );
+
+///
+/// \brief 转发数据
+///
+/// \author albert.xu
+/// \date 2017/08/01
+///
+NET_MODULE_API xgc_void RelayPacket( CRelaySession* pSession, xgc_lpvoid pData, xgc_size nSize );
 
 #endif // _NET_MODULE_H_

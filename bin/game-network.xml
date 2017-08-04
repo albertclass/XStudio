@@ -1,46 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<network id="2-1-1-1">
-	<listen address="0.0.0.0" port="27030" mode="gate" >
+<network id="2-1-0-1">
+	<listen address="0.0.0.0" port="27001" mode="pipe" >
 		<recvbuf value="1048576"/>
 		<sendbuf value="1048576"/>
 		<allow>
 			<address from="0.0.0.0" to="255.255.255.255"/>
 			<address ip="172.30.10.244"/>
 		</allow>
-		<!--block type="range" from="0.0.0.0" to="255.255.255.255"-->
-		<connections>
-			<connect id="2-1-10-1" address="127.0.0.1" port="27101" timeout="5000">
-				<recvbuf value="1048576"/>
-				<sendbuf value="1048576"/>
-			</connect>
-		<!--
-			<connect id="2-1-10-2" address="127.0.0.1" port="27102" timeout="1000">
-				<recvbuf value="1048576"/>
-				<sendbuf value="1048576"/>
-			</connect>
-		-->
-		</connections>
 	</listen>
 	<!--
-	<listen address="0.0.0.0" port="27030" mode="pipe">
-		<recvbuf value="1048576"/>
-		<sendbuf value="1048576"/>
-		<allow>
-			<address from="0.0.0.0" to="255.255.255.255"/>
-			<address ip="172.30.10.244"/>
-		</allow>
-	</listen>
-
-	<listen address="0.0.0.0" port="27030" mode="normal">
-		<recvbuf value="1048576"/>
-		<sendbuf value="1048576"/>
-		<allow>
-			<address from="0.0.0.0" to="255.255.255.255"/>
-			<address ip="172.30.10.244"/>
-		</allow>
-	</listen>
-
 	<connect id="2-1-7-1" address="127.0.0.1" port="27071">
 		<recvbuf value="1048576"/>
 		<sendbuf value="1048576"/>

@@ -47,42 +47,54 @@ namespace net_module
 	class CPipeSession;
 
 	struct net_module_data;
+	///
+	/// \brief 数据分包
+	/// \author albert.xu
+	/// \date 2017/08/01
+	///
+	typedef int( *ClientMsgParser )( const void* data, size_t size );
 
 	///
-	/// 消息回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 客户端消息回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *ClientMsgHandler )(CClientSession*, xgc_lpvoid, xgc_size, xgc_uint32);
+	typedef xgc_void( *ClientMsgHandler )(CClientSession*, xgc_lpvoid, xgc_size, xgc_uint32);
 
 	///
-	/// 消息回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 管道消息回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *PipeMsgHandler )(CPipeSession*, xgc_lpvoid, xgc_size, xgc_uint32);
+	typedef xgc_void( *PipeMsgHandler )(CPipeSession*, xgc_lpvoid, xgc_size, xgc_uint32);
 
 	///
-	/// 消息回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 虚拟连接消息回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *SockMsgHandler )(CRelaySession*, xgc_lpvoid, xgc_size, xgc_uint32);
+	typedef xgc_void( *SockMsgHandler )(CRelaySession*, xgc_lpvoid, xgc_size, xgc_uint32);
 
 	///
-	/// 事件回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 客户端事件回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *ClientEvtHandler )(CClientSession*, xgc_uint32, xgc_uint64);
+	typedef xgc_void( *ClientEvtHandler )(CClientSession*, xgc_uint32, xgc_uint64);
 
 	///
-	/// 事件回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 事件回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *PipeEvtHandler )(CPipeSession*, xgc_uint32, xgc_uint64);
+	typedef xgc_void( *PipeEvtHandler )(CPipeSession*, xgc_uint32, xgc_uint64);
 
 	///
-	/// 事件回调
-	/// [11/27/2014] create by albert.xu
+	/// \brief 事件回调
+	/// \author albert.xu
+	/// \date 2017/08/01
 	///
-	typedef xgc_ulong( *SockEvtHandler )(CRelaySession*, xgc_uint32, xgc_uint64);
+	typedef xgc_void( *SockEvtHandler )(CRelaySession*, xgc_uint32, xgc_uint64);
 
 	///
 	/// \brief 获取程序运行时间

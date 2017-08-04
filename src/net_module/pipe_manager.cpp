@@ -111,7 +111,6 @@ namespace net_module
 			return false;
 		}
 
-
 		// 生成管道对象
 		auto pPipe = XGC_NEW CPipeSession();
 
@@ -129,12 +128,30 @@ namespace net_module
 	xgc_bool OnPipeConnect( NETWORK_ID nID, CPipeSession * pPipe )
 	{
 		// 查找注册的管道
-		auto it = mPipeMap.find( nID );
-		XGC_ASSERT_RETURN( it != mPipeMap.end(), false );
+		auto it1 = mPipeMap.find( nID );
+		XGC_ASSERT_RETURN( it1 == mPipeMap.end(), true );
 
-		// 查看管道信息是否正确
-		if( it->second != pPipe )
+		char szNetworkId[32] = { 0 };
+		_NetworkID2Str( nID, szNetworkId );
+
+		// 查询已注册的管道处理函数
+		auto it2 = std::find_if( mPipeHandlerInfos.begin(), mPipeHandlerInfos.end(),
+			[szNetworkId]( const PipeHandlerInfo &info )->bool{
+			return string_match( info.network_id.c_str(), szNetworkId, 0 );
+		} );
+
+		// 检查匹配，未匹配的则不允许连接
+		if( it2 == mPipeHandlerInfos.end() )
+		{
+			SYS_WARNING( "未匹配到已注册的管道处理函数。" );
 			return false;
+		}
+
+		pPipe->SetPipeHandler( it2->pipe_msg_handler, it2->pipe_evt_handler );
+		pPipe->SetSockHandler( it2->sock_msg_handler, it2->sock_evt_handler );
+
+		// 防止重复连接
+		mPipeMap[nID] = pPipe;
 
 		return true;
 	}

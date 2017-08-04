@@ -18,7 +18,8 @@ namespace net_module
 	protected:
 		/// 网络句柄
 		net::network_t handle_;
-
+		/// 用户数据
+		xgc_lpvoid userdata_;
 	protected:
 		///
 		/// \brief 构造
@@ -46,6 +47,28 @@ namespace net_module
 		net::network_t GetHandle()const
 		{
 			return handle_;
+		}
+
+		///
+		/// \brief 设置用户数据
+		///
+		/// \author albert.xu
+		/// \date 2017/08/01
+		///
+		xgc_void SetUserdata( xgc_lpvoid data )
+		{
+			userdata_ = data;
+		}
+
+		///
+		/// \brief 设置用户数据
+		///
+		/// \author albert.xu
+		/// \date 2017/08/01
+		///
+		xgc_lpvoid GetUserdata() const
+		{
+			return userdata_;
 		}
 
 		///
@@ -108,7 +131,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:10
 		///
-		virtual xgc_ulong EvtNotify( xgc_uint32 event, xgc_uint32 result ) = 0;
+		virtual xgc_void EvtNotify( xgc_uint32 event, xgc_uint32 result ) = 0;
 
 		///
 		/// \brief 消息通知
@@ -116,7 +139,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:12
 		///
-		virtual xgc_ulong MsgNotify( xgc_lpvoid data, xgc_size size ) = 0;
+		virtual xgc_void MsgNotify( xgc_lpvoid data, xgc_size size ) = 0;
 
 		///
 		/// \brief 发送数据
@@ -124,7 +147,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/28 11:11
 		///
-		virtual xgc_void Send( xgc_lpvoid data, xgc_size size ) = 0;
+		virtual xgc_void Send( xgc_lpvoid data, xgc_size size ) const = 0;
 	};
 }
 

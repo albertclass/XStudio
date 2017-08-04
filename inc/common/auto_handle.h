@@ -24,6 +24,7 @@ namespace xgc
 		template< typename base = pool_handle_base >
 		struct pool_handle
 		{
+			enum { INVALID_OBJECT_ID = -1 };
 			typedef base mybase;
 			union
 			{
@@ -57,6 +58,11 @@ namespace xgc
 			{
 				_handle = handle;
 				return *this;
+			}
+
+			operator unsigned int() const
+			{
+				return _handle;
 			}
 		};
 
@@ -153,10 +159,6 @@ namespace xgc
 			friend auto_handle_pool& get_handle_pool< _type, _handle_type >();
 			friend xgc_void auto_handle< _type, _handle_type >::new_handle( auto_handle< _type, _handle_type >* ptr );
 			friend xgc_void auto_handle< _type, _handle_type >::del_handle( auto_handle< _type, _handle_type >* ptr );
-
-			//////////////////////////////////////////////////////////////////////////
-			// 为防止静态库同时被多个动态库或执行文件共享的问题，这里只声明该Static对象。
-			static auto_handle_pool *pInstance;
 
 			struct chunk
 			{

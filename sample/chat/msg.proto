@@ -1,0 +1,185 @@
+syntax = "proto3";
+
+package chat;
+// message hander struct
+
+// 消息头定义
+// struct MessageHeader
+// {
+// 	/// 消息包总长度
+// 	xgc_uint16	length;
+// 	/// 消息类型
+// 	xgc_uint16	message;
+// };
+
+enum MSG_ID {
+	MSG_BEGIN = 0;
+	// Client Message
+	MSG_USERAUTH_REQ = 0x0101;
+	MSG_USERAUTH_ACK = 0x0102;
+	MSG_CHANNEL_ENTER_NTF = 0x0104;
+
+	MSG_USERINFO_REQ = 0x1001;
+	MSG_USERINFO_ACK = 0x1002;
+	MSG_CHANNEL_ENTER_REQ = 0x1003;
+	MSG_CHANNEL_ENTER_ACK = 0x1004;
+	MSG_CHANNEL_LEAVE_REQ = 0x1005;
+	MSG_CHANNEL_LEAVE_ACK = 0x1006;
+	MSG_USER_CHAT_REQ = 0x1007;
+	MSG_USER_CHAT_NTF = 0x1008;
+	MSG_CHANNEL_CHAT_REQ = 0x1009;
+	MSG_CHANNEL_CHAT_NTF = 0x100A;
+	MSG_CHAT_ERR = 0x100C;
+
+	// Server Message
+	MSG_LOGIN_REQ 	= 0x0001;
+	MSG_LOGIN_ACK 	= 0x0002;
+	MSG_LOGOUT_REQ 	= 0x0003;
+	MSG_LOGOUT_ACK 	= 0x0004;
+
+	MSG_CREATE_CHANNEL_REQ = 0x0005;
+	MSG_CREATE_CHANNEL_ACK = 0x0006;
+
+	MSG_SYS_CHAT_REQ = 0x0007;
+	MSG_SYS_CHAT_NTF = 0x0008;
+} 
+
+message login_req {
+	uint64 user_id = 1;
+	string nick = 2;
+	string server = 3;
+	string channel_wild = 4;
+	string extra = 5;
+}
+
+message login_ack {
+	int32 result = 1;
+	uint32 chat_id = 2;
+	uint64 user_id = 3;
+	string token = 4;
+}
+
+message logout_req {
+	uint64 user_id = 1;
+}
+
+message user_auth_req {
+	uint64 user_id = 1;
+	string token = 2;
+}
+
+message user_auth_ack {
+	int32 result = 1;
+	uint32 chat_id = 2;
+	uint64 user_id = 3;
+	string nick = 4;
+	string extra = 5;
+}
+
+message user_info_req {
+	uint64 user_id = 1;
+}
+
+message user_info_ack {
+	int32 result = 1;
+	uint32 chat_id = 2;
+	uint64 user_id = 3;
+	string nick = 4;
+	string extra = 5;
+}
+
+message create_channel_req {
+	string channel_name = 1;
+}
+
+message create_channel_ack {
+	string channel_name = 1;
+	uint32 channel_id = 2;
+}
+
+message channel_enter_ntf {
+	uint32 channel_id = 1;
+	string channel_name = 2;
+}
+
+message channel_enter_req {
+	enum enter_type {
+		WILDCARD = 0;
+		CHANNEL_NAME = 1;
+		CHANNEL_ID = 2;
+	}
+
+	uint32 token = 1;
+	enter_type type = 2;
+	uint32 channel_id = 3;
+	string channel_name = 4;
+	string channel_pass = 5;
+}
+
+message channel_enter_ack {
+	int32 result = 1;
+	uint32 token = 2;
+	uint32 channel_id = 3;
+	string channel_name = 4;
+}
+
+message channel_leave_req {
+	uint32 channel_id = 1;
+}
+
+message channel_leave_ack {
+	int32 result = 1;
+	uint32 channel_id = 2;
+	string channel_name = 3;
+}
+
+enum CHAT_T{
+	USR = 0;
+	USR_P2P = 1;
+	SYS_NOTE = 2;
+	SYS_IMPORTANT = 3;
+	SYS_SCREEN = 4;
+}
+
+message user_chat_req {
+	uint32 token = 1;
+	uint32 chat_id = 2;
+	string text = 3;
+}
+
+message user_chat_ntf {
+	uint32 token = 1;
+	uint32 chat_id = 2;
+	string text = 3;
+}
+
+message channel_chat_req {
+	uint32 token = 1;
+	uint32 channel_id = 2;
+	string text = 3;
+}
+
+message channel_chat_ntf {
+	uint32 token = 1;
+	uint32 channel_id = 2;
+	uint32 chat_id = 3;
+	string text = 4;
+}
+
+message system_chat_req {
+	uint32 channel = 1;
+	uint32 flags = 2;
+	string text = 3;
+}
+
+message system_chat_ntf {
+	uint32 channel_id = 1;
+	uint32 flags = 2;
+	string text = 3;
+}
+
+message chat_err {
+	int32 result = 1;
+	uint32 token = 2;
+	string description = 3;
+}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package gate;
+
+enum GATE_MSG_ID {
+	GATE_MSG_BEGIN = 0;
+
+	GATE_MSG_LOGIN_REQ = 0x1001;
+	GATE_MSG_LOGIN_ACK = 0x1002;
+}
+
+message login_req {
+	string username = 1;
+	string password = 2;
+}
+
+message login_ack {
+	int32 result = 1;
+	string chat_token = 2;
+}

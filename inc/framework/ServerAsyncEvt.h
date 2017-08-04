@@ -1,6 +1,19 @@
 #ifndef __SERVER_ASYNCEVT_H__
 #define __SERVER_ASYNCEVT_H__
 
+struct EventObject
+{
+	int id;
+	int event;
+};
+
+//template< class R, class T... >
+//R Emit( const xgc_string &system, const xgc_string &event, T... )
+//{
+//	auto invoke = GetInvoke( system, event );
+//	return invoke( std::forward< T >( ...T ) );
+//}
+
 ///
 /// 初始化刷新服务 
 /// @return 初始化结果

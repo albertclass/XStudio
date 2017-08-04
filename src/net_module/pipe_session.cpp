@@ -1,5 +1,6 @@
 #include "config.h"
 #include "pipe_session.h"
+#include "cli_session.h"
 #include "relay_session.h"
 
 #include "pipe_manager.h"
@@ -147,12 +148,12 @@ namespace net_module
 		mSockEvtHandler = fnEvtHandler;
 	}
 
-	xgc_void CPipeSession::SendPacket( xgc_lpvoid data, xgc_size size )
+	xgc_void CPipeSession::SendPacket( xgc_lpvoid data, xgc_size size ) const
 	{
 		net::SendPacket( mHandle, data, size );
 	}
 
-	xgc_void CPipeSession::SendRelayPacket( net::network_t handle, xgc_lpvoid data, xgc_size size )
+	xgc_void CPipeSession::SendRelayPacket( net::network_t handle, xgc_lpvoid data, xgc_size size ) const
 	{
 		PipeTransPacket pkg;
 		XGC_ASSERT( size < std::numeric_limits<xgc_uint16>::max() );
@@ -166,12 +167,12 @@ namespace net_module
 		} );
 	}
 
-	xgc_ulong CPipeSession::RelayEvtNotify( CRelaySession* session, xgc_uint32 event, xgc_uint32 result )
+	xgc_void CPipeSession::RelayEvtNotify( CRelaySession* session, xgc_uint32 event, xgc_uint32 result )
 	{
 		return mSockEvtHandler( session, event, result );
 	}
 
-	xgc_ulong CPipeSession::RelayMsgNotify( CRelaySession* session, xgc_lpvoid data, xgc_size size )
+	xgc_void CPipeSession::RelayMsgNotify( CRelaySession* session, xgc_lpvoid data, xgc_size size )
 	{
 		return mSockMsgHandler( session, data, size, mHandle );
 	}
@@ -227,8 +228,9 @@ namespace net_module
 		PipeVersion pkg;
 		pkg.length = htons( sizeof( PipeVersion ) );
 		pkg.kind = htons( ePipeInnerPacket );
+		pkg.code = htons( PIPE_INNER_VERSION_REQ );
 		pkg.version = htonl( PIPE_VERSION );
-		pkg.network = htonll( GetPipeID() );
+		pkg.network = htonll( _GetNetworkID() );
 		pkg.error = 0;
 
 		net::SendPacket( mHandle, &pkg, sizeof( pkg ) );
@@ -276,7 +278,7 @@ namespace net_module
 		PipePing ack;
 		ack.length = htons( sizeof( ack ) );
 		ack.kind = htons( ePipeInnerPacket );
-		ack.code = htons( PIPE_INNER_PONG );
+		ack.code = htons( PIPE_INNER_PING );
 		ack.timestamp = htonll( tick() );
 
 		SendPacket( &ack, sizeof( ack ) );
@@ -298,13 +300,15 @@ namespace net_module
 	{
 		XGC_ASSERT_RETURN( size >= sizeof( PipeInner ), XGC_NONE );
 		auto inner = static_cast<PipeInner*>(data);
+		auto code = ntohs( inner->code );
 
-		switch( inner->code )
+		switch( code )
 		{
 		case PIPE_INNER_VERSION_REQ:
 			{
 				XGC_ASSERT_RETURN( size >= sizeof( PipeVersion ), XGC_NONE );
 				auto req = static_cast<PipeVersion*>(data);
+				auto pid = ntohll( req->network );
 
 				PipeVersion ack;
 				ack.length = htons( sizeof( ack ) );
@@ -314,7 +318,7 @@ namespace net_module
 				ack.network = htonll( _GetNetworkID() );
 				ack.error = 0;
 
-				if( req->version != PIPE_VERSION )
+				if( ntohl( req->version ) != PIPE_VERSION )
 				{
 					SYS_ERROR( "relay version does not match! server ver: %u, client ver: %s", req->version, PIPE_VERSION );
 					ack.error = -1;
@@ -322,12 +326,9 @@ namespace net_module
 				}
 				else
 				{
-					mPipeID = req->network;
+					mPipeID = pid;
 					mEvtHandler( this, EVENT_CONNECT, mPipeID );
 					net::SendPacket( mHandle, &ack, sizeof( ack ) );
-
-					auto connected = OnPipeConnect( mPipeID, this );
-					XGC_ASSERT( connected );
 				}
 			}
 			break;
@@ -342,11 +343,11 @@ namespace net_module
 				}
 				else
 				{
-					mPipeID = ack->network;
-					mEvtHandler( this, EVENT_ACCEPT, mPipeID );
-
+					mPipeID = ntohll( ack->network );
 					auto connected = OnPipeConnect( mPipeID, this );
 					XGC_ASSERT( connected );
+
+					mEvtHandler( this, EVENT_ACCEPT, mPipeID );
 				}
 			}
 			break;
@@ -399,7 +400,7 @@ namespace net_module
 					syn->timestamp = tick();
 					syn->trans = trans;
 					syn->token = token;
-					syn->session = XGC_NEW CRelaySession( this );
+					syn->session = XGC_NEW CRelaySession( this, trans );
 					mSynList.push_back( syn );
 
 					// 回复连接请求
@@ -425,17 +426,27 @@ namespace net_module
 					if( info->token + 1 == token )
 					{
 						XGC_ASSERT( mRelayMap.find( trans ) == mRelayMap.end() );
+						net::Param_GetSession param;
+						param.handle = trans;
 
-						// regist relay session in pipe
-						mRelayMap[trans] = info->session;
-						// trigger connect event
-						if( XGC_CHK_FLAGS( mask, PIPE_MASK_SYN ) )
+						if( -1 != net::ExecuteState( Operator_GetSession, &param ) )
 						{
-							info->session->OnConnect( trans );
-						}
-						else
-						{
-							info->session->OnAccept( trans );
+							auto pClientSession = (CClientSession*)param.session;
+							if( pClientSession )
+							{
+								pClientSession->SetRelaySession( info->session );
+								// regist relay session in pipe
+								mRelayMap[trans] = info->session;
+								// trigger connect event
+								if( XGC_CHK_FLAGS( mask, PIPE_MASK_SYN ) )
+								{
+									info->session->OnConnect( trans );
+								}
+								else
+								{
+									info->session->OnAccept( trans );
+								}
+							}
 						}
 						// erase syn info
 						SAFE_DELETE( info );

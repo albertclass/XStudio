@@ -1,7 +1,12 @@
 # ignore some directory
 
-/bin/Debug
-/bin/Release
+/premake5.exe
+/bin/Debug/*
+/bin/Release/*
+!/bin/{Debug,Release}/libmysql.dll
+!/bin/{Debug,Release}/dbghelp.dll
+!/bin/{Debug,Release}/*.manifest
+!/bin/{Debug,Release}/*.ini
 /lib
 /prj
 /obj

@@ -1,8 +1,9 @@
 #pragma once
 #ifndef _PROTOCOL_H_ 
 #define _PROTOCOL_H_ 
-#define NET_GATE_MESSAGE 1
-#define NET_GAME_MESSAGE 2
+
+#define NET_GATE_MESSAGE 0
+#define NET_GAME_MESSAGE 1
 
 #pragma pack(1)
 
@@ -12,9 +13,9 @@ struct MessageHeader
 	/// 消息包总长度
 	xgc_uint16	length;
 	/// 消息类型
-	xgc_byte	type;
+	xgc_uint16	type : 3; // 0 ~ 7
 	/// 消息编号
-	xgc_byte	code;
+	xgc_uint16	code : 13;
 };
 
 /// Ping消息

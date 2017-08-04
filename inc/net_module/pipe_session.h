@@ -73,7 +73,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/20 17:04
 		///
-		xgc_void SendPacket( xgc_lpvoid data, xgc_size size );
+		xgc_void SendPacket( xgc_lpvoid data, xgc_size size ) const;
 
 		///
 		/// \brief 发送中继消息
@@ -81,7 +81,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/13 11:42
 		///
-		xgc_void SendRelayPacket( net::network_t handle, xgc_lpvoid data, xgc_size size );
+		xgc_void SendRelayPacket( net::network_t handle, xgc_lpvoid data, xgc_size size ) const;
 
 		///
 		/// \brief 获取网络标识
@@ -100,7 +100,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/13 16:20
 		///
-		xgc_ulong RelayEvtNotify( CRelaySession* session, xgc_uint32 event, xgc_uint32 result );
+		xgc_void RelayEvtNotify( CRelaySession* session, xgc_uint32 event, xgc_uint32 result );
 
 		///
 		/// \brief 中继连接的消息通知
@@ -108,7 +108,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:12
 		///
-		xgc_ulong RelayMsgNotify( CRelaySession* session, xgc_lpvoid data, xgc_size size );
+		xgc_void RelayMsgNotify( CRelaySession* session, xgc_lpvoid data, xgc_size size );
 
 		///
 		/// \brief 建立中继连接

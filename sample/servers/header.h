@@ -2,7 +2,7 @@
 #ifndef _CLIENT_HEADER_H_ 
 #define _CLIENT_HEADER_H_ 
 
-#if defined( _WINDOWS) && defined( _DEBUG )
+#if defined(_WINDOWS) && defined( _DEBUG )
 #	include "vld.h"
 #endif
 
@@ -15,9 +15,6 @@
 #include "database.h"
 #include "net.h"
 #include "net_module.h"
-
-#include "curses.h"
-#include "panel.h"
 
 using namespace xgc;
 using namespace xgc::common;

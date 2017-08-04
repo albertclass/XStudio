@@ -11,11 +11,37 @@ namespace net_module
 	{
 	private:
 		/// 当前转发的服务器ID
-		CRelaySession* mRelaySession;
+		CBaseSession* mRelaySession;
 
 	public:
 		CClientSession();
 		~CClientSession();
+
+		///
+		/// \brief 设置中继会话
+		///
+		/// \author albert.xu
+		/// \date 2017/03/03 11:10
+		///
+		xgc_void SetRelaySession( CBaseSession* pSession )
+		{
+			mRelaySession = pSession;
+		}
+
+		///
+		/// \brief 转发消息
+		///
+		/// \author albert.xu
+		/// \date 2017/03/03 11:10
+		///
+		xgc_void Relay( xgc_lpvoid data, xgc_size size ) const;
+
+	private:
+		///
+		/// \brief 数据包是否
+		/// \return	0 ~ 成功, -1 ~ 失败
+		///
+		virtual int OnParsePacket( const void* data, xgc_size size ) override;
 
 		///
 		/// \brief 事件通知
@@ -23,7 +49,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:10
 		///
-		virtual xgc_ulong EvtNotify( xgc_uint32 event, xgc_uint32 result ) override;
+		virtual xgc_void EvtNotify( xgc_uint32 event, xgc_uint32 result ) override;
 
 		///
 		/// \brief 消息通知
@@ -31,7 +57,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:12
 		///
-		virtual xgc_ulong MsgNotify( xgc_lpvoid data, xgc_size size ) override;
+		virtual xgc_void MsgNotify( xgc_lpvoid data, xgc_size size ) override;
 
 		///
 		/// \brief 发送数据
@@ -39,7 +65,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/28 11:11
 		///
-		virtual xgc_void Send( xgc_lpvoid data, xgc_size size );
+		virtual xgc_void Send( xgc_lpvoid data, xgc_size size ) const override;
 	};
 }
 #endif // _CLIENT_SESSION_H_

@@ -1,9 +1,9 @@
 #include "header.h"
 #include "session.h"
 /// 事件回调
-extern xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code );
+extern xgc_void OnClientEvt( CNetSession* net, xgc_uint32 event, xgc_uint64 code );
 /// 消息回调
-extern xgc_void OnMessage( CNetSession* net, xgc_uint8 type, xgc_uint8 code, xgc_lpvoid data, xgc_size size );
+extern xgc_void OnClientMsg( CNetSession* net, xgc_lpvoid data, xgc_size size );
 
 CNetSession::CNetSession()
 	: handle_( INVALID_NETWORK_HANDLE )
@@ -34,7 +34,7 @@ xgc_void CNetSession::OnAccept( net::network_t handle )
 	handle_ = handle;
 	fprintf( stdout, "net session %u accepted\r\n", handle_ );
 
-	OnEvent( this, EVENT_ACCEPT, handle_ );
+	OnClientEvt( this, EVENT_ACCEPT, handle_ );
 }
 
 xgc_void CNetSession::OnConnect( net::network_t handle )
@@ -42,19 +42,19 @@ xgc_void CNetSession::OnConnect( net::network_t handle )
 	handle_ = handle;
 	fprintf( stdout, "net session %u connected\r\n", handle_ );
 
-	OnEvent( this, EVENT_CONNECT, handle_ );
+	OnClientEvt( this, EVENT_CONNECT, handle_ );
 }
 
 xgc_void CNetSession::OnError( xgc_uint32 error_code )
 {
 	fprintf( stderr, "net session %u error, code = %u\r\n", handle_, error_code );
-	OnEvent( this, EVENT_ERROR, error_code );
+	OnClientEvt( this, EVENT_ERROR, error_code );
 }
 
 xgc_void CNetSession::OnClose()
 {
 	fprintf( stderr, "net session %u closed\r\n", handle_ );
-	OnEvent( this, EVENT_CLOSE, 0 );
+	OnClientEvt( this, EVENT_CLOSE, 0 );
 }
 
 xgc_void CNetSession::OnAlive()
@@ -111,24 +111,11 @@ xgc_void CNetSession::OnRecv( xgc_lpvoid data, xgc_size size )
 	}
 	else
 	{
-		OnMessage( 
-			this, 
-			header.type, 
-			header.code, 
-			(char*)data + sizeof(header), 
-			ntohs( header.length ) - sizeof(header) );
+		OnClientMsg( this, data, ntohs( header.length ) );
 	}
 }
 
-xgc_void CNetSession::SendPacket( xgc_uint8 type, xgc_uint8 code, xgc_lpvoid data, xgc_size size )
+xgc_void CNetSession::SendPacket( xgc_lpvoid data, xgc_size size )
 {
-	MessageHeader header;
-	header.length = htons( (xgc_uint16) (sizeof( header ) + size) );
-	header.type = type;
-	header.code = code;
-
-	net::SendPacketChains( handle_, net::BufferChains {
-		std::make_tuple( &header, sizeof(header) ),
-		std::make_tuple( data, size ),
-	} );
+	net::SendPacket( handle_, data, size );
 }

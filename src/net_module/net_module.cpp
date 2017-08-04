@@ -10,6 +10,7 @@ using namespace xgc::net;
 
 namespace net_module
 {
+	ClientMsgParser  pfn_ClientMsgParser;
 	ClientMsgHandler pfn_ClientMsgHandler;
 	ClientEvtHandler pfn_ClientEvtHandler;
 
@@ -301,7 +302,7 @@ NETWORK_ID Str2NetworkId( xgc_lpcstr pNetworkId )
 	return net_module::_Str2NetworkID( pNetworkId );
 }
 
-xgc_void MakeVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken )
+xgc_void MakeVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID )
 {
 	auto pPipe =  net_module::GetPipe( nNetworkID );
 	if( pPipe )
@@ -310,7 +311,7 @@ xgc_void MakeVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_
 	}
 }
 
-xgc_void KickVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_uint32 nToken )
+xgc_void KickVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID )
 {
 	auto pPipe = net_module::GetPipe( nNetworkID );
 	if( pPipe )
@@ -319,8 +320,9 @@ xgc_void KickVirtualSock( CClientSession * pSession, NETWORK_ID nNetworkID, xgc_
 	}
 }
 
-xgc_void RegistClientHandler( ClientMsgHandler fnMsgHandler, ClientEvtHandler fnEvtHandler )
+xgc_void RegistClientHandler( ClientMsgHandler fnMsgHandler, ClientEvtHandler fnEvtHandler, ClientMsgParser fnMsgParser )
 {
+	net_module::pfn_ClientMsgParser = fnMsgParser;
 	net_module::pfn_ClientMsgHandler = fnMsgHandler;
 	net_module::pfn_ClientEvtHandler = fnEvtHandler;
 }
@@ -339,20 +341,78 @@ xgc_void RegistVirtualSockHandler( xgc_lpcstr lpNetworkId, SockMsgHandler fnMsgH
 	net_module::RegistSockHandler( lpNetworkId, fnMsgHandler, fnEvtHandler );
 }
 
+///
+/// \brief 默认的数据分包回调
+///
+/// \author albert.xu
+/// \date 2017/03/20 15:19
+///
+int DefaultPacketParser( const void* data, size_t size )
+{
+	if( size < sizeof( xgc_uint16 ) )
+		return 0;
+
+	xgc_uint16 length = ntohs( *(xgc_uint16*)data );
+	if( size < length )
+		return 0;
+
+	return length;
+}
+
+///
+/// \brief 发送数据到客户端会话
+///
+/// \author albert.xu
+/// \date 2017/03/20 15:19
+///
 xgc_void SendPacket( CClientSession * pSession, xgc_lpvoid pData, xgc_size nSize )
 {
 	if( pSession )
 		((net_module::CBaseSession*)pSession)->Send( pData, nSize );
 }
 
+///
+/// \brief 发送数据到管道
+///
+/// \author albert.xu
+/// \date 2017/03/20 15:19
+///
 xgc_void SendPacket( CPipeSession * pSession, xgc_lpvoid pData, xgc_size nSize )
 {
 	if( pSession )
 		pSession->SendPacket( pData, nSize );
 }
 
+///
+/// \brief 发送数据到中继
+///
+/// \author albert.xu
+/// \date 2017/03/20 15:19
+///
 xgc_void SendPacket( CRelaySession * pSession, xgc_lpvoid pData, xgc_size nSize )
 {
 	if( pSession )
 		((net_module::CBaseSession*)pSession)->Send( pData, nSize );
+}
+
+///
+/// \brief 转发数据
+///
+/// \author albert.xu
+/// \date 2017/08/01
+///
+xgc_void RelayPacket( CClientSession* pSession, xgc_lpvoid pData, xgc_size nSize )
+{
+	pSession->Relay( pData, nSize );
+}
+
+///
+/// \brief 转发数据
+///
+/// \author albert.xu
+/// \date 2017/08/01
+///
+xgc_void RelayPacket( CRelaySession* pSession, xgc_lpvoid pData, xgc_size nSize )
+{
+	pSession->Relay( pData, nSize );
 }

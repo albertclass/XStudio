@@ -10,7 +10,7 @@
 		</allow>
 		<!--block type="range" from="0.0.0.0" to="255.255.255.255"-->
 		<connections>
-			<connect id="2-1-10-1" address="127.0.0.1" port="27101" timeout="5000">
+			<connect id="2-1-0-1" address="127.0.0.1" port="27001" timeout="5000">
 				<recvbuf value="1048576"/>
 				<sendbuf value="1048576"/>
 			</connect>

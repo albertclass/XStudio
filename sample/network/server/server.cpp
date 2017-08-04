@@ -10,82 +10,17 @@ xgc_char root_path[XGC_MAX_PATH] = { 0 };
 
 int main( int argc, char* argv[] )
 {
-	initscr();
-	start_color();
-	init_pair( 1, COLOR_WHITE, COLOR_BLUE);
-	init_pair( 2, COLOR_WHITE, COLOR_BLACK);
-
-	cbreak();
-	noecho();
-	clear();
-	nodelay( stdscr, 1 );
-	curs_set(0);
-	refresh();
-	scrollok( stdscr, true );
-
-	raw();
-	keypad( stdscr, TRUE );
-	mousemask( ALL_MOUSE_EVENTS, NULL );
-
-	int max_row, max_col;
-	getmaxyx( stdscr, max_row, max_col );
-
-	WINDOW *win_err_border = newwin( 15, max_col, 0, 0 );
-	if( win_err_border )
-	{
-		PANEL  *pel_err = new_panel( win_err_border );
-		set_panel_userptr( pel_err, (void*)"err" );
-		wattrset( win_err_border, COLOR_PAIR( 1 & A_CHARTEXT ) );
-		wbkgd( win_err_border, COLOR_PAIR( 1 & A_CHARTEXT ) );
-
-		box( win_err_border, 0, 0 );
-		char title[] = "[error output window]";
-		mvwprintw( win_err_border, 0, (getmaxx(win_err_border) - XGC_COUNTOF(title))/2, title );
-	}
-
-	WINDOW *win_err = subwin( win_err_border, 13, max_col - 2, 1, 1 );
-	if( win_err )
-	{
-		scrollok( win_err, 1 );
-		wmove( win_err, 0, 0 );
-		wprintw( win_err, "error messages ... \n" );
-	}
-
-	WINDOW *win_inf_border = newwin( max_row - 16, max_col, 15, 0 );
-	if( win_inf_border )
-	{
-		PANEL  *pel_files = new_panel(win_inf_border);
-		set_panel_userptr( pel_files, (void*)"infomation" );
-
-		wattrset( win_inf_border, COLOR_PAIR( 1 & A_CHARTEXT ) );
-		wbkgd( win_inf_border, COLOR_PAIR( 1 & A_CHARTEXT ) );
-
-		box( win_inf_border, 0, 0 );
-		char title[] = "[infomation]";
-		mvwprintw( win_inf_border, 0, (getmaxx(win_inf_border) - XGC_COUNTOF(title))/2, title );
-	}
-	
-	WINDOW *win_inf = subwin( win_inf_border, 14, max_col - 2, 1, 1 );
-	if( win_inf )
-	{
-		scrollok( win_inf, 1 );
-		wmove( win_inf, 0, 0 );
-	}
-
-	update_panels();
-	doupdate();
-
 	char conf_path[1024] = { 0 };
 	if( xgc_nullptr == get_absolute_path( conf_path, "../server.ini" ) )
 	{
-		wprintw( win_err, "format conf path error %s", conf_path );
+		fprintf( stderr, "format conf path error %s", conf_path );
 		return -1;
 	}
 
 	ini_reader ini;
 	if( false == ini.load( conf_path ) )
 	{
-		wprintw( win_err, "conf load error %s", conf_path );
+		fprintf( stderr, "conf load error %s", conf_path );
 		return -1;
 	}
 
@@ -127,31 +62,18 @@ int main( int argc, char* argv[] )
 
 	auto srv = net::StartServer( addr, port, 0, [](){ return XGC_NEW CNetSession(); } );
 
-	wprintw( win_inf, "server is running.\n" );
+	fprintf( stdout, "server is running.\n" );
 	int n = 0;
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
 		{
-			napms( 1 );
-			// std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-			int ch = getch();
-			if( ch == 'x' )
-				break;
-			
-			if( ch != ERR )
-			{
-				wprintw( win_err, "key %s - %d\n", keyname(ch), ch );
-				update_panels();
-				doupdate();
-			}
+			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 		}
 	}
 
 	net::CloseServer( srv );
 	net::DestroyNetwork();
-
-	endwin();
 
 	return 0;
 }
@@ -171,8 +93,6 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	for( i = 0; lpszCmdLine[i]; i++)
 		if( lpszCmdLine[i] == ' ')
 			lpszCmdLine[i] = '\0';
-
-	PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_X );
 
 	return main( argc, (char **)argv);
 }

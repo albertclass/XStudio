@@ -124,7 +124,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/24 17:28
 	///
-	xgc_void SendPacket( xgc_uint8 type, xgc_uint8 code, xgc_lpvoid data, xgc_size size );
+	xgc_void SendPacket( xgc_lpvoid data, xgc_size size );
 };
 
 #endif // _NETSESSION_H_ 

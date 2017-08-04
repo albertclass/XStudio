@@ -18,11 +18,6 @@ namespace xgc
 {
 	namespace common
 	{
-		typedef timer_event _type;
-		typedef pool_handle< pool_handle_base > _handle_type;
-		template<> auto_handle_pool< _type, _handle_type > * 
-		auto_handle_pool< _type, _handle_type >::pInstance = xgc_nullptr;
-
 		COMMON_API xgc_time64 (*steady_tickcount)(void) = timer_tickcount< std::chrono::steady_clock >;
 		COMMON_API xgc_time64 (*system_tickcount)(void) = timer_tickcount< std::chrono::system_clock >;
 

@@ -44,46 +44,45 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 {
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
+	XGC_ASSERT_RETURN( lpConfigPath, false );
 
 	xgc_lpcstr pInitNode = MemMark( "Initialize" );
 
 	xgc_char szPath[XGC_MAX_PATH] = { 0 };
 
 	ini_reader ini;
-	if( lpConfigPath )
+
+	MemMark( "config", pInitNode );
+
+	if( xgc_nullptr == get_absolute_path( szPath, sizeof( szPath ), "%s", lpConfigPath ) )
+		return false;
+
+	if( false == ini.load( szPath ) )
+		return false;
+
+	// 服务器配置
+	try
 	{
-		MemMark( "config", pInitNode );
+		xgc_lpcstr lpValue = xgc_nullptr;
+		lpValue = ini.get_item_value( "ServerCfg", "ServerName", xgc_nullptr );
+		if( xgc_nullptr == lpValue )
+			throw std::runtime_error( "ServerCfg.ServerName read error." );
 
-		if( xgc_nullptr == get_absolute_path( szPath, sizeof( szPath ), "%s", lpConfigPath ) )
-			return false;
+		strcpy_s( szServerName, lpValue );
 
-		if( false == ini.load( szPath ) )
-			return false;
+		lpValue = ini.get_item_value( "ServerCfg", "ConfigPath", xgc_nullptr );
+		if( xgc_nullptr == lpValue )
+			throw std::runtime_error( "ServerCfg.ConfigPath read error. need set config path!" );
 
-		// 服务器配置
-		try
-		{
-			xgc_lpcstr lpValue = xgc_nullptr;
-			lpValue = ini.get_item_value( "ServerCfg", "ServerName", xgc_nullptr );
-			if( xgc_nullptr == lpValue )
-				throw std::runtime_error( "ServerCfg.ServerName read error." );
+		if( xgc_nullptr == get_absolute_path( szConfigPath, sizeof( szConfigPath ), "%s", lpValue ) )
+			throw std::runtime_error( "ServerCfg.ConfigPath path string too long." );
 
-			strcpy_s( szServerName, lpValue );
-
-			lpValue = ini.get_item_value( "ServerCfg", "ConfigPath", xgc_nullptr );
-			if( xgc_nullptr == lpValue )
-				throw std::runtime_error( "ServerCfg.ConfigPath read error. need set config path!" );
-
-			if( xgc_nullptr == get_absolute_path( szConfigPath, sizeof( szConfigPath ), "%s", lpValue ) )
-				throw std::runtime_error( "ServerCfg.ConfigPath path string too long." );
-
-			bUseSequence = ini.get_item_value( "ServerCfg", "UseSequence", false );
-		}
-		catch( std::runtime_error e )
-		{
-			SYS_ERROR( "初始化配置文件失败 ConfigPath - %s, Error - %s", lpConfigPath, e.what() );
-			return false;
-		}
+		bUseSequence = ini.get_item_value( "ServerCfg", "UseSequence", false );
+	}
+	catch( std::runtime_error e )
+	{
+		SYS_ERROR( "初始化配置文件失败 ConfigPath - %s, Error - %s", lpConfigPath, e.what() );
+		return false;
 	}
 
 	MemMark( "logger", pInitNode );
@@ -216,8 +215,6 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 
 			tLast = datetime::now();
 		}
-
-		break;
 	}
 
 	SYS_INFO( "关闭超时检测..." );

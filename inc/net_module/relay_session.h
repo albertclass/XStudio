@@ -5,6 +5,7 @@
 #include "base_session.h"
 namespace net_module
 {
+	class CClientSession;
 	class CPipeSession;
 	///
 	/// \brief 中转连接，将大量的硬连接数据通过一个代理连接发送到内部网络
@@ -33,6 +34,9 @@ namespace net_module
 		
 		/// 状态改变时间戳
 		xgc_time64 mTimeStamp;
+
+		/// 客户端的连接句柄
+		net::network_t mClientHandle;
 	public:
 		///
 		/// \brief 构造函数
@@ -40,7 +44,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/17 16:51
 		///
-		CRelaySession( CPipeSession *pPipeSession );
+		CRelaySession( CPipeSession *pPipeSession, net::network_t hClient );
 
 		///
 		/// \brief 析构函数
@@ -50,6 +54,21 @@ namespace net_module
 		///
 		~CRelaySession();
 
+		///
+		/// \brief 获取客户端会话
+		///
+		/// \author albert.xu
+		/// \date 2017/08/01
+		///
+		CClientSession* GetClientSession() const;
+
+		///
+		/// \brief 转发消息
+		///
+		/// \author albert.xu
+		/// \date 2017/08/01
+		///
+		xgc_void Relay( xgc_lpvoid data, xgc_size size ) const;
 	private:
 		///
 		/// \brief 连接建立
@@ -81,7 +100,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:10
 		///
-		virtual xgc_ulong EvtNotify( xgc_uint32 event, xgc_uint32 result ) override;
+		virtual xgc_void EvtNotify( xgc_uint32 event, xgc_uint32 result ) override;
 
 		///
 		/// \brief 消息通知
@@ -89,7 +108,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/03/03 11:12
 		///
-		virtual xgc_ulong MsgNotify( xgc_lpvoid data, xgc_size size ) override;
+		virtual xgc_void MsgNotify( xgc_lpvoid data, xgc_size size ) override;
 
 		///
 		/// \brief 发送原生消息
@@ -97,7 +116,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/20 17:04
 		///
-		virtual xgc_void Send( xgc_lpvoid data, xgc_size size ) override;
+		virtual xgc_void Send( xgc_lpvoid data, xgc_size size ) const override;
 
 	protected:
 		///
