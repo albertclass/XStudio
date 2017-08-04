@@ -3,10 +3,12 @@
 /premake5.exe
 /bin/Debug/*
 /bin/Release/*
-!/bin/{Debug,Release}/libmysql.dll
-!/bin/{Debug,Release}/dbghelp.dll
-!/bin/{Debug,Release}/*.manifest
-!/bin/{Debug,Release}/*.ini
+!/bin/Debug/libmysql.dll
+!/bin/Debug/dbghelp.dll
+!/bin/Debug/*.manifest
+!/bin/Debug/*.ini
+!/bin/Release/libmysql.dll
+!/bin/Release/dbghelp.dll
 /lib
 /prj
 /obj
