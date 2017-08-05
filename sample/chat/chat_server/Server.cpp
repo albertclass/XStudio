@@ -51,19 +51,12 @@ int main( int argc, char* argv[] )
 
 	xgc_lpvoid srv, mgr;
 
-	{
-		auto addr = ini.get_item_value( "Client", "Addr", "0.0.0.0" );
-		auto port = ini.get_item_value( "Client", "Port", 50001 );
+	auto bind = ini.get_item_value( "ChatServer", "Bind", "0.0.0.0" );
+	auto client_listen_port = ini.get_item_value( "ChatServer", "CliPort", 50001 );
+	auto server_listen_port = ini.get_item_value( "ChatServer", "SrvPort", 50002 );
 
-		srv = net::StartServer( addr, port, 0, [](){ return XGC_NEW CClientSession(); } );
-	}
-
-	{
-		auto addr = ini.get_item_value( "Server", "Addr", "127.0.0.1" );
-		auto port = ini.get_item_value( "Server", "Port", 50002 );
-
-		mgr = net::StartServer( addr, port, 0, [](){ return XGC_NEW CServerSession(); } );
-	}
+	srv = net::StartServer( bind, client_listen_port, 0, [](){ return XGC_NEW CClientSession(); } );
+	mgr = net::StartServer( bind, server_listen_port, 0, [](){ return XGC_NEW CServerSession(); } );
 
 	fprintf( stdout, "server is running.\n" );
 	int n = 0;

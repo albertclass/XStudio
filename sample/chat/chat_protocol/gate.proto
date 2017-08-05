@@ -7,6 +7,8 @@ enum GATE_MSG_ID {
 
 	GATE_MSG_LOGIN_REQ = 0x1001;
 	GATE_MSG_LOGIN_ACK = 0x1002;
+
+	GATE_MSG_LOGOUT_REQ = 0x1003;
 }
 
 message login_req {
@@ -17,4 +19,8 @@ message login_req {
 message login_ack {
 	int32 result = 1;
 	string chat_token = 2;
+}
+
+message logout_req {
+	uint64 user_id = 1;
 }

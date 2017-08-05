@@ -38,6 +38,9 @@ extern login_ackDefaultTypeInternal _login_ack_default_instance_;
 class login_req;
 class login_reqDefaultTypeInternal;
 extern login_reqDefaultTypeInternal _login_req_default_instance_;
+class logout_req;
+class logout_reqDefaultTypeInternal;
+extern logout_reqDefaultTypeInternal _logout_req_default_instance_;
 }  // namespace gate
 
 namespace gate {
@@ -60,12 +63,13 @@ enum GATE_MSG_ID {
   GATE_MSG_BEGIN = 0,
   GATE_MSG_LOGIN_REQ = 4097,
   GATE_MSG_LOGIN_ACK = 4098,
+  GATE_MSG_LOGOUT_REQ = 4099,
   GATE_MSG_ID_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   GATE_MSG_ID_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
 bool GATE_MSG_ID_IsValid(int value);
 const GATE_MSG_ID GATE_MSG_ID_MIN = GATE_MSG_BEGIN;
-const GATE_MSG_ID GATE_MSG_ID_MAX = GATE_MSG_LOGIN_ACK;
+const GATE_MSG_ID GATE_MSG_ID_MAX = GATE_MSG_LOGOUT_REQ;
 const int GATE_MSG_ID_ARRAYSIZE = GATE_MSG_ID_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GATE_MSG_ID_descriptor();
@@ -276,6 +280,86 @@ class login_ack : public ::google::protobuf::Message /* @@protoc_insertion_point
   mutable int _cached_size_;
   friend struct protobuf_gate_2eproto::TableStruct;
 };
+// -------------------------------------------------------------------
+
+class logout_req : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:gate.logout_req) */ {
+ public:
+  logout_req();
+  virtual ~logout_req();
+
+  logout_req(const logout_req& from);
+
+  inline logout_req& operator=(const logout_req& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const logout_req& default_instance();
+
+  static inline const logout_req* internal_default_instance() {
+    return reinterpret_cast<const logout_req*>(
+               &_logout_req_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    2;
+
+  void Swap(logout_req* other);
+
+  // implements Message ----------------------------------------------
+
+  inline logout_req* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  logout_req* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const logout_req& from);
+  void MergeFrom(const logout_req& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(logout_req* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // uint64 user_id = 1;
+  void clear_user_id();
+  static const int kUserIdFieldNumber = 1;
+  ::google::protobuf::uint64 user_id() const;
+  void set_user_id(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:gate.logout_req)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::uint64 user_id_;
+  mutable int _cached_size_;
+  friend struct protobuf_gate_2eproto::TableStruct;
+};
 // ===================================================================
 
 
@@ -461,7 +545,27 @@ inline void login_ack::set_allocated_chat_token(::std::string* chat_token) {
   // @@protoc_insertion_point(field_set_allocated:gate.login_ack.chat_token)
 }
 
+// -------------------------------------------------------------------
+
+// logout_req
+
+// uint64 user_id = 1;
+inline void logout_req::clear_user_id() {
+  user_id_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 logout_req::user_id() const {
+  // @@protoc_insertion_point(field_get:gate.logout_req.user_id)
+  return user_id_;
+}
+inline void logout_req::set_user_id(::google::protobuf::uint64 value) {
+  
+  user_id_ = value;
+  // @@protoc_insertion_point(field_set:gate.logout_req.user_id)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 

@@ -151,6 +151,7 @@ enum MSG_ID {
   MSG_CHANNEL_CHAT_REQ = 4105,
   MSG_CHANNEL_CHAT_NTF = 4106,
   MSG_CHAT_ERR = 4108,
+  MSG_SYS_CHAT_NTF = 4110,
   MSG_LOGIN_REQ = 1,
   MSG_LOGIN_ACK = 2,
   MSG_LOGOUT_REQ = 3,
@@ -158,13 +159,12 @@ enum MSG_ID {
   MSG_CREATE_CHANNEL_REQ = 5,
   MSG_CREATE_CHANNEL_ACK = 6,
   MSG_SYS_CHAT_REQ = 7,
-  MSG_SYS_CHAT_NTF = 8,
   MSG_ID_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   MSG_ID_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
 bool MSG_ID_IsValid(int value);
 const MSG_ID MSG_ID_MIN = MSG_BEGIN;
-const MSG_ID MSG_ID_MAX = MSG_CHAT_ERR;
+const MSG_ID MSG_ID_MAX = MSG_SYS_CHAT_NTF;
 const int MSG_ID_ARRAYSIZE = MSG_ID_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* MSG_ID_descriptor();

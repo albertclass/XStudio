@@ -8,6 +8,7 @@
 #include "datetime.h"
 #include "xsystem.h"
 #include "ini_reader.h"
+#include "csv_reader.h"
 #include "md5.h"
 #include "net.h"
 

@@ -466,7 +466,7 @@ void AddDescriptorsImpl() {
       "(\t\"B\n\017system_chat_ntf\022\022\n\nchannel_id\030\001 \001("
       "\r\022\r\n\005flags\030\002 \001(\r\022\014\n\004text\030\003 \001(\t\">\n\010chat_e"
       "rr\022\016\n\006result\030\001 \001(\005\022\r\n\005token\030\002 \001(\r\022\023\n\013des"
-      "cription\030\003 \001(\t*\252\004\n\006MSG_ID\022\r\n\tMSG_BEGIN\020\000"
+      "cription\030\003 \001(\t*\253\004\n\006MSG_ID\022\r\n\tMSG_BEGIN\020\000"
       "\022\025\n\020MSG_USERAUTH_REQ\020\201\002\022\025\n\020MSG_USERAUTH_"
       "ACK\020\202\002\022\032\n\025MSG_CHANNEL_ENTER_NTF\020\204\002\022\025\n\020MS"
       "G_USERINFO_REQ\020\201 \022\025\n\020MSG_USERINFO_ACK\020\202 "
@@ -475,17 +475,17 @@ void AddDescriptorsImpl() {
       "Q\020\205 \022\032\n\025MSG_CHANNEL_LEAVE_ACK\020\206 \022\026\n\021MSG_"
       "USER_CHAT_REQ\020\207 \022\026\n\021MSG_USER_CHAT_NTF\020\210 "
       "\022\031\n\024MSG_CHANNEL_CHAT_REQ\020\211 \022\031\n\024MSG_CHANN"
-      "EL_CHAT_NTF\020\212 \022\021\n\014MSG_CHAT_ERR\020\214 \022\021\n\rMSG"
-      "_LOGIN_REQ\020\001\022\021\n\rMSG_LOGIN_ACK\020\002\022\022\n\016MSG_L"
-      "OGOUT_REQ\020\003\022\022\n\016MSG_LOGOUT_ACK\020\004\022\032\n\026MSG_C"
-      "REATE_CHANNEL_REQ\020\005\022\032\n\026MSG_CREATE_CHANNE"
-      "L_ACK\020\006\022\024\n\020MSG_SYS_CHAT_REQ\020\007\022\024\n\020MSG_SYS"
-      "_CHAT_NTF\020\010*O\n\006CHAT_T\022\007\n\003USR\020\000\022\013\n\007USR_P2"
-      "P\020\001\022\014\n\010SYS_NOTE\020\002\022\021\n\rSYS_IMPORTANT\020\003\022\016\n\n"
-      "SYS_SCREEN\020\004b\006proto3"
+      "EL_CHAT_NTF\020\212 \022\021\n\014MSG_CHAT_ERR\020\214 \022\025\n\020MSG"
+      "_SYS_CHAT_NTF\020\216 \022\021\n\rMSG_LOGIN_REQ\020\001\022\021\n\rM"
+      "SG_LOGIN_ACK\020\002\022\022\n\016MSG_LOGOUT_REQ\020\003\022\022\n\016MS"
+      "G_LOGOUT_ACK\020\004\022\032\n\026MSG_CREATE_CHANNEL_REQ"
+      "\020\005\022\032\n\026MSG_CREATE_CHANNEL_ACK\020\006\022\024\n\020MSG_SY"
+      "S_CHAT_REQ\020\007*O\n\006CHAT_T\022\007\n\003USR\020\000\022\013\n\007USR_P"
+      "2P\020\001\022\014\n\010SYS_NOTE\020\002\022\021\n\rSYS_IMPORTANT\020\003\022\016\n"
+      "\nSYS_SCREEN\020\004b\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2220);
+      descriptor, 2221);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "msg.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);
@@ -542,7 +542,6 @@ bool MSG_ID_IsValid(int value) {
     case 5:
     case 6:
     case 7:
-    case 8:
     case 257:
     case 258:
     case 260:
@@ -557,6 +556,7 @@ bool MSG_ID_IsValid(int value) {
     case 4105:
     case 4106:
     case 4108:
+    case 4110:
       return true;
     default:
       return false;

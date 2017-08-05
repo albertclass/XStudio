@@ -20,7 +20,7 @@ xgc_void SendClientPacket( CClientSession* net, xgc_uint16 msgid, ::google::prot
 	xgc_uint16 pack_size = sizeof( MessageHeader ) + data_size;
 
 	m.h.length = htons( pack_size );
-	m.h.message = htons( chat::MSG_LOGIN_ACK );
+	m.h.message = htons( msgid );
 
 	msg.SerializeToArray( m.b, sizeof( m.b ) );
 

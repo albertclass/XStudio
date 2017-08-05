@@ -30,6 +30,7 @@ enum MSG_ID {
 	MSG_CHANNEL_CHAT_REQ = 0x1009;
 	MSG_CHANNEL_CHAT_NTF = 0x100A;
 	MSG_CHAT_ERR = 0x100C;
+	MSG_SYS_CHAT_NTF = 0x100E;
 
 	// Server Message
 	MSG_LOGIN_REQ 	= 0x0001;
@@ -41,7 +42,6 @@ enum MSG_ID {
 	MSG_CREATE_CHANNEL_ACK = 0x0006;
 
 	MSG_SYS_CHAT_REQ = 0x0007;
-	MSG_SYS_CHAT_NTF = 0x0008;
 } 
 
 message login_req {

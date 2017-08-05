@@ -1,9 +1,9 @@
 #pragma once
 
-#ifndef _GATE_SRV_SESSION_H_ 
-#define _GATE_SRV_SESSION_H_ 
+#ifndef _CLIENT_SESSION_H_ 
+#define _CLIENT_SESSION_H_ 
 
-class CGateSrvSession : public net::INetworkSession
+class CClientSession : public net::INetworkSession
 {
 protected:
 	/// 网络句柄
@@ -12,8 +12,8 @@ protected:
 	xgc_ulong pingpong_;
 	/// 最后一次接收ping消息的时间
 	xgc_time64 pinglast_;
-	/// 用户数据
-	xgc_uint32 chat_id_;
+	/// 角色标识
+	xgc_uint64 user_id_;
 public:
 	///
 	/// \brief 构造
@@ -21,7 +21,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/14 10:51
 	///
-	CGateSrvSession();
+	CClientSession();
 
 	///
 	/// \brief 析构
@@ -29,7 +29,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/03/14 10:51
 	///
-	virtual ~CGateSrvSession();
+	virtual ~CClientSession();
 
 	///
 	/// \brief 获取网络句柄
@@ -97,27 +97,14 @@ public:
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) override;
 
 	///
-	/// \brief 设置用户数据
+	/// \brief 发送数据
 	///
 	/// \author albert.xu
-	/// \date 2017/03/27 11:35
+	/// \date 2017/08/05
 	///
-	xgc_void setChatID( xgc_uint32 chat_id )
-	{
-		chat_id_ = chat_id;
-	}
+	xgc_void Send( xgc_uint16 msgid, ::google::protobuf::Message& msg );
 
-	///
-	/// \brief 获取用户数据
-	///
-	/// \author albert.xu
-	/// \date 2017/03/27 11:36
-	///
-	xgc_uint32 getChatID()
-	{
-		return chat_id_;
-	}
 };
 
-#endif // _GATE_SRV_SESSION_H_ 
+#endif // _NETSESSION_H_ 
 
