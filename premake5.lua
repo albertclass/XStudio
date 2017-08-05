@@ -273,7 +273,7 @@ group "sample"
 			language "C++"
 			cppdialect "C++11"
 			location "prj/sample"
-			includedirs { "inc/common", "inc/net", "sample/chat" }
+			includedirs { "inc/common", "inc/net", "sample/chat", "sample/chat/chat_protocol" }
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 			links { "common", "net" }
@@ -282,19 +282,24 @@ group "sample"
 
 			files {
 				"sample/chat/*.h",
-				"sample/chat/*.cc",
+				"sample/chat/chat_protocol/*.h",
+				"sample/chat/chat_protocol/*.cc",
 				"sample/chat/" .. prj_name .. "/*.h",
 				"sample/chat/" .. prj_name .. "/*.cpp",
 			}
 
 			vpaths {
+				["Protocol/*"] = {
+					"sample/chat/chat_protocol/*.h",
+					"sample/chat/chat_protocol/*.cc",
+				},
+
 				["Header Files/*"] = { 
 					"sample/chat/*.h",
 					"sample/chat/" .. prj_name .. "/**.h",
 				},
 
 				["Source Files/*"] = { 
-					"sample/chat/*.cc",
 					"sample/chat/" .. prj_name .. "/**.cpp", 
 				},
 			}
@@ -332,7 +337,7 @@ group "sample"
 		return prj
 	end
 
-	chat_project( "gate_server" )
+	chat_project( "game_gate" )
 	chat_project( "chat_server" )
 	chat_project( "chat_client" )
 
