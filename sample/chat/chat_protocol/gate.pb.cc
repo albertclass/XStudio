@@ -65,6 +65,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] = {
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(login_ack, result_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(login_ack, user_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(login_ack, chat_token_),
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(logout_req, _internal_metadata_),
@@ -77,7 +78,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] = {
 static const ::google::protobuf::internal::MigrationSchema schemas[] = {
   { 0, -1, sizeof(login_req)},
   { 7, -1, sizeof(login_ack)},
-  { 14, -1, sizeof(logout_req)},
+  { 15, -1, sizeof(logout_req)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -136,15 +137,16 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] = {
       "\n\ngate.proto\022\004gate\"/\n\tlogin_req\022\020\n\010usern"
-      "ame\030\001 \001(\t\022\020\n\010password\030\002 \001(\t\"/\n\tlogin_ack"
-      "\022\016\n\006result\030\001 \001(\005\022\022\n\nchat_token\030\002 \001(\t\"\035\n\n"
-      "logout_req\022\017\n\007user_id\030\001 \001(\004*m\n\013GATE_MSG_"
-      "ID\022\022\n\016GATE_MSG_BEGIN\020\000\022\027\n\022GATE_MSG_LOGIN"
-      "_REQ\020\201 \022\027\n\022GATE_MSG_LOGIN_ACK\020\202 \022\030\n\023GATE"
-      "_MSG_LOGOUT_REQ\020\203 b\006proto3"
+      "ame\030\001 \001(\t\022\020\n\010password\030\002 \001(\t\"@\n\tlogin_ack"
+      "\022\016\n\006result\030\001 \001(\005\022\017\n\007user_id\030\002 \001(\004\022\022\n\ncha"
+      "t_token\030\003 \001(\t\"\035\n\nlogout_req\022\017\n\007user_id\030\001"
+      " \001(\004*m\n\013GATE_MSG_ID\022\022\n\016GATE_MSG_BEGIN\020\000\022"
+      "\027\n\022GATE_MSG_LOGIN_REQ\020\201 \022\027\n\022GATE_MSG_LOG"
+      "IN_ACK\020\202 \022\030\n\023GATE_MSG_LOGOUT_REQ\020\203 b\006pro"
+      "to3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 266);
+      descriptor, 283);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "gate.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);
@@ -587,6 +589,7 @@ void login_req::set_allocated_password(::std::string* password) {
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int login_ack::kResultFieldNumber;
+const int login_ack::kUserIdFieldNumber;
 const int login_ack::kChatTokenFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -607,13 +610,17 @@ login_ack::login_ack(const login_ack& from)
   if (from.chat_token().size() > 0) {
     chat_token_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.chat_token_);
   }
-  result_ = from.result_;
+  ::memcpy(&user_id_, &from.user_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&result_) -
+    reinterpret_cast<char*>(&user_id_)) + sizeof(result_));
   // @@protoc_insertion_point(copy_constructor:gate.login_ack)
 }
 
 void login_ack::SharedCtor() {
   chat_token_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  result_ = 0;
+  ::memset(&user_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&result_) -
+      reinterpret_cast<char*>(&user_id_)) + sizeof(result_));
   _cached_size_ = 0;
 }
 
@@ -652,7 +659,9 @@ login_ack* login_ack::New(::google::protobuf::Arena* arena) const {
 void login_ack::Clear() {
 // @@protoc_insertion_point(message_clear_start:gate.login_ack)
   chat_token_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  result_ = 0;
+  ::memset(&user_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&result_) -
+      reinterpret_cast<char*>(&user_id_)) + sizeof(result_));
 }
 
 bool login_ack::MergePartialFromCodedStream(
@@ -679,10 +688,24 @@ bool login_ack::MergePartialFromCodedStream(
         break;
       }
 
-      // string chat_token = 2;
+      // uint64 user_id = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(18u)) {
+            static_cast< ::google::protobuf::uint8>(16u)) {
+
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &user_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // string chat_token = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_chat_token()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -727,14 +750,19 @@ void login_ack::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->result(), output);
   }
 
-  // string chat_token = 2;
+  // uint64 user_id = 2;
+  if (this->user_id() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->user_id(), output);
+  }
+
+  // string chat_token = 3;
   if (this->chat_token().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->chat_token().data(), static_cast<int>(this->chat_token().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "gate.login_ack.chat_token");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->chat_token(), output);
+      3, this->chat_token(), output);
   }
 
   // @@protoc_insertion_point(serialize_end:gate.login_ack)
@@ -752,7 +780,12 @@ void login_ack::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->result(), target);
   }
 
-  // string chat_token = 2;
+  // uint64 user_id = 2;
+  if (this->user_id() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->user_id(), target);
+  }
+
+  // string chat_token = 3;
   if (this->chat_token().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->chat_token().data(), static_cast<int>(this->chat_token().length()),
@@ -760,7 +793,7 @@ void login_ack::SerializeWithCachedSizes(
       "gate.login_ack.chat_token");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->chat_token(), target);
+        3, this->chat_token(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:gate.login_ack)
@@ -771,11 +804,18 @@ size_t login_ack::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:gate.login_ack)
   size_t total_size = 0;
 
-  // string chat_token = 2;
+  // string chat_token = 3;
   if (this->chat_token().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->chat_token());
+  }
+
+  // uint64 user_id = 2;
+  if (this->user_id() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->user_id());
   }
 
   // int32 result = 1;
@@ -818,6 +858,9 @@ void login_ack::MergeFrom(const login_ack& from) {
 
     chat_token_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.chat_token_);
   }
+  if (from.user_id() != 0) {
+    set_user_id(from.user_id());
+  }
   if (from.result() != 0) {
     set_result(from.result());
   }
@@ -847,6 +890,7 @@ void login_ack::Swap(login_ack* other) {
 }
 void login_ack::InternalSwap(login_ack* other) {
   chat_token_.Swap(&other->chat_token_);
+  std::swap(user_id_, other->user_id_);
   std::swap(result_, other->result_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -873,7 +917,21 @@ void login_ack::set_result(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:gate.login_ack.result)
 }
 
-// string chat_token = 2;
+// uint64 user_id = 2;
+void login_ack::clear_user_id() {
+  user_id_ = GOOGLE_ULONGLONG(0);
+}
+::google::protobuf::uint64 login_ack::user_id() const {
+  // @@protoc_insertion_point(field_get:gate.login_ack.user_id)
+  return user_id_;
+}
+void login_ack::set_user_id(::google::protobuf::uint64 value) {
+  
+  user_id_ = value;
+  // @@protoc_insertion_point(field_set:gate.login_ack.user_id)
+}
+
+// string chat_token = 3;
 void login_ack::clear_chat_token() {
   chat_token_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

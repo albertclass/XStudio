@@ -19,7 +19,7 @@ public:
 	/// \brief 构造
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:51
+	/// \date 2017/08/05
 	///
 	CServerSession();
 
@@ -27,7 +27,7 @@ public:
 	/// \brief 析构
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:51
+	/// \date 2017/08/05
 	///
 	virtual ~CServerSession();
 
@@ -35,7 +35,7 @@ public:
 	/// \brief 获取网络句柄
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:53
+	/// \date 2017/08/05
 	///
 	net::network_t GetHandle()const
 	{
@@ -52,7 +52,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAccept( net::network_t handle ) override;
 
@@ -60,7 +60,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnConnect( net::network_t handle ) override;
 
@@ -68,7 +68,7 @@ public:
 	/// \brief 连接错误
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnError( xgc_uint32 error_code ) override;
 
@@ -76,7 +76,7 @@ public:
 	/// \brief 连接关闭
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:10
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnClose() override;
 
@@ -84,7 +84,7 @@ public:
 	/// \brief 网络保活事件
 	///
 	/// \author albert.xu
-	/// \date 2017/03/03 10:41
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAlive() override;
 
@@ -92,9 +92,41 @@ public:
 	/// \brief 接收数据
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:10
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) override;
+
+	///
+	/// \brief 角色登陆游戏，通知聊天服务器
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onUserLoginReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 角色登出游戏
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onUserLogoutReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 游戏服务器创建频道
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onCreateChannelReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 服务器发送系统消息
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onSystemNoteReq( xgc_lpvoid ptr, int len );
 
 	///
 	/// \brief 设置用户数据
@@ -111,12 +143,21 @@ public:
 	/// \brief 获取用户数据
 	///
 	/// \author albert.xu
-	/// \date 2017/03/27 11:36
+	/// \date 2017/08/05
 	///
 	xgc_lpvoid GetUserdata()
 	{
 		return userdata_;
 	}
+
+	///
+	/// \brief 发送数据到游戏服务器
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void Send2GameServer( xgc_uint16 msgid, ::google::protobuf::Message& msg );
+
 };
 
 #endif // _SERVER_SESSION_H_ 

@@ -2,8 +2,9 @@
 
 #ifndef _CLIENT_SESSION_H_ 
 #define _CLIENT_SESSION_H_ 
+#include "auto_handle.h"
 
-class CClientSession : public net::INetworkSession
+class CClientSession : public net::INetworkSession, public auto_handle< CClientSession >
 {
 protected:
 	/// ÍøÂç¾ä±ú

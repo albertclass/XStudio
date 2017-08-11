@@ -2,13 +2,14 @@
 #ifndef _CLIENT_HEADER_H_ 
 #define _CLIENT_HEADER_H_ 
 #include "defines.h"
-#if defined( _WINDOWS ) && defined( _DEBUG )
-#	include "vld.h"
-#endif
+//#if defined( _WINDOWS ) && defined( _DEBUG )
+//#	include "vld.h"
+//#endif
 #include "datetime.h"
 #include "xsystem.h"
 #include "ini_reader.h"
 #include "csv_reader.h"
+#include "encoding.h"
 #include "md5.h"
 #include "net.h"
 

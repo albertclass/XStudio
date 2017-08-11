@@ -41,18 +41,20 @@ xgc_bool CServer::Setup( xgc_lpcstr lpConfigFile )
 
 	path_dirs( conf_path, conf_file );
 
+	/// 设置默认的缓冲区参数
 	struct net::Param_SetBufferSize param1;
-	param1.recv_buffer_size = 64 * 1024;
-	param1.send_buffer_size = 64 * 1024;
+	param1.recv_buffer_size = 32 * 1024;
+	param1.send_buffer_size = 32 * 1024;
 
 	if( 0 != net::ExecuteState( Operator_SetBufferSize, &param1 ) )
 	{
 		return false;
 	}
 
+	/// 设置默认的包参数
 	struct net::Param_SetPacketSize param2;
-	param2.recv_packet_size = 64 * 1024;
-	param2.send_packet_size = 64 * 1024;
+	param2.recv_packet_size = 8 * 1024;
+	param2.send_packet_size = 8 * 1024;
 
 	if( 0 != net::ExecuteState( Operator_SetPacketSize, &param2 ) )
 	{
@@ -105,6 +107,12 @@ xgc_bool CServer::Setup( xgc_lpcstr lpConfigFile )
 ///
 xgc_long CServer::VerificationUser( const xgc_string &username, const xgc_string &password, xgc_uint64 &user_id )
 {
+	if( strncmp( username.c_str(), "test", 4 ) == 0 )
+	{
+		user_id = str2numeric< xgc_uint64 >( username.c_str() + 4 );
+		return true;
+	}
+
 	auto it = mAccountMap.find( username );
 	if( it == mAccountMap.end() )
 		return -1;
@@ -122,12 +130,29 @@ xgc_void CServer::Run()
 	if( false == net::CreateNetwork( 1 ) )
 		return;
 
-	mListener = net::StartServer( mGateAddr, mGatePort, 0, [](){ return XGC_NEW CClientSession(); } );
+	server_options options_s;
+	memset( &options_s, 0, sizeof( options_s ) );
+	options_s.acceptor_count = 10;
+
+	options_s.recv_buffer_size = 1024 * 1024;
+	options_s.send_buffer_size = 1024 * 1024;
+
+	options_s.recv_packet_max = 4 * 1024;
+	options_s.send_packet_max = 4 * 1024;
+
+	mListener = net::StartServer( mGateAddr, mGatePort, &options_s, [](){ return XGC_NEW CClientSession(); } );
+
 	if( xgc_nullptr == mListener )
 		return;
 
-	auto nOption = NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_RECONNECT | NET_CONNECT_OPTION_TIMEOUT;
-	mChatLink = Connect( mChatAddr, mChatPort, nOption, 3000, this );
+	connect_options options_c;
+	memset( &options_c, 0, sizeof( options_c ) );
+
+	options_c.timeout = 3000;
+	options_c.is_async = true;
+	options_c.is_reconnect_timeout = true;
+
+	mChatLink = Connect( mChatAddr, mChatPort, this, &options_c );
 	if( mChatLink == INVALID_NETWORK_HANDLE )
 		return;
 
@@ -148,6 +173,8 @@ xgc_void CServer::Run()
 
 int main( int argc, char* argv[] )
 {
+	atexit( google::protobuf::ShutdownProtobufLibrary );
+
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	auto pLocale = setlocale( LC_ALL, "chs" );

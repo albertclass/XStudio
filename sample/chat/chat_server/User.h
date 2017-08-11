@@ -4,6 +4,7 @@
 #include "auto_handle.h"
 
 class CChannel;
+class CClientSession;
 class CUser : public auto_handle< CUser >
 {
 private:
@@ -18,7 +19,7 @@ private:
 	/// 角色Token
 	xgc_char mToken[64];
 	
-	net::network_t mNetHandle;
+	CClientSession *mClientSession;
 
 	/// 加入的频道列表
 	xgc_set< xgc_uint32 > mChannelSet;
@@ -31,9 +32,9 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void online( net::network_t hNet )
+	xgc_void online( CClientSession* pSession )
 	{
-		mNetHandle = hNet;
+		mClientSession = pSession;
 	}
 
 	///
@@ -43,7 +44,7 @@ public:
 	///
 	xgc_void offline()
 	{
-		mNetHandle = INVALID_NETWORK_HANDLE;
+		mClientSession = xgc_nullptr;
 	}
 
 	///

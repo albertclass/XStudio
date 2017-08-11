@@ -19,7 +19,7 @@ public:
 	/// \brief 构造
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:51
+	/// \date 2017/08/05
 	///
 	CClientSession();
 
@@ -27,7 +27,7 @@ public:
 	/// \brief 析构
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:51
+	/// \date 2017/08/05
 	///
 	virtual ~CClientSession();
 
@@ -35,7 +35,7 @@ public:
 	/// \brief 获取网络句柄
 	///
 	/// \author albert.xu
-	/// \date 2017/03/14 10:53
+	/// \date 2017/08/05
 	///
 	net::network_t GetHandle()const
 	{
@@ -52,7 +52,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAccept( net::network_t handle ) override;
 
@@ -60,7 +60,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnConnect( net::network_t handle ) override;
 
@@ -68,7 +68,7 @@ public:
 	/// \brief 连接错误
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:09
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnError( xgc_uint32 error_code ) override;
 
@@ -76,7 +76,7 @@ public:
 	/// \brief 连接关闭
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:10
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnClose() override;
 
@@ -84,7 +84,7 @@ public:
 	/// \brief 网络保活事件
 	///
 	/// \author albert.xu
-	/// \date 2017/03/03 10:41
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAlive() override;
 
@@ -92,31 +92,66 @@ public:
 	/// \brief 接收数据
 	///
 	/// \author albert.xu
-	/// \date 2017/02/28 11:10
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) override;
 
 	///
-	/// \brief 设置用户数据
+	/// \brief 用户认证
 	///
 	/// \author albert.xu
-	/// \date 2017/03/27 11:35
+	/// \date 2017/08/05
 	///
-	xgc_void setChatID( xgc_uint32 chat_id )
-	{
-		chat_id_ = chat_id;
-	}
+	xgc_void onUserAuth( xgc_lpvoid ptr, int len );
 
 	///
-	/// \brief 获取用户数据
+	/// \brief 请求用户信息
 	///
 	/// \author albert.xu
-	/// \date 2017/03/27 11:36
+	/// \date 2017/08/05
 	///
-	xgc_uint32 getChatID()
-	{
-		return chat_id_;
-	}
+	xgc_void onUserInfoReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 请求进入频道
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onEnterChannelReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 请求离开频道
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onLeaveChannelReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 用户私聊请求
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onUserChatReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 用户频道发言请求
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onChannelChatReq( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 发送数据到客户端
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void Send2Client( xgc_uint16 msgid, ::google::protobuf::Message& msg );
+
 };
 
 #endif // _NETSESSION_H_ 

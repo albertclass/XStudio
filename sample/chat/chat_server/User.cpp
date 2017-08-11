@@ -2,9 +2,11 @@
 #include "User.h"
 #include "Channel.h"
 
+#include "ClientSession.h"
+
 CUser::CUser( xgc_uint64 nUserID )
 	: mUserID( nUserID )
-	, mNetHandle( INVALID_NETWORK_HANDLE )
+	, mClientSession( xgc_nullptr )
 {
 }
 
@@ -19,11 +21,11 @@ CUser::~CUser()
 ///
 xgc_lpcstr CUser::genToken()
 {
-	char Hex[] = "0123456789ABCDEF!@#$%^&*()-=<>?/\\~`";
+	char Hex[] = "0123456789ABCDEF!@#$%^&*()-=<>?/~`";
 	for( int i = 0; i < sizeof( mToken ) - 1; ++i )
 	{
-		auto idx = random_range( 0ULL, sizeof( Hex ) );
-		XGC_ASSERT( idx < sizeof( mToken ) );
+		auto idx = random_range( 0ULL, sizeof( Hex ) - 2 );
+		XGC_ASSERT( idx < sizeof( Hex ) - 1 );
 		mToken[i] = Hex[idx];
 	}
 
@@ -76,24 +78,8 @@ xgc_void CUser::onLeaveChannel( CChannel* pChannel )
 
 xgc_void CUser::Send( xgc_uint16 msgid, ::google::protobuf::Message& msg )
 {
-	if( mNetHandle == INVALID_NETWORK_HANDLE )
+	if( xgc_nullptr == mClientSession )
 		return;
 
-#pragma pack(1)
-	struct
-	{
-		MessageHeader h;
-		char b[4096];
-	} m;
-#pragma pack()
-
-	xgc_uint16 data_size = msg.ByteSize();
-	xgc_uint16 pack_size = sizeof( MessageHeader ) + data_size;
-
-	m.h.length = htons( pack_size );
-	m.h.message = htons( msgid );
-
-	msg.SerializeToArray( m.b, sizeof( m.b ) );
-
-	SendPacket( mNetHandle, &m, pack_size );
+	mClientSession->Send2Client( msgid, msg );
 }

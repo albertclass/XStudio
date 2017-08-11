@@ -6,6 +6,7 @@ CChannel::CChannel( const xgc_string &strName )
 	: mName( strName )
 	, mAutoDestory( true )
 	, mAutoDestoryDelay( 10000 )
+	, mAutoKickDelay( 5 * 60 * 1000 )
 	, mPassword( "" )
 {
 }
@@ -33,7 +34,7 @@ xgc_long CChannel::Enter( xgc_uint32 nChatID, xgc_lpcstr lpPassword )
 	if( it != mUserConfigMap.end() )
 		return 1;
 
-	UserConfig newConfig;
+	user newConfig;
 	newConfig.forbid = false;
 	newConfig.disconnect = false;
 	newConfig.last_timestamp = current_time();
@@ -70,6 +71,7 @@ xgc_void CChannel::Leave( xgc_uint32 nChatID )
 	if( mAutoDestory && mUserConfigMap.empty() )
 	{
 		// 将自己放到延迟删除列表中
+		mDestoryTime = current_milliseconds() + mAutoDestoryDelay;
 	}
 }
 
@@ -78,12 +80,13 @@ xgc_void CChannel::Leave( xgc_uint32 nChatID )
 /// \author albert.xu
 /// \date 2017/08/03
 ///
-xgc_void CChannel::AliveCheck()
+xgc_void CChannel::eraseQuietUser()
 {
 	if( mAutoKickDelay == 0 )
 		return;
 
 	auto now = current_milliseconds();
+
 	auto it = mUserConfigMap.begin();
 	while( it != mUserConfigMap.end() )
 	{
@@ -104,6 +107,24 @@ xgc_void CChannel::AliveCheck()
 
 		++it;
 	}
+}
+
+///
+/// \brief 是否有效用户
+/// \author albert.xu
+/// \date 2017/08/03
+///
+xgc_bool CChannel::isValidUser( xgc_uint32 chat_id )
+{
+	auto it = mUserConfigMap.find( chat_id );
+	if( it == mUserConfigMap.end() )
+		return false;
+
+	CUser* pUser = CUser::handle_exchange( chat_id );
+	if( xgc_nullptr == pUser )
+		return false;
+
+	return true;
 }
 
 xgc_long CChannel::Chat( xgc_uint32 nChatID, xgc_lpcstr lpText, xgc_size nSize, xgc_uint32 nToken )

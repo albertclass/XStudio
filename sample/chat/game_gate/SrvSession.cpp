@@ -1,5 +1,7 @@
 #include "header.h"
+#include "gate.pb.h"
 #include "SrvSession.h"
+#include "CliSession.h"
 
 CServerSession::CServerSession()
 	: handle_( INVALID_NETWORK_HANDLE )
@@ -56,7 +58,6 @@ xgc_void CServerSession::OnError( xgc_uint32 error_code )
 xgc_void CServerSession::OnClose()
 {
 	fprintf( stderr, "net session %u closed\r\n", handle_ );
-	delete this;
 }
 
 xgc_void CServerSession::OnAlive()
@@ -75,12 +76,84 @@ xgc_void CServerSession::OnRecv( xgc_lpvoid data, xgc_size size )
 	switch( message )
 	{
 		case chat::MSG_CREATE_CHANNEL_ACK:
+		onCreateChannelAck( ptr, len );
 		break;
 		case chat::MSG_LOGIN_ACK:
+		onLoginAck( ptr, len );
 		break;
 		case chat::MSG_LOGOUT_ACK:
+		onLogoutAck( ptr, len );
 		break;
 	}
+}
+
+///
+/// \brief 创建频道回应
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+xgc_void CServerSession::onCreateChannelAck( xgc_lpvoid ptr, int len )
+{
+	chat::create_channel_ack ack;
+	ack.ParseFromArray( ptr, len );
+
+	auto channel_id   = ack.channel_id();
+	auto channel_name = ack.channel_name();
+
+	auto it = channels_.find( channel_id );
+	if( it == channels_.end() )
+	{
+		channels_.insert( { channel_id, channel_name } );
+	}
+	else
+	{
+		it->second = channel_name;
+	}
+}
+
+///
+/// \brief 角色登陆聊天服务器回应
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
+{
+	chat::login_ack ack1;
+	ack1.ParseFromArray( ptr, len );
+
+	auto result = ack1.result();
+	auto user_id = ack1.user_id();
+
+	auto it = users_.find( user_id );
+	if( it == users_.end() )
+		return;
+
+	auto session = CClientSession::handle_exchange( it->second );
+	if( xgc_nullptr == session )
+		return;
+
+	gate::login_ack ack2;
+	ack2.set_result( result );
+
+	if( result >= 0 )
+	{
+		ack2.set_user_id( user_id );
+		ack2.set_chat_token( ack1.token() );
+	}
+
+	session->Send( gate::GATE_MSG_LOGIN_ACK, ack2 );
+}
+
+///
+/// \brief 角色离开聊天服务器回应
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+xgc_void CServerSession::onLogoutAck( xgc_lpvoid ptr, int len )
+{
 }
 
 ///
@@ -89,8 +162,17 @@ xgc_void CServerSession::OnRecv( xgc_lpvoid data, xgc_size size )
 /// \author albert.xu
 /// \date 2017/08/05
 ///
-xgc_void CServerSession::UserLogin( xgc_uint64 user_id, const xgc_string &nickname )
+xgc_long CServerSession::UserLogin( xgc_uint64 user_id, const xgc_string &nickname, xgc_uint32 session_id )
 {
+	if( handle_ == INVALID_NETWORK_HANDLE )
+		return -1;
+
+	auto it = users_.find( user_id );
+	if( it != users_.end() )
+		return -2;
+
+	users_.insert( { user_id, session_id } );
+
 	chat::login_req req;
 	req.set_user_id( user_id );
 	req.set_nick( nickname );
@@ -99,6 +181,7 @@ xgc_void CServerSession::UserLogin( xgc_uint64 user_id, const xgc_string &nickna
 	req.set_extra( "1111 2222 3333 4444 5555" );
 
 	Send( chat::MSG_LOGIN_REQ, req );
+	return 0;
 }
 
 ///

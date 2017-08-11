@@ -28,14 +28,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	CChannel* getChannelByName( const xgc_string &strChannelName )
-	{
-		auto it = mChannelMap.find( strChannelName );
-		if( it == mChannelMap.end() )
-			return xgc_nullptr;
-
-		return CChannel::handle_exchange( it->second );
-	}
+	CChannel* getChannelByName( const xgc_string &strChannelName );
 
 	///
 	/// \brief 加入频道
@@ -60,6 +53,13 @@ public:
 
 		return C;
 	}
+
+	///
+	/// \brief 检查延迟删除
+	/// \author albert.xu
+	/// \date 2017/08/03
+	///
+	xgc_long eraseEmptyChannel();
 };
 
 CChannelMgr &getChannelMgr();

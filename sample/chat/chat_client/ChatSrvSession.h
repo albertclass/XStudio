@@ -2,7 +2,7 @@
 
 #ifndef _CHAT_SRV_SESSION_H_ 
 #define _CHAT_SRV_SESSION_H_ 
-
+class CGameSrvSession;
 class CChatSrvSession : public net::INetworkSession
 {
 protected:
@@ -16,24 +16,57 @@ protected:
 	xgc_uint64 user_id_;
 	/// 聊天标识
 	xgc_uint32 chat_id_;
+	/// 昵称
+	xgc_string nickname_;
+	/// 其他数据
+	xgc_string extra_;
 	/// 登陆令牌
 	xgc_string token_;
-	/// 游戏服务器连接句柄
-	network_t gate_handle_;
+	/// 聊天的token号
+	xgc_uint32 chat_token_;
+
+	/// 游戏服务器连接对象
+	CGameSrvSession *game_session_;
+
+	/// 已进入的频道
+	xgc_map< xgc_uint32, xgc_string > channels_;
+
+	/// 角色信息
+	struct user_info
+	{
+		xgc_uint64 user_id;
+		xgc_uint32 chat_id;
+		xgc_string nick;
+		xgc_string extra;
+	};
+
+	/// 角色信息映射表
+	xgc_map< xgc_uint32, user_info > users_;
+	
+	/// 聊天信息
+	struct chat_info
+	{
+		xgc_time64 timestamp;
+		xgc_uint32 channel_id;
+		xgc_string text;
+	};
+
+	/// 未决的聊天列表
+	xgc_map< xgc_uint32, xgc_list< chat_info > > pending_chat_;
 public:
 	///
 	/// \brief 构造
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
-	CChatSrvSession( network_t gate_handle, xgc_uint64 user_id, xgc_uint32 chat_id, const xgc_string &token );
+	CChatSrvSession( CGameSrvSession *session, xgc_uint64 user_id, const xgc_string &token );
 
 	///
 	/// \brief 析构
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual ~CChatSrvSession();
 
@@ -41,7 +74,7 @@ public:
 	/// \brief 获取网络句柄
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	net::network_t GetHandle()const
 	{
@@ -58,7 +91,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAccept( net::network_t handle ) override;
 
@@ -66,7 +99,7 @@ public:
 	/// \brief 连接建立
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnConnect( net::network_t handle ) override;
 
@@ -74,7 +107,7 @@ public:
 	/// \brief 连接错误
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnError( xgc_uint32 error_code ) override;
 
@@ -82,7 +115,7 @@ public:
 	/// \brief 连接关闭
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnClose() override;
 
@@ -90,7 +123,7 @@ public:
 	/// \brief 网络保活事件
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnAlive() override;
 
@@ -98,7 +131,7 @@ public:
 	/// \brief 接收数据
 	///
 	/// \author albert.xu
-	/// \date 2017/08/5
+	/// \date 2017/08/05
 	///
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) override;
 
@@ -109,6 +142,14 @@ public:
 	/// \date 2017/08/05
 	///
 	xgc_void ChatUserAuth();
+
+	///
+	/// \brief 请求用户信息
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void ChatUserInfoReq( xgc_uint32 chat_id, xgc_uint64 user_id );
 
 	///
 	/// \brief 密语
@@ -191,20 +232,12 @@ public:
 	xgc_void CChatSrvSession::onChatErr( xgc_lpcstr ptr, xgc_size len );
 
 	///
-	/// \brief 聊天服务器连接断开
+	/// \brief 聊天错误通知
 	///
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	xgc_void ChatSrvClosed();
-
-	///
-	/// \brief 游戏服务器连接断开
-	///
-	/// \author albert.xu
-	/// \date 2017/08/05
-	///
-	xgc_void GateSrvClosed();
+	xgc_void CChatSrvSession::showText( xgc_time64 timestamp, xgc_uint32 user_id, xgc_uint32 channel_id, xgc_lpcstr text );
 
 	///
 	/// \brief 发送消息到Chat服务器
@@ -213,6 +246,22 @@ public:
 	/// \date 2017/08/05
 	///
 	xgc_void Send2ChatSrv( xgc_uint16 msgid, ::google::protobuf::Message& msg );
+
+	///
+	/// \brief 断开聊天服务器连接
+	///
+	/// \author albert.xu
+	/// \date 2017/08/09
+	///
+	xgc_void Disconnect();
+
+	///
+	/// \brief 定时发送消息到聊天服务器
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void OnTimer();
 };
 
 #endif // _CHAT_SRV_SESSION_H_ 

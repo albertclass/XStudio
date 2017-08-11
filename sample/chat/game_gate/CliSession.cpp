@@ -74,14 +74,19 @@ xgc_void CClientSession::OnRecv( xgc_lpvoid data, xgc_size size )
 			req.ParseFromArray( ptr, len );
 
 			auto ret = theServer.VerificationUser( req.username(), req.password(), user_id_ );
-			if( ret > 0 )
-			{
-				theServer.UserLogin( user_id_, req.username() );
-			}
-			else
+			if( ret < 0 )
 			{
 				gate::login_ack ack;
 				ack.set_result( ret );
+
+				Send( gate::GATE_MSG_LOGIN_ACK, ack );
+			}
+
+			ret = theServer.UserLogin( user_id_, req.username(), handle() );
+			if( ret < 0 )
+			{
+				gate::login_ack ack;
+				ack.set_result( ret - 100 );
 
 				Send( gate::GATE_MSG_LOGIN_ACK, ack );
 			}

@@ -9,6 +9,12 @@ CUserMgr::CUserMgr()
 
 CUserMgr::~CUserMgr()
 {
+	for( auto &pair : mUserMap )
+	{
+		auto chat_id = pair.second;
+		auto user = CUser::handle_exchange( chat_id );
+		delete user;
+	}
 }
 
 ///

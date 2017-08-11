@@ -53,6 +53,15 @@ extern channel_leave_ackDefaultTypeInternal _channel_leave_ack_default_instance_
 class channel_leave_req;
 class channel_leave_reqDefaultTypeInternal;
 extern channel_leave_reqDefaultTypeInternal _channel_leave_req_default_instance_;
+class channel_users_ack;
+class channel_users_ackDefaultTypeInternal;
+extern channel_users_ackDefaultTypeInternal _channel_users_ack_default_instance_;
+class channel_users_ack_extra;
+class channel_users_ack_extraDefaultTypeInternal;
+extern channel_users_ack_extraDefaultTypeInternal _channel_users_ack_extra_default_instance_;
+class channel_users_req;
+class channel_users_reqDefaultTypeInternal;
+extern channel_users_reqDefaultTypeInternal _channel_users_req_default_instance_;
 class chat_err;
 class chat_errDefaultTypeInternal;
 extern chat_errDefaultTypeInternal _chat_err_default_instance_;
@@ -146,12 +155,14 @@ enum MSG_ID {
   MSG_CHANNEL_ENTER_ACK = 4100,
   MSG_CHANNEL_LEAVE_REQ = 4101,
   MSG_CHANNEL_LEAVE_ACK = 4102,
-  MSG_USER_CHAT_REQ = 4103,
-  MSG_USER_CHAT_NTF = 4104,
-  MSG_CHANNEL_CHAT_REQ = 4105,
-  MSG_CHANNEL_CHAT_NTF = 4106,
-  MSG_CHAT_ERR = 4108,
-  MSG_SYS_CHAT_NTF = 4110,
+  MSG_CHANNEL_USER_REQ = 4103,
+  MSG_CHANNEL_USER_ACK = 4104,
+  MSG_USER_CHAT_REQ = 4105,
+  MSG_USER_CHAT_NTF = 4106,
+  MSG_CHANNEL_CHAT_REQ = 4107,
+  MSG_CHANNEL_CHAT_NTF = 4108,
+  MSG_CHAT_ERR = 4110,
+  MSG_SYS_CHAT_NTF = 4113,
   MSG_LOGIN_REQ = 1,
   MSG_LOGIN_ACK = 2,
   MSG_LOGOUT_REQ = 3,
@@ -815,17 +826,24 @@ class user_info_req : public ::google::protobuf::Message /* @@protoc_insertion_p
 
   // accessors -------------------------------------------------------
 
-  // uint64 user_id = 1;
+  // uint64 user_id = 2;
   void clear_user_id();
-  static const int kUserIdFieldNumber = 1;
+  static const int kUserIdFieldNumber = 2;
   ::google::protobuf::uint64 user_id() const;
   void set_user_id(::google::protobuf::uint64 value);
+
+  // uint32 chat_id = 1;
+  void clear_chat_id();
+  static const int kChatIdFieldNumber = 1;
+  ::google::protobuf::uint32 chat_id() const;
+  void set_chat_id(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:chat.user_info_req)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::uint64 user_id_;
+  ::google::protobuf::uint32 chat_id_;
   mutable int _cached_size_;
   friend struct protobuf_msg_2eproto::TableStruct;
 };
@@ -1676,6 +1694,312 @@ class channel_leave_ack : public ::google::protobuf::Message /* @@protoc_inserti
 };
 // -------------------------------------------------------------------
 
+class channel_users_req : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:chat.channel_users_req) */ {
+ public:
+  channel_users_req();
+  virtual ~channel_users_req();
+
+  channel_users_req(const channel_users_req& from);
+
+  inline channel_users_req& operator=(const channel_users_req& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const channel_users_req& default_instance();
+
+  static inline const channel_users_req* internal_default_instance() {
+    return reinterpret_cast<const channel_users_req*>(
+               &_channel_users_req_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    14;
+
+  void Swap(channel_users_req* other);
+
+  // implements Message ----------------------------------------------
+
+  inline channel_users_req* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  channel_users_req* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const channel_users_req& from);
+  void MergeFrom(const channel_users_req& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(channel_users_req* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // uint32 channel_id = 1;
+  void clear_channel_id();
+  static const int kChannelIdFieldNumber = 1;
+  ::google::protobuf::uint32 channel_id() const;
+  void set_channel_id(::google::protobuf::uint32 value);
+
+  // uint32 extra = 2;
+  void clear_extra();
+  static const int kExtraFieldNumber = 2;
+  ::google::protobuf::uint32 extra() const;
+  void set_extra(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:chat.channel_users_req)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::uint32 channel_id_;
+  ::google::protobuf::uint32 extra_;
+  mutable int _cached_size_;
+  friend struct protobuf_msg_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class channel_users_ack_extra : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:chat.channel_users_ack.extra) */ {
+ public:
+  channel_users_ack_extra();
+  virtual ~channel_users_ack_extra();
+
+  channel_users_ack_extra(const channel_users_ack_extra& from);
+
+  inline channel_users_ack_extra& operator=(const channel_users_ack_extra& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const channel_users_ack_extra& default_instance();
+
+  static inline const channel_users_ack_extra* internal_default_instance() {
+    return reinterpret_cast<const channel_users_ack_extra*>(
+               &_channel_users_ack_extra_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    15;
+
+  void Swap(channel_users_ack_extra* other);
+
+  // implements Message ----------------------------------------------
+
+  inline channel_users_ack_extra* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  channel_users_ack_extra* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const channel_users_ack_extra& from);
+  void MergeFrom(const channel_users_ack_extra& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(channel_users_ack_extra* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // string nick = 3;
+  void clear_nick();
+  static const int kNickFieldNumber = 3;
+  const ::std::string& nick() const;
+  void set_nick(const ::std::string& value);
+  #if LANG_CXX11
+  void set_nick(::std::string&& value);
+  #endif
+  void set_nick(const char* value);
+  void set_nick(const char* value, size_t size);
+  ::std::string* mutable_nick();
+  ::std::string* release_nick();
+  void set_allocated_nick(::std::string* nick);
+
+  // string extra = 4;
+  void clear_extra();
+  static const int kExtraFieldNumber = 4;
+  const ::std::string& extra() const;
+  void set_extra(const ::std::string& value);
+  #if LANG_CXX11
+  void set_extra(::std::string&& value);
+  #endif
+  void set_extra(const char* value);
+  void set_extra(const char* value, size_t size);
+  ::std::string* mutable_extra();
+  ::std::string* release_extra();
+  void set_allocated_extra(::std::string* extra);
+
+  // uint64 user_id = 2;
+  void clear_user_id();
+  static const int kUserIdFieldNumber = 2;
+  ::google::protobuf::uint64 user_id() const;
+  void set_user_id(::google::protobuf::uint64 value);
+
+  // uint32 chat_id = 1;
+  void clear_chat_id();
+  static const int kChatIdFieldNumber = 1;
+  ::google::protobuf::uint32 chat_id() const;
+  void set_chat_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:chat.channel_users_ack.extra)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::ArenaStringPtr nick_;
+  ::google::protobuf::internal::ArenaStringPtr extra_;
+  ::google::protobuf::uint64 user_id_;
+  ::google::protobuf::uint32 chat_id_;
+  mutable int _cached_size_;
+  friend struct protobuf_msg_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class channel_users_ack : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:chat.channel_users_ack) */ {
+ public:
+  channel_users_ack();
+  virtual ~channel_users_ack();
+
+  channel_users_ack(const channel_users_ack& from);
+
+  inline channel_users_ack& operator=(const channel_users_ack& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const channel_users_ack& default_instance();
+
+  static inline const channel_users_ack* internal_default_instance() {
+    return reinterpret_cast<const channel_users_ack*>(
+               &_channel_users_ack_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    16;
+
+  void Swap(channel_users_ack* other);
+
+  // implements Message ----------------------------------------------
+
+  inline channel_users_ack* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  channel_users_ack* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const channel_users_ack& from);
+  void MergeFrom(const channel_users_ack& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(channel_users_ack* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  typedef channel_users_ack_extra extra;
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint32 chat_id = 1;
+  int chat_id_size() const;
+  void clear_chat_id();
+  static const int kChatIdFieldNumber = 1;
+  ::google::protobuf::uint32 chat_id(int index) const;
+  void set_chat_id(int index, ::google::protobuf::uint32 value);
+  void add_chat_id(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      chat_id() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_chat_id();
+
+  // repeated .chat.channel_users_ack.extra user_extra = 2;
+  int user_extra_size() const;
+  void clear_user_extra();
+  static const int kUserExtraFieldNumber = 2;
+  const ::chat::channel_users_ack_extra& user_extra(int index) const;
+  ::chat::channel_users_ack_extra* mutable_user_extra(int index);
+  ::chat::channel_users_ack_extra* add_user_extra();
+  ::google::protobuf::RepeatedPtrField< ::chat::channel_users_ack_extra >*
+      mutable_user_extra();
+  const ::google::protobuf::RepeatedPtrField< ::chat::channel_users_ack_extra >&
+      user_extra() const;
+
+  // @@protoc_insertion_point(class_scope:chat.channel_users_ack)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > chat_id_;
+  mutable int _chat_id_cached_byte_size_;
+  ::google::protobuf::RepeatedPtrField< ::chat::channel_users_ack_extra > user_extra_;
+  mutable int _cached_size_;
+  friend struct protobuf_msg_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class user_chat_req : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:chat.user_chat_req) */ {
  public:
   user_chat_req();
@@ -1696,7 +2020,7 @@ class user_chat_req : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_user_chat_req_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    14;
+    17;
 
   void Swap(user_chat_req* other);
 
@@ -1798,7 +2122,7 @@ class user_chat_ntf : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_user_chat_ntf_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    15;
+    18;
 
   void Swap(user_chat_ntf* other);
 
@@ -1900,7 +2224,7 @@ class channel_chat_req : public ::google::protobuf::Message /* @@protoc_insertio
                &_channel_chat_req_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    16;
+    19;
 
   void Swap(channel_chat_req* other);
 
@@ -2002,7 +2326,7 @@ class channel_chat_ntf : public ::google::protobuf::Message /* @@protoc_insertio
                &_channel_chat_ntf_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    17;
+    20;
 
   void Swap(channel_chat_ntf* other);
 
@@ -2111,7 +2435,7 @@ class system_chat_req : public ::google::protobuf::Message /* @@protoc_insertion
                &_system_chat_req_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    18;
+    21;
 
   void Swap(system_chat_req* other);
 
@@ -2213,7 +2537,7 @@ class system_chat_ntf : public ::google::protobuf::Message /* @@protoc_insertion
                &_system_chat_ntf_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    19;
+    22;
 
   void Swap(system_chat_ntf* other);
 
@@ -2315,7 +2639,7 @@ class chat_err : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_chat_err_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    20;
+    23;
 
   void Swap(chat_err* other);
 
@@ -2973,7 +3297,21 @@ inline void user_auth_ack::set_allocated_extra(::std::string* extra) {
 
 // user_info_req
 
-// uint64 user_id = 1;
+// uint32 chat_id = 1;
+inline void user_info_req::clear_chat_id() {
+  chat_id_ = 0u;
+}
+inline ::google::protobuf::uint32 user_info_req::chat_id() const {
+  // @@protoc_insertion_point(field_get:chat.user_info_req.chat_id)
+  return chat_id_;
+}
+inline void user_info_req::set_chat_id(::google::protobuf::uint32 value) {
+  
+  chat_id_ = value;
+  // @@protoc_insertion_point(field_set:chat.user_info_req.chat_id)
+}
+
+// uint64 user_id = 2;
 inline void user_info_req::clear_user_id() {
   user_id_ = GOOGLE_ULONGLONG(0);
 }
@@ -3694,6 +4032,240 @@ inline void channel_leave_ack::set_allocated_channel_name(::std::string* channel
 
 // -------------------------------------------------------------------
 
+// channel_users_req
+
+// uint32 channel_id = 1;
+inline void channel_users_req::clear_channel_id() {
+  channel_id_ = 0u;
+}
+inline ::google::protobuf::uint32 channel_users_req::channel_id() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_req.channel_id)
+  return channel_id_;
+}
+inline void channel_users_req::set_channel_id(::google::protobuf::uint32 value) {
+  
+  channel_id_ = value;
+  // @@protoc_insertion_point(field_set:chat.channel_users_req.channel_id)
+}
+
+// uint32 extra = 2;
+inline void channel_users_req::clear_extra() {
+  extra_ = 0u;
+}
+inline ::google::protobuf::uint32 channel_users_req::extra() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_req.extra)
+  return extra_;
+}
+inline void channel_users_req::set_extra(::google::protobuf::uint32 value) {
+  
+  extra_ = value;
+  // @@protoc_insertion_point(field_set:chat.channel_users_req.extra)
+}
+
+// -------------------------------------------------------------------
+
+// channel_users_ack_extra
+
+// uint32 chat_id = 1;
+inline void channel_users_ack_extra::clear_chat_id() {
+  chat_id_ = 0u;
+}
+inline ::google::protobuf::uint32 channel_users_ack_extra::chat_id() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.extra.chat_id)
+  return chat_id_;
+}
+inline void channel_users_ack_extra::set_chat_id(::google::protobuf::uint32 value) {
+  
+  chat_id_ = value;
+  // @@protoc_insertion_point(field_set:chat.channel_users_ack.extra.chat_id)
+}
+
+// uint64 user_id = 2;
+inline void channel_users_ack_extra::clear_user_id() {
+  user_id_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 channel_users_ack_extra::user_id() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.extra.user_id)
+  return user_id_;
+}
+inline void channel_users_ack_extra::set_user_id(::google::protobuf::uint64 value) {
+  
+  user_id_ = value;
+  // @@protoc_insertion_point(field_set:chat.channel_users_ack.extra.user_id)
+}
+
+// string nick = 3;
+inline void channel_users_ack_extra::clear_nick() {
+  nick_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& channel_users_ack_extra::nick() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.extra.nick)
+  return nick_.GetNoArena();
+}
+inline void channel_users_ack_extra::set_nick(const ::std::string& value) {
+  
+  nick_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:chat.channel_users_ack.extra.nick)
+}
+#if LANG_CXX11
+inline void channel_users_ack_extra::set_nick(::std::string&& value) {
+  
+  nick_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:chat.channel_users_ack.extra.nick)
+}
+#endif
+inline void channel_users_ack_extra::set_nick(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  nick_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:chat.channel_users_ack.extra.nick)
+}
+inline void channel_users_ack_extra::set_nick(const char* value, size_t size) {
+  
+  nick_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:chat.channel_users_ack.extra.nick)
+}
+inline ::std::string* channel_users_ack_extra::mutable_nick() {
+  
+  // @@protoc_insertion_point(field_mutable:chat.channel_users_ack.extra.nick)
+  return nick_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* channel_users_ack_extra::release_nick() {
+  // @@protoc_insertion_point(field_release:chat.channel_users_ack.extra.nick)
+  
+  return nick_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void channel_users_ack_extra::set_allocated_nick(::std::string* nick) {
+  if (nick != NULL) {
+    
+  } else {
+    
+  }
+  nick_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), nick);
+  // @@protoc_insertion_point(field_set_allocated:chat.channel_users_ack.extra.nick)
+}
+
+// string extra = 4;
+inline void channel_users_ack_extra::clear_extra() {
+  extra_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& channel_users_ack_extra::extra() const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.extra.extra)
+  return extra_.GetNoArena();
+}
+inline void channel_users_ack_extra::set_extra(const ::std::string& value) {
+  
+  extra_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:chat.channel_users_ack.extra.extra)
+}
+#if LANG_CXX11
+inline void channel_users_ack_extra::set_extra(::std::string&& value) {
+  
+  extra_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:chat.channel_users_ack.extra.extra)
+}
+#endif
+inline void channel_users_ack_extra::set_extra(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  
+  extra_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:chat.channel_users_ack.extra.extra)
+}
+inline void channel_users_ack_extra::set_extra(const char* value, size_t size) {
+  
+  extra_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:chat.channel_users_ack.extra.extra)
+}
+inline ::std::string* channel_users_ack_extra::mutable_extra() {
+  
+  // @@protoc_insertion_point(field_mutable:chat.channel_users_ack.extra.extra)
+  return extra_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* channel_users_ack_extra::release_extra() {
+  // @@protoc_insertion_point(field_release:chat.channel_users_ack.extra.extra)
+  
+  return extra_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void channel_users_ack_extra::set_allocated_extra(::std::string* extra) {
+  if (extra != NULL) {
+    
+  } else {
+    
+  }
+  extra_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), extra);
+  // @@protoc_insertion_point(field_set_allocated:chat.channel_users_ack.extra.extra)
+}
+
+// -------------------------------------------------------------------
+
+// channel_users_ack
+
+// repeated uint32 chat_id = 1;
+inline int channel_users_ack::chat_id_size() const {
+  return chat_id_.size();
+}
+inline void channel_users_ack::clear_chat_id() {
+  chat_id_.Clear();
+}
+inline ::google::protobuf::uint32 channel_users_ack::chat_id(int index) const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.chat_id)
+  return chat_id_.Get(index);
+}
+inline void channel_users_ack::set_chat_id(int index, ::google::protobuf::uint32 value) {
+  chat_id_.Set(index, value);
+  // @@protoc_insertion_point(field_set:chat.channel_users_ack.chat_id)
+}
+inline void channel_users_ack::add_chat_id(::google::protobuf::uint32 value) {
+  chat_id_.Add(value);
+  // @@protoc_insertion_point(field_add:chat.channel_users_ack.chat_id)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+channel_users_ack::chat_id() const {
+  // @@protoc_insertion_point(field_list:chat.channel_users_ack.chat_id)
+  return chat_id_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+channel_users_ack::mutable_chat_id() {
+  // @@protoc_insertion_point(field_mutable_list:chat.channel_users_ack.chat_id)
+  return &chat_id_;
+}
+
+// repeated .chat.channel_users_ack.extra user_extra = 2;
+inline int channel_users_ack::user_extra_size() const {
+  return user_extra_.size();
+}
+inline void channel_users_ack::clear_user_extra() {
+  user_extra_.Clear();
+}
+inline const ::chat::channel_users_ack_extra& channel_users_ack::user_extra(int index) const {
+  // @@protoc_insertion_point(field_get:chat.channel_users_ack.user_extra)
+  return user_extra_.Get(index);
+}
+inline ::chat::channel_users_ack_extra* channel_users_ack::mutable_user_extra(int index) {
+  // @@protoc_insertion_point(field_mutable:chat.channel_users_ack.user_extra)
+  return user_extra_.Mutable(index);
+}
+inline ::chat::channel_users_ack_extra* channel_users_ack::add_user_extra() {
+  // @@protoc_insertion_point(field_add:chat.channel_users_ack.user_extra)
+  return user_extra_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::chat::channel_users_ack_extra >*
+channel_users_ack::mutable_user_extra() {
+  // @@protoc_insertion_point(field_mutable_list:chat.channel_users_ack.user_extra)
+  return &user_extra_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::chat::channel_users_ack_extra >&
+channel_users_ack::user_extra() const {
+  // @@protoc_insertion_point(field_list:chat.channel_users_ack.user_extra)
+  return user_extra_;
+}
+
+// -------------------------------------------------------------------
+
 // user_chat_req
 
 // uint32 token = 1;
@@ -4302,6 +4874,12 @@ inline void chat_err::set_allocated_description(::std::string* description) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

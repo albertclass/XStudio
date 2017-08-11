@@ -25,12 +25,16 @@ enum MSG_ID {
 	MSG_CHANNEL_ENTER_ACK = 0x1004;
 	MSG_CHANNEL_LEAVE_REQ = 0x1005;
 	MSG_CHANNEL_LEAVE_ACK = 0x1006;
-	MSG_USER_CHAT_REQ = 0x1007;
-	MSG_USER_CHAT_NTF = 0x1008;
-	MSG_CHANNEL_CHAT_REQ = 0x1009;
-	MSG_CHANNEL_CHAT_NTF = 0x100A;
-	MSG_CHAT_ERR = 0x100C;
-	MSG_SYS_CHAT_NTF = 0x100E;
+	MSG_CHANNEL_USER_REQ = 0x1007;
+	MSG_CHANNEL_USER_ACK = 0x1008;
+
+	MSG_USER_CHAT_REQ = 0x1009;
+	MSG_USER_CHAT_NTF = 0x100A;
+	MSG_CHANNEL_CHAT_REQ = 0x100B;
+	MSG_CHANNEL_CHAT_NTF = 0x100C;
+
+	MSG_CHAT_ERR = 0x100E;
+	MSG_SYS_CHAT_NTF = 0x1011;
 
 	// Server Message
 	MSG_LOGIN_REQ 	= 0x0001;
@@ -77,7 +81,8 @@ message user_auth_ack {
 }
 
 message user_info_req {
-	uint64 user_id = 1;
+	uint32 chat_id = 1;
+	uint64 user_id = 2;
 }
 
 message user_info_ack {
@@ -131,6 +136,23 @@ message channel_leave_ack {
 	int32 result = 1;
 	uint32 channel_id = 2;
 	string channel_name = 3;
+}
+
+message channel_users_req {
+	uint32 channel_id = 1;
+	uint32 extra = 2;
+}
+
+message channel_users_ack {
+	repeated uint32 chat_id = 1;
+	message extra {
+		uint32 chat_id = 1;
+		uint64 user_id = 2;
+		string nick = 3;
+		string extra = 4;
+	}
+
+	repeated extra user_extra = 2;
 }
 
 enum CHAT_T{

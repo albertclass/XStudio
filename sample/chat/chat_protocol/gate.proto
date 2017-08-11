@@ -18,7 +18,8 @@ message login_req {
 
 message login_ack {
 	int32 result = 1;
-	string chat_token = 2;
+	uint64 user_id = 2;
+	string chat_token = 3;
 }
 
 message logout_req {

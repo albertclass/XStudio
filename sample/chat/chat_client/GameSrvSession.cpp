@@ -4,11 +4,13 @@
 #include "GameSrvSession.h"
 #include "ChatSrvSession.h"
 
-CGameSrvSession::CGameSrvSession()
+CGameSrvSession::CGameSrvSession( xgc_lpcstr username, xgc_lpcstr password )
 	: handle_( INVALID_NETWORK_HANDLE )
 	, pingpong_( 0 )
 	, pinglast_( ticks< std::chrono::milliseconds >() )
-	, userdata_( xgc_nullptr )
+	, mChatSrvSession( xgc_nullptr )
+	, mUsername( username )
+	, mPassword( password )
 {
 }
 
@@ -31,19 +33,19 @@ int CGameSrvSession::OnParsePacket( const void * data, xgc_size size )
 xgc_void CGameSrvSession::OnAccept( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u accepted\r\n", handle_ );
+	//fprintf( stdout, "net session %u accepted\r\n", handle_ );
 }
 
 xgc_void CGameSrvSession::OnConnect( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u connected\r\n", handle_ );
+	//fprintf( stdout, "net session %u connected\r\n", handle_ );
 
 	gate::login_req req;
-	req.set_username( "albert.xu" );
-	req.set_password( "12345566778990" );
+	req.set_username( mUsername );
+	req.set_password( mPassword );
 
-	Send2GateSrv( gate::GATE_MSG_LOGIN_REQ, req );
+	Send2GameSrv( gate::GATE_MSG_LOGIN_REQ, req );
 }
 
 xgc_void CGameSrvSession::OnError( xgc_uint32 error_code )
@@ -53,12 +55,17 @@ xgc_void CGameSrvSession::OnError( xgc_uint32 error_code )
 
 xgc_void CGameSrvSession::OnClose()
 {
-	fprintf( stderr, "net session %u closed\r\n", handle_ );
-	auto pChatSession = (CChatSrvSession*)getUserdata();
-	if( pChatSession )
-		pChatSession->GateSrvClosed();
+	//fprintf( stderr, "net session %u closed\r\n", handle_ );
+	handle_ = INVALID_NETWORK_HANDLE;
 
-	delete this;
+	if( mChatSrvSession )
+	{
+		mChatSrvSession->Disconnect();
+	}
+	else
+	{
+		delete this;
+	}
 }
 
 xgc_void CGameSrvSession::OnAlive()
@@ -78,22 +85,30 @@ xgc_void CGameSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 	{
 		case gate::GATE_MSG_LOGIN_ACK:
 		{
-			chat::login_ack ack;
+			gate::login_ack ack;
 			ack.ParseFromArray( ptr, len );
 
 			if( ack.result() >= 0 )
 			{
-				CChatSrvSession* pChatSrvSession = XGC_NEW CChatSrvSession( handle_, ack.user_id(), ack.chat_id(), ack.token() );
-				if( pChatSrvSession )
+				mChatSrvSession = XGC_NEW CChatSrvSession( this, ack.user_id(), ack.chat_token() );
+				if( mChatSrvSession )
 				{
-					setUserdata( pChatSrvSession );
+					connect_options options_c;
+					memset( &options_c, 0, sizeof( options_c ) );
 
-					Connect(
+					options_c.timeout = 1000;
+					options_c.is_async = true;
+
+					auto hNet = Connect(
 						"127.0.0.1",
 						50001,
-						NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_TIMEOUT,
-						1000,
-						pChatSrvSession );
+						mChatSrvSession, 
+						&options_c );
+
+					if( hNet == INVALID_NETWORK_HANDLE )
+					{
+						SAFE_DELETE( mChatSrvSession );
+					}
 				}
 			}
 			else
@@ -105,7 +120,34 @@ xgc_void CGameSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 	}
 }
 
-xgc_void CGameSrvSession::Send2GateSrv( xgc_uint16 msgid, ::google::protobuf::Message& msg )
+///
+/// \brief 聊天服务器连接建立
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+
+xgc_void CGameSrvSession::OnChatConnect( network_t handle )
+{
+	mChatSrvSession->ChatUserAuth();
+}
+
+
+///
+/// \brief 聊天服务器连接断开
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+
+xgc_void CGameSrvSession::OnChatClose()
+{
+	mChatSrvSession = xgc_nullptr;
+	if( handle_ == INVALID_NETWORK_HANDLE )
+		delete this;
+}
+
+xgc_void CGameSrvSession::Send2GameSrv( xgc_uint16 msgid, ::google::protobuf::Message& msg )
 {
 #pragma pack(1)
 	struct
@@ -124,4 +166,29 @@ xgc_void CGameSrvSession::Send2GateSrv( xgc_uint16 msgid, ::google::protobuf::Me
 	msg.SerializeToArray( m.b, sizeof( m.b ) );
 
 	SendPacket( handle_, &m, pack_size );
+}
+
+///
+/// \brief 发送数据到游戏服务器
+///
+/// \author albert.xu
+/// \date 2017/08/5
+///
+xgc_void CGameSrvSession::Send2ChatSrv( xgc_uint16 msgid, ::google::protobuf::Message & msg )
+{
+	if( mChatSrvSession )
+		mChatSrvSession->Send2ChatSrv( msgid, msg );
+}
+
+///
+/// \brief 断开聊天服务器连接
+///
+/// \author albert.xu
+/// \date 2017/08/09
+///
+xgc_void CGameSrvSession::Disconnect()
+{
+	CloseLink( handle_ );
+	if( mChatSrvSession )
+		mChatSrvSession->Disconnect();
 }

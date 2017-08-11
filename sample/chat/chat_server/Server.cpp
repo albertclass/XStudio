@@ -1,33 +1,33 @@
 #include "header.h"
-#include "CliSession.h"
-#include "SrvSession.h"
+#include "Server.h"
 
-/// 是否运行中
-xgc_bool running = true;
+#include "UserMgr.h"
+#include "ChannelMgr.h"
 
-/// 根路径
-xgc_char root_path[XGC_MAX_PATH] = { 0 };
+#include "ClientSession.h"
+CServer theServer;
 
-int main( int argc, char* argv[] )
+///
+/// \brief 配置服务器
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+xgc_bool CServer::Setup( xgc_lpcstr lpConfigFile )
 {
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-
 	char conf_path[1024] = { 0 };
-	if( xgc_nullptr == get_absolute_path( conf_path, "../chat-server.ini" ) )
+	if( xgc_nullptr == get_absolute_path( conf_path, "%s", lpConfigFile ) )
 	{
 		fprintf( stderr, "format conf path error %s", conf_path );
-		return -1;
+		return false;
 	}
 
 	ini_reader ini;
 	if( false == ini.load( conf_path ) )
 	{
 		fprintf( stderr, "conf load error %s", conf_path );
-		return -1;
+		return false;
 	}
-
-	if( false == net::CreateNetwork( 1 ) )
-		return -1;
 
 	struct net::Param_SetBufferSize param1;
 	param1.recv_buffer_size = 16 * 1024;
@@ -35,42 +35,104 @@ int main( int argc, char* argv[] )
 
 	if( 0 != net::ExecuteState( Operator_SetBufferSize, &param1 ) )
 	{
-		net::DestroyNetwork();
-		return -1;
+		return false;
 	}
 
 	struct net::Param_SetPacketSize param2;
-	param2.recv_packet_size = 8 * 1024;
-	param2.send_packet_size = 8 * 1024;
+	param2.recv_packet_size = 4 * 1024;
+	param2.send_packet_size = 4 * 1024;
 
 	if( 0 != net::ExecuteState( Operator_SetPacketSize, &param2 ) )
 	{
-		net::DestroyNetwork();
-		return -1;
+		return false;
 	}
 
-	xgc_lpvoid srv, mgr;
+	auto client_bind = ini.get_item_value( "ChatServer", "CliBind", "0.0.0.0" );
+	strcpy_s( mChatBind, client_bind );
 
-	auto bind = ini.get_item_value( "ChatServer", "Bind", "0.0.0.0" );
-	auto client_listen_port = ini.get_item_value( "ChatServer", "CliPort", 50001 );
-	auto server_listen_port = ini.get_item_value( "ChatServer", "SrvPort", 50002 );
+	auto server_bind = ini.get_item_value( "ChatServer", "SrvBind", "0.0.0.0" );
+	strcpy_s( mGameBind, server_bind );
 
-	srv = net::StartServer( bind, client_listen_port, 0, [](){ return XGC_NEW CClientSession(); } );
-	mgr = net::StartServer( bind, server_listen_port, 0, [](){ return XGC_NEW CServerSession(); } );
+	mChatPort = ini.get_item_value( "ChatServer", "CliPort", 50001 );
+	mGamePort = ini.get_item_value( "ChatServer", "SrvPort", 50002 );
 
-	fprintf( stdout, "server is running.\n" );
-	int n = 0;
-	while( running )
+	return true;
+}
+
+///
+/// \brief 运行服务器
+///
+/// \author albert.xu
+/// \date 2017/08/05
+///
+xgc_long CServer::Run()
+{
+	if( false == net::CreateNetwork( 1 ) )
+		return -1;
+
+	server_options options_s;
+	memset( &options_s, 0, sizeof( options_s ) );
+	options_s.acceptor_count = 10;
+
+	options_s.recv_buffer_size = 1024 * 1024;
+	options_s.send_buffer_size = 1024 * 1024;
+
+	options_s.recv_packet_max = 16 * 1024;
+	options_s.send_packet_max = 16 * 1024;
+
+	mGameListener = net::StartServer( mGameBind, mGamePort, &options_s, [](){ return XGC_NEW CServerSession(); } );
+
+	server_options options_c;
+	memset( &options_c, 0, sizeof( options_c ) );
+	options_c.acceptor_count = 32;
+
+	options_c.recv_buffer_size = 16 * 1024;
+	options_c.send_buffer_size = 16 * 1024;
+
+	options_c.recv_packet_max = 1024;
+	options_c.send_packet_max = 1024;
+	mChatListener = net::StartServer( mChatBind, mChatPort, &options_c, [](){ return XGC_NEW CClientSession(); } );
+
+	xgc_time64 last = current_milliseconds();
+
+	while( mRunning )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
 		{
 			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 		}
+
+		if( current_milliseconds() - last > 1000 )
+		{
+			getChannelMgr().eraseEmptyChannel();
+		}
 	}
 
-	net::CloseServer( srv );
-	net::CloseServer( mgr );
+	net::CloseServer( mChatListener );
+	net::CloseServer( mGameListener );
 	net::DestroyNetwork();
 
 	return 0;
+}
+
+int main( int argc, char* argv[] )
+{
+	atexit( google::protobuf::ShutdownProtobufLibrary );
+
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
+	auto pLocale = setlocale( LC_ALL, "chs" );
+	if( pLocale )
+		printf( "locale set with %s\n", pLocale );
+	else
+		printf( "locale set failed\n" );
+
+	auto pConfigFile = "chat-server.ini";
+	if( argc > 1 )
+		pConfigFile = argv[1];
+
+	if( false == theServer.Setup( pConfigFile ) )
+		return -1;
+
+	return theServer.Run();
 }

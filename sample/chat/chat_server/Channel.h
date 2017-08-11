@@ -5,11 +5,22 @@
 
 class CChannel : public auto_handle< CChannel >
 {
+public:
+	/// 用户房间信息
+	struct user
+	{
+		xgc_uint32 chat_id;
+		/// 最后一次发言的时间
+		xgc_time64 last_timestamp;
+		/// 是否被禁言
+		xgc_bool forbid;
+		/// 是否断线
+		xgc_bool disconnect;
+	};
+
 private:
 	/// 频道名字
 	xgc_string mName;
-
-	/// 频道属性
 
 	/// 是否自动删除
 	xgc_bool mAutoDestory;
@@ -23,19 +34,11 @@ private:
 	/// 房间密码
 	xgc_string mPassword;
 
-	/// 用户房间信息
-	struct UserConfig
-	{
-		/// 是否被禁言
-		xgc_bool forbid;
-		/// 是否断线
-		xgc_bool disconnect;
-		/// 最后一次发言的时间
-		xgc_time64 last_timestamp;
-	};
+	/// 房间删除的时间
+	xgc_time64 mDestoryTime;
 
 	/// 用户列表
-	xgc_map< xgc_uint32, UserConfig > mUserConfigMap;
+	xgc_map< xgc_uint32, user > mUserConfigMap;
 public:
 	///
 	/// \brief 构造
@@ -62,6 +65,26 @@ public:
 	}
 
 	///
+	/// \brief 获取频道名
+	/// \author albert.xu
+	/// \date 2017/08/11
+	///
+	xgc_time64 getDestoryTime() const
+	{
+		return mDestoryTime;
+	}
+
+	///
+	/// \brief 获取用户数量
+	/// \author albert.xu
+	/// \date 2017/08/11
+	///
+	xgc_size getUserCount() const
+	{
+		return mUserConfigMap.size();
+	}
+
+	///
 	/// \brief 进入频道
 	/// \author albert.xu
 	/// \date 2017/08/03
@@ -80,7 +103,14 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void AliveCheck();
+	xgc_void eraseQuietUser();
+
+	///
+	/// \brief 是否有效用户
+	/// \author albert.xu
+	/// \date 2017/08/03
+	///
+	xgc_bool isValidUser( xgc_uint32 chat_id );
 
 	///
 	/// \brief 发送聊天
@@ -94,12 +124,10 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void ForEachUser( std::function< xgc_void( xgc_uint32, xgc_bool ) > &&invoke )
+	xgc_void ForEachUser( std::function< xgc_void( user &user ) > &&invoke )
 	{
 		for( auto &pair : mUserConfigMap )
-		{
-			invoke( pair.first, pair.second.forbid );
-		}
+			invoke( pair.second );
 	}
 };
 

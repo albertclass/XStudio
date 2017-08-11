@@ -12,6 +12,10 @@ protected:
 	xgc_ulong pingpong_;
 	/// 最后一次接收ping消息的时间
 	xgc_time64 pinglast_;
+	/// 公共频道
+	xgc_map< xgc_uint32, xgc_string > channels_;
+	/// 服务器上的用户
+	xgc_map< xgc_uint64, xgc_uint32 > users_;
 public:
 	///
 	/// \brief 构造
@@ -95,12 +99,36 @@ public:
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size ) override;
 
 	///
+	/// \brief 创建频道回应
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onCreateChannelAck( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 角色登陆聊天服务器回应
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onLoginAck( xgc_lpvoid ptr, int len );
+
+	///
+	/// \brief 角色离开聊天服务器回应
+	///
+	/// \author albert.xu
+	/// \date 2017/08/05
+	///
+	xgc_void onLogoutAck( xgc_lpvoid ptr, int len );
+
+	///
 	/// \brief 用户登陆
 	///
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	xgc_void UserLogin( xgc_uint64 user_id, const xgc_string &nickname );
+	xgc_long UserLogin( xgc_uint64 user_id, const xgc_string &nickname, xgc_uint32 session_id );
 
 	///
 	/// \brief 用户登出

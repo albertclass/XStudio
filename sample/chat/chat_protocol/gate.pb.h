@@ -251,9 +251,9 @@ class login_ack : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   // accessors -------------------------------------------------------
 
-  // string chat_token = 2;
+  // string chat_token = 3;
   void clear_chat_token();
-  static const int kChatTokenFieldNumber = 2;
+  static const int kChatTokenFieldNumber = 3;
   const ::std::string& chat_token() const;
   void set_chat_token(const ::std::string& value);
   #if LANG_CXX11
@@ -264,6 +264,12 @@ class login_ack : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::std::string* mutable_chat_token();
   ::std::string* release_chat_token();
   void set_allocated_chat_token(::std::string* chat_token);
+
+  // uint64 user_id = 2;
+  void clear_user_id();
+  static const int kUserIdFieldNumber = 2;
+  ::google::protobuf::uint64 user_id() const;
+  void set_user_id(::google::protobuf::uint64 value);
 
   // int32 result = 1;
   void clear_result();
@@ -276,6 +282,7 @@ class login_ack : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr chat_token_;
+  ::google::protobuf::uint64 user_id_;
   ::google::protobuf::int32 result_;
   mutable int _cached_size_;
   friend struct protobuf_gate_2eproto::TableStruct;
@@ -492,7 +499,21 @@ inline void login_ack::set_result(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:gate.login_ack.result)
 }
 
-// string chat_token = 2;
+// uint64 user_id = 2;
+inline void login_ack::clear_user_id() {
+  user_id_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 login_ack::user_id() const {
+  // @@protoc_insertion_point(field_get:gate.login_ack.user_id)
+  return user_id_;
+}
+inline void login_ack::set_user_id(::google::protobuf::uint64 value) {
+  
+  user_id_ = value;
+  // @@protoc_insertion_point(field_set:gate.login_ack.user_id)
+}
+
+// string chat_token = 3;
 inline void login_ack::clear_chat_token() {
   chat_token_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
