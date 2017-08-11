@@ -188,29 +188,29 @@ namespace xgc
 	{
 		xgc_byte *dst = (xgc_byte*)utf8;
 
-		if ( ucs <= 0x0000007F && size >= 1 )  
+		if ( ucs <= 0x0000007F )  
 		{  
 			// * U-00000000 - U-0000007F:  0xxxxxxx  
-			if( dst )
+			if( dst && size >= 1 )
 			{
 				dst[0] = (ucs & 0x7F);  
 			}
 			return 1;  
 		}
-		else if ( ucs >= 0x00000080 && ucs <= 0x000007FF && size >= 2 )  
+		else if ( ucs >= 0x00000080 && ucs <= 0x000007FF )  
 		{  
 			// * U-00000080 - U-000007FF:  110xxxxx 10xxxxxx  
-			if( dst )
+			if( dst && size >= 2 )
 			{
 				dst[1] = (ucs & 0x3F) | 0x80;
 				dst[0] = ((ucs >> 6) & 0x1F) | 0xC0;
 			}
 			return 2;  
 		}  
-		else if ( ucs >= 0x00000800 && ucs <= 0x0000FFFF && size >= 3 )  
+		else if ( ucs >= 0x00000800 && ucs <= 0x0000FFFF )  
 		{  
 			// * U-00000800 - U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx  
-			if( dst )
+			if( dst && size >= 3 )
 			{
 				dst[2] = (ucs & 0x3F) | 0x80;
 				dst[1] = ((ucs >> 6) & 0x3F) | 0x80;
@@ -218,10 +218,10 @@ namespace xgc
 			}
 			return 3;  
 		}  
-		else if ( ucs >= 0x00010000 && ucs <= 0x001FFFFF && size >= 4 )  
+		else if ( ucs >= 0x00010000 && ucs <= 0x001FFFFF )  
 		{  
 			// * U-00010000 - U-001FFFFF:  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  
-			if( dst )
+			if( dst && size >= 4 )
 			{
 				dst[3] = (ucs & 0x3F) | 0x80;
 				dst[2] = ((ucs >> 6) & 0x3F) | 0x80;
@@ -230,10 +230,10 @@ namespace xgc
 			}
 			return 4;  
 		}  
-		else if ( ucs >= 0x00200000 && ucs <= 0x03FFFFFF && size >= 5 )  
+		else if ( ucs >= 0x00200000 && ucs <= 0x03FFFFFF )  
 		{  
 			// * U-00200000 - U-03FFFFFF:  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
-			if( dst )
+			if( dst && size >= 5 )
 			{
 				dst[4] = (ucs & 0x3F) | 0x80;
 				dst[3] = ((ucs >> 6) & 0x3F) | 0x80;
@@ -243,10 +243,10 @@ namespace xgc
 			}
 			return 5;  
 		}  
-		else if ( ucs >= 0x04000000 && ucs <= 0x7FFFFFFF && size >= 6 )  
+		else if ( ucs >= 0x04000000 && ucs <= 0x7FFFFFFF )  
 		{  
 			// * U-04000000 - U-7FFFFFFF:  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
-			if( dst )
+			if( dst && size >= 6 )
 			{
 				dst[5] = (ucs & 0x3F) | 0x80;
 				dst[4] = ((ucs >> 6) & 0x3F) | 0x80;

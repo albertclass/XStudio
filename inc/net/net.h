@@ -24,7 +24,7 @@ namespace xgc
 		#define NOTIFY_MESSAGE_TYPE	0xfe
 
 		/// 连接建立事件
-		#define EVENT_HANGUP	0
+		#define EVENT_PENDING	0
 		/// 连接建立事件
 		#define EVENT_ACCEPT	1
 		/// 连接建立事件
@@ -253,39 +253,12 @@ namespace xgc
 		///
 		struct Param_GetSession
 		{
+			/// [in] network handle
 			network_t	handle;
+			/// [out] session
 			INetworkSession* session;
 		};
 		#define Operator_GetSession	4
-
-		///
-		/// \brief 设置用户数据
-		///
-		/// \return 0 成功 -1 失败
-		/// \author albert.xu
-		/// \date 2016/02/26 16:12
-		///
-		struct Param_SetSession
-		{
-			network_t	handle;
-			INetworkSession* session;
-		};
-		#define Operator_SetSession	5
-
-		///
-		/// \brief 设置超时时间
-		///
-		/// \return 0 成功 -1 失败
-		/// \author albert.xu
-		/// \date 2016/02/26 16:12
-		///
-		struct Param_SetTimeout
-		{
-			network_t handle;
-			xgc_uint32 sec;
-			xgc_uint32 msec;
-		};
-		#define Operator_SetTimeout		6
 
 		///
 		/// \brief 查询套接字信息
@@ -297,20 +270,15 @@ namespace xgc
 		///
 		struct Param_QueryHandleInfo
 		{
+			/// [in] network handle
 			network_t	handle;
-			xgc_int16	mask;
-			xgc_byte	data[1];
 
-			struct endpoint
-			{
-				xgc_uint32 addr;
-				xgc_uint16 port;
-			};
+			/// [out] 0 - local addr, 1 - remote addr
+			xgc_uint32	addr[2];
+			/// [out] 0 - local port, 1 - remote port
+			xgc_uint16	port[2];
 		};
-		#define NET_LOCAL_ADDRESS	1
-		#define NET_REMOT_ADDRESS	2
-		#define NET_LOCAL_PING		4
-		#define Operator_QueryHandleInfo	7
+		#define Operator_QueryHandleInfo 5
 
 		///
 		/// \brief 缓冲设置，只影响更改后创建的套接字
@@ -325,7 +293,7 @@ namespace xgc
 			/// 接收缓冲大小
 			xgc_uint32	recv_buffer_size;
 		};
-		#define Operator_SetBufferSize	8
+		#define Operator_SetBufferSize 6
 
 		///
 		/// \brief 缓冲设置，只影响更改后创建的套接字
@@ -340,7 +308,55 @@ namespace xgc
 			/// 接收缓冲大小
 			xgc_uint32	recv_packet_size;
 		};
-		#define Operator_SetPacketSize	9
+		#define Operator_SetPacketSize 7
+
+		///
+		/// \brief 服务器参数
+		///
+		/// \author albert.xu
+		/// \date 2017/08/10
+		///
+		struct server_options
+		{
+			/// 发送缓冲大小
+			xgc_size send_buffer_size;
+			/// 接收缓冲大小
+			xgc_size recv_buffer_size;
+			/// 发送包最大值
+			xgc_size send_packet_max;
+			/// 接收包最大值
+			xgc_size recv_packet_max;
+			/// 连接投递个数
+			xgc_uint16 acceptor_count;
+			/// 心跳间隔
+			xgc_uint16 heartbeat_interval;
+		};
+
+		///
+		/// \brief 连接参数
+		///
+		/// \author albert.xu
+		/// \date 2017/08/10
+		///
+		struct connect_options
+		{
+			/// 发送缓冲大小
+			xgc_size send_buffer_size;
+			/// 接收缓冲大小
+			xgc_size recv_buffer_size;
+			/// 发送包最大值
+			xgc_size send_packet_max;
+			/// 接收包最大值
+			xgc_size recv_packet_max;
+			/// 连接等待时间（超时）
+			xgc_uint16 timeout;
+			/// 是否异步
+			xgc_bool is_async;
+			/// 是否超时重连（连接不成功时重连）
+			xgc_bool is_reconnect_timeout;
+			/// 是否被动重连（被动断开后重连）
+			xgc_bool is_reconnect_passive;
+		};
 
 		/// 创建连接会话
 		typedef std::function< INetworkSession* () > SessionCreator;
@@ -357,7 +373,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 十一月 2015
 			/// 
-			NETBASE_API xgc_lpvoid StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, SessionCreator creator );
+			NETBASE_API xgc_lpvoid StartServer( xgc_lpcstr address, xgc_uint16 port, server_options *options, SessionCreator creator );
 
 			///
 			/// \brief 关闭服务器
@@ -373,7 +389,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/17 16:00
 			///
-			NETBASE_API network_t Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 options, xgc_uint16 timeout, INetworkSession* session );
+			NETBASE_API network_t Connect( xgc_lpcstr address, xgc_uint16 port, INetworkSession* session, connect_options *options );
 
 			///
 			/// \brief 发送消息包
@@ -390,14 +406,6 @@ namespace xgc
 			/// \date 2016/02/17 16:01
 			///
 			NETBASE_API xgc_void SendPacketChains( network_t handle, const BufferChains& buffers );
-
-			///
-			/// \brief 发送消息包并断开网络连接
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 16:01
-			///
-			NETBASE_API xgc_void SendLastPacket( network_t handle, xgc_lpvoid data, xgc_size size );
 
 			///
 			/// \brief 发送一组消息包
@@ -429,7 +437,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/05/24 15:06
 			///
-			NETBASE_API xgc_void SetTimer( xgc_uint32 id, xgc_real64 period, xgc_real64 after, const std::function< void() > &on_timer );
+			NETBASE_API xgc_void NewTimer( xgc_uint32 id, xgc_real64 period, xgc_real64 after, const std::function< void() > &on_timer );
 
 			///
 			/// \brief 关闭连接

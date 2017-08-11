@@ -12,7 +12,7 @@ namespace xgc
 		const int handle_count = 0xffff;
 
 		/// SocketMgr 对象是否激活
-		static xgc_long SocketMgrAlive = -1;
+		static volatile std::atomic_long SocketMgrAlive = -1;
 
 		asio_SocketMgr::asio_SocketMgr()
 		{
@@ -50,29 +50,39 @@ namespace xgc
 			auto start = tick();
 			auto counter = 0;
 
-			do
+			xgc_long exp = 0;
+			// 设置状态为等待关闭
+			if( SocketMgrAlive.compare_exchange_strong( exp, 1 ) )
 			{
-				std::this_thread::sleep_for( std::chrono::milliseconds(1000) );
-
-				counter = 0;
-				for( network_t i = 0; i < XGC_COUNTOF( handles ); ++i )
+				do
 				{
-					asio_SocketPtr pSocket = getSocket( i );
-					if( pSocket )
-					{
-						pSocket->close();
+					std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
 
-						counter++;
+					counter = 0;
+					for( network_t i = 0; i < XGC_COUNTOF( handles ); ++i )
+					{
+						asio_SocketPtr pSocket = getSocket( i );
+						if( pSocket )
+						{
+							pSocket->close();
+
+							counter++;
+						}
 					}
+
+					// 处理网络事件
+					Exec( -1 );
+				} while( counter > 0 && ( tick() - start < timeout ) );
+
+				// execute socket close event.
+				while( -1 != Exec( -1 ) )
+				{
+					std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
 				}
 
-			} while( counter > 0 && (tick() - start < timeout) );
-
-			// execute socket close event.
-			Exec( -1 );
-
-			// 设置状态为已关闭
-			SocketMgrAlive = 1;
+				// 设置状态为已关闭
+				SocketMgrAlive = 2;
+			}
 		}
 
 		asio_SocketPtr asio_SocketMgr::getSocket( network_t handle )
@@ -82,14 +92,14 @@ namespace xgc
 			return handles[handle];
 		}
 
-		xgc_bool asio_SocketMgr::SetTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer )
+		xgc_bool asio_SocketMgr::NewTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer )
 		{
 			std::lock_guard< std::mutex > _lock( lock_timer_ );
 
 			auto it = mTimerMap.find( nTimerId );
 			if( it == mTimerMap.end() )
 			{
-				timer_info info = mTimerMap[nTimerId];
+				timer_info &info = mTimerMap[nTimerId];
 				info.on_timer = onTimer;
 
 				info.timer = XGC_NEW asio::steady_timer( getNetwork().Ref() );
@@ -322,7 +332,7 @@ namespace xgc
 				{
 					switch( pHeader->event )
 					{
-					case EVENT_HANGUP:
+					case EVENT_PENDING:
 						{
 							auto pSocket = getSocket( hNet );
 							if( xgc_nullptr == pSocket )
@@ -495,7 +505,6 @@ namespace xgc
 		///
 		xgc_void LinkDown( asio_SocketPtr &pSocket )
 		{
-			XGC_ASSERT_RETURN( IsValidSocketMgr(), XGC_NONE );
 			getSocketMgr().LinkDown( pSocket );
 		}
 

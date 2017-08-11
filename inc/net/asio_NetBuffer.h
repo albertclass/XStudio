@@ -11,10 +11,19 @@ namespace xgc
 			xgc_lpvoid	base_;
 			xgc_size	size_;
 
-			xgc_size	tag_;
-			xgc_size	len_;
+			volatile xgc_size tag_;
+			volatile xgc_size len_;
 
 		public:
+			asio_NetBuffer()
+				: base_( xgc_nullptr )
+				, size_( 0 )
+				, tag_( 0 )
+				, len_( 0 )
+			{
+
+			}
+
 			asio_NetBuffer( xgc_size size )
 				: base_( malloc( size ) )
 				, size_( size )
@@ -32,6 +41,21 @@ namespace xgc
 				size_ = 0;
 
 				tag_ = len_ = 0;
+			}
+
+			XGC_INLINE xgc_bool open( xgc_size size )
+			{
+				reset();
+
+				XGC_ASSERT_RETURN( size > tag_ + len_, false );
+
+				xgc_lpvoid base = realloc( base_, size );
+				XGC_ASSERT_RETURN( base, false );
+
+				base_ = base;
+				size_ = size;
+
+				return true;
 			}
 
 			XGC_INLINE xgc_lpvoid base()
@@ -100,10 +124,20 @@ namespace xgc
 
 			XGC_INLINE xgc_bool push( xgc_size size )
 			{
-				XGC_ASSERT_RETURN( size < space(), false );
+				XGC_ASSERT_RETURN( size <= space(), false );
 				len_ += size;
 
 				return true;
+			}
+
+			XGC_INLINE xgc_size pop( xgc_size size )
+			{
+				xgc_size copy = XGC_MIN( size, len_ );
+
+				tag_ += copy;
+				len_ -= copy;
+
+				return copy;
 			}
 
 			XGC_INLINE xgc_size put( xgc_lpvoid data, xgc_size size )
@@ -120,17 +154,7 @@ namespace xgc
 				return size;
 			}
 
-			xgc_size pop( xgc_size size )
-			{
-				xgc_size copy = XGC_MIN( size, len_ );
-
-				tag_ += copy;
-				len_ -= copy;
-
-				return copy;
-			}
-
-			xgc_size get( xgc_lpvoid data, xgc_size size )
+			XGC_INLINE xgc_size get( xgc_lpvoid data, xgc_size size )
 			{
 				xgc_size copy = XGC_MIN( size, len_ );
 

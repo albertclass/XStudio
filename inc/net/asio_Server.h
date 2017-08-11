@@ -34,7 +34,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/26 15:49
 			///
-			asio_Server( io_service& service_, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator );
+			asio_Server( io_service& service_, SessionCreator creator, server_options *options );
 
 			///
 			/// \brief 析构
@@ -93,9 +93,11 @@ namespace xgc
 			/// 连接
 			ip::tcp::acceptor	acceptor_;
 			/// 超时时间
-			xgc_uint16			timeout_;
+			server_options		options_;
 			/// 连接队列数
 			std::atomic< xgc_uint16 > acceptor_count_;
+			/// 服务器状态 0 - 服务器初始状态， 1 - 服务器已开启， 2 - 等待关闭
+			std::atomic< xgc_uint16 > status_;
 			/// 网络消息处理句柄
 			SessionCreator		creator_;
 		};

@@ -17,22 +17,21 @@ namespace xgc
 
 		xgc_void DestroyNetwork()
 		{
-			getSocketMgr().Final( 10000 );
+			getSocketMgr().Final( -1 );
 			getNetwork().exit();
 		}
 
-		xgc_lpvoid StartServer( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 timeout, SessionCreator creator )
+		xgc_lpvoid StartServer( xgc_lpcstr address, xgc_uint16 port, server_options *options, SessionCreator creator )
 		{
-			asio_Server *server = XGC_NEW asio_Server(
-				getNetwork().Ref(),
-				10,
-				timeout,
-				creator );
+			if( false == IsValidSocketMgr() )
+				return xgc_nullptr;
 
-			if( server )
-				server->StartServer( address, port );
+			asio_Server *pServer = XGC_NEW asio_Server( getNetwork().Ref(), creator, options );
 
-			return server;
+			if( pServer )
+				pServer->StartServer( address, port );
+
+			return pServer;
 		}
 
 		xgc_void CloseServer( xgc_lpvoid server )
@@ -46,17 +45,19 @@ namespace xgc
 			}
 		}
 
-		network_t Connect( xgc_lpcstr address, xgc_uint16 port, xgc_uint16 options, xgc_uint16 timeout, INetworkSession* session )
+		network_t Connect( xgc_lpcstr address, xgc_uint16 port, INetworkSession* session, connect_options *options )
 		{
-			// asio_SocketPtr pSocket = std::make_shared< asio_Socket >( getNetwork().Ref(), 0, session, xgc_nullptr );
+			if( false == IsValidSocketMgr() )
+				return INVALID_NETWORK_HANDLE;
 
-			asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( getNetwork().Ref(), 0, session, xgc_nullptr ) );
+			asio_SocketPtr pSocket = std::make_shared< asio_Socket >( getNetwork().Ref(), 0, session, xgc_nullptr );
+
 			if( xgc_nullptr == pSocket )
 				return INVALID_NETWORK_HANDLE;
 
 			LinkUp( pSocket );
 
-			if ( pSocket->connect( address, port, options, timeout ) )
+			if ( pSocket->connect( address, port, options ) )
 				return pSocket->get_handle();
 
 			return INVALID_NETWORK_HANDLE;
@@ -81,15 +82,6 @@ namespace xgc
 			if( pSocket )
 			{
 				pSocket->send( buffers );
-			}
-		}
-
-		xgc_void SendLastPacket( network_t handle, xgc_lpvoid data, xgc_size size )
-		{
-			asio_SocketPtr pSocket = getSocketMgr().getSocket( handle );
-			if( pSocket )
-			{
-				pSocket->send( data, size, true );
 			}
 		}
 
@@ -144,9 +136,9 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/05/24 15:06
 		///
-		xgc_void SetTimer( xgc_uint32 id, xgc_real64 period, xgc_real64 after, const std::function< void() > &on_timer )
+		xgc_void NewTimer( xgc_uint32 id, xgc_real64 period, xgc_real64 after, const std::function< void() > &on_timer )
 		{
-			getSocketMgr().SetTimer( id, period, after, on_timer );
+			getSocketMgr().NewTimer( id, period, after, on_timer );
 		}
 
 		///
@@ -176,33 +168,33 @@ namespace xgc
 			XGC_ASSERT_RETURN( param, -1 );
 			switch( operate_code )
 			{
-			case Operator_NewGroup:
+				case Operator_NewGroup:
 				{
-					Param_NewGroup* pParam = (Param_NewGroup*) param;
+					Param_NewGroup* pParam = (Param_NewGroup*)param;
 					return getSocketMgr().NewGroup( pParam->self_handle );
 				}
 				break;
-			case Operator_EnterGroup:
+				case Operator_EnterGroup:
 				{
-					Param_EnterGroup* pParam = (Param_EnterGroup*) param;
+					Param_EnterGroup* pParam = (Param_EnterGroup*)param;
 					return getSocketMgr().EnterGroup( pParam->group, pParam->handle );
 				}
 				break;
-			case Operator_LeaveGroup:
+				case Operator_LeaveGroup:
 				{
-					Param_LeaveGroup* pParam = (Param_LeaveGroup*) param;
+					Param_LeaveGroup* pParam = (Param_LeaveGroup*)param;
 					return getSocketMgr().LeaveGroup( pParam->group, pParam->handle );
 				}
 				break;
-			case Operator_RemoveGroup:
+				case Operator_RemoveGroup:
 				{
-					Param_RemoveGroup* pParam = (Param_RemoveGroup*) param;
+					Param_RemoveGroup* pParam = (Param_RemoveGroup*)param;
 					return getSocketMgr().RemoveGroup( pParam->group );
 				}
 				break;
-			case Operator_GetSession:
+				case Operator_GetSession:
 				{
-					Param_GetSession* pParam = (Param_GetSession*) param;
+					Param_GetSession* pParam = (Param_GetSession*)param;
 					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
 					if( pSocket )
 					{
@@ -212,49 +204,31 @@ namespace xgc
 					return -1;
 				}
 				break;
-			case Operator_SetSession:
+				case Operator_QueryHandleInfo:
 				{
-					Param_SetSession* pParam = (Param_SetSession*) param;
+					Param_QueryHandleInfo* pParam = (Param_QueryHandleInfo*)param;
+
 					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
 					if( pSocket )
 					{
-						pSocket->set_userdata( pParam->session );
-						return 0;
+						return pSocket->get_socket_info( pParam->addr, pParam->port );
 					}
+
 					return -1;
 				}
 				break;
-			case Operator_SetTimeout:
+				case Operator_SetBufferSize:
 				{
-					Param_SetTimeout* pParam = (Param_SetTimeout*) param;
-					return 0;
-				}
-				break;
-			case Operator_QueryHandleInfo:
-				{
-					Param_QueryHandleInfo* pParam = (Param_QueryHandleInfo*) param;
-
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pParam->handle );
-					if( pSocket )
-					{
-						return pSocket->get_socket_info( pParam->mask, pParam->data );
-					}
-
-					return 0;
-				}
-				break;
-			case Operator_SetBufferSize:
-				{
-					Param_SetBufferSize* pParam = (Param_SetBufferSize*) param;
+					Param_SetBufferSize* pParam = (Param_SetBufferSize*)param;
 					set_send_buffer_size( pParam->send_buffer_size );
 					set_recv_buffer_size( pParam->recv_buffer_size );
 
 					return 0;
 				}
 				break;
-			case Operator_SetPacketSize:
+				case Operator_SetPacketSize:
 				{
-					Param_SetPacketSize* pParam = (Param_SetPacketSize*) param;
+					Param_SetPacketSize* pParam = (Param_SetPacketSize*)param;
 					set_send_packet_size( pParam->send_packet_size );
 					set_recv_packet_size( pParam->recv_packet_size );
 

@@ -131,7 +131,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/03/20 15:34
 			///
-			xgc_bool SetTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer );
+			xgc_bool NewTimer( xgc_uint32 nTimerId, xgc_real64 fPeriod, xgc_real64 fAfter, const std::function< void() > &onTimer );
 
 			///
 			/// \brief 删除一个定时器

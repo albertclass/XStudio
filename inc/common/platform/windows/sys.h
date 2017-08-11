@@ -5,6 +5,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <stdlib.h>
+#include <conio.h>
 
 #define XGC_MAX_PATH 	_MAX_PATH
 #define XGC_MAX_FNAME 	_MAX_FNAME

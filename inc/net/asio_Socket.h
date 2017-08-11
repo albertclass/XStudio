@@ -24,6 +24,8 @@ namespace xgc
 		friend class asio_Server;
 		friend class asio_SocketMgr;
 		public:
+			enum set_option { e_recv, e_send, e_both };
+
 			///
 			/// \brief 构造
 			/// \author albert.xu
@@ -40,12 +42,30 @@ namespace xgc
 
 			/*!
 			 *
-			 * \brief 连接到服务器
+			 * \brief 设置缓冲区大小
+			 *
+			 * \author albert.xu
+			 * \date 2017/08/10
+			 */
+			xgc_bool set_buffer_size( set_option option, xgc_size buffer_size );
+
+			/*!
+			*
+			* \brief 设置缓冲区大小
+			*
+			* \author albert.xu
+			* \date 2017/08/10
+			*/
+			xgc_void set_packet_max( set_option option, xgc_size packet_max );
+
+			/*!
+			 *
+			 * \brief 等待连接到服务器
 			 *
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void hangup( xgc_lpvoid from );
+			xgc_void pending( xgc_lpvoid from );
 
 			/*!
 			 *
@@ -54,7 +74,7 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_bool connect( xgc_lpcstr address, xgc_int16 port, xgc_uint16 options, xgc_uint16 timeout = 1 );
+			xgc_bool connect( xgc_lpcstr address, xgc_int16 port, connect_options *options );
 
 			/*!
 			 *
@@ -72,7 +92,7 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void send( xgc_lpvoid data, xgc_size size, xgc_bool last = false );
+			xgc_void send( xgc_lpvoid data, xgc_size size );
 
 			/*!
 			*
@@ -99,7 +119,7 @@ namespace xgc
 			* \author albert.xu
 			* \date 十一月 2015
 			*/
-			xgc_ulong get_socket_info( xgc_int16 mask, xgc_byte* data );
+			xgc_ulong get_socket_info( xgc_uint32 addr[2], xgc_uint16 port[2] );
 
 			/*!
 			*
@@ -117,7 +137,7 @@ namespace xgc
 			* \author albert.xu
 			* \date 2017/07/18
 			*/
-			xgc_bool connect( const asio::ip::tcp::endpoint& address, xgc_uint32 options, xgc_uint16 timeout );
+			xgc_bool connect();
 
 			/*!
 			*
@@ -211,17 +231,6 @@ namespace xgc
 			}
 
 			///
-			/// \brief 是否是自动重连
-			///
-			/// \author albert.xu
-			/// \date 2017/07/24 17:58
-			///
-			xgc_bool is_reconnect()const
-			{
-				return connect_info_ && XGC_CHK_FLAGS( connect_info_->options, NET_CONNECT_OPTION_RECONNECT );
-			}
-
-			///
 			/// \brief 判断从属关系
 			///
 			/// \author albert.xu
@@ -254,29 +263,57 @@ namespace xgc
 				return userdata_;
 			}
 		private:
+			/// 连接信息
 			struct connect_info
 			{
+				/// 连接等待时间（超时）
+				xgc_uint16 timeout;
+
+				/// 是否异步
+				xgc_uint16 is_async : 1;
+				/// 是否超时重连（连接不成功时重连）
+				xgc_uint16 is_reconnect_timeout : 1;
+				/// 是否被动重连（被动断开后重连）
+				xgc_uint16 is_reconnect_passive : 1;
 				// 连接地址
 				asio::ip::tcp::endpoint address;
-				// 连接选项
-				xgc_uint16 options;
-				// 超时控制（毫秒）
-				xgc_uint16 timeout;
 			};
 			
-			connect_info *		connect_info_;		// 连接信息
+			/// 连接信息
+			connect_info		*connect_info_;
 
-			ip::tcp::socket		socket_;            // 套接字
-			std::mutex			send_buffer_lock;   // 发送缓冲区锁
-			asio_NetBuffer		send_buffer_;       // 发送缓冲
-			asio_NetBuffer		recv_buffer_;       // 接收缓冲
+			/// 套接字
+			ip::tcp::socket		socket_;
+			/// 发送缓冲区锁
+			std::mutex			send_buffer_lock;
+			/// 发送缓冲
+			asio_NetBuffer		send_buffer_;       
+			/// 接收缓冲
+			asio_NetBuffer		recv_buffer_;       
 
-			std::atomic< xgc_uint16	> timeout_;		// 心跳发送间隔
-			std::atomic< xgc_uint16 > connect_status_;   // 当前连接状态 0 - 未连接， 1 - 已连接， 2 - 等待关闭
-			volatile network_t	handle_;            // 网络句柄
-			volatile xgc_lpvoid	from_;			    // 来自哪里
-			volatile xgc_lpvoid	userdata_;			// 用户数据
-			asio::steady_timer	timer_;			    // 保活定时器
+			/// 心跳发送间隔
+			xgc_uint16			timeout_;
+			
+			/// 当前连接状态 0 - 未连接， 1 - 已连接， 2 - 等待关闭
+			std::atomic_ushort  connect_status_;
+
+			/// 当前投递的操作数
+			std::atomic_ushort	operator_count_;
+
+			/// 网络句柄
+			volatile network_t	handle_;
+			/// 来自哪里
+			volatile xgc_lpvoid	from_;
+			/// 用户数据
+			volatile xgc_lpvoid	userdata_;
+			
+			/// 发送数据包最大尺寸
+			volatile xgc_size send_packet_max_;
+			/// 接收数据包最大尺寸
+			volatile xgc_size recv_packet_max_;
+
+			/// 保活定时器
+			asio::steady_timer	timer_;
 		};
 
 		typedef std::shared_ptr< asio_Socket > asio_SocketPtr;

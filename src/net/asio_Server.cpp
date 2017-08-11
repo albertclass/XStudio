@@ -3,14 +3,15 @@ namespace xgc
 {
 	namespace net
 	{
-		asio_Server::asio_Server( io_service& service, xgc_uint16 acceptor_count, xgc_uint16 timeout, SessionCreator creator )
+		asio_Server::asio_Server( io_service& service, SessionCreator creator, server_options *options )
 			: service_( service )
 			, acceptor_( service_, ip::tcp::v4() )
-			, timeout_( timeout )
-			, acceptor_count_( acceptor_count )
+			, options_( options ? *options : server_options { 0, 0, 0, 0, 10, 0 } )
+			, acceptor_count_( 0 )
 			, creator_( creator )
+			, status_( 0 )
 		{
-			XGC_ASSERT( acceptor_count_ );
+			
 		}
 
 		asio_Server::~asio_Server()
@@ -39,8 +40,10 @@ namespace xgc
 			acceptor_.listen( socket_base::max_connections, ec );
 			XGC_ASSERT_RETURN( !ec, false );
 
+			status_ = 1;
+			
 			// 投递连接套接字
-			for( int i = 0; i < acceptor_count_; ++i )
+			for( int i = 0; i < options_.acceptor_count; ++i )
 			{
 				post_accept();
 			}
@@ -50,7 +53,8 @@ namespace xgc
 
 		xgc_void asio_Server::StopServer()
 		{
-			if ( acceptor_count_ )
+			xgc_uint16 compare = 1;
+			if( status_.compare_exchange_strong( compare, 2 ) )
 			{
 				asio::error_code ec;
 				acceptor_.cancel( ec );
@@ -62,31 +66,47 @@ namespace xgc
 					std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 
 				getSocketMgr().CloseAll( this );
+
+				status_ = 3;
 			}
 		}
 
 		xgc_void asio_Server::handle_accept( asio_SocketPtr pSocket, const asio::error_code& error )
 		{
-			if (!error)
+			if( !error )
 			{
-				pSocket->hangup( this );
+				pSocket->pending( this );
 				post_accept();
 			}
-			else
-			{
-				acceptor_count_--;
-			}
+
+			--acceptor_count_;
 		}
 
 		xgc_void asio_Server::post_accept()
 		{
+			if( status_ != 1 )
+				return;
+			
 			// asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, timeout_, xgc_nullptr, this );
-			asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( service_, timeout_, xgc_nullptr, this ) );
-			if (pSocket)
+			asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( service_, options_.heartbeat_interval, xgc_nullptr, this ) );
+			if( pSocket )
 			{
+				if( options_.recv_buffer_size )
+					pSocket->set_buffer_size( asio_Socket::e_recv, options_.recv_buffer_size );
+
+				if( options_.send_buffer_size )
+					pSocket->set_buffer_size( asio_Socket::e_send, options_.send_buffer_size );
+
+				if( options_.recv_packet_max )
+					pSocket->set_packet_max( asio_Socket::e_recv, options_.recv_packet_max );
+
+				if( options_.send_packet_max )
+					pSocket->set_packet_max( asio_Socket::e_send, options_.send_packet_max );
+
 				LinkUp( pSocket );
 
-				acceptor_.async_accept(pSocket->socket_, std::bind(&asio_Server::handle_accept, this, pSocket, std::placeholders::_1));
+				++acceptor_count_;
+				acceptor_.async_accept( pSocket->socket_, std::bind( &asio_Server::handle_accept, this, pSocket, std::placeholders::_1 ) );
 			}
 		}
 	}
