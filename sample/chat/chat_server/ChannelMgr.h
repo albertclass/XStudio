@@ -31,6 +31,16 @@ public:
 	CChannel* getChannelByName( const xgc_string &strChannelName );
 
 	///
+	/// \brief 获取频道数
+	/// \author albert.xu
+	/// \date 2017/08/15
+	///
+	xgc_size getChannelCount() const
+	{
+		return mChannelMap.size();
+	}
+
+	///
 	/// \brief 加入频道
 	/// \author albert.xu
 	/// \date 2017/08/03

@@ -24,7 +24,10 @@ private:
 	xgc_char mChatAddr[64];
 	/// 聊天服务器连接端口
 	xgc_uint16 mChatPort;
+	/// 统计在服务器上的连接数量
+	xgc_uint32 mConnectCount;
 
+	/// 账号信息
 	struct Account
 	{
 		xgc_uint64 user_id;
@@ -61,6 +64,30 @@ public:
 	/// \date 2017/08/05
 	///
 	xgc_void Run();
+
+	///
+	/// \brief 连接建立
+	///
+	/// \author albert.xu
+	/// \date 2017/08/16
+	///
+	xgc_void Connected()
+	{
+		++mConnectCount;
+	}
+
+	///
+	/// \brief 连接断开
+	///
+	/// \author albert.xu
+	/// \date 2017/08/16
+	///
+	xgc_void Disconnected()
+	{
+		--mConnectCount;
+	}
+
+
 };
 
 extern CServer theServer;

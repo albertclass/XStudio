@@ -35,7 +35,9 @@
 using namespace asio;
 #define REALSIZE( S ) (((S+sizeof(xgc_uint32))&(~0x3ff))+0x400)
 
-#define NET_WRITELOG( FMT, ... ) _tprintf( FMT, __VA_ARGS__ )
+#define NET_ERROR( FMT, ... )	xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "error",		FMT, ##__VA_ARGS__ )
+#define NET_WARNING( FMT, ... ) xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
+#define NET_INFO( FMT, ... )	xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
 
 namespace xgc
 {
@@ -59,8 +61,10 @@ namespace xgc
 			xgc_uint32 event;
 			/// 错误码
 			xgc_uint32 error;
+			/// 错误码（系统）
+			xgc_uint32 system_error;
 			/// 携带(根据事件有不同含义)
-			xgc_lpvoid bring;
+			xgc_lpvoid session;
 		};
 
 		#pragma pack()

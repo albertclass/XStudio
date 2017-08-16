@@ -75,12 +75,16 @@ xgc_void CUserMgr::UserLogout( xgc_uint64 nUserID )
 	auto it1 = mUserMap.find( nUserID );
 	if( it1 != mUserMap.end() )
 	{
-		CUser* pUser = CUser::handle_exchange( it1->second );
-		auto it2 = mNickMap.find( pUser->getNickName() );
-		if( it2 != mNickMap.end() )
-			mNickMap.erase( it2 );
+		CUser* user = CUser::handle_exchange( it1->second );
+		if( user )
+		{
+			auto it2 = mNickMap.find( user->getNickName() );
+			if( it2 != mNickMap.end() )
+				mNickMap.erase( it2 );
 
-		SAFE_DELETE( pUser );
+			user->logout();
+			SAFE_DELETE( user );
+		}
 		mUserMap.erase( it1 );
 	}
 }

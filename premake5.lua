@@ -267,6 +267,7 @@ group "sample"
 	sample_project( "file_server", "server" )
 	sample_project( "file_client", "client" )
 
+group "chat"
 	function chat_project( prj_name )
 		local prj = project( prj_name )
 			kind "ConsoleApp"

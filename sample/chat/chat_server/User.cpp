@@ -14,6 +14,16 @@ CUser::~CUser()
 {
 }
 
+xgc_void CUser::logout()
+{
+	auto chat_id = handle();
+	forEachChannel( [chat_id]( xgc_uint32 channel_id ){
+		auto channel = CChannel::handle_exchange( channel_id );
+		if( channel )
+			channel->Leave( chat_id );
+	} );
+}
+
 ///
 /// \brief 设置角色服务器
 /// \author albert.xu
@@ -54,6 +64,9 @@ xgc_bool CUser::checkToken( const xgc_string &strToken )
 ///
 xgc_void CUser::onEnterChannel( CChannel* pChannel )
 {
+	if( mInProtected )
+		return;
+
 	if( xgc_nullptr == pChannel )
 		return;
 
@@ -68,9 +81,12 @@ xgc_void CUser::onEnterChannel( CChannel* pChannel )
 ///
 xgc_void CUser::onLeaveChannel( CChannel* pChannel )
 {
-	if( xgc_nullptr == pChannel )
+	if( mInProtected )
 		return;
 	
+	if( xgc_nullptr == pChannel )
+		return;
+
 	auto id = pChannel->handle();
 
 	mChannelSet.erase( id );

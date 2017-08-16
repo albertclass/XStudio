@@ -55,10 +55,15 @@ public:
 	virtual xgc_void OnError( xgc_uint32 error ) override
 	{
 		if( error == NET_ERROR_CONNECT )
+		{
 			++info_->gate_connect_failed;
+		}
 
 		if( error == NET_ERROR_CONNECT_TIMEOUT )
+		{
 			++info_->gate_connect_timeout;
+			--info_->gate_connect_failed;
+		}
 
 		CGameSrvSession::OnError( error );
 	}
@@ -71,8 +76,17 @@ public:
 
 		if( message == gate::GATE_MSG_LOGIN_ACK )
 		{
-			++info_->gate_authenticate;
-			++info_->chat_connect_count;
+			auto ptr = (xgc_lpstr)data + sizeof( MessageHeader );
+			auto len = (int)( size - sizeof( MessageHeader ) );
+
+			gate::login_ack ack;
+			ack.ParseFromArray( ptr, len );
+
+			if( ack.result() >= 0 )
+			{
+				++info_->gate_authenticate;
+				++info_->chat_connect_count;
+			}
 		}
 
 		CGameSrvSession::OnRecv( data, size );
@@ -87,10 +101,15 @@ public:
 	virtual xgc_void OnChatError( xgc_uint32 error )override
 	{
 		if( error == NET_ERROR_CONNECT )
+		{
 			++info_->chat_connect_failed;
+		}
 
 		if( error == NET_ERROR_CONNECT_TIMEOUT )
+		{
 			++info_->chat_connect_timeout;
+			--info_->chat_connect_failed;
+		}
 
 		CGameSrvSession::OnChatError( error );
 	}
@@ -120,9 +139,14 @@ xgc_void test_1( int argc, char *argv[] )
 	connect_options options_c;
 	memset( &options_c, 0, sizeof( options_c ) );
 
+	options_c.recv_buffer_size = 8 * 1024;
+	options_c.send_buffer_size = 8 * 1024;
+
+	options_c.recv_packet_max = 1024;
+	options_c.send_packet_max = 1024;
+
 	options_c.timeout = 3000;
 	options_c.is_async = true;
-	options_c.is_reconnect_timeout = true;
 
 	if( false == net::CreateNetwork( 1 ) )
 		return;
@@ -131,33 +155,41 @@ xgc_void test_1( int argc, char *argv[] )
 
 	xgc_time64 last = current_milliseconds();
 	xgc_time64 tick = current_milliseconds();
+
+	/// 连接耗时
+	xgc_time64 connect_start = 0;
+	xgc_time64 connect_spend_socket = 0;
+	xgc_time64 connect_spend = 0;
+
 	xgc_uint64 pmem = 0;
 	xgc_uint64 vmem = 0;
 
-	get_process_memory_usage( &pmem, &vmem );
 	CountInfo info;
 	memset( &info, 0, sizeof( info ) );
 
-	long account_idx = 0;
-
-	long round = 5;
-	while( round < 10 )
+	while( true )
 	{
 		xgc_time64 now = current_milliseconds();
 
 		auto lhs = info.gate_connect_count + info.chat_connect_count;
-		auto rhs = 
+		auto rhs =
 			info.gate_connect_failed + info.gate_connect_timeout + info.gate_disconnected +
 			info.chat_connect_failed + info.chat_connect_timeout + info.chat_disconnected;
 
+		if( info.gate_connect_count == info.chat_connected + info.gate_connect_failed + info.gate_connect_timeout )
+		{
+			connect_spend = current_milliseconds() - connect_start;
+		}
+
 		if( lhs == rhs )
 		{
-			// 第一轮不显示统计信息
-			if( round++ )
+			xgc_time64 now = current_milliseconds();
+
+			if( info.gate_connect_count )
 			{
 				auto gate_connect_rate = info.gate_connected * 100.0f / info.gate_connect_count;
 				auto chat_connect_rate = info.chat_connected * 100.0f / info.chat_connect_count;
-				printf( "gate connect success = %d, failed == %d, timeout = %d, connect rate = %0.2f%%\n", 
+				printf( "gate connect success = %d, failed == %d, timeout = %d, connect rate = %0.2f%%\n",
 					info.gate_connected,
 					info.gate_connect_failed,
 					info.gate_connect_timeout,
@@ -169,33 +201,40 @@ xgc_void test_1( int argc, char *argv[] )
 					info.chat_connect_timeout,
 					gate_connect_rate );
 
-				xgc_uint64 pmem_last = pmem;
-				xgc_uint64 vmem_last = vmem;
-
-				get_process_memory_usage( &pmem, &vmem );
-
-				printf( "using %0.4f seconds. pmem inc %0.2fM, vmem inc %0.2fM\n",
-					( now - last ) / 1000.0f,
-					( pmem - pmem_last ) * 1.0f / 1024,
-					( vmem - vmem_last ) * 1.0f / 1024 );
+				printf( "connect using %llu milliseconds, avg %0.2f connect pre seconds\n", connect_spend, info.gate_connect_count * 1000.0 / connect_spend );
+				printf( "make socket using %llu milliseconds, avg %0.2f make socket pre seconds\n", connect_spend_socket, info.gate_connect_count * 1000.0 / connect_spend_socket );
 			}
+
+			for( int i = 0; i < 10; ++i )
+			{
+				printf( "%d. %d connection\n", i, i * 500 ? i * 1000 : 1 );
+			}
+
+			puts( "q. exit" );
+			auto ch = getch();
+			if( ch == 'q' )
+				break;
+
+			if( ch - '0' > 9 ) continue;
 
 			// 重置成功与失败次数
 			memset( &info, 0, sizeof( info ) );
 
-			// 重置时间
-			last = current_milliseconds();
 			// 重置连接数
-			info.gate_connect_count = round * 100;
+			info.gate_connect_count = ( ch - '0' ) ? ( ch - '0' ) * 1000 : 1;
 
 			printf( "connect count = %d\n", info.gate_connect_count );
 
-			for( long i = 0; i < info.gate_connect_count; ++i, ++account_idx )
+			get_process_memory_usage( &pmem, &vmem );
+
+			connect_start = current_milliseconds();
+
+			for( long i = 0; i < info.gate_connect_count; ++i )
 			{
 				char szUsername[64];
-				sprintf_s( szUsername, "test%05d", account_idx );
+				sprintf_s( szUsername, "test%05d", i );
 				char szPassword[64];
-				sprintf_s( szPassword, "test%05d", account_idx );
+				sprintf_s( szPassword, "test%05d", i );
 
 				DBG_INFO( "user = %s, password = %s", szUsername, szPassword );
 				Connect(
@@ -204,23 +243,48 @@ xgc_void test_1( int argc, char *argv[] )
 					XGC_NEW Test1( &info, szUsername, szPassword ),
 					&options_c );
 			}
+
+			connect_spend_socket = current_milliseconds() - connect_start;
+
+			xgc_uint64 pmem_last = pmem;
+			xgc_uint64 vmem_last = vmem;
+
+			get_process_memory_usage( &pmem, &vmem );
+
+			printf( "using %0.4f seconds. pmem inc %0.4fM, vmem inc %0.4fM\n",
+				( now - last ) / 1000.0f,
+				( pmem - pmem_last ) * 1.0f / ( 1024 * 1024 ),
+				( vmem - vmem_last ) * 1.0f / ( 1024 * 1024 ) );
+
+			// 重置时间
+			last = now;
 		}
 
-		if( now - tick >= 500 )
+		if( now - tick >= 1000 )
 		{
-			printf( "gate connect success = %d, login = %d, failed == %d, timeout = %d, disconnected = %d\n",
+			printf( "gate connect success = %d, login = %4d, failed == %4d, timeout = %4d, close = %4d\n",
 				info.gate_connected,
 				info.gate_authenticate,
 				info.gate_connect_failed,
 				info.gate_connect_timeout,
 				info.gate_disconnected );
 
-			printf( "chat connect success = %d, auth = %d, failed == %d, timeout = %d, disconnected = %d\n",
+			printf( "chat connect success = %d,  auth = %4d, failed == %4d, timeout = %4d, close = %4d\n",
 				info.chat_connected,
 				info.chat_authenticate,
 				info.chat_connect_failed,
 				info.chat_connect_timeout,
 				info.chat_disconnected );
+
+			xgc_uint64 pmem_last = pmem;
+			xgc_uint64 vmem_last = vmem;
+
+			get_process_memory_usage( &pmem, &vmem );
+
+			printf( "using %0.4f seconds. pmem inc %0.4fM, vmem inc %0.4fM\n",
+				( now - last ) / 1000.0f,
+				pmem > pmem_last ? ( pmem - pmem_last ) * 1.0f / ( 1024 * 1024 ) : ( pmem_last - pmem ) * -1.0f / ( 1024 * 1024 ),
+				vmem > vmem_last ? ( vmem - vmem_last ) * 1.0f / ( 1024 * 1024 ) : ( vmem_last - vmem ) * -1.0f / ( 1024 * 1024 ) );
 
 			tick = now;
 		}

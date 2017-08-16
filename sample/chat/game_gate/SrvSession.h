@@ -115,14 +115,6 @@ public:
 	xgc_void onLoginAck( xgc_lpvoid ptr, int len );
 
 	///
-	/// \brief 角色离开聊天服务器回应
-	///
-	/// \author albert.xu
-	/// \date 2017/08/05
-	///
-	xgc_void onLogoutAck( xgc_lpvoid ptr, int len );
-
-	///
 	/// \brief 用户登陆
 	///
 	/// \author albert.xu

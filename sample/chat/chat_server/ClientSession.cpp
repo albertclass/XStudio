@@ -34,13 +34,13 @@ int CClientSession::OnParsePacket( const void * data, xgc_size size )
 xgc_void CClientSession::OnAccept( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u accepted\r\n", handle_ );
+	//fprintf( stdout, "net session %u accepted\r\n", handle_ );
 }
 
 xgc_void CClientSession::OnConnect( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u connected\r\n", handle_ );
+	//fprintf( stdout, "net session %u connected\r\n", handle_ );
 }
 
 xgc_void CClientSession::OnError( xgc_uint32 error_code )
@@ -50,7 +50,7 @@ xgc_void CClientSession::OnError( xgc_uint32 error_code )
 
 xgc_void CClientSession::OnClose()
 {
-	fprintf( stderr, "net session %u closed\r\n", handle_ );
+	//fprintf( stderr, "net session %u closed\r\n", handle_ );
 	CUser *pUser = CUser::handle_exchange( chat_id_ );
 	if( pUser )
 		pUser->offline();

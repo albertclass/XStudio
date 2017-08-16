@@ -134,11 +134,11 @@ xgc_void CServer::Run()
 	memset( &options_s, 0, sizeof( options_s ) );
 	options_s.acceptor_count = 10;
 
-	options_s.recv_buffer_size = 1024 * 1024;
-	options_s.send_buffer_size = 1024 * 1024;
+	options_s.recv_buffer_size = 16 * 1024;
+	options_s.send_buffer_size = 16 * 1024;
 
-	options_s.recv_packet_max = 4 * 1024;
-	options_s.send_packet_max = 4 * 1024;
+	options_s.recv_packet_max = 2 * 1024;
+	options_s.send_packet_max = 2 * 1024;
 
 	mListener = net::StartServer( mGateAddr, mGatePort, &options_s, [](){ return XGC_NEW CClientSession(); } );
 
@@ -147,6 +147,12 @@ xgc_void CServer::Run()
 
 	connect_options options_c;
 	memset( &options_c, 0, sizeof( options_c ) );
+
+	options_c.recv_buffer_size = 1024 * 1024;
+	options_c.send_buffer_size = 1024 * 1024;
+
+	options_c.recv_packet_max = 4 * 1024;
+	options_c.send_packet_max = 4 * 1024;
 
 	options_c.timeout = 3000;
 	options_c.is_async = true;
@@ -158,11 +164,23 @@ xgc_void CServer::Run()
 
 	fprintf( stdout, "gate is running.\n" );
 	int n = 0;
+	auto last = current_milliseconds();
+
 	while( mRunning )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )
 		{
 			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+		}
+
+		auto now = current_milliseconds();
+		if( now - last >= 1000 )
+		{
+			char sz[64];
+			datetime::now( sz, "%H:%M:%S" );
+			printf( "%s : online %u\n", sz, mConnectCount );
+
+			last = now;
 		}
 	}
 

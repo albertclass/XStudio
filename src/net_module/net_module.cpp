@@ -56,28 +56,71 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 		return false;
 	}
 
+	/// 连接参数
+	auto recv_buffer_len = 4 * 1024ULL;
+	auto send_buffer_len = 4 * 1024ULL;
+
+	auto node_recv_buffer_len = node.child( "recv_buffer_len" );
+	if( node_recv_buffer_len )
+	{
+		recv_buffer_len = node_recv_buffer_len.attribute( "value" ).as_ullong();
+	}
+
+	auto node_send_buffer_len = node.child( "send_buffer_len" );
+	if( node_send_buffer_len )
+	{
+		send_buffer_len = node_send_buffer_len.attribute( "value" ).as_ullong();
+	}
+
+	auto recv_packet_max = 1024ULL;
+	auto send_packet_max = 1024ULL;
+
+	auto node_recv_packet_max = node.child( "recv_packet_max" );
+	if( node_recv_packet_max )
+	{
+		recv_packet_max = node_recv_packet_max.attribute( "value" ).as_ullong();
+	}
+
+	auto node_send_packet_max = node.child( "send_packet_max" );
+	if( node_send_packet_max )
+	{
+		send_packet_max = node_send_packet_max.attribute( "value" ).as_ullong();
+	}
+
 	auto inet = attr_inet.as_string();
 	auto addr = attr_addr.as_string();
 	auto port = attr_port.as_uint();
 
 	auto timeout = attr_timeout.as_uint();
 
+	connect_options options;
+	memset( &options, 0, sizeof( options ) );
+	options.recv_buffer_size = recv_buffer_len;
+	options.send_buffer_size = send_buffer_len;
+	options.recv_packet_max = recv_packet_max;
+	options.send_packet_max = send_packet_max;
+
 	xgc_bool ret = false;
 	switch( mode )
 	{
-	case net_module::eMode_Normal:
-	case net_module::eMode_Gate:
+		case net_module::eMode_Normal:
+		case net_module::eMode_Gate:
 		{
+			options.is_async = true;
+
 			ret = net::Connect(
 				addr,
 				port,
-				NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_TIMEOUT,
-				timeout,
-				XGC_NEW CClientSession() );
+				XGC_NEW CClientSession(),
+				&options );
 		}
 		break;
-	case net_module::eMode_Pipe:
+		case net_module::eMode_Pipe:
 		{
+			options.is_async = true;
+			options.is_reconnect_timeout = true;
+			options.is_reconnect_passive = true;
+
 			auto attr_id = node.attribute( "id" );
 
 			if( attr_id.empty() )
@@ -86,7 +129,7 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 				return false;
 			}
 
-			ret = net_module::PipeConnect( Str2NetworkId(inet), addr, port, timeout );
+			ret = net_module::PipeConnect( Str2NetworkId( inet ), addr, port, options );
 		}
 		break;
 	}
@@ -118,14 +161,55 @@ xgc_bool make_listen( pugi::xml_node &node )
 	auto port = attr_port.as_uint();
 	auto timeout = attr_timeout.as_uint();
 
+	/// 连接参数
+	auto recv_buffer_len = 4 * 1024ULL;
+	auto send_buffer_len = 4 * 1024ULL;
+
+	auto node_recv_buffer_len = node.child( "recv_buffer_len" );
+	if( node_recv_buffer_len )
+	{
+		recv_buffer_len = node_recv_buffer_len.attribute( "value" ).as_ullong();
+	}
+
+	auto node_send_buffer_len = node.child( "send_buffer_len" );
+	if( node_send_buffer_len )
+	{
+		send_buffer_len = node_send_buffer_len.attribute( "value" ).as_ullong();
+	}
+
+	auto recv_packet_max = 1024ULL;
+	auto send_packet_max = 1024ULL;
+
+	auto node_recv_packet_max = node.child( "recv_packet_max" );
+	if( node_recv_packet_max )
+	{
+		recv_packet_max = node_recv_packet_max.attribute( "value" ).as_ullong();
+	}
+
+	auto node_send_packet_max = node.child( "send_packet_max" );
+	if( node_send_packet_max )
+	{
+		send_packet_max = node_send_packet_max.attribute( "value" ).as_ullong();
+	}
+
 	xgc_lpvoid srv = xgc_nullptr;
 	
+	server_options options;
+	memset( &options, 0, sizeof( options ) );
+	options.recv_buffer_size = recv_buffer_len;
+	options.send_buffer_size = send_buffer_len;
+	options.recv_packet_max = recv_packet_max;
+	options.send_packet_max = send_packet_max;
+
+	options.acceptor_count = node.attribute( "acceptor" ).as_uint( 10 );
+	options.heartbeat_interval = node.attribute( "heart" ).as_uint( 1000 );
+
 	if( strcasecmp( "normal", attr_mode.as_string() ) == 0 )
 	{
 		srv = net::StartServer(
 			addr,
 			port,
-			timeout,
+			&options,
 			&CreateSession< CClientSession > );
 	}
 	else if( strcasecmp( "pipe", attr_mode.as_string() ) == 0 )
@@ -133,7 +217,7 @@ xgc_bool make_listen( pugi::xml_node &node )
 		srv = net::StartServer(
 			addr,
 			port,
-			timeout,
+			&options,
 			&CreateSession< CPipeSession > );
 	}
 	else if( strcasecmp( "gate", attr_mode.as_string() ) == 0 )
@@ -141,7 +225,7 @@ xgc_bool make_listen( pugi::xml_node &node )
 		srv = net::StartServer(
 			addr,
 			port,
-			timeout,
+			&options,
 			&CreateSession< CClientSession > );
 
 		// 连接所有的转发服务器

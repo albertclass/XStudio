@@ -279,6 +279,13 @@ namespace xgc
 				std::function< void() > on_timer;
 			};
 
+			/// 时间戳
+			xgc_time64 exec_;
+			/// 新增事件量
+			std::atomic_ullong exec_inc_;
+			/// 处理事件量
+			std::atomic_ullong exec_dec_;
+
 			/// 定时器映射表
 			xgc_unordered_map< xgc_uint32, timer_info > mTimerMap;
 		};

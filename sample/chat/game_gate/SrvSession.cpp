@@ -81,9 +81,6 @@ xgc_void CServerSession::OnRecv( xgc_lpvoid data, xgc_size size )
 		case chat::MSG_LOGIN_ACK:
 		onLoginAck( ptr, len );
 		break;
-		case chat::MSG_LOGOUT_ACK:
-		onLogoutAck( ptr, len );
-		break;
 	}
 }
 
@@ -147,16 +144,6 @@ xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
 }
 
 ///
-/// \brief 角色离开聊天服务器回应
-///
-/// \author albert.xu
-/// \date 2017/08/05
-///
-xgc_void CServerSession::onLogoutAck( xgc_lpvoid ptr, int len )
-{
-}
-
-///
 /// \brief 用户登陆
 ///
 /// \author albert.xu
@@ -192,6 +179,10 @@ xgc_long CServerSession::UserLogin( xgc_uint64 user_id, const xgc_string &nickna
 ///
 xgc_void CServerSession::UserLogout( xgc_uint64 user_id )
 {
+	auto it = users_.find( user_id );
+	if( it != users_.end() )
+		users_.erase( it );
+
 	chat::logout_req req;
 	req.set_user_id( user_id );
 

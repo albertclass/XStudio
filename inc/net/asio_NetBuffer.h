@@ -142,11 +142,7 @@ namespace xgc
 
 			XGC_INLINE xgc_size put( xgc_lpvoid data, xgc_size size )
 			{
-				if( size > space() )
-				{
-					reset();
-					XGC_ASSERT_RETURN( size <= space(), 0 );
-				}
+				XGC_ASSERT_RETURN( size <= space(), 0 );
 
 				memcpy( end(), data, size );
 				push( size );

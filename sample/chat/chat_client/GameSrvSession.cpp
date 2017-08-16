@@ -48,9 +48,11 @@ xgc_void CGameSrvSession::OnConnect( net::network_t handle )
 	Send2GameSrv( gate::GATE_MSG_LOGIN_REQ, req );
 }
 
-xgc_void CGameSrvSession::OnError( xgc_uint32 error_code )
+xgc_void CGameSrvSession::OnError( xgc_uint32 error )
 {
-	fprintf( stderr, "net session %0X error, code = %0X\r\n", handle_, error_code );
+	fprintf( stderr, "net session %0X error, code = %0X\r\n", handle_, error );
+	if( error == NET_ERROR_CONNECT || error == NET_ERROR_CONNECT_TIMEOUT )
+		delete this;
 }
 
 xgc_void CGameSrvSession::OnClose()
@@ -113,6 +115,7 @@ xgc_void CGameSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 			}
 			else
 			{
+				DBG_INFO( "handle %0X auth failed.", handle_ );
 				CloseLink( handle_ );
 			}
 		}

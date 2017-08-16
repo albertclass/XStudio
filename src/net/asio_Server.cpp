@@ -31,6 +31,10 @@ namespace xgc
 			// 设置允许地址重用
 			acceptor_.set_option( ip::tcp::acceptor::reuse_address( true ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
+			acceptor_.set_option( socket_base::receive_buffer_size( 0 ), ec );
+			XGC_ASSERT_RETURN( !ec, false );
+			acceptor_.set_option( socket_base::send_buffer_size( 0 ), ec );
+			XGC_ASSERT_RETURN( !ec, false );
 
 			// 绑定地址
 			acceptor_.bind( ep, ec );

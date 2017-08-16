@@ -49,6 +49,16 @@ public:
 	/// \date 2017/08/03
 	///
 	CUser* GetUserByUID( xgc_uint64 nUserID );
+
+	///
+	/// \brief 获取频道数
+	/// \author albert.xu
+	/// \date 2017/08/15
+	///
+	xgc_size getUserCount() const
+	{
+		return mUserMap.size();
+	}
 };
 
 CUserMgr& getUserMgr();

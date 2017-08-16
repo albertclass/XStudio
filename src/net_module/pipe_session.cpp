@@ -322,7 +322,8 @@ namespace net_module
 				{
 					SYS_ERROR( "relay version does not match! server ver: %u, client ver: %s", req->version, PIPE_VERSION );
 					ack.error = -1;
-					net::SendLastPacket( mHandle, &ack, sizeof( ack ) );
+					net::SendPacket( mHandle, &ack, sizeof( ack ) );
+					net::CloseLink( mHandle );
 				}
 				else
 				{

@@ -56,7 +56,7 @@ xgc_bool CServer::Setup( xgc_lpcstr lpConfigFile )
 	mChatPort = ini.get_item_value( "ChatServer", "CliPort", 50001 );
 	mGamePort = ini.get_item_value( "ChatServer", "SrvPort", 50002 );
 
-	return true;
+	return init_logger( ini );
 }
 
 ///
@@ -89,22 +89,33 @@ xgc_long CServer::Run()
 	options_c.recv_buffer_size = 16 * 1024;
 	options_c.send_buffer_size = 16 * 1024;
 
-	options_c.recv_packet_max = 1024;
-	options_c.send_packet_max = 1024;
+	options_c.recv_packet_max = 2 * 1024;
+	options_c.send_packet_max = 2 * 1024;
 	mChatListener = net::StartServer( mChatBind, mChatPort, &options_c, [](){ return XGC_NEW CClientSession(); } );
 
 	xgc_time64 last = current_milliseconds();
 
 	while( mRunning )
 	{
+		auto now = current_milliseconds();
+
 		if( net::ProcessNetEvent( 100 ) == 100 )
 		{
 			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 		}
 
-		if( current_milliseconds() - last > 1000 )
+		if( now - last > 1000 )
 		{
 			getChannelMgr().eraseEmptyChannel();
+
+			auto count_chn = getChannelMgr().getChannelCount();
+			auto count_usr = getUserMgr().getUserCount();
+
+			char sz_datetime[64];
+			datetime::now( sz_datetime );
+			printf( "%s : channel has %llu, user has %llu\n", sz_datetime, count_chn, count_usr );
+
+			last = now;
 		}
 	}
 

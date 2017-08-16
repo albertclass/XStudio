@@ -98,6 +98,12 @@ namespace xgc
 			from_ = from;
 			connect_status_ = 1;
 
+			socket_base::send_buffer_size _send_buffer_size;
+			socket_base::receive_buffer_size _recv_buffer_size;
+
+			socket_.get_option( _send_buffer_size );
+			socket_.get_option( _recv_buffer_size );
+
 			make_event( EVENT_PENDING, 0, from_ );
 		}
 
@@ -107,6 +113,16 @@ namespace xgc
 			asio::error_code ec;
 
 			asio::ip::tcp::endpoint ep( ip::address_v4::from_string( address, ec ), port );
+			XGC_ASSERT_RETURN( !ec, false );
+
+			socket_.open( ip::tcp::v4(), ec );
+			XGC_ASSERT_RETURN( !ec, false );
+			// 初始化套接字参数
+			socket_.set_option( socket_base::reuse_address( true ), ec );
+			XGC_ASSERT_RETURN( !ec, false );
+			socket_.set_option( socket_base::receive_buffer_size( 0 ), ec );
+			XGC_ASSERT_RETURN( !ec, false );
+			socket_.set_option( socket_base::send_buffer_size( 0 ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
 
 			// 创建连接对象
@@ -137,12 +153,17 @@ namespace xgc
 			if( options && options->send_buffer_size )
 				set_packet_max( e_send, options->send_packet_max );
 			
-
-			return connect();
+			return do_connect();
 		}
 
-		xgc_bool asio_Socket::connect()
+		xgc_bool asio_Socket::do_connect()
 		{
+			//NET_INFO( "connect %s:%d %s timeout %d"
+			//	, connect_info_->address.address().to_string().c_str()
+			//	, connect_info_->address.port()
+			//	, connect_info_->is_async ? "async" : "sync"
+			//	, connect_info_->timeout );
+
 			if( connect_info_->is_async )
 			{
 				if( connect_info_->timeout )
@@ -213,15 +234,12 @@ namespace xgc
 			// 一定等缓冲准备好后再提交事件，否则有可能事件已收到，缓冲还未准备完成。
 			make_event( event, 0, userdata_ );
 
-
 			++operator_count_;
 
 			// 提交异步读取
 			socket_.async_read_some(
 				buffer( recv_buffer_.end(), recv_buffer_.space( recv_packet_max_ ) ),
 				std::bind( &asio_Socket::handle_recv, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
-
-			timer_.cancel();
 
 			// 如果需要保活，提交保活定时器
 			if( timeout_ )
@@ -236,13 +254,22 @@ namespace xgc
 			if( !socket_.is_open() )
 				return;
 
-			if( !error )
+			if( timer_.cancel() )
 			{
-				accept( EVENT_CONNECT );
-			}
-			else
-			{
-				make_event( EVENT_ERROR, NET_ERROR_CONNECT, userdata_ );
+				if( !error )
+				{
+					accept( EVENT_CONNECT );
+				}
+				else if( connect_info_ && connect_info_->is_reconnect_timeout )
+				{
+					// 对于允许重连的，尝试重连
+					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( 500, timeout_ ) ) );
+					timer_.async_wait( bind( &asio_Socket::do_connect, shared_from_this() ) );
+				}
+				else
+				{
+					make_event( EVENT_ERROR, NET_ERROR_CONNECT, userdata_ );
+				}
 			}
 		}
 
@@ -254,16 +281,16 @@ namespace xgc
 			if( is_connected() )
 				return;
 
-			if ( !error )
+			if( !error )
 			{
-				// 连接超时
-				if ( connect_info_ && connect_info_->is_reconnect_timeout && socket_.is_open() )
+				if( connect_info_ && connect_info_->is_reconnect_timeout )
 				{
 					// 对于允许重连的，尝试重连
-					connect();
+					do_connect();
 				}
 				else
 				{
+					// 连接超时
 					make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT, userdata_ );
 				}
 			}
@@ -309,7 +336,7 @@ namespace xgc
 				evt.handle = handle_;
 				evt.event = EVENT_DATA;
 				evt.error = packet_length;
-				evt.bring = userdata_;
+				evt.session = userdata_;
 
 				auto packet = CNetworkPacket::allocate( sizeof(EventHeader) + packet_length );
 				packet->putn( &evt, sizeof(evt) );
@@ -362,6 +389,10 @@ namespace xgc
 			{
 				++operator_count_;
 
+				// 重置数据准备发送
+				if( !send_buffer_.enough( send_packet_max_ ) )
+					send_buffer_.reset();
+
 				socket_.async_send(
 					buffer( send_buffer_.begin(), send_buffer_.length() ),
 					std::bind( &asio_Socket::handle_send, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
@@ -395,6 +426,10 @@ namespace xgc
 			{
 				++operator_count_;
 
+				// 重置数据准备发送
+				if( !send_buffer_.enough( send_packet_max_ ) )
+					send_buffer_.reset();
+
 				socket_.async_send(
 					buffer( send_buffer_.begin(), send_buffer_.length() ),
 					std::bind( &asio_Socket::handle_send, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
@@ -420,6 +455,11 @@ namespace xgc
 			if( connect_status_ == 1 && send_buffer_.length() )
 			{
 				++operator_count_;
+
+				// 重置数据准备发送
+				if( !send_buffer_.enough( send_packet_max_ ) )
+					send_buffer_.reset();
+
 				socket_.async_send(
 					buffer( send_buffer_.begin(), send_buffer_.length() ),
 					std::bind( &asio_Socket::handle_send, shared_from_this(), std::placeholders::_1, std::placeholders::_2 ) );
@@ -504,13 +544,14 @@ namespace xgc
 			}
 		}
 
-		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid bring )
+		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid session )
 		{
 			EventHeader evt;
 			evt.handle = handle_;
 			evt.event = event;
 			evt.error = error_code;
-			evt.bring = bring;
+			evt.system_error = errno;
+			evt.session = session;
 
 			getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
 		}

@@ -128,6 +128,8 @@ public:
 	///
 	virtual xgc_void OnChatError( xgc_uint32 error )
 	{
+		if( error == NET_ERROR_CONNECT || error == NET_ERROR_CONNECT_TIMEOUT )
+			CloseLink( handle_ );
 	}
 
 	///

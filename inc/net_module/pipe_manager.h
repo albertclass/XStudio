@@ -49,7 +49,7 @@ namespace net_module
 	/// \author albert.xu
 	/// \date 2017/02/28 16:19
 	///
-	xgc_bool PipeConnect( NETWORK_ID nID, xgc_lpcstr pAddr, xgc_uint16 nPort, xgc_uint32 nTimeout );
+	xgc_bool PipeConnect( NETWORK_ID nID, xgc_lpcstr pAddr, xgc_uint16 nPort, net::connect_options &options );
 
 	///
 	/// \brief 获取管道会话

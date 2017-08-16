@@ -30,13 +30,14 @@ int CClientSession::OnParsePacket( const void * data, xgc_size size )
 xgc_void CClientSession::OnAccept( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u accepted\r\n", handle_ );
+	//fprintf( stdout, "net session %u accepted\r\n", handle_ );
+	theServer.Connected();
 }
 
 xgc_void CClientSession::OnConnect( net::network_t handle )
 {
 	handle_ = handle;
-	fprintf( stdout, "net session %u connected\r\n", handle_ );
+	//fprintf( stdout, "net session %u connected\r\n", handle_ );
 }
 
 xgc_void CClientSession::OnError( xgc_uint32 error_code )
@@ -46,7 +47,13 @@ xgc_void CClientSession::OnError( xgc_uint32 error_code )
 
 xgc_void CClientSession::OnClose()
 {
-	fprintf( stderr, "net session %u closed\r\n", handle_ );
+	//fprintf( stderr, "net session %u closed\r\n", handle_ );
+	chat::logout_req req;
+	req.set_user_id( user_id_ );
+
+	theServer.UserLogout( user_id_ );
+	theServer.Disconnected();
+
 	user_id_ = -1;
 	handle_ = INVALID_NETWORK_HANDLE;
 

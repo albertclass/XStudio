@@ -87,7 +87,7 @@ namespace net_module
 		}
 	}
 
-	xgc_bool PipeConnect( NETWORK_ID nID, xgc_lpcstr pAddr, xgc_uint16 nPort, xgc_uint32 nTimeout )
+	xgc_bool PipeConnect( NETWORK_ID nID, xgc_lpcstr pAddr, xgc_uint16 nPort, net::connect_options &options )
 	{
 		// 管道是否已连接
 		auto it1 = mPipeMap.find( nID );
@@ -120,8 +120,7 @@ namespace net_module
 		// 防止重复连接
 		mPipeMap[nID] = pPipe;
 
-		xgc_uint16 nOptions = NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_RECONNECT | NET_CONNECT_OPTION_TIMEOUT;
-		net::Connect( pAddr, nPort, nOptions, nTimeout, pPipe );
+		net::Connect( pAddr, nPort, pPipe, &options );
 		return true;
 	}
 

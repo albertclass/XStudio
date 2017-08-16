@@ -555,7 +555,7 @@ namespace xgc
 				if( it != loggers.end() )
 					return *(it->second);
 
-				return *(logger_impl*) xgc_nullptr;
+				return *(logger_impl*)xgc_nullptr;
 			}
 
 			logger_impl& get_or_create( xgc_lpcstr name )
@@ -608,6 +608,9 @@ namespace xgc
 
 			// make output adapter
 			auto logger_output_conf = ini.get_section(section_name);
+			if( xgc_nullptr == logger_output_conf )
+				return xgc_nullptr;
+
 			// get device
 			auto device = ini.get_item_value( logger_output_conf, "Device", xgc_nullptr );
 			if( xgc_nullptr == device )

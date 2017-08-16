@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <network id="2-1-1-1">
-	<listen address="0.0.0.0" port="27030" mode="gate" >
-		<recvbuf value="1048576"/>
-		<sendbuf value="1048576"/>
+	<listen address="0.0.0.0" port="27030" mode="gate" heart="1000ms" acceptor="10">
+		<recv_buffer_len value="1048576"/>
+		<send_buffer_len value="1048576"/>
+		<recv_packet_max value="1048576"/>
+		<send_packet_max value="1048576"/>
 		<allow>
 			<address from="0.0.0.0" to="255.255.255.255"/>
 			<address ip="172.30.10.244"/>
@@ -11,8 +13,10 @@
 		<!--block type="range" from="0.0.0.0" to="255.255.255.255"-->
 		<connections>
 			<connect id="2-1-0-1" address="127.0.0.1" port="27001" timeout="5000">
-				<recvbuf value="1048576"/>
-				<sendbuf value="1048576"/>
+				<recv_buffer_len value="1048576"/>
+				<send_buffer_len value="1048576"/>
+				<recv_packet_max value="1048576"/>
+				<send_packet_max value="1048576"/>
 			</connect>
 		<!--
 			<connect id="2-1-10-2" address="127.0.0.1" port="27102" timeout="1000">
