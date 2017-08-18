@@ -9,7 +9,6 @@
 
 #ifndef _LOGGER_H_
 #define _LOGGER_H_
-#include "defines.h"
 #include "exports.h"
 
 #define LOGEND "\n"
@@ -312,7 +311,6 @@ namespace xgc
 			// ÃÌº”  ≈‰∆˜
 			xgc_void add_adapter( logger_adapter* adapter )
 			{
-				XGC_ASSERT_RETURN( adapter, XGC_NONE );
 				adapters.push_back( adapter );
 			}
 

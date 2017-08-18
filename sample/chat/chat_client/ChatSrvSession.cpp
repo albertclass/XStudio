@@ -45,10 +45,10 @@ xgc_void CChatSrvSession::OnConnect( net::network_t handle )
 	game_session_->OnChatConnect( handle );
 }
 
-xgc_void CChatSrvSession::OnError( xgc_uint32 error_code )
+xgc_void CChatSrvSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
 {
-	fprintf( stderr, "chat session %0X error, code = %0X\r\n", handle_, error_code );
-	game_session_->OnChatError( error_code );
+	fprintf( stderr, "chat session %0X error, type = %d, code = %d\r\n", handle_, error_type, error_code );
+	game_session_->OnChatError( error_type, error_code );
 }
 
 xgc_void CChatSrvSession::OnClose()

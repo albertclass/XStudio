@@ -104,7 +104,7 @@ namespace xgc
 			socket_.get_option( _send_buffer_size );
 			socket_.get_option( _recv_buffer_size );
 
-			make_event( EVENT_PENDING, 0, from_ );
+			make_event( EVENT_PENDING );
 		}
 
 		xgc_bool asio_Socket::connect( xgc_lpcstr address, xgc_int16 port, connect_options *options )
@@ -210,7 +210,7 @@ namespace xgc
 				if( false == set_buffer_size( e_recv, g_recv_buffer_size ) )
 				{
 					// 提交事件 NET_ERROR_NOT_ENOUGH_MEMROY
-					make_event( EVENT_ERROR, NET_ERROR_NOT_ENOUGH_MEMROY, userdata_ );
+					make_error( NET_ETYPE_ACCEPT, NET_ERROR_NO_MEMORY );
 					
 					close();
 					return;
@@ -223,7 +223,7 @@ namespace xgc
 				if( false == set_buffer_size( e_send, g_send_buffer_size ) )
 				{
 					// 提交事件 NET_ERROR_NOT_ENOUGH_MEMROY
-					make_event( EVENT_ERROR, NET_ERROR_NOT_ENOUGH_MEMROY, userdata_ );
+					make_error( NET_ETYPE_ACCEPT, NET_ERROR_NO_MEMORY );
 
 					close();
 					return;
@@ -232,7 +232,7 @@ namespace xgc
 
 			// 提交事件 CONNECT / ACCEPT
 			// 一定等缓冲准备好后再提交事件，否则有可能事件已收到，缓冲还未准备完成。
-			make_event( event, 0, userdata_ );
+			make_event( event );
 
 			++operator_count_;
 
@@ -268,7 +268,8 @@ namespace xgc
 				}
 				else
 				{
-					make_event( EVENT_ERROR, NET_ERROR_CONNECT, userdata_ );
+					make_error( NET_ETYPE_CONNECT, error.value() );
+					close();
 				}
 			}
 		}
@@ -291,7 +292,8 @@ namespace xgc
 				else
 				{
 					// 连接超时
-					make_event( EVENT_ERROR, NET_ERROR_CONNECT_TIMEOUT, userdata_ );
+					make_error( NET_ETYPE_CONNECT, NET_ERROR_TIMEOUT );
+					close();
 				}
 			}
 		}
@@ -308,7 +310,7 @@ namespace xgc
 			if( false == recv_buffer_.push( translate ) )
 			{
 				XGC_ASSERT( false );
-				make_event( EVENT_ERROR, NET_ERROR_PACKET_SPACE, userdata_ );
+				make_error( NET_ETYPE_RECV, NET_ERROR_NO_SPACE );
 
 				--operator_count_;
 				close();
@@ -321,7 +323,7 @@ namespace xgc
 			if( packet_length > recv_buffer_.capacity() )
 			{
 				XGC_ASSERT( false );
-				make_event( EVENT_ERROR, NET_ERROR_PACKET_SPACE, userdata_ );
+				make_error( NET_ETYPE_RECV, NET_ERROR_MESSAGE_SIZE );
 
 				--operator_count_;
 				close();
@@ -332,17 +334,20 @@ namespace xgc
 			while( packet_length && recv_buffer_.length() >= packet_length )
 			{
 				// 将数据包发送到队列
-				EventHeader evt;
+				NetEvent evt;
+				evt.session = userdata_;
 				evt.handle = handle_;
 				evt.event = EVENT_DATA;
-				evt.error = packet_length;
-				evt.session = userdata_;
 
-				auto packet = CNetworkPacket::allocate( sizeof(EventHeader) + packet_length );
-				packet->putn( &evt, sizeof(evt) );
-				packet->putn( recv_buffer_.begin(), packet_length );
+				NetData dat;
+				dat.length = packet_length;
 
-				getSocketMgr().Push( packet );
+				asio_NetBuffer packet( NET_PACKET_SIZE( packet_length ) );
+				packet.put( &evt, sizeof( evt ) );
+				packet.put( &dat, sizeof( dat ) );
+				packet.put( recv_buffer_.begin(), packet_length );
+
+				getSocketMgr().Push( packet.release(), NET_PACKET_SIZE( packet_length ) );
 
 				// 弹出已收的数据包
 				recv_buffer_.pop( packet_length );
@@ -378,7 +383,7 @@ namespace xgc
 			// 数据放入发送缓冲
 			if( send_buffer_.put( data, size ) != size )
 			{
-				make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL, userdata_ );
+				make_error( NET_ETYPE_SEND, NET_ERROR_NO_SPACE );
 
 				close();
 				return;
@@ -412,7 +417,7 @@ namespace xgc
 				// 数据放入发送缓冲
 				if( send_buffer_.put( data, size ) != size )
 				{
-					make_event( EVENT_ERROR, NET_ERROR_SEND_BUFFER_FULL, userdata_ );
+					make_error( NET_ETYPE_SEND, NET_ERROR_NO_SPACE );
 
 					close();
 					return;
@@ -491,7 +496,7 @@ namespace xgc
 			xgc_uint16 exp2 = 2;
 			if( operator_count_ == 0 && connect_status_.compare_exchange_strong( exp2, 3 ) )
 			{
-				make_event( EVENT_CLOSE, 0, userdata_ );
+				make_event( EVENT_CLOSE );
 				userdata_ = xgc_nullptr;
 
 				connect_status_ = 0;
@@ -536,7 +541,7 @@ namespace xgc
 				if( is_connected() && timeout_ )
 				{
 					// check socket timeout
-					make_event( EVENT_PING, 0, userdata_ );
+					make_event( EVENT_PING );
 
 					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( timeout_, 500 ) ) );
 					timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this(), std::placeholders::_1 ) );
@@ -544,16 +549,36 @@ namespace xgc
 			}
 		}
 
-		xgc_void asio_Socket::make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid session )
+		xgc_void asio_Socket::make_event( xgc_uint32 event )
 		{
-			EventHeader evt;
+			NetEvent evt;
 			evt.handle = handle_;
 			evt.event = event;
-			evt.error = error_code;
-			evt.system_error = errno;
-			evt.session = session;
+			evt.session = userdata_;
 
-			getSocketMgr().Push( CNetworkPacket::allocate( &evt, sizeof( evt ), handle_ ) );
+			asio_NetBuffer packet( NET_EVENT_SIZE );
+			packet.put( &evt, sizeof(evt) );
+
+			getSocketMgr().Push( packet.release(), NET_EVENT_SIZE );
 		}
+
+		xgc_void asio_Socket::make_error( xgc_int16 error_type, xgc_int16 error_code )
+		{
+			NetEvent evt;
+			evt.handle = handle_;
+			evt.session = userdata_;
+			evt.event = EVENT_ERROR;
+
+			NetError err;
+			err.error_type = error_type;
+			err.error_code = error_code;
+
+			asio_NetBuffer packet( NET_ERROR_SIZE );
+			packet.put( &evt, sizeof(evt) );
+			packet.put( &err, sizeof(err) );
+
+			getSocketMgr().Push( packet.release(), NET_ERROR_SIZE );
+		}
+
 	}
 }

@@ -25,7 +25,6 @@
 #include "asio/deadline_timer.hpp"
 
 #include "net.h"
-#include "NetworkPacket.h"
 #include "asio_NetBuffer.h"
 #include "asio_Socket.h"
 #include "asio_SocketMgr.h"
@@ -53,21 +52,35 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/03/01 14:25
 		///
-		struct EventHeader
+		struct NetEvent
 		{
+			/// 处理句柄
+			xgc_lpvoid session;
 			/// 句柄
-			network_t handle;
+			xgc_uint32 handle;
 			/// 事件
 			xgc_uint32 event;
+		};
+
+		struct NetError
+		{
+			/// 错误类型
+			xgc_int16 error_type;
 			/// 错误码
-			xgc_uint32 error;
-			/// 错误码（系统）
-			xgc_uint32 system_error;
-			/// 携带(根据事件有不同含义)
-			xgc_lpvoid session;
+			xgc_int16 error_code;
+		};
+
+		struct NetData
+		{
+			/// 错误类型
+			xgc_int32 length;
 		};
 
 		#pragma pack()
+
+		#define NET_EVENT_SIZE (sizeof(NetEvent))
+		#define NET_ERROR_SIZE (sizeof(NetEvent) + sizeof(NetError))
+		#define NET_PACKET_SIZE( Length ) (sizeof(NetEvent) + sizeof(NetData) + Length)
 
 		XGC_INLINE xgc_time64 tick()
 		{

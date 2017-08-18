@@ -70,7 +70,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	virtual xgc_void OnError( xgc_uint32 error_code ) override;
+	virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code ) override;
 
 	///
 	/// \brief Á¬½Ó¹Ø±Õ

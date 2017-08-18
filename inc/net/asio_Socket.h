@@ -122,13 +122,22 @@ namespace xgc
 			xgc_ulong get_socket_info( xgc_uint32 addr[2], xgc_uint16 port[2] );
 
 			/*!
-			*
-			* \brief 关闭连接
-			*
-			* \author albert.xu
-			* \date 十一月 2015
-			*/
-			xgc_void make_event( xgc_uint32 event, xgc_uint32 error_code, xgc_lpvoid session );
+			 *
+			 * \brief 关闭连接
+			 *
+			 * \author albert.xu
+			 * \date 十一月 2015
+			 */
+			xgc_void make_event( xgc_uint32 event );
+
+			/*!
+			 *
+			 * \brief 关闭连接
+			 *
+			 * \author albert.xu
+			 * \date 十一月 2015
+			 */
+			xgc_void make_error( xgc_int16 error_type, xgc_int16 error_code );
 		private:
 			/*!
 			*

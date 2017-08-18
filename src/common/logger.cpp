@@ -1,3 +1,4 @@
+#include "defines.h"
 #include "logger.h"
 #include "xbuffer.h"
 #include "xsystem.h"

@@ -99,7 +99,7 @@ namespace net_module
 		/// \author albert.xu
 		/// \date 2017/02/28 11:09
 		///
-		virtual xgc_void OnError( xgc_uint32 error_code ) override;
+		virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code ) override;
 
 		///
 		/// \brief Á¬½Ó¹Ø±Õ

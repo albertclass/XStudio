@@ -47,7 +47,7 @@ namespace xgc
 			status_ = 1;
 			
 			// 投递连接套接字
-			for( int i = 0; i < options_.acceptor_count; ++i )
+			while( options_.acceptor_count > acceptor_count_ )
 			{
 				post_accept();
 			}
@@ -77,13 +77,13 @@ namespace xgc
 
 		xgc_void asio_Server::handle_accept( asio_SocketPtr pSocket, const asio::error_code& error )
 		{
+			--acceptor_count_;
+
 			if( !error )
 			{
 				pSocket->pending( this );
 				post_accept();
 			}
-
-			--acceptor_count_;
 		}
 
 		xgc_void asio_Server::post_accept()
@@ -91,10 +91,15 @@ namespace xgc
 			if( status_ != 1 )
 				return;
 			
-			// asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, timeout_, xgc_nullptr, this );
-			asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( service_, options_.heartbeat_interval, xgc_nullptr, this ) );
-			if( pSocket )
+			// 此处会发生不同步的情况，多个线程比较后会进入，直到 ++acceptor_count 被触发后
+			// 多投递几个也没什么大不了，所以就不处理了。
+			while( options_.acceptor_count > acceptor_count_ )
 			{
+				// asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, timeout_, xgc_nullptr, this );
+				asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( service_, options_.heartbeat_interval, xgc_nullptr, this ) );
+				if( xgc_nullptr == pSocket )
+					break;
+				
 				if( options_.recv_buffer_size )
 					pSocket->set_buffer_size( asio_Socket::e_recv, options_.recv_buffer_size );
 
@@ -111,6 +116,9 @@ namespace xgc
 
 				++acceptor_count_;
 				acceptor_.async_accept( pSocket->socket_, std::bind( &asio_Server::handle_accept, this, pSocket, std::placeholders::_1 ) );
+
+				if( 0 == options_.acceptor_smart )
+					break;
 			}
 		}
 	}

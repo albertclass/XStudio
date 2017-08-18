@@ -41,7 +41,7 @@ xgc_void CServerSession::OnConnect( net::network_t handle )
 	fprintf( stdout, "net session %u connected\r\n", handle_ );
 }
 
-xgc_void CServerSession::OnError( xgc_uint32 error_code )
+xgc_void CServerSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
 {
 	fprintf( stderr, "net session %u error, code = %u\r\n", handle_, error_code );
 }

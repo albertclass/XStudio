@@ -42,15 +42,17 @@ namespace xgc
 		/// 计时器消息
 		#define EVENT_TIMER		8
 
-		#define NET_ERROR_CONNECT				0x80000000L
-		#define NET_ERROR_CONNECT_TIMEOUT		0x80000001L
-		#define NET_ERROR_NOT_ENOUGH_MEMROY		0x80000002L
-		#define NET_ERROR_HEADER_LENGTH			0x80000003L
-		#define NET_ERROR_DECRYPT_LENGTH		0x80000004L
-		#define NET_ERROR_PACKET_SPACE			0x80000005L
-		#define NET_ERROR_PACKET_INVALID		0x80000006L
-		#define NET_ERROR_SEND_BUFFER_FULL		0x80000007L
-		#define NET_ERROR_LINK_UP				0x80000008L
+		#define NET_ETYPE_ACCEPT	1
+		#define NET_ETYPE_CONNECT	2
+		#define NET_ETYPE_SEND		3
+		#define NET_ETYPE_RECV		4
+		#define NET_ETYPE_CLOSE		5
+		#define NET_ETYPE_TIMER		6
+
+		#define NET_ERROR_TIMEOUT	-2L
+		#define NET_ERROR_MESSAGE_SIZE		-3L
+		#define NET_ERROR_NO_SPACE			-4L
+		#define NET_ERROR_NO_MEMORY			-5L
 
 		#define FILTER_ERROR					0
 		#define FILTER_PASS						1
@@ -69,63 +71,6 @@ namespace xgc
 
 		typedef xgc_uint32	network_t;
 		typedef xgc_uint32	group_t;
-
-		///
-		/// \brief 数据包接口
-		///
-		/// \author albert.xu
-		/// \date 2016/02/17 16:19
-		///
-		struct INetPacket
-		{
-			///
-			/// \brief 数据首地址
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_lpvoid	data() = 0;
-
-			///
-			/// \brief 数据长度
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size	size()const = 0;
-
-			///
-			/// \brief 数据包总容量
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual xgc_size	capacity()const = 0;
-
-			///
-			/// \brief 连接句柄
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:40
-			///
-			virtual network_t	handle()const = 0;
-
-			///
-			/// \brief 消息包创建时的时间戳
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:41
-			///
-			virtual time_t		timestamp()const = 0;
-
-			///
-			/// \brief 释放消息包
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 11:46
-			///
-			virtual xgc_void	freedom() throw() = 0;
-		};
 
 		///
 		/// \brief 连接会话接口
@@ -163,7 +108,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/02/28 11:09
 			///
-			virtual xgc_void OnError( xgc_uint32 error_code ) = 0;
+			virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code ) = 0;
 
 			///
 			/// \brief 连接关闭
@@ -328,6 +273,8 @@ namespace xgc
 			xgc_size recv_packet_max;
 			/// 连接投递个数
 			xgc_uint16 acceptor_count;
+			/// 是否智能调优投递数量
+			xgc_uint16 acceptor_smart;
 			/// 心跳间隔
 			xgc_uint16 heartbeat_interval;
 		};

@@ -161,6 +161,18 @@ namespace xgc
 
 				return copy;
 			}
+
+			XGC_INLINE xgc_lpvoid release()
+			{
+				reset();
+
+				auto base = base_;
+
+				base_ = xgc_nullptr;
+				size_ = tag_ = len_ = 0;
+
+				return base;
+			}
 		};
 	}
 }

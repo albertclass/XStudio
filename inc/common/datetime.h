@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "defines.h"
 #include "exports.h"
 
 namespace xgc

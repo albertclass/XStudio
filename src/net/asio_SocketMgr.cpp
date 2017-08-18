@@ -318,20 +318,38 @@ namespace xgc
 			pGroup->free_handle();
 		}
 
-		xgc_void asio_SocketMgr::Push( INetPacket * pEvt )
+		xgc_void asio_SocketMgr::Push( xgc_lpvoid data, xgc_size size )
 		{
 			++exec_inc_;
-			mEvtQueue.Push( pEvt );
+			std::lock_guard< std::mutex > _lock( lock_queue_ );
+
+			event_queue_.push( { data, size } );
+		}
+
+		xgc_bool asio_SocketMgr::Kick( xgc_lpvoid &data, xgc_size &size )
+		{
+			std::lock_guard< std::mutex > _lock( lock_queue_ );
+			if( event_queue_.empty() )
+				return false;
+
+			auto pkg = event_queue_.front();
+			data = std::get<0>( pkg );
+			size = std::get<1>( pkg );
+
+			event_queue_.pop();
+
+			++exec_dec_;
+			return true;
 		}
 
 		xgc_long asio_SocketMgr::Exec( xgc_long nStep )
 		{
-			INetPacket *pEvt = xgc_nullptr;
+			xgc_lpvoid data = xgc_nullptr;
+			
+			xgc_size size = 0;
 
-			while( nStep && mEvtQueue.Kick( &pEvt ) )
+			for( ;nStep && Kick( data, size ); --nStep )
 			{
-				++exec_inc_;
-
 				xgc_time64 diff = current_milliseconds() - exec_;
 				if( diff >= 1000 )
 				{
@@ -340,8 +358,9 @@ namespace xgc
 					exec_inc_ = exec_dec_ = 0;
 				}
 
-				auto hNet = pEvt->handle();
-				auto pHeader = (EventHeader*)pEvt->data();
+				XGC_ASSERT_CONTINUE( size >= NET_EVENT_SIZE );
+
+				auto pHeader = (NetEvent*)data;
 
 				do 
 				{
@@ -350,7 +369,7 @@ namespace xgc
 					{
 					case EVENT_PENDING:
 						{
-							auto pSocket = getSocket( hNet );
+							auto pSocket = getSocket( pHeader->handle );
 							if( xgc_nullptr == pSocket )
 								break;
 
@@ -372,14 +391,14 @@ namespace xgc
 							auto pSession = (INetworkSession*)pHeader->session;
 							XGC_ASSERT_BREAK( pSession );
 
-							pSession->OnAccept( hNet );
+							pSession->OnAccept( pHeader->handle );
 						}
 						break;
 					case EVENT_CONNECT:
 						{
 							auto pSession = (INetworkSession*) pHeader->session;
 							XGC_ASSERT_BREAK( pSession );
-							pSession->OnConnect( hNet );
+							pSession->OnConnect( pHeader->handle );
 						}
 						break;
 					case EVENT_CLOSE:
@@ -394,16 +413,17 @@ namespace xgc
 						{
 							auto pSession = (INetworkSession*) pHeader->session;
 							XGC_ASSERT_BREAK( pSession );
-
-							pSession->OnError( (xgc_uint32) pHeader->error );
+							auto pError = (NetError*)( pHeader + 1 );
+							pSession->OnError( pError->error_type, pError->error_code );
 						}
 						break;
 					case EVENT_DATA:
 						{
 							auto pSession = (INetworkSession*) pHeader->session;
 							XGC_ASSERT_BREAK( pSession );
+							auto pPacket = (NetData*)( pHeader + 1 );
 
-							pSession->OnRecv( pHeader + 1, pHeader->error );
+							pSession->OnRecv( pPacket + 1, pPacket->length );
 						}
 						break;
 					case EVENT_PING:
@@ -429,8 +449,7 @@ namespace xgc
 					}
 				} while (false);
 
-				pEvt->freedom();
-				--nStep;
+				free( data );
 			}
 
 			return nStep;
@@ -483,13 +502,15 @@ namespace xgc
 			if( e == asio::error::operation_aborted )
 				return;
 
-			EventHeader evt;
+			NetEvent evt;
 			evt.handle = id;
 			evt.event = EVENT_TIMER;
-			evt.error = 0;
 			evt.session = xgc_nullptr;
 
-			Push( CNetworkPacket::allocate( &evt, sizeof(evt), INVALID_NETWORK_HANDLE ) );
+			auto data = malloc( NET_EVENT_SIZE );
+			memcpy( data, &evt, NET_EVENT_SIZE );
+
+			Push( data, NET_EVENT_SIZE );
 
 			std::lock_guard< std::mutex > _lock( lock_timer_ );
 			auto it = mTimerMap.find( id );

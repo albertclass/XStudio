@@ -338,7 +338,7 @@ group "chat"
 		return prj
 	end
 
-	chat_project( "game_gate" )
+	chat_project( "chat_gate" )
 	chat_project( "chat_server" )
 	chat_project( "chat_client" )
 

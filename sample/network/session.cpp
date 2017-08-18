@@ -45,7 +45,7 @@ xgc_void CNetSession::OnConnect( net::network_t handle )
 	OnClientEvt( this, EVENT_CONNECT, handle_ );
 }
 
-xgc_void CNetSession::OnError( xgc_uint32 error_code )
+xgc_void CNetSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
 {
 	fprintf( stderr, "net session %u error, code = %u\r\n", handle_, error_code );
 	OnClientEvt( this, EVENT_ERROR, error_code );

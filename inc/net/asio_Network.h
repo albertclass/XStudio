@@ -23,6 +23,7 @@ namespace xgc
 			xgc_void run();	
 		public:
 			xgc_bool insert_workthread( xgc_int32 c );
+
 			xgc_void exit();
 
 			asio::io_service& Ref(){ return *service_; }

@@ -241,7 +241,7 @@ namespace net_module
 		mHandle = handle;
 	}
 
-	xgc_void CPipeSession::OnError( xgc_uint32 error_code )
+	xgc_void CPipeSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
 	{
 		mEvtHandler( this, EVENT_ERROR, error_code );
 	}

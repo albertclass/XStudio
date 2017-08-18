@@ -12,7 +12,6 @@
 #pragma once
 #ifndef _ASIO_SOCKETMGR_H_
 #define _ASIO_SOCKETMGR_H_
-#include "NetEventQueue.h"
 
 namespace xgc
 {
@@ -215,10 +214,18 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/03/01 14:46
 			///
-			xgc_void Push( INetPacket *pEvt );
+			xgc_void Push( xgc_lpvoid data, xgc_size size );
 
 			///
 			/// \brief 弹出事件
+			///
+			/// \author albert.xu
+			/// \date 2017/08/17
+			///
+			xgc_bool Kick( xgc_lpvoid &data, xgc_size &size );
+
+			///
+			/// \brief 执行事件
 			///
 			/// \author albert.xu
 			/// \date 2017/03/01 14:47
@@ -268,7 +275,10 @@ namespace xgc
 			std::mutex		lock_group_;
 
 			/// 消息队列
-			CNetEventQueue	mEvtQueue;
+			std::queue< std::tuple< xgc_lpvoid, xgc_size > > event_queue_;
+
+			/// 消息队列锁
+			std::mutex		lock_queue_;
 
 			/// 多线程定时器锁
 			std::mutex		lock_timer_;

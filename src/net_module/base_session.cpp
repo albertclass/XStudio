@@ -37,7 +37,7 @@ namespace net_module
 		EvtNotify( EVENT_CONNECT, handle );
 	}
 
-	xgc_void CBaseSession::OnError( xgc_uint32 error_code )
+	xgc_void CBaseSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
 	{
 		EvtNotify( EVENT_ERROR, error_code );
 	}

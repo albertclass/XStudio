@@ -52,20 +52,21 @@ public:
 		CGameSrvSession::OnClose();
 	}
 
-	virtual xgc_void OnError( xgc_uint32 error ) override
+	virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code ) override
 	{
-		if( error == NET_ERROR_CONNECT )
+		if( error_type == NET_ETYPE_CONNECT )
 		{
-			++info_->gate_connect_failed;
+			if( error_code == NET_ERROR_TIMEOUT )
+			{
+				++info_->gate_connect_timeout;
+			}
+			else
+			{
+				++info_->gate_connect_failed;
+			}
 		}
 
-		if( error == NET_ERROR_CONNECT_TIMEOUT )
-		{
-			++info_->gate_connect_timeout;
-			--info_->gate_connect_failed;
-		}
-
-		CGameSrvSession::OnError( error );
+		CGameSrvSession::OnError( error_type, error_code );
 	}
 
 	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size )override
@@ -98,20 +99,21 @@ public:
 		CGameSrvSession::OnChatConnect( handle );
 	}
 
-	virtual xgc_void OnChatError( xgc_uint32 error )override
+	virtual xgc_void OnChatError( xgc_int16 error_type, xgc_int16 error_code )override
 	{
-		if( error == NET_ERROR_CONNECT )
+		if( error_type == NET_ETYPE_CONNECT )
 		{
-			++info_->chat_connect_failed;
+			if( error_code == NET_ERROR_TIMEOUT )
+			{
+				++info_->chat_connect_timeout;
+			}
+			else
+			{
+				++info_->chat_connect_failed;
+			}
 		}
 
-		if( error == NET_ERROR_CONNECT_TIMEOUT )
-		{
-			++info_->chat_connect_timeout;
-			--info_->chat_connect_failed;
-		}
-
-		CGameSrvSession::OnChatError( error );
+		CGameSrvSession::OnChatError( error_type, error_code );
 	}
 
 	virtual xgc_void OnChatClose()override
@@ -189,17 +191,21 @@ xgc_void test_1( int argc, char *argv[] )
 			{
 				auto gate_connect_rate = info.gate_connected * 100.0f / info.gate_connect_count;
 				auto chat_connect_rate = info.chat_connected * 100.0f / info.chat_connect_count;
-				printf( "gate connect success = %d, failed == %d, timeout = %d, connect rate = %0.2f%%\n",
+				printf( "gate connect(%d), S(%d), F(%d), T(%d), A(%d), R(%0.2f%%)\n",
+					info.gate_connect_count,
 					info.gate_connected,
 					info.gate_connect_failed,
 					info.gate_connect_timeout,
+					info.gate_authenticate,
 					gate_connect_rate );
 
-				printf( "chat connect success = %d, failed == %d, timeout = %d, connect rate = %0.2f%%\n",
+				printf( "chat connect(%d), S(%d), F(%d), T(%d), A(%d), R(%0.2f%%)\n",
+					info.chat_connect_count,
 					info.chat_connected,
 					info.chat_connect_failed,
 					info.chat_connect_timeout,
-					gate_connect_rate );
+					info.chat_authenticate,
+					chat_connect_rate );
 
 				printf( "connect using %llu milliseconds, avg %0.2f connect pre seconds\n", connect_spend, info.gate_connect_count * 1000.0 / connect_spend );
 				printf( "make socket using %llu milliseconds, avg %0.2f make socket pre seconds\n", connect_spend_socket, info.gate_connect_count * 1000.0 / connect_spend_socket );
