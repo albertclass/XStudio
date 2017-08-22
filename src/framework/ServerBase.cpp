@@ -115,7 +115,7 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 	SYS_INFO( "刷新系统初始化成功！" );
 
 	MemMark( "asyncevent", pInitNode );
-	if( false == InitServerAsyncEvt() )
+	if( false == InitServerEvent() )
 		return false;
 
 	SYS_INFO( "异步逻辑处理初始化成功！" );
@@ -199,7 +199,7 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 		StepServerRefresh();
 
 		// 处理需要的异步逻辑操作
-		StepServerEvent();
+		ExecEvent();
 
 		// 是否空闲，空闲的时候要主动挂起服务器
 		if( bBusy == false )
@@ -237,7 +237,7 @@ xgc_void ServerFini( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 	FiniServerRefresh();
 	SYS_INFO( "刷新系统清理完成..." );
 
-	FiniServerAsyncEvt();
+	FiniServerEvent();
 	SYS_INFO( "异步逻辑处理清理完成..." );
 
 	FiniServerDatabase();

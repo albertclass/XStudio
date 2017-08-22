@@ -72,6 +72,14 @@ namespace xgc
 			}
 		protected:
 			///
+			/// \brief 是否在白名单中
+			///
+			/// \author albert.xu
+			/// \date 2017/08/22
+			///
+			xgc_bool allow( xgc_uint32 addr );
+
+			///
 			/// \brief 接受连接
 			///
 			/// \author albert.xu

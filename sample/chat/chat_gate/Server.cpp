@@ -158,6 +158,7 @@ xgc_void CServer::Run()
 	options_c.timeout = 3000;
 	options_c.is_async = true;
 	options_c.is_reconnect_timeout = true;
+	options_c.is_reconnect_passive = true;
 
 	mChatLink = Connect( mChatAddr, mChatPort, this, &options_c );
 	if( mChatLink == INVALID_NETWORK_HANDLE )

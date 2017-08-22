@@ -7,6 +7,8 @@
 
 namespace net_module
 {
+	extern xgc_bool OnPipeConnect( NETWORK_ID nID, CPipeSession* pPipe );
+
 	#define ePipeInnerPacket	(0)
 	#define ePipeEventPacket	(1)
 	#define ePipeTransPacket	(2)

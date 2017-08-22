@@ -192,9 +192,43 @@ xgc_bool make_listen( pugi::xml_node &node )
 		send_packet_max = node_send_packet_max.attribute( "value" ).as_ullong();
 	}
 
+	std::vector< std::tuple< uint64_t, uint64_t > > allow_address;
+	auto inserter = std::back_inserter( allow_address );
+	auto node_allow = node.child( "allow" );
+	if( node_allow )
+	{
+		auto node_range = node_allow.child( "address" );
+		while( node_range )
+		{
+			auto addr = node_range.attribute( "addr" );
+			auto from = node_range.attribute( "from" );
+			auto to = node_range.attribute( "to" );
+
+			if( addr )
+			{
+				auto addr_from = inet_addr( addr.as_string() );
+				auto addr_to   = inet_addr( addr.as_string() );
+
+				inserter = { ntohl( addr_from ), ntohl( addr_to ) };
+			}
+			else if( from && to )
+			{
+				auto addr_from = inet_addr( from.as_string() );
+				auto addr_to   = inet_addr(   to.as_string() );
+
+				inserter = { ntohl( addr_from ), ntohl( addr_to ) };
+			}
+			else
+			{
+				SYS_WARNING( "allow address range format error at '%s'", node_range.path().c_str() );
+			}
+			node_range = node_range.next_sibling( "address" );
+		}
+	}
 	xgc_lpvoid srv = xgc_nullptr;
 	
 	server_options options;
+
 	memset( &options, 0, sizeof( options ) );
 	options.recv_buffer_size = recv_buffer_len;
 	options.send_buffer_size = send_buffer_len;
@@ -202,8 +236,21 @@ xgc_bool make_listen( pugi::xml_node &node )
 	options.send_packet_max = send_packet_max;
 
 	options.acceptor_count = node.attribute( "acceptor" ).as_uint( 10 );
+	options.acceptor_smart = 100;
 	options.heartbeat_interval = node.attribute( "heart" ).as_uint( 1000 );
 
+	options.allow_count = 0;
+	for( auto it : allow_address )
+	{
+		options.allow_addr[options.allow_count].from = std::get<0>( it );
+		options.allow_addr[options.allow_count].to   = std::get<1>( it );
+
+		++options.allow_count;
+
+		if( options.allow_count >= XGC_COUNTOF( options.allow_addr ) )
+			break;
+	}
+	
 	if( strcasecmp( "normal", attr_mode.as_string() ) == 0 )
 	{
 		srv = net::StartServer(

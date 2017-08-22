@@ -253,7 +253,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/09
 	///
-	xgc_void Disconnect();
+	xgc_void Disconnect( CGameSrvSession *session );
 
 	///
 	/// \brief 定时发送消息到聊天服务器

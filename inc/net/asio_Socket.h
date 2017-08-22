@@ -110,7 +110,7 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void close();
+			xgc_void close( xgc_bool passive = false );
 
 			/*!
 			*
@@ -176,7 +176,7 @@ namespace xgc
 			 * \author albert.xu
 			 * \date 十一月 2015
 			 */
-			xgc_void handle_timeout( const asio::error_code& error );
+			xgc_void handle_connect_timeout( const asio::error_code& error );
 
 			/*!
 			 *
@@ -294,7 +294,7 @@ namespace xgc
 			/// 套接字
 			ip::tcp::socket		socket_;
 			/// 发送缓冲区锁
-			std::mutex			send_buffer_lock;
+			std::mutex			send_buffer_guard_;
 			/// 发送缓冲
 			asio_NetBuffer		send_buffer_;       
 			/// 接收缓冲

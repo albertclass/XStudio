@@ -10,8 +10,8 @@
 //! 命名规则为DebugCmdXXX
 //! XXX为你的功能模块名
 /*******************************************************************/
-#ifndef _DEBUG_CMD_H_
-#define _DEBUG_CMD_H_
+#ifndef __SERVER_COMMAND_H__
+#define __SERVER_COMMAND_H__
 
 #pragma once
 ///
@@ -167,4 +167,4 @@ xgc_bool ReloadDebugCmd( xgc_lpcstr lpTableName );
 xgc_void FiniDebugCmd();
 
 
-#endif // _DEBUG_CMD_H_
+#endif // __SERVER_COMMAND_H__

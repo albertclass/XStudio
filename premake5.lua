@@ -405,6 +405,63 @@ group "servers"
 	server_project( "gate_server" )
 	server_project( "game_server" )
 
+	project "game_client"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/servers"
+		includedirs { "sample/servers", "inc/common", "inc/net" }
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+		links { "common", "net" }
+		defines { "CLIENT" }
+		-- pchheader "sample/servers/header.h"
+		-- pchsource "sample/servers/header.cpp"
+
+		flags { "MultiProcessorCompile" }
+
+		files {
+			"sample/servers/header.h",
+			"sample/servers/header.cpp",
+			"sample/servers/protocol.h",
+			"sample/servers/game_client/**",
+		}
+
+		vpaths {
+			["Header Files/*"] = { 
+				"sample/servers/*.h", 
+				"sample/servers/game_client/**.h" 
+			},
+
+			["Source Files/*"] = { 
+				"sample/servers/*.cpp", 
+				"sample/servers/game_client/**.cpp" 
+			}
+		}
+
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG" }
+			optimize "On"
+		
+		filter "system:windows"
+			includedirs { "dep/vld/inc/" }
+			libdirs { 
+				"lib/%{cfg.buildcfg}", 
+				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
+			}
+
+			systemversion "10.0.14393.0"
+			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+
+		filter "system:linux"
+			libdirs { "bin/%{cfg.buildcfg}" }
+			links { "stdc++", "rt", "pthread" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
+
 group ""
 	project "unittest"
 		kind "ConsoleApp"

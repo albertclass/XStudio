@@ -49,7 +49,7 @@ namespace xgc
 			, handle_( INVALID_NETWORK_HANDLE )
 			, connect_status_( 0 )
 			, operator_count_( 0 )
-			, timeout_( timeout )
+			, timeout_( XGC_MAX( 500, timeout ) )
 			, timer_( s )
 			, from_( from )
 			, userdata_( userdata )
@@ -98,11 +98,11 @@ namespace xgc
 			from_ = from;
 			connect_status_ = 1;
 
-			socket_base::send_buffer_size _send_buffer_size;
-			socket_base::receive_buffer_size _recv_buffer_size;
+			//socket_base::send_buffer_size _send_buffer_size;
+			//socket_base::receive_buffer_size _recv_buffer_size;
 
-			socket_.get_option( _send_buffer_size );
-			socket_.get_option( _recv_buffer_size );
+			//socket_.get_option( _send_buffer_size );
+			//socket_.get_option( _recv_buffer_size );
 
 			make_event( EVENT_PENDING );
 		}
@@ -117,11 +117,10 @@ namespace xgc
 
 			socket_.open( ip::tcp::v4(), ec );
 			XGC_ASSERT_RETURN( !ec, false );
-			// 初始化套接字参数
-			socket_.set_option( socket_base::reuse_address( true ), ec );
-			XGC_ASSERT_RETURN( !ec, false );
+			// 置空连接系统接收缓冲区
 			socket_.set_option( socket_base::receive_buffer_size( 0 ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
+			// 置空连接系统发送缓冲区
 			socket_.set_option( socket_base::send_buffer_size( 0 ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
 
@@ -173,7 +172,7 @@ namespace xgc
 
 					timer_.expires_from_now( std::chrono::milliseconds( connect_info_->timeout ) );
 					timer_.async_wait(
-						strand.wrap( std::bind( &asio_Socket::handle_timeout, shared_from_this(), std::placeholders::_1 ) ) );
+						strand.wrap( std::bind( &asio_Socket::handle_connect_timeout, shared_from_this(), std::placeholders::_1 ) ) );
 
 					// async connect server.
 					socket_.async_connect( connect_info_->address, strand.wrap( std::bind( &asio_Socket::handle_connect, shared_from_this(), std::placeholders::_1 ) ) );
@@ -193,7 +192,7 @@ namespace xgc
 				if( socket_.connect( connect_info_->address, ec ) )
 					accept( EVENT_CONNECT );
 				else
-					close();
+					socket_.close();
 
 				return !ec;
 			}
@@ -244,7 +243,7 @@ namespace xgc
 			// 如果需要保活，提交保活定时器
 			if( timeout_ )
 			{
-				timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( 500, timeout_ ) ) );
+				timer_.expires_from_now( std::chrono::milliseconds( timeout_ ) );
 				timer_.async_wait( bind( &asio_Socket::handle_timer, shared_from_this(), std::placeholders::_1 ) );
 			}
 		}
@@ -260,21 +259,25 @@ namespace xgc
 				{
 					accept( EVENT_CONNECT );
 				}
-				else if( connect_info_ && connect_info_->is_reconnect_timeout )
-				{
-					// 对于允许重连的，尝试重连
-					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( 500, timeout_ ) ) );
-					timer_.async_wait( bind( &asio_Socket::do_connect, shared_from_this() ) );
-				}
 				else
 				{
 					make_error( NET_ETYPE_CONNECT, error.value() );
-					close();
+
+					if( connect_info_->is_reconnect_timeout )
+					{
+						// 对于允许重连的，尝试重连
+						timer_.expires_from_now( std::chrono::milliseconds( timeout_ ) );
+						timer_.async_wait( bind( &asio_Socket::do_connect, shared_from_this() ) );
+					}
+					else
+					{
+						close();
+					}
 				}
 			}
 		}
 
-		xgc_void asio_Socket::handle_timeout( const asio::error_code& error )
+		xgc_void asio_Socket::handle_connect_timeout( const asio::error_code& error )
 		{
 			if( connect_status_ != 0 )
 				return;
@@ -303,7 +306,7 @@ namespace xgc
 			if( error )
 			{
 				--operator_count_;
-				close();
+				close( true );
 				return;
 			}
 
@@ -313,7 +316,7 @@ namespace xgc
 				make_error( NET_ETYPE_RECV, NET_ERROR_NO_SPACE );
 
 				--operator_count_;
-				close();
+				close( true );
 				return;
 			}
 
@@ -326,7 +329,7 @@ namespace xgc
 				make_error( NET_ETYPE_RECV, NET_ERROR_MESSAGE_SIZE );
 
 				--operator_count_;
-				close();
+				close( true );
 				return;
 			}
 
@@ -370,7 +373,7 @@ namespace xgc
 			else
 			{
 				--operator_count_;
-				close();
+				close( true );
 			}
 		}
 
@@ -378,14 +381,14 @@ namespace xgc
 		{
 			XGC_ASSERT( data && size );
 
-			std::lock_guard< std::mutex > guard( send_buffer_lock );
+			std::lock_guard< std::mutex > guard( send_buffer_guard_ );
 
 			// 数据放入发送缓冲
 			if( send_buffer_.put( data, size ) != size )
 			{
 				make_error( NET_ETYPE_SEND, NET_ERROR_NO_SPACE );
 
-				close();
+				close( true );
 				return;
 			}
 
@@ -407,7 +410,7 @@ namespace xgc
 		xgc_void asio_Socket::send( const std::list< std::tuple< xgc_lpvoid, xgc_size > >& buffers )
 		{
 			xgc_size total = 0;
-			std::lock_guard< std::mutex > guard( send_buffer_lock );
+			std::lock_guard< std::mutex > guard( send_buffer_guard_ );
 
 			for( auto &t : buffers )
 			{
@@ -419,7 +422,7 @@ namespace xgc
 				{
 					make_error( NET_ETYPE_SEND, NET_ERROR_NO_SPACE );
 
-					close();
+					close( true );
 					return;
 				}
 
@@ -447,11 +450,11 @@ namespace xgc
 			if( error )
 			{
 				--operator_count_;
-				close();
+				close( true );
 				return;
 			}
 
-			std::lock_guard< std::mutex > guard( send_buffer_lock );
+			std::lock_guard< std::mutex > guard( send_buffer_guard_ );
 
 			auto pop_size = send_buffer_.pop( translate );
 			XGC_ASSERT( pop_size == translate );
@@ -472,12 +475,16 @@ namespace xgc
 			
 			--operator_count_;
 			if( connect_status_ == 2 )
-				close();
+				close( true );
 		}
 
-		xgc_void asio_Socket::close()
+		xgc_void asio_Socket::close( xgc_bool passive /*= false*/ )
 		{
 			asio::error_code ec;
+
+			// 如果是主动关闭的，则设置被动重连失效
+			if( connect_info_ && !passive )
+				connect_info_->is_reconnect_passive = false;
 
 			xgc_uint16 exp1 = 1;
 			if( connect_status_.compare_exchange_strong( exp1, 2 ) )
@@ -497,14 +504,19 @@ namespace xgc
 			if( operator_count_ == 0 && connect_status_.compare_exchange_strong( exp2, 3 ) )
 			{
 				make_event( EVENT_CLOSE );
-				userdata_ = xgc_nullptr;
-
 				connect_status_ = 0;
 			}
 
 			if( operator_count_ == 0 && connect_status_ == 0 )
 			{
-				LinkDown( shared_from_this() );
+				if( connect_info_ && connect_info_->is_reconnect_passive )
+				{
+					do_connect();
+				}
+				else
+				{
+					LinkDown( shared_from_this() );
+				}
 			}
 		}
 
@@ -518,9 +530,9 @@ namespace xgc
 				port[0] = socket_.local_endpoint().port();
 
 				// remote addr
-				addr[0] = socket_.remote_endpoint().address().to_v4().to_ulong();
+				addr[1] = socket_.remote_endpoint().address().to_v4().to_ulong();
 				// remote port
-				port[0] = socket_.remote_endpoint().port();
+				port[1] = socket_.remote_endpoint().port();
 			}
 			catch( asio::error_code& ec )
 			{
@@ -543,7 +555,7 @@ namespace xgc
 					// check socket timeout
 					make_event( EVENT_PING );
 
-					timer_.expires_from_now( std::chrono::milliseconds( XGC_MAX( timeout_, 500 ) ) );
+					timer_.expires_from_now( std::chrono::milliseconds( timeout_ ) );
 					timer_.async_wait( std::bind( &asio_Socket::handle_timer, shared_from_this(), std::placeholders::_1 ) );
 				}
 			}

@@ -483,8 +483,9 @@ xgc_void CChatSrvSession::OnTimer()
 /// \author albert.xu
 /// \date 2017/08/09
 ///
-xgc_void CChatSrvSession::Disconnect()
+xgc_void CChatSrvSession::Disconnect( CGameSrvSession *session )
 {
+	XGC_ASSERT( session == game_session_ );
 	if( handle_ != INVALID_NETWORK_HANDLE )
 		CloseLink( handle_ );
 }

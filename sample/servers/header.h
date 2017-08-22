@@ -12,14 +12,16 @@
 #include "ini_reader.h"
 #include "md5.h"
 
-#include "database.h"
 #include "net.h"
-#include "net_module.h"
-
 using namespace xgc;
 using namespace xgc::common;
-using namespace xgc::sql;
 using namespace xgc::net;
+
+#ifndef CLIENT
+#include "database.h"
+#include "net_module.h"
+using namespace xgc::sql;
+#endif
 
 #ifdef _LINUX
 #	include <arpa/inet.h>
@@ -40,5 +42,7 @@ using namespace xgc::net;
 
 #include "protocol.h"
 
+#ifndef CLIENT
 #include "ServerBase.h"
+#endif
 #endif // _CLIENT_HEADER_H_

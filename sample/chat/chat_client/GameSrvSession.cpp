@@ -62,7 +62,7 @@ xgc_void CGameSrvSession::OnClose()
 
 	if( mChatSrvSession )
 	{
-		mChatSrvSession->Disconnect();
+		mChatSrvSession->Disconnect( this );
 	}
 	else
 	{
@@ -193,5 +193,5 @@ xgc_void CGameSrvSession::Disconnect()
 {
 	CloseLink( handle_ );
 	if( mChatSrvSession )
-		mChatSrvSession->Disconnect();
+		mChatSrvSession->Disconnect( this );
 }

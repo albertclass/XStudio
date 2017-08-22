@@ -6,12 +6,16 @@ namespace xgc
 		asio_Server::asio_Server( io_service& service, SessionCreator creator, server_options *options )
 			: service_( service )
 			, acceptor_( service_, ip::tcp::v4() )
-			, options_( options ? *options : server_options { 0, 0, 0, 0, 10, 0 } )
+			, options_( options ? *options : server_options { 0, 0, 0, 0, 10, 0, 0, 0 } )
 			, acceptor_count_( 0 )
 			, creator_( creator )
 			, status_( 0 )
 		{
-			
+			for( xgc_uint16 i = 0; i < options_.allow_count; ++i )
+			{
+				if( options_.allow_addr[i].from > options_.allow_addr[i].to )
+					std::swap( options_.allow_addr[i].from, options_.allow_addr[i].to );
+			}
 		}
 
 		asio_Server::~asio_Server()
@@ -31,8 +35,13 @@ namespace xgc
 			// 设置允许地址重用
 			acceptor_.set_option( ip::tcp::acceptor::reuse_address( true ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
+			// 服务器保活，不主动关闭
+			acceptor_.set_option( ip::tcp::acceptor::keep_alive( true ), ec );
+			XGC_ASSERT_RETURN( !ec, false );
+			// 置空连接系统接收缓冲区
 			acceptor_.set_option( socket_base::receive_buffer_size( 0 ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
+			// 置空连接系统发送缓冲区
 			acceptor_.set_option( socket_base::send_buffer_size( 0 ), ec );
 			XGC_ASSERT_RETURN( !ec, false );
 
@@ -75,15 +84,35 @@ namespace xgc
 			}
 		}
 
+		xgc_bool asio_Server::allow( xgc_uint32 addr )
+		{
+			if( 0 == options_.allow_count )
+				return true;
+
+			for( xgc_uint16 i = 0; i < options_.allow_count; ++i )
+				if( addr >= options_.allow_addr[i].from && addr <= options_.allow_addr[i].to )
+					return true;
+
+			return false;
+		}
+
 		xgc_void asio_Server::handle_accept( asio_SocketPtr pSocket, const asio::error_code& error )
 		{
-			--acceptor_count_;
-
 			if( !error )
 			{
-				pSocket->pending( this );
+				xgc_uint32 addr[2];
+				xgc_uint16 port[2];
+
+				pSocket->get_socket_info( addr, port );
+				if( allow( addr[1] ) )
+					pSocket->pending( this );
+				else
+					pSocket->close();
+
 				post_accept();
 			}
+
+			--acceptor_count_;
 		}
 
 		xgc_void asio_Server::post_accept()
@@ -91,14 +120,14 @@ namespace xgc
 			if( status_ != 1 )
 				return;
 			
-			// 此处会发生不同步的情况，多个线程比较后会进入，直到 ++acceptor_count 被触发后
-			// 多投递几个也没什么大不了，所以就不处理了。
-			while( options_.acceptor_count > acceptor_count_ )
-			{
+			//// 此处会发生不同步的情况，多个线程比较后会进入，直到 ++acceptor_count 被触发后
+			//// 多投递几个也没什么大不了，所以就不处理了。
+			//while( options_.acceptor_count > acceptor_count_ )
+			//{
 				// asio_SocketPtr pSocket = std::make_shared< asio_Socket >( service_, timeout_, xgc_nullptr, this );
 				asio_SocketPtr pSocket = asio_SocketPtr( XGC_NEW asio_Socket( service_, options_.heartbeat_interval, xgc_nullptr, this ) );
 				if( xgc_nullptr == pSocket )
-					break;
+					return;
 				
 				if( options_.recv_buffer_size )
 					pSocket->set_buffer_size( asio_Socket::e_recv, options_.recv_buffer_size );
@@ -117,9 +146,9 @@ namespace xgc
 				++acceptor_count_;
 				acceptor_.async_accept( pSocket->socket_, std::bind( &asio_Server::handle_accept, this, pSocket, std::placeholders::_1 ) );
 
-				if( 0 == options_.acceptor_smart )
-					break;
-			}
+			//	if( 0 == options_.acceptor_smart )
+			//		break;
+			//}
 		}
 	}
 }

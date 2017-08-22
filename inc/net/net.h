@@ -49,6 +49,7 @@ namespace xgc
 		#define NET_ETYPE_CLOSE		5
 		#define NET_ETYPE_TIMER		6
 
+		#define NET_ERROR_RECONNECT	-1L
 		#define NET_ERROR_TIMEOUT	-2L
 		#define NET_ERROR_MESSAGE_SIZE		-3L
 		#define NET_ERROR_NO_SPACE			-4L
@@ -277,6 +278,16 @@ namespace xgc
 			xgc_uint16 acceptor_smart;
 			/// 心跳间隔
 			xgc_uint16 heartbeat_interval;
+			/// 地址数量
+			xgc_size allow_count;
+			/// 连接白名单
+			struct allow_info
+			{
+				/// 允许的地址
+				xgc_uint64 from;
+				/// 允许的区间
+				xgc_uint64 to;
+			} allow_addr[64];
 		};
 
 		///

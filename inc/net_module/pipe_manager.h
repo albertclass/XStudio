@@ -20,14 +20,6 @@ namespace net_module
 	xgc_void FiniPipeManager();
 
 	///
-	/// \brief 添加管道信息
-	///
-	/// \author albert.xu
-	/// \date 2017/03/20 14:14
-	///
-	xgc_bool OnPipeConnect( NETWORK_ID nID, CPipeSession* pPipe );
-
-	///
 	/// \brief 建立管道连接
 	///
 	/// \author albert.xu

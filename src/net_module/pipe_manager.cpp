@@ -124,6 +124,13 @@ namespace net_module
 		return true;
 	}
 
+
+	///
+	/// \brief 管道已连接时调用
+	///
+	/// \author albert.xu
+	/// \date 2017/03/20 14:14
+	///
 	xgc_bool OnPipeConnect( NETWORK_ID nID, CPipeSession * pPipe )
 	{
 		// 查找注册的管道

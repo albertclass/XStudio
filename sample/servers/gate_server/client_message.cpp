@@ -1,5 +1,6 @@
 #include "header.h"
 #include "client_message.h"
+#include "cli_session.h"
 
 /// 事件回调
 xgc_void OnClientEvt( CClientSession* net, xgc_uint32 event, xgc_uint64 code )

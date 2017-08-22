@@ -7,8 +7,8 @@
 		<recv_packet_max value="1048576"/>
 		<send_packet_max value="1048576"/>
 		<allow>
-			<address from="0.0.0.0" to="255.255.255.255"/>
-			<address ip="172.30.10.244"/>
+			<!--address addr="127.0.0.1" /-->
+			<address from="10.246.58.1" to="10.246.58.152"/>
 		</allow>
 		<!--block type="range" from="0.0.0.0" to="255.255.255.255"-->
 		<connections>
