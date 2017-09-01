@@ -287,7 +287,7 @@ namespace xgc
 				xgc_uint64 from;
 				/// 允许的区间
 				xgc_uint64 to;
-			} allow_addr[64];
+			} allow_addr[16];
 		};
 
 		///

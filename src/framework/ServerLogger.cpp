@@ -1,7 +1,17 @@
 #include "ServerDefines.h"
-#include "ServerBase.h"
 #include "ServerLogger.h"
 
+///
+/// 获取服务器名
+/// [11/27/2014] create by albert.xu
+///
+extern xgc_lpcstr ServerName();
+
+///
+/// \brief 初始化日志模块
+/// \date 1/13/2014 
+/// \author albert.xu
+///
 xgc_bool InitializeLogger( ini_reader &ini )
 {
 	FUNCTION_BEGIN;
@@ -45,6 +55,11 @@ xgc_bool InitializeLogger( ini_reader &ini )
 	return false;
 }
 
+///
+/// \brief 清理化日志模块
+/// \date 1/13/2014 
+/// \author albert.xu
+///
 xgc_void FinializeLogger()
 {
 	fini_logger();

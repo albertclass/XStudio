@@ -2,16 +2,18 @@
 #ifndef _SERVER_LOGGER_H_
 #define _SERVER_LOGGER_H_
 
-//-----------------------------------//
-// [1/13/2014 albert.xu]
-// 初始化日志模块
-//-----------------------------------//
+///
+/// \brief 初始化日志模块
+/// \date 1/13/2014 
+/// \author albert.xu
+///
 xgc_bool InitializeLogger( ini_reader &ini );
 
-//-----------------------------------//
-// [1/13/2014 albert.xu]
-// 清理日志模块
-//-----------------------------------//
+///
+/// \brief 清理化日志模块
+/// \date 1/13/2014 
+/// \author albert.xu
+///
 xgc_void FinializeLogger();
 
 #endif

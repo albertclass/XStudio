@@ -196,7 +196,7 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 			break;
 
 		// 处理刷新事件
-		StepServerRefresh();
+		ExecServerRefresh( tLast );
 
 		// 处理需要的异步逻辑操作
 		ExecEvent();

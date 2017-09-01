@@ -115,9 +115,11 @@ INetworkSession* CreateServerSession()
 
 static void server()
 {
-	auto srv = StartServer( "0.0.0.0", 25000, 1000, CreateServerSession );
+	server_options options;
+	memset( &options, 0, sizeof options );
 
-	INetPacket* packet = xgc_nullptr;
+	auto srv = StartServer( "0.0.0.0", 25000, &options, CreateServerSession );
+
 	while( true )
 	{
 		if( ProcessNetEvent( 10 ) == 10 )
@@ -131,7 +133,10 @@ static void server()
 
 static void client()
 {
-	if( Connect( "127.0.0.1", 25000, 0, 0, XGC_NEW CNetworkSession() ) )
+	connect_options options;
+	memset( &options, 0, sizeof options );
+
+	if( Connect( "127.0.0.1", 25000, XGC_NEW CNetworkSession(), &options ) )
 	{
 		while(true )
 		{

@@ -20,7 +20,7 @@
 #include <functional>
 #include <fstream>
 #include <memory>
-
+#include <sstream>
 #ifdef _WINDOWS
 #   include <xutility>
 #endif

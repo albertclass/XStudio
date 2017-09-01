@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <events>
-	<event name='application.init'>
-		<invoke func='createTimerEvent'>
-			<string>00:00:00</string>
-			<string>everyday</string>
-			<string>reset_replica_all</string>
-		</invoke>
-	</event>
+	<event name='application.init' call='createTimerEvent( "00:00:00", "week:1-7", reset_replica_all" )'/>
 
 	<!--重置每日副本-->
 	<event name='role.login'>
-		<judged func='isTimeUp'>
-			<string>00:00:00</string>
-		</judged>
-
-		<invoke func='Refresh.ResetReplicaInfo'>
-			<string>replica_reset_time</string>
+		<invoke func='ResetReplicaInfo'>
+			<attr>replica_reset_time</attr>
 		</invoke>
 	</event>
 
 	<!--重置每日任务-->
 	<event name='role.login'>
-		<judged func='isTimeUp'>
-			<string>00:00:00</string>
-		</judged>
-
-		<invoke func='Refresh.ResetReplicaInfo'>
-			<param>dailytask_reset_time</param>
+		<invoke func='ResetReplicaInfo'>
+			<attr>dailytask_reset_time</attr>
 		</invoke>
 	</event>
 </events>
+
+<refresh>
+	<clock type="week:1-7" time="00:00:00" target="role">
+		<invoke func="reset_replica">
+			<attr>replica_reset_time</attr>
+		</invoke>
+	<clock>
+
+	<clock mode="moon:1,7,14-16,24,31" time="12:00:00">
+		<invoke func="open_replica">
+			<replica_id value="1"/>
+		</invoke>
+	<clock>
+
+	<clock mode="year:08/01,09/01,10/01" time="12:00:00">
+		<invoke func="open_game">
+			<replica_id value="1"/>
+		</invoke>
+	<clock>
+</refresh>

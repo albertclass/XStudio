@@ -69,32 +69,32 @@ namespace xgc
 				return *this;
 			}
 
-			xgc_bool operator < ( const timespan& _timespan )const
+			bool operator < ( const timespan& _timespan )const
 			{
 				return span < _timespan.span;
 			}
 
-			xgc_bool operator <= ( const timespan& _timespan )const
+			bool operator <= ( const timespan& _timespan )const
 			{
 				return span <= _timespan.span;
 			}
 
-			xgc_bool operator >( const timespan& _timespan )const
+			bool operator >( const timespan& _timespan )const
 			{
 				return span > _timespan.span;
 			}
 
-			xgc_bool operator >= ( const timespan& _timespan )const
+			bool operator >= ( const timespan& _timespan )const
 			{
 				return span >= _timespan.span;
 			}
 
-			xgc_bool operator == ( const timespan& _timespan )const
+			bool operator == ( const timespan& _timespan )const
 			{
 				return span == _timespan.span;
 			}
 
-			xgc_bool operator != ( const timespan& _timespan )const
+			bool operator != ( const timespan& _timespan )const
 			{
 				return span != _timespan.span;
 			}
@@ -547,6 +547,65 @@ namespace xgc
 				std::chrono::steady_clock::now().time_since_epoch()
 				).count();
 		}
+
+		///
+		/// \brief 分析周期参数
+		/// \param [in] args 周期参数
+		/// \param [out] type 周期类型
+		/// \param [out] data 周期参数
+		/// \param [in] duration 持续时间
+		/// \return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// \date 1/21/2015
+		/// \author albert.xu
+		///
+		xgc_bool cycle_params_parse( xgc_lpcstr args, xgc_uint16 & type, xgc_uint64 & data );
+
+		///
+		/// \brief 重新校时
+		/// \param start 周期起始时间
+		/// \param type 周期类型
+		/// \param data 周期参数
+		/// \param current 时间基准点
+		/// \return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// \date 1/21/2015
+		/// \author albert.xu
+		///
+		datetime adjust_cycle_next( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
+
+		///
+		/// \brief 重新校时，取当前时间的上一次更新
+		/// \param start 周期起始时间
+		/// \param type 周期类型
+		/// \param data 周期参数
+		/// \param current 时间基准点
+		/// \return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// \date 1/21/2015
+		/// \author albert.xu
+		///
+		datetime adjust_cycle_prev( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
+
+		///
+		/// \brief 重新校时
+		/// \param start 周期起始时间
+		/// \param args 事件参数
+		/// \param current 时间基准点
+		/// \return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// \date 1/21/2015
+		/// \author albert.xu
+		///
+		datetime adjust_cycle_next( datetime deadline, xgc_lpcstr args, datetime current );
+
+		///
+		/// \brief 重新校时，取当前时间的上一次更新
+		/// \param start 周期起始时间
+		/// \param args 事件参数
+		/// \param current 时间基准点
+		/// \return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// \date 1/21/2015
+		/// \author albert.xu
+		///
+		datetime adjust_cycle_prev( datetime deadline, xgc_lpcstr args, datetime current );
+
 	}  // end namespace common
 }  // end namespace xgc
 

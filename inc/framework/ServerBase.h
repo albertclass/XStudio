@@ -11,11 +11,12 @@
 #include "ServerSequence.h"
 
 ///
-/// 初始化服务器
-/// [11/26/2014] create by albert.xu
-/// @param lpConfigPath 配置文件路径
-/// @param InitConfiguration 配置初始化回调
-/// @param lpParam 配置初始化参数
+/// \brief 初始化服务器
+/// \date 11/26/2014
+/// \author albert.xu
+/// \param lpConfigPath 配置文件路径
+/// \param InitConfiguration 配置初始化回调
+/// \param lpParam 配置初始化参数
 ///
 xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )( xgc::common::ini_reader &, xgc_lpvoid ), xgc_lpvoid lpParam );
 

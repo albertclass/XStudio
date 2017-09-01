@@ -1,5 +1,6 @@
 #ifndef _UNITE_FRAME_H_
 #define _UNITE_FRAME_H_
+#include "defines.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

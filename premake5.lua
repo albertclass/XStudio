@@ -186,10 +186,29 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/framework", "inc/common", "inc/database", "inc/net", "inc/net_module"}
+		includedirs { 
+			"inc/framework", 
+			"inc/common", 
+			"inc/database", 
+			"inc/net", 
+			"inc/net_module",
+			"dep/luajit/src",
+			"dep/LuaBridge/Source"
+		}
+
 		targetdir "lib/%{cfg.buildcfg}"
+
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-		links { "common", "database", "net", "net_module" }
+
+		libdirs { "dep/luajit/src" }
+
+		links { 
+			"common", 
+			"database", 
+			"net", 
+			"net_module",
+			"lua51"
+		}
 
 		flags { "MultiProcessorCompile" }
 

@@ -1,13 +1,3 @@
-/******************************************************************************
-*	Copyright (c) 2013,	SNDA, all rights reserved.
-*	FileName:	GlobalParam.cpp
-*	Abstract:	the class manages global params. This class only read value from 
-		database or receive value from MServer. DO NOT change any value of global
-		param.
-*	History:
-*		Date		Version		Author		Description
-*		2013-09-06	V0.1		Huxiaobo	Initial version
-******************************************************************************/
 #include "ServerDefines.h"
 #include "ServerParams.h"
 #include "ServerDatabase.h"

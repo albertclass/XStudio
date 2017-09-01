@@ -31,6 +31,7 @@ namespace xgc
 
 			return -1;
 		}
+
 #endif
 
 		///
@@ -216,6 +217,277 @@ namespace xgc
 				}
 			}
 			return datetime( st );
+		}
+
+		/// 周期模式
+		enum cycle_mode : xgc_uint16
+		{ 
+			e_week, 
+			e_month, 
+			e_year, 
+			e_repeat 
+		};
+
+		xgc_bool cycle_params_parse( xgc_lpcstr args, xgc_uint16 & type, xgc_uint64 & data )
+		{
+			XGC_ASSERT_RETURN( xgc_nullptr != args && args[0] != 0, false );
+
+			xgc_lpcstr cmdstr = args;
+			xgc_lpcstr params = strchr( args, ':' );
+
+			XGC_ASSERT_RETURN( params, false, "非法的参数格式" );
+
+			xgc_size cmdlen = params - cmdstr;
+			++params;
+
+			if( strncmp( "week", cmdstr, cmdlen ) == 0 )
+			{
+				type = cycle_mode::e_week;
+				// 根据‘，’分割不连续的段
+				xgc_lpcstr delim = " ,\t";
+				xgc_lpcstr token = params + strspn( params, delim );
+				while( *token )
+				{
+					xgc_lpcstr next = token + strcspn( token, delim );
+
+					xgc_lpstr end = xgc_nullptr;
+					xgc_ulong min = strtoul( token, &end, 10 );
+					xgc_ulong max = min;
+
+					// 查找范围标志
+					while( end < next )
+					{
+						if( *end == '-' )
+						{
+							max = strtoul( end + 1, &end, 10 );
+						}
+						++end;
+					}
+
+					XGC_ASSERT( max >= min );
+					// 设置位掩码
+					for( xgc_ulong bit = min; bit <= max && bit <= 7; ++bit )
+					{
+						data = XGC_SETBIT( data, bit % 7 );
+					}
+
+					// 取下一个分段
+					token = next + strspn( next, delim );
+				}
+
+				return true;
+			}
+
+			if( strncmp( "moon", cmdstr, cmdlen ) == 0 || strncmp( "month", cmdstr, cmdlen ) == 0 )
+			{
+				type = cycle_mode::e_month;
+				// 根据‘，’分割不连续的段
+				xgc_lpcstr delim = " ,\t";
+				xgc_lpcstr token = params + strspn( params, delim );
+				while( *token )
+				{
+					xgc_lpcstr next = token + strcspn( token, delim );
+
+					xgc_lpstr end = xgc_nullptr;
+					xgc_ulong min = strtoul( token, &end, 10 );
+					xgc_ulong max = min;
+
+					// 查找范围标志
+					while( end < next )
+					{
+						if( *end == '-' )
+						{
+							max = strtoul( end + 1, &end, 10 );
+						}
+						++end;
+					}
+
+					XGC_ASSERT( max >= min );
+					// 设置位掩码
+					for( xgc_ulong bit = min; bit <= max && bit <= 31; ++bit )
+					{
+						data = XGC_SETBIT( data, bit );
+					}
+
+					// 取下一个分段
+					token = next + strspn( next, delim );
+				}
+
+				return true;
+			}
+
+			if( strncmp( "rept", cmdstr, cmdlen ) == 0 || strncmp( "repeat", cmdstr, cmdlen ) == 0 )
+			{
+				type = cycle_mode::e_repeat;
+				// 执行的间隔时间
+				data = str2numeric< decltype( data + 0 ) >( params );
+
+				return true;
+			}
+
+			return false;
+		}
+
+		datetime adjust_cycle_next( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current )
+		{
+			datetime now = current;
+
+			switch( type )
+			{
+				case cycle_mode::e_week:
+				{
+					datetime set = start;
+					if( set <= now )
+						set += timespan::from_days( ( now - set ).to_days() + 1 );
+
+					xgc_uint16 dayofweek = set.to_systime().dayofweak % 7;
+					for( xgc_uint16 cur = 0; cur < 7; ++cur )
+					{
+						if( 0 == XGC_CHKBIT( data, ( dayofweek + cur ) % 7 ) )
+							continue;
+
+						set += timespan::from_days( cur );
+						break;
+					}
+
+					start = set;
+				}
+				break;
+				case cycle_mode::e_month:
+				{
+					datetime set = start;
+					if( set <= now )
+						set += timespan::from_days( ( now - set ).to_days() + 1 );
+
+					xgc_uint16 day = set.to_systime().day;
+					for( xgc_uint16 cur = 0; cur < 31; ++cur )
+					{
+						if( 0 == XGC_CHKBIT( data, ( day - 1 + cur ) % 31 + 1 ) )
+							continue;
+
+						set += timespan::from_days( cur );
+						break;
+					}
+
+					start = set;
+				}
+				break;
+				case cycle_mode::e_repeat:
+				{
+					datetime set = start;
+					if( set <= now )
+					{
+						if( data )
+							set += timespan::from_milliseconds( ( ( now - set ).to_millisecnods() + data ) / data * data );
+						else
+							set = now;
+					}
+					start = set;
+				}
+				break;
+			}
+
+			return start;
+		}
+
+		datetime adjust_cycle_prev( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current )
+		{
+			datetime now = current;
+
+			switch( type )
+			{
+				case cycle_mode::e_week:
+				{
+					datetime set = start;
+					if( set <= now )
+						set += timespan::from_days( ( now - set ).to_days() );
+
+					xgc_uint16 dayofweek = set.to_systime().dayofweak % 7;
+					for( xgc_uint16 cur = 0; cur < 7; ++cur )
+					{
+						if( 0 == XGC_CHKBIT( data, 6 - ( dayofweek + cur ) % 7 ) )
+							continue;
+
+						set -= timespan::from_days( cur );
+						break;
+					}
+
+					start = set;
+				}
+				break;
+				case cycle_mode::e_month:
+				{
+					datetime set = start;
+					if( set <= now )
+						set += timespan::from_days( ( now - set ).to_days() );
+
+					xgc_uint16 day = set.to_systime().day;
+					for( xgc_uint16 cur = 0; cur < 31; ++cur )
+					{
+						if( 0 == XGC_CHKBIT( data, ( day + 30 - cur ) % 31 + 1 ) )
+							continue;
+
+						set -= timespan::from_days( cur );
+						break;
+					}
+
+					start = set;
+				}
+				break;
+				case cycle_mode::e_repeat:
+				{
+					datetime set = start;
+					if( set <= now )
+					{
+						if( data )
+							set += timespan::from_milliseconds( ( ( now - set ).to_millisecnods() + data ) / data * data );
+						else
+							set = now;
+					}
+
+					start = set;
+				}
+				break;
+			}
+
+			return start;
+		}
+
+		///
+		/// 重新校时
+		/// @return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// [1/21/2015] create by albert.xu
+		///
+		datetime adjust_cycle_next( datetime start, xgc_lpcstr args, datetime current )
+		{
+			xgc_uint16 type = 0;
+			xgc_uint64 data = 0;
+			if( cycle_params_parse( args, type, data ) )
+			{
+				return adjust_cycle_next( start, type, data, current );
+			}
+
+			return datetime::from_ftime( 0 );
+		}
+
+		///
+		/// 重新校时，取当前时间的上一次更新
+		/// @param deadline 结束时间
+		/// @param args 事件参数
+		/// @param current 时间基准点
+		/// @return 返回校准过的时间，该时间通过clock的类型和参数校准
+		/// [1/21/2015] create by albert.xu
+		///
+		datetime adjust_cycle_prev( datetime start, xgc_lpcstr args, datetime current )
+		{
+			xgc_uint16 type;
+			xgc_uint64 data = 0;
+			if( cycle_params_parse( args, type, data ) )
+			{
+				return adjust_cycle_prev( start, type, data, current );
+			}
+
+			return datetime::from_ftime( 0 );
 		}
 	}
 }

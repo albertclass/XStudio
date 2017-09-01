@@ -311,36 +311,6 @@ namespace xgc
 			xgc_list< timer_h > get_event_list( xgc_lpcstr pname )const;
 
 		private:
-			/// 
-			/// \brief 解释参数
-			/// 
-			/// \author xufeng04
-			/// \date 十一月 2015
-			/// 
-			xgc_bool parse( xgc_lpcstr args, xgc_uint16& type, xgc_uint64& data, xgc_time64 duration );
-
-			/// 
-			/// \brief 重新校时，取当前时间的下一次更新
-			/// \param deadline 结束时间
-			/// \param type 定时器类型
-			/// \param data 携带数据
-			/// \param current 时间基准点
-			/// \return 返回校准过的实际执行时间，该时间通过clock的类型和参数校准
-			/// \date [1/21/2015] create by albert.xu
-			/// 
-			datetime adjust_upper( datetime deadline, xgc_uint16 type, xgc_uint64 data, datetime current );
-
-			/// 
-			/// \brief 重新校时，取当前时间的上一次更新
-			/// \param deadline 结束时间
-			/// \param type 定时器类型
-			/// \param data 携带数据
-			/// \param current 时间基准点
-			/// \return 返回校准过的实际执行时间，该时间通过clock的类型和参数校准
-			/// \date [1/21/2015] create by albert.xu
-			/// 
-			datetime adjust_lower( datetime deadline, xgc_uint16 type, xgc_uint64 data, datetime current );
-
 			///
 			/// \brief 执行一个链表内的事件
 			/// [7/18/2014] create by albert.xu
