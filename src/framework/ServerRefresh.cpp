@@ -79,7 +79,23 @@ xgc_void ExecServerRefresh( datetime now )
 		{
 			RefreshInfo info = *it;
 
-			info.call( info.args );
+			// info.call( info.args );
+			try
+			{
+				info.call.push( info.call.state() );
+				int argc = 0;
+				for( Iterator iter( info.args ); !iter.isNil(); ++iter, ++argc )
+				{
+					info.args.push( info.args.state() );
+				}
+
+				LuaException::pcall( info.call.state(), argc, 0 );
+			}
+			catch( std::exception &err )
+			{
+				SYS_ERROR( "Lua call error %s", err.what() );
+			}
+
 			info.next_invoke_time = adjust_cycle_next( info.next_invoke_time, info.params.c_str(), now );
 
 			mRefreshSet.insert( info );

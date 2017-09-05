@@ -39,8 +39,3 @@ xgc_void FiniConfiguration( xgc_lpvoid params )
 {
 
 }
-
-xgc_void OnServerRefresh( xgc_lpcstr lpInvoke, datetime dtPrevInvokeTime, xgc_lpvoid lpContext )
-{
-
-}
