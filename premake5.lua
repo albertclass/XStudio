@@ -181,6 +181,52 @@ group "library"
 			buildoptions { "-pthread" }
 			defines { "LINUX64" }
 
+	project "nosql"
+		kind "SharedLib"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/library"
+		includedirs { "inc/nosql", "inc/common"}
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+		links { "common", "hiredis" }
+
+		flags { "MultiProcessorCompile" }
+
+		files {
+			"inc/nosql/**.h",
+			"inc/nosql/**.hpp",
+			"src/nosql/**.h",
+			"src/nosql/**.hpp",
+			"src/nosql/**.cpp",
+			"src/nosql/**.inl"
+		}
+
+		vpaths {
+			["Header Files/*"] = { "inc/nosql/**.h", "inc/nosql/**.hpp", "src/nosql/**.h", "src/nosql/**.hpp" },
+			["Source Files/*"] = { "src/nosql/**.cpp", "src/nosql/**.inl" }
+		}
+
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT", "_NOSQL_EXPORTS", "_DLL" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG", "_NOSQL_EXPORTS", "_DLL" }
+			optimize "On"
+
+		filter "system:windows"
+			systemversion "10.0.14393.0"
+			includedirs { "dep/redis-win" }
+			implibdir "lib/%{cfg.buildcfg}"
+			libdirs { "lib/%{cfg.buildcfg}", "dep/redis-win/%{cfg.buildcfg}" }
+			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+
+		filter "system:linux"
+			implibdir "bin/%{cfg.buildcfg}"
+			links { "stdc++" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
+
 	project "framework"
 		kind "StaticLib"
 		language "C++"
@@ -208,7 +254,6 @@ group "library"
 			"net", 
 			"net_module",
 			"lua51",
-			"hiredis"
 		}
 
 		flags { "MultiProcessorCompile" }
@@ -231,8 +276,7 @@ group "library"
 			optimize "On"
 		
 		filter "system:windows"
-			includedirs { "dep/redis-win" }
-			libdirs { "lib/%{cfg.buildcfg}", "dep/redis-win/%{cfg.buildcfg}" }
+			libdirs { "lib/%{cfg.buildcfg}" }
 			systemversion "10.0.14393.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 

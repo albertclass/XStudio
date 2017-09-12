@@ -287,11 +287,12 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/09/08
 		///
-		xvariant( xgc_lpcstr s )
+		xvariant( xgc_lpcstr s, xgc_size l = -1 )
 			: xvariant()
 		{
-			set_string( s );
+			set_string( s, l );
 		}
+
 
 		///
 		/// \brief »º³åÇø¹¹Ôì

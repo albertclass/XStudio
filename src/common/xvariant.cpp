@@ -9,7 +9,6 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/09/08
 	///
-
 	xvariant::xvariant()
 		: t( vt_void )
 		, mVoid( 0 )
@@ -22,7 +21,6 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/09/08
 	///
-
 	xvariant::xvariant( const xvariant & _Val )
 		: t( _Val.t )
 		, mString( _Val.mString )
@@ -35,7 +33,6 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/09/08
 	///
-
 	xvariant::xvariant( xvariant && _Val )
 		: t( _Val.t )
 		, mVoid( xgc_nullptr )
@@ -44,10 +41,10 @@ namespace xgc
 	}
 
 	///
-	/// 删除委托的对象，需要显示调用
-	/// [9/9/2014] create by albert.xu
+	/// \brief 析构
+	/// \author create by albert.xu
+	/// \data 9/9/2014
 	///
-
 	xvariant::~xvariant()
 	{
 		if( is_value() )
@@ -458,14 +455,14 @@ namespace xgc
 			case vt_string:
 			if( mString )
 			{
-				copid = XGC_MIN( len, mString->len );
+				copid = XGC_MIN( (int)len, (int)mString->len );
 				memcpy( buf, mString->str, copid );
 			}
 			break;
 			case vt_buffer:
 			if( mBuffer )
 			{
-				copid = XGC_MIN( len, mString->len );
+				copid = XGC_MIN( (int)len, (int)mString->len );
 				memcpy( buf, mBuffer->buf, copid );
 			}
 			break;
@@ -480,8 +477,7 @@ namespace xgc
 	//-----------------------------------//
 	xgc_void xvariant::set_bit( xgc_size idx )
 	{
-		xgc_size idx = ( idx >> 3 );
-		xgc_char bit = ( 1 << ( 0x07 - ( idx & 0x07 ) ) );
+		xgc_char bit = ( 1 << ( 0x07 - ( ( idx >> 3 ) & 0x07 ) ) );
 
 		switch( type() )
 		{
@@ -518,8 +514,7 @@ namespace xgc
 	//-----------------------------------//
 	xgc_void xvariant::clr_bit( xgc_size idx )
 	{
-		xgc_size idx = ( idx >> 3 );
-		xgc_char bit = ~( 1 << ( 0x07 - ( idx & 0x07 ) ) );
+		xgc_char bit = ~( 1 << ( 0x07 - ( ( idx >> 3 ) & 0x07 ) ) );
 
 		xgc_byteptr pb = xgc_nullptr;
 		switch( type() )
@@ -557,8 +552,7 @@ namespace xgc
 	//-----------------------------------//
 	xgc_bool xvariant::get_bit( xgc_size idx, xgc_bool v )const
 	{
-		xgc_size idx = idx >> 3;
-		xgc_byte bit = ( 1 << ( 0x07 - ( idx & 0x07 ) ) );
+		xgc_byte bit = ( 1 << ( 0x07 - ( ( idx >> 3 ) & 0x07 ) ) );
 
 		xgc_byteptr pb = xgc_nullptr;
 		switch( type() )
