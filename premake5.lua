@@ -207,7 +207,8 @@ group "library"
 			"database", 
 			"net", 
 			"net_module",
-			"lua51"
+			"lua51",
+			"hiredis"
 		}
 
 		flags { "MultiProcessorCompile" }
@@ -230,7 +231,8 @@ group "library"
 			optimize "On"
 		
 		filter "system:windows"
-			libdirs { "lib/%{cfg.buildcfg}" }
+			includedirs { "dep/redis-win" }
+			libdirs { "lib/%{cfg.buildcfg}", "dep/redis-win/%{cfg.buildcfg}" }
 			systemversion "10.0.14393.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 

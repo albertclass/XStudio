@@ -2,6 +2,8 @@
 #include "ServerParams.h"
 #include "ServerDatabase.h"
 
+static redisContext *__redis = xgc_nullptr;
+
 using namespace xgc::sql;
 
 /// @var 通知回调
@@ -104,6 +106,28 @@ static xgc_bool LoadGlobalConfig( ini_reader &ini )
 ///
 xgc_bool InitGlobalParams( ini_reader& ini )
 {
+	//if( false == ini.is_exist_section( "ServerParams" ) )
+	//	return false;
+
+	//auto host = ini.get_item_value( "ServerParams", "host", "127.0.0.1" );
+	//auto port = ini.get_item_value( "ServerParams", "port", 6379 );
+	//auto index = ini.get_item_value( "ServerParams", "index", 0 );
+
+	//redisContext *c = redisConnect( host, port );
+	//if( xgc_nullptr == c )
+	//{
+	//	SYS_ERROR( "无法分配redis上下文。" );
+	//	return false;
+	//}
+
+	//if( 0 == c->err )
+	//{
+	//	SYS_ERROR( "redis 连接错误 %s", c->errstr );
+	//	return false;
+	//}
+
+	//__redis = c;
+
 	if( false == SyncGlobalParams() )
 		return false;
 

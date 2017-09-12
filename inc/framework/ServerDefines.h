@@ -64,3 +64,6 @@ using namespace xgc;
 using namespace xgc::net;
 using namespace xgc::sql;
 using namespace xgc::common;
+
+// redis cli library header file.
+#include "hiredis/hiredis.h"

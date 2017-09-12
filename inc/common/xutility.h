@@ -145,55 +145,55 @@ namespace xgc
 	/// \brief numeric convert to string
 	///
 	template< class T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
+	int numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
-		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
+		XGC_ASSERT_RETURN( _size && _buffer, -1 );
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%lld", (xgc_int64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	template< class T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == true, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
+	int numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size )
 	{
-		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
+		XGC_ASSERT_RETURN( _size && _buffer, -1 );
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%llu", (xgc_uint64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	template< class T, typename std::enable_if< std::is_floating_point< T >::value, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size, xgc_int32 _num_of_dec = 4 )
+	int numeric2str( T _value, xgc_lpstr _buffer, xgc_size _size, xgc_int32 _num_of_dec = 4 )
 	{
-		XGC_ASSERT_RETURN( _size && _buffer, xgc_nullptr );
+		XGC_ASSERT_RETURN( _size && _buffer, -1 );
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%.*lf", _num_of_dec, (xgc_real64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	// auto size
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == false, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
+	int numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%lld", (xgc_int64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	template< class T, size_t _size, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value == true, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size] )
+	int numeric2str( T _value, xgc_char( &_buffer )[_size] )
 	{
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%llu", (xgc_uint64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	template< class T, size_t _size, typename std::enable_if< std::is_floating_point< T >::value, xgc_bool >::type = true >
-	xgc_lpcstr numeric2str( T _value, xgc_char( &_buffer )[_size], xgc_int32 _num_of_dec = 4 )
+	int numeric2str( T _value, xgc_char( &_buffer )[_size], xgc_int32 _num_of_dec = 4 )
 	{
 		int convert = snprintf_s( _buffer, _size, _TRUNCATE, "%.*lf", _num_of_dec, (xgc_real64)_value );
-		XGC_ASSERT_RETURN( convert < _size, xgc_nullptr );
-		return _buffer;
+		XGC_ASSERT_RETURN( convert < _size, -1 );
+		return convert;
 	}
 
 	///
