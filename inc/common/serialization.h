@@ -13,14 +13,8 @@
 
 #include "defines.h"
 #include "exports.h"
+#include "xbuffer.h"
 
-#include <vector>
-#include <list>
-#include <deque>
-#include <map>
-#include <set>
-
-#include <exception>
 namespace xgc
 {
 	namespace common
@@ -33,7 +27,7 @@ namespace xgc
 		// 不实现，因为匹配到这里代表没有对应的特化
 
 		template< serialization_types, class type >
-		serialization& operator >>( serialization& stream, type &v );
+		serialization& operator >>( serialization& stream, type v );
 		// 不实现，因为匹配到这里代表没有对应的特化
 
 		//////////////////////////////////////////////////////////////////////////
@@ -54,22 +48,21 @@ namespace xgc
 			return stream;
 		}
 
-		
-		#define serialization_basic_type_w( type ) \
+		#define serialization_basic_type_w( TYPE ) \
 		template< serialization_types >\
-		serialization& operator <<( serialization& stream, type v )\
+		serialization& operator <<( serialization& stream, TYPE v )\
 		{ \
-			stream.write_some( (xgc_byte*)&v, sizeof(type) ); \
+			stream.write_some( (xgc_byte*)&v, sizeof(TYPE) ); \
 			return stream; \
-		}\
+		} \
 
-		#define serialization_basic_type_r( type ) \
+		#define serialization_basic_type_r( TYPE ) \
 		template< serialization_types >\
-		serialization& operator >>( serialization& stream, type &v )\
+		serialization& operator >>( serialization& stream, TYPE &v )\
 		{ \
-			stream.read_some( (xgc_byte*)&v, sizeof(type) ); \
+			stream.read_some( (xgc_byte*)&v, sizeof(TYPE) ); \
 			return stream; \
-		}\
+		} \
 
 		// operator <<
 		serialization_basic_type_w( xgc_bool );
@@ -159,7 +152,7 @@ namespace xgc
 		/// \date 2016/03/01 14:10
 		///
 		template< serialization_types, xgc_size S >
-		serialization& operator >> ( serialization& stream, reference_buffer &buf )
+		serialization& operator >> ( serialization& stream, reference_buffer &&buf )
 		{
 			xgc_uint32 size;
 			stream.read_some( &size, sizeof( xgc_uint32 ) );
@@ -176,7 +169,7 @@ namespace xgc
 		/// \date 2016/09/18 16:48
 		///
 		template< serialization_types, class buffer, template< class > class recorder >
-		serialization& operator << ( serialization& stream, linear_buffer< buffer, recorder > &buf )
+		serialization& operator << ( serialization& stream, const linear_buffer< buffer, recorder > &buf )
 		{
 			xgc_uint32 size = (xgc_uint32) XGC_MIN( stream.space(), buf.leave() );
 			stream.write_some( &size, sizeof( xgc_uint32 ) );
@@ -193,7 +186,7 @@ namespace xgc
 		/// \date 2016/03/01 14:10
 		///
 		template< serialization_types, class buffer, template< class > class recorder >
-		serialization& operator >> ( serialization& stream, linear_buffer< buffer, recorder > &buf )
+		serialization& operator >> ( serialization& stream, linear_buffer< buffer, recorder > &&buf )
 		{
 			xgc_uint32 size;
 			stream.read_some( &size, sizeof( xgc_uint32 ) );
@@ -212,7 +205,7 @@ namespace xgc
 		/// \date 2016/03/01 14:10
 		///
 		template< serialization_types, class buffer, template< class > class recorder >
-		serialization& operator << ( serialization& stream, ring_buffer< buffer, recorder > &buf )
+		serialization& operator << ( serialization& stream, const ring_buffer< buffer, recorder > &buf )
 		{
 			char data[32798] = { 0 };
 
@@ -235,7 +228,7 @@ namespace xgc
 		/// \date 2016/03/01 14:10
 		///
 		template< serialization_types, class buffer, template< class > class recorder >
-		serialization& operator >> ( serialization& stream, ring_buffer< buffer, recorder > &buf )
+		serialization& operator >> ( serialization& stream, ring_buffer< buffer, recorder > &&buf )
 		{
 			xgc_uint32 size;
 			xgc_uint32 readtotal = 0U;
@@ -273,7 +266,7 @@ namespace xgc
 		}
 
 		template< serialization_types >
-		serialization& operator >> ( serialization& stream, std::string &c )
+		serialization& operator >> ( serialization& stream, std::string &&c )
 		{
 			c = (const char*)stream.rd_ptr();
 			stream.rd_plus( c.length()+1 );
@@ -294,7 +287,7 @@ namespace xgc
 		}
 
 		template< serialization_types >
-		serialization& operator >> ( serialization& stream, std::wstring &c )
+		serialization& operator >> ( serialization& stream, std::wstring &&c )
 		{
 			c = (const wchar_t*)stream.rd_ptr();
 			stream.rd_plus( (c.length()<<1)+sizeof(wchar_t) );
@@ -502,7 +495,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::vector< type, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::vector< type, alloc >&& c )
 		{
 			typename std::vector< type, alloc >::size_type size;
 			stream >> size;
@@ -516,7 +509,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::vector< type*, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::vector< type*, alloc >&& c )
 		{
 			typename std::vector< type*, alloc >::size_type size;
 			stream >> size;
@@ -531,7 +524,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::list< type, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::list< type, alloc >&& c )
 		{
 			typename std::list< type, alloc >::size_type	size;
 			typename std::list< type, alloc >::value_type	value;
@@ -546,7 +539,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::list< type*, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::list< type*, alloc >&& c )
 		{
 			typename std::list< type*, alloc >::size_type	size;
 			typename std::list< type*, alloc >::value_type	value;
@@ -562,7 +555,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::deque< type, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::deque< type, alloc >&& c )
 		{
 			typename std::deque< type, alloc >::size_type	size;
 			typename std::deque< type, alloc >::value_type	value;
@@ -577,7 +570,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class alloc >
-		serialization& operator >> ( serialization& stream, std::deque< type*, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::deque< type*, alloc >&& c )
 		{
 			typename std::deque< type*, alloc >::size_type	size;
 			typename std::deque< type*, alloc >::value_type	value;
@@ -593,7 +586,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class compair, class alloc >
-		serialization& operator >> ( serialization& stream, std::set< type, compair, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::set< type, compair, alloc >&& c )
 		{
 			typename std::set< type, compair, alloc >::size_type	size;
 			typename std::set< type, compair, alloc >::value_type	value;
@@ -609,7 +602,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class compair, class alloc >
-		serialization& operator >> ( serialization& stream, std::set< type*, compair, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::set< type*, compair, alloc >&& c )
 		{
 			typename std::set< type*, compair, alloc >::size_type	size;
 			typename std::set< type*, compair, alloc >::value_type	value;
@@ -626,7 +619,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class key, class value, class compair, class alloc >
-		serialization& operator >> ( serialization& stream, std::map< key, value, compair, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::map< key, value, compair, alloc >&& c )
 		{
 			size_t	size;
 			std::pair< key, value > _value;
@@ -642,7 +635,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class hasher, class equal_key, class alloc >
-		serialization& operator >> ( serialization& stream, std::unordered_set< type, hasher, equal_key, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::unordered_set< type, hasher, equal_key, alloc >&& c )
 		{
 			typename std::unordered_set< type, hasher, equal_key, alloc >::size_type	size;
 			typename std::unordered_set< type, hasher, equal_key, alloc >::value_type	value;
@@ -658,7 +651,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class type, class hasher, class equal_key, class alloc >
-		serialization& operator >> ( serialization& stream, std::unordered_set< type*, hasher, equal_key, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::unordered_set< type*, hasher, equal_key, alloc >&& c )
 		{
 			typename std::unordered_set< type*, hasher, equal_key, alloc >::size_type	size;
 			typename std::unordered_set< type*, hasher, equal_key, alloc >::value_type	value;
@@ -675,7 +668,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class key, class value, class hasher, class equal_key, class alloc >
-		serialization& operator >> ( serialization& stream, std::unordered_map< key, value, hasher, equal_key, alloc >& c )
+		serialization& operator >> ( serialization& stream, std::unordered_map< key, value, hasher, equal_key, alloc >&& c )
 		{
 			size_t	size;
 			std::pair< key, value > _value;
@@ -691,21 +684,21 @@ namespace xgc
 		}
 
 		template< serialization_types, class key, class value >
-		serialization& operator >> ( serialization& stream, std::pair< key, value >& c )
+		serialization& operator >> ( serialization& stream, std::pair< key, value >&& c )
 		{
 			stream >> c.first >> c.second;
 			return stream;
 		}
 
 		template< serialization_types, class key, class value >
-		serialization& operator >> ( serialization& stream, std::pair< const key, value >& c )
+		serialization& operator >> ( serialization& stream, std::pair< const key, value >&& c )
 		{
 			stream >> const_cast<key&>( c.first ) >> c.second;
 			return stream;
 		}
 
 		template< serialization_types, class key, class value >
-		serialization& operator >> ( serialization& stream, std::pair< key, value* >& c )
+		serialization& operator >> ( serialization& stream, std::pair< key, value* >&& c )
 		{
 			c.second = XGC_NEW value();
 			stream >> c.first >> *c.second;
@@ -713,7 +706,7 @@ namespace xgc
 		}
 
 		template< serialization_types, class key, class value >
-		serialization& operator >> ( serialization& stream, std::pair< const key, value* >& c )
+		serialization& operator >> ( serialization& stream, std::pair< const key, value* >&& c )
 		{
 			c.second = XGC_NEW value();
 			stream >> const_cast<key&>( c.first ) >> *c.second;

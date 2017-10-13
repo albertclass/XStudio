@@ -1,10 +1,17 @@
-#include "StdAfx.h"
+#include "XHeader.h"
 #include "XTeam.h"
 #include "XCharactor.h"
 
-namespace XGC
+namespace xgc
 {
-	static XTeam::Member default_member = { xGlobal(INVALID_GLOBAL_ID), xObject(INVALID_OBJECT_ID), XVector2(), false };
+	static XTeam::Member default_member = 
+	{ 
+		INVALID_GLOBAL_ID, 
+		INVALID_OBJECT_ID, 
+		XVector2(),
+		false 
+	};
+
 	XTeam::XTeam( xgc_uint32 teamID, xgc_size nMemberCount, xgc_bool bSpinLockCount )
 		: mTeamID(teamID)
 		, mLeader( INVALID_GLOBAL_ID )

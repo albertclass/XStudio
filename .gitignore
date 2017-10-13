@@ -14,6 +14,6 @@
 /obj
 /bin/client_files/
 /bin/server_files/
-
+/core
 *.swp
 *.swo

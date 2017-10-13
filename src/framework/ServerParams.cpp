@@ -2,8 +2,6 @@
 #include "ServerParams.h"
 #include "ServerDatabase.h"
 
-static redisContext *__redis = xgc_nullptr;
-
 using namespace xgc::sql;
 
 /// @var 通知回调
@@ -111,7 +109,7 @@ xgc_bool InitGlobalParams( ini_reader& ini )
 
 	//auto host = ini.get_item_value( "ServerParams", "host", "127.0.0.1" );
 	//auto port = ini.get_item_value( "ServerParams", "port", 6379 );
-	//auto index = ini.get_item_value( "ServerParams", "index", 0 );
+	//auto index = ini.get_item_value( "ServerParams", "database", 0 );
 
 	//redisContext *c = redisConnect( host, port );
 	//if( xgc_nullptr == c )

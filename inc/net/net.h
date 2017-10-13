@@ -137,60 +137,6 @@ namespace xgc
 		};
 
 		///
-		/// \brief 新建组
-		///
-		/// \return 成功 返回新的组ID -1 没有可用的组编号
-		/// \author albert.xu
-		/// \date 2016/02/26 16:13
-		///
-		struct Param_NewGroup
-		{
-			network_t self_handle;
-		};
-		#define Operator_NewGroup		0	
-
-		///
-		/// \brief 加入组
-		///
-		/// \return 0 成功 -1 指定的组已不存在 -2 网络句柄已被添加 -3 添加句柄到组失败
-		/// \author albert.xu
-		/// \date 2016/02/26 16:13
-		///
-		struct Param_EnterGroup
-		{
-			group_t		group;
-			network_t	handle;
-		};
-		#define Operator_EnterGroup		1	
-
-		///
-		/// \brief 离开组
-		///
-		/// \return 0 成功 -1 指定的组已不存在 -2 网络句柄不存在
-		/// \author albert.xu
-		/// \date 2016/02/26 16:13
-		///
-		struct Param_LeaveGroup
-		{
-			group_t		group;
-			network_t	handle;
-		};
-		#define Operator_LeaveGroup		2	
-
-		///
-		/// \brief 移除组
-		///
-		/// \return 0 成功 -1 指定的组已不存在
-		/// \author albert.xu
-		/// \date 2016/02/26 16:13
-		///
-		struct Param_RemoveGroup
-		{
-			group_t group;
-		};
-		#define Operator_RemoveGroup	3	
-
-		///
 		/// \brief 获取用户数据
 		///
 		/// \return 0 成功 -1 失败
@@ -204,7 +150,7 @@ namespace xgc
 			/// [out] session
 			INetworkSession* session;
 		};
-		#define Operator_GetSession	4
+		#define Operator_GetSession	1
 
 		///
 		/// \brief 查询套接字信息
@@ -224,7 +170,7 @@ namespace xgc
 			/// [out] 0 - local port, 1 - remote port
 			xgc_uint16	port[2];
 		};
-		#define Operator_QueryHandleInfo 5
+		#define Operator_QueryHandleInfo 2
 
 		///
 		/// \brief 缓冲设置，只影响更改后创建的套接字
@@ -239,7 +185,7 @@ namespace xgc
 			/// 接收缓冲大小
 			xgc_uint32	recv_buffer_size;
 		};
-		#define Operator_SetBufferSize 6
+		#define Operator_SetBufferSize 3
 
 		///
 		/// \brief 缓冲设置，只影响更改后创建的套接字
@@ -254,7 +200,7 @@ namespace xgc
 			/// 接收缓冲大小
 			xgc_uint32	recv_packet_size;
 		};
-		#define Operator_SetPacketSize 7
+		#define Operator_SetPacketSize 4
 
 		///
 		/// \brief 服务器参数
@@ -372,14 +318,6 @@ namespace xgc
 			/// \date 2016/02/17 16:01
 			///
 			NETBASE_API xgc_void SendPackets( network_t *handle, xgc_uint32 count, xgc_lpvoid data, xgc_size size );
-
-			///
-			/// \brief 发送到一个组
-			///
-			/// \author albert.xu
-			/// \date 2016/02/17 16:01
-			///
-			NETBASE_API xgc_void SendToGroup( group_t group, xgc_lpvoid data, xgc_size size, xgc_bool toself );
 
 			///
 			/// \brief 关闭连接

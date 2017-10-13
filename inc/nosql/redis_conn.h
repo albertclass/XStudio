@@ -1,7 +1,11 @@
 #ifndef __REDIS_CONN_H__
 #define __REDIS_CONN_H__
 #include "redis_key.h"
-
+///
+/// \brief redis异常
+/// \author albert.xu
+/// \date 2017/08/23
+///
 class redisExecption : public std::exception
 {
 	typedef std::exception base;
@@ -13,12 +17,15 @@ public:
 	explicit redisExecption( char const* const _Message ) throw( );
 
 	redisExecption( redisExecption const &_Other );
-
-	redisExecption& operator=( redisExecption const & _Other );
 };
 
 class redisData;
 
+///
+/// \brief 数据迭代器
+/// \author albert.xu
+/// \date 2017/08/23
+///
 class redisDataIter
 {
 friend class redisData;
@@ -59,6 +66,11 @@ public:
 	redisData* operator->();
 };
 
+///
+/// \brief 数据封装
+/// \author albert.xu
+/// \date 2017/08/23
+///
 class redisData
 {
 private:
@@ -156,19 +168,12 @@ public:
 		return reply_->integer;
 	}
 
-	xvariant value()const
+	xgc_size count()const
 	{
-		if( reply_->type == REDIS_REPLY_NIL )
-			return xvariant();
-
-		if( reply_->type == REDIS_REPLY_STRING )
-			return xvariant( reply_->str, reply_->len );
-		
-		if( reply_->type == REDIS_REPLY_INTEGER )
-			return xvariant( reply_->integer );
-
-		return xvariant();
+		return reply_->elements;
 	}
+
+	xvariant value()const;
 
 	redisDataIter begin()const
 	{
@@ -179,14 +184,16 @@ public:
 	{
 		return reply_->element + reply_->elements;
 	}
+
+	redisData operator[]( int i );
 };
 
-redisData redisDataIter::operator*()
+XGC_INLINE redisData redisDataIter::operator*()
 {
 	return reply_[0];
 }
 
-redisData* redisDataIter::operator->()
+XGC_INLINE redisData* redisDataIter::operator->()
 {
 	return (redisData*)reply_;
 }
@@ -199,125 +206,50 @@ private:
 
 	redisContext *redis_;
 public:
-	redisConn()
-		: host_( xgc_nullptr )
-		, port_( 0 )
-	{
+	redisConn();
 
-	}
+	redisConn( xgc_lpcstr host, xgc_uint16 port );
 
-	redisConn( xgc_lpcstr host, xgc_uint16 port )
-		: host_( strdup( host ) )
-		, port_( port )
-	{
+	~redisConn();
 
-	}
+	xgc_bool connect( xgc_lpcstr host, xgc_uint16 port, int timeout = 0 );
 
-	~redisConn()
-	{
-		free( (void*)host_ );
-		host_ = xgc_nullptr;
-
-		redisFree( redis_ );
-		redis_ = xgc_nullptr;
-	}
-
-	xgc_bool connect( xgc_lpcstr host, xgc_uint16 port, int timeout = 0 )
-	{
-		free( (void*)host_ );
-		host_ = strdup( host );
-		port_ = port_;
-
-		return connect( timeout );
-	}
-
-	xgc_bool connect( int timeout = 0 )
-	{
-		if( timeout > 0 )
-		{
-			timeval tv;
-			tv.tv_sec = timeout / 1000;
-			tv.tv_usec = timeout % 1000 * 1000;
-
-			redis_ = redisConnectWithTimeout( host_, port_, tv );
-		}
-		else
-		{
-			redis_ = redisConnect( host_, port_ );
-		}
-	}
+	xgc_bool connect( int timeout = 0 );
 
 	///
 	/// \brief 执行redis命令
 	/// \date 2017/9/5
 	/// \author albert.xu
 	/// 
-	redisData exec( xgc_lpcstr fmt, ... )
-	{
-		va_list ap;
-		va_start( ap, fmt );
-		auto reply = exec_args( fmt, ap );
-		va_end( ap );
-
-		return reply;
-	}
+	redisData exec( xgc_lpcstr fmt, ... );
 
 	///
 	/// \brief 执行redis命令
 	/// \date 2017/9/12
 	/// \author albert.xu
 	/// 
-	redisData exec_args( xgc_lpcstr fmt, va_list args )
-	{
-		return (redisReply*)redisCommand( redis_, fmt, args );
-	}
+	redisData exec_args( xgc_lpcstr fmt, va_list args );
 
 	///
 	/// \brief 选择数据库
 	/// \date 2017/9/12
 	/// \author albert.xu
 	/// 
-	xgc_bool select( int db )
-	{
-		redisData reply = exec( "SELECT %d", db );
-		if( reply )
-			return true;
-
-		return false;
-	}
+	xgc_bool select( int db );
 
 	///
 	/// \brief 获取字符串参数
 	/// \date 2017/9/5
 	/// \author albert.xu
 	/// 
-	int get_value( xgc_lpcstr key, xvariant &val )
-	{
-		auto reply = exec( "GET %s", key );
-		if( reply )
-		{
-			val = reply.value();
-			return REDIS_OK;
-		}
-
-		return REDIS_ERR;
-	}
+	int get_value( xgc_lpcstr key, xvariant &val );
 
 	///
 	/// \brief 设置字符串参数
 	/// \date 2017/9/5
 	/// \author albert.xu
 	/// 
-	int set_value( xgc_lpcstr key, const xvariant &val )
-	{
-		auto reply = exec( "SET %s %s", key, val.to_string().c_str() );
-		if( reply )
-		{
-			return REDIS_OK;
-		}
-
-		return REDIS_ERR;
-	}
+	int set_value( xgc_lpcstr key, const xvariant &val );
 
 	///
 	/// \brief 设置字符串参数

@@ -141,7 +141,7 @@ namespace xgc
 				if( options_.send_packet_max )
 					pSocket->set_packet_max( asio_Socket::e_send, options_.send_packet_max );
 
-				LinkUp( pSocket );
+				getSocketMgr().LinkUp( pSocket );
 
 				++acceptor_count_;
 				acceptor_.async_accept( pSocket->socket_, std::bind( &asio_Server::handle_accept, this, pSocket, std::placeholders::_1 ) );

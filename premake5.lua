@@ -219,6 +219,7 @@ group "library"
 			includedirs { "dep/redis-win" }
 			implibdir "lib/%{cfg.buildcfg}"
 			libdirs { "lib/%{cfg.buildcfg}", "dep/redis-win/%{cfg.buildcfg}" }
+			links { "Win32_interop" }
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
@@ -283,6 +284,48 @@ group "library"
 		filter "system:linux"
 			libdirs { "bin/%{cfg.buildcfg}" }
 			links { "stdc++", "rt", "pthread" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
+
+	project "core"
+		kind "SharedLib"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/library"
+		includedirs { "inc/core", "inc/common" }
+		links { "common" }
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+
+		flags { "MultiProcessorCompile" }
+
+		files {
+			"inc/core/**.h",
+			"inc/core/**.hpp",
+			"src/core/**.c",
+			"src/core/**.cpp",
+			"src/core/**.inl",
+		}
+
+		vpaths {
+			["Header Files/*"] = { "inc/core/**.h", "inc/core/**.hpp" },
+			["Source Files/*"] = { "src/core/**.c", "src/core/**.cpp", "src/core/**.inl" }
+		}
+
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT", "CORE_EXPORTS", "_DLL" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG", "CORE_EXPORTS", "_DLL" }
+			optimize "On"
+
+		filter "system:windows"
+			implibdir "lib/%{cfg.buildcfg}"
+			systemversion "10.0.14393.0"
+			defines { "WIN64" }
+
+		filter "system:linux"
+			implibdir "bin/%{cfg.buildcfg}"
 			buildoptions { "-pthread" }
 			defines { "LINUX64" }
 

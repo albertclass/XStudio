@@ -174,150 +174,11 @@ namespace xgc
 		}
 
 		///
-		/// \brief 新建组
+		/// \brief 推入事件
 		///
 		/// \author albert.xu
-		/// \date 2016/02/24 18:04
+		/// \date 2017/03/01 14:46
 		///
-
-		group_t asio_SocketMgr::NewGroup( network_t self_handle )
-		{
-			std::lock_guard< std::mutex > _l( lock_group_ );
-			if( free_groups.empty() )
-			{
-				return INVALID_NETWORK_HANDLE;
-			}
-			else
-			{
-				group_t group = free_groups.front();
-				auto ret = group_map.insert( CGroupMap::value_type( group, XGC_NEW CSocketGroup( self_handle ) ) );
-				if( ret.second == false )
-				{
-					return INVALID_NETWORK_HANDLE;
-				}
-				free_groups.pop();
-				return group;
-			}
-
-			return INVALID_NETWORK_HANDLE;
-		}
-
-		///
-		/// \brief 进入组
-		///
-		/// \param handle GroupParam{ xgc_uint32 handle; xgc_uint32 group; } *(xgc_uint32*)param, *(((xgc_uint32*)param)+1)
-		/// \author albert.xu
-		/// \reutrn >0 成功 -1 指定的组已不存在 -2 网络句柄已被添加 -3 添加句柄到组失败
-		/// \date 2016/02/24 18:04
-		///
-
-		xgc_long asio_SocketMgr::EnterGroup( group_t group, network_t handle )
-		{
-			CSocketGroup* pGroup = FetchHandleGroup( group );
-			if( pGroup )
-			{
-				if( pGroup->find( handle ) == pGroup->end() )
-				{
-					auto ret = pGroup->insert( handle );
-					auto size = (xgc_long) pGroup->size();
-					FreeHandleGroup( pGroup );
-					return ret.second ? size : -3;
-				}
-				else
-				{
-					FreeHandleGroup( pGroup );
-					return -2;
-				}
-			}
-
-			return -1;
-		}
-
-		///
-		/// \brief 离开组
-		///
-		/// \param handle 网络句柄
-		/// \return >0 成功返回当前组中的句柄个数, -1 指定的组已不存在 -2 网络句柄不存在
-		/// \author albert.xu
-		/// \date 2016/02/24 18:05
-		///
-
-		xgc_long asio_SocketMgr::LeaveGroup( group_t group, network_t handle )
-		{
-			CSocketGroup* pGroup = FetchHandleGroup( group );
-			if( pGroup )
-			{
-				if( pGroup->erase( handle ) == 0 )
-				{
-					FreeHandleGroup( pGroup );
-					return -2;
-				}
-
-				auto size = (xgc_long) pGroup->size();
-				FreeHandleGroup( pGroup );
-				return size;
-			}
-
-			return -1;
-		}
-
-		///
-		/// \brief 删除组
-		///
-		/// \author albert.xu
-		/// \date 2016/02/24 18:06
-		///
-
-		xgc_long asio_SocketMgr::RemoveGroup( group_t group )
-		{
-			std::lock_guard< std::mutex > _l( lock_group_ );
-			CGroupMap::iterator i = group_map.find( group );
-			if( i != group_map.end() )
-			{
-				CSocketGroup* pGroup = i->second;
-				group_map.erase( i );
-				delete pGroup;
-				return 0;
-			}
-
-			return -1;
-		}
-
-		///
-		/// \brief 获取组对象
-		///
-		/// \author albert.xu
-		/// \date 2016/02/24 18:06
-		///
-
-		asio_SocketMgr::CSocketGroup * asio_SocketMgr::FetchHandleGroup( group_t group )
-		{
-			std::lock_guard< std::mutex > _l( lock_group_ );
-			CGroupMap::iterator i = group_map.find( group );
-			if( i != group_map.end() )
-			{
-				CSocketGroup* pGroup = i->second;
-				if( pGroup )
-				{
-					pGroup->lock_handle();
-					return pGroup;
-				}
-			}
-			return xgc_nullptr;
-		}
-
-		///
-		/// \brief 归还组对象
-		///
-		/// \author albert.xu
-		/// \date 2016/02/24 18:07
-		///
-
-		xgc_void asio_SocketMgr::FreeHandleGroup( CSocketGroup * pGroup ) const
-		{
-			pGroup->free_handle();
-		}
-
 		xgc_void asio_SocketMgr::Push( xgc_lpvoid data, xgc_size size )
 		{
 			++exec_inc_;
@@ -326,6 +187,12 @@ namespace xgc
 			event_queue_.push( { data, size } );
 		}
 
+		///
+		/// \brief 弹出事件
+		///
+		/// \author albert.xu
+		/// \date 2017/08/17
+		///
 		xgc_bool asio_SocketMgr::Kick( xgc_lpvoid &data, xgc_size &size )
 		{
 			std::lock_guard< std::mutex > _lock( lock_queue_ );
@@ -342,6 +209,12 @@ namespace xgc
 			return true;
 		}
 
+		///
+		/// \brief 执行事件
+		///
+		/// \author albert.xu
+		/// \date 2017/03/01 14:47
+		///
 		xgc_long asio_SocketMgr::Exec( xgc_long nStep )
 		{
 			xgc_lpvoid data = xgc_nullptr;

@@ -1,9 +1,7 @@
-#include "StdAfx.h"
+#include "XHeader.h"
 #include "XCharactor.h"
-#include "XSkillBase.h"
-#include "xsystem.h"
 
-namespace XGC
+namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// 角色属性索引
@@ -18,7 +16,7 @@ namespace XGC
 	CORE_API xAttrIndex	attrActorGroupMask;		///< 组别掩码，用于区分阵营
 	CORE_API xAttrIndex attrActorStatus;        ///< 角色状态
 
-	BEGIN_IMPLEMENT_XCLASS( XCharactor, XGameObject, TypeXCharactor )
+	IMPLEMENT_XCLASS_BEGIN( XCharactor, XGameObject )
 		IMPLEMENT_ATTRIBUTE( ActorIndex, VT_U32, ATTR_FLAG_SAVE, "20140912" )	// 角色配置索引
 		IMPLEMENT_ATTRIBUTE( ActorType, VT_U32, ATTR_FLAG_SAVE, "20140912" )	// 角色类型
 		IMPLEMENT_ATTRIBUTE( ActorBeatSpeed, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 击退速度
@@ -27,8 +25,7 @@ namespace XGC
 		IMPLEMENT_ATTRIBUTE( ActorBornTime, VT_I32, ATTR_FLAG_NONE, "20140912" )  // 出生时间
 		IMPLEMENT_ATTRIBUTE( ActorGroupMask, VT_I32, ATTR_FLAG_SAVE, "20140912" )	// 组别掩码，用于区分阵营
 		IMPLEMENT_ATTRIBUTE( ActorStatus, VT_BYTE, ATTR_FLAG_SAVE, "20150122" )
-		END_IMPLEMENT_XCLASS();
-
+	IMPLEMENT_XCLASS_END();
 
 	static XVector3 Direction[] =
 	{
@@ -70,7 +67,7 @@ namespace XGC
 
 	XCharactor::~XCharactor( void )
 	{
-		getTimer().remove_event( mResetStatusTimerHandler );
+		getTimer().remove( mResetStatusTimerHandler );
 	}
 
 	//---------------------------------------------------//
@@ -118,15 +115,10 @@ namespace XGC
 	xgc_void XCharactor::Dead( xObject hAttacker, ActorAttackMode eMode, xgc_lpvoid lpContext )
 	{
 		// 处理角色场景死亡事件
-		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
-		if( pMap )
-		{
-			IActorMapEventHandler* pHandler = pMap->GetActorEventHandler();
-			if( pHandler )
-			{
-				pHandler->OnActorDead( this, hAttacker, eMode, lpContext );
-			}
-		}
+		SetActorStatus( ActorStatus_Dead );
+		SetEnjoinAttack();
+		SetEnjoinMove();
+		SetEnjoinUnderAttack();
 
 		OnDead( hAttacker, eMode, lpContext );
 	}
@@ -138,16 +130,6 @@ namespace XGC
 	xgc_void XCharactor::Relive( xgc_lpvoid lpContext )
 	{
 		// 处理场景重生事件
-		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
-		if( pMap )
-		{
-			IActorMapEventHandler* pHandler = pMap->GetActorEventHandler();
-			if( pHandler )
-			{
-				pHandler->OnActorRelive( this, lpContext );
-			}
-		}
-
 		SetActorStatus( ActorStatus_Live );
 		OnRelive( lpContext );
 	}
@@ -160,7 +142,7 @@ namespace XGC
 	{
 		if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 		{
-			getTimer().remove_event( mResetStatusTimerHandler );
+			getTimer().remove( mResetStatusTimerHandler );
 			mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 		}
 
@@ -182,7 +164,7 @@ namespace XGC
 			xgc_real64 fRelease = 0;
 			if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 			{
-				fRelease = getTimer().remove_event( mResetStatusTimerHandler );
+				fRelease = getTimer().remove( mResetStatusTimerHandler );
 				mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 			}
 
@@ -191,16 +173,16 @@ namespace XGC
 				switch( nMode )
 				{
 					case 0: // 覆盖
-					mResetStatusTimerHandler = getTimer().insert_event( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) fTime );
+					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) fTime );
 					break;
 					case 1: // 顺延
-					mResetStatusTimerHandler = getTimer().insert_event( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) ( fTime + fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) ( fTime + fRelease ) );
 					break;
 					case 2: // 取最小
-					mResetStatusTimerHandler = getTimer().insert_event( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MIN( fTime, fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MIN( fTime, fRelease ) );
 					break;
 					case 3: // 取最大
-					mResetStatusTimerHandler = getTimer().insert_event( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MAX( fTime, fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MAX( fTime, fRelease ) );
 					break;
 				}
 			}

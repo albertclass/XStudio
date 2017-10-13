@@ -55,7 +55,7 @@ namespace xgc
 			if( xgc_nullptr == pSocket )
 				return INVALID_NETWORK_HANDLE;
 
-			LinkUp( pSocket );
+			getSocketMgr().LinkUp( pSocket );
 
 			if ( pSocket->connect( address, port, options ) )
 				return pSocket->get_handle();
@@ -90,34 +90,6 @@ namespace xgc
 			for( xgc_uint32 i = 0; i < count; ++i )
 			{
 				SendPacket( handle[i], data, size );
-			}
-		}
-
-		xgc_void SendToGroup( group_t group, xgc_lpvoid data, xgc_size size, xgc_bool toself )
-		{
-			asio_SocketMgr::CSocketGroup* pGroup = getSocketMgr().FetchHandleGroup( group );
-			if( pGroup )
-			{
-				if( toself )
-				{
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( pGroup->network_ );
-					if( pSocket )
-					{
-						pSocket->send( data, size );
-					}
-				}
-
-				asio_SocketMgr::CSocketGroup::iterator i = pGroup->begin();
-				while( i != pGroup->end() )
-				{
-					asio_SocketPtr pSocket = getSocketMgr().getSocket( *i );
-					if( pSocket )
-					{
-						pSocket->send( data, size );
-					}
-					++i;
-				}
-				getSocketMgr().FreeHandleGroup( pGroup );
 			}
 		}
 
@@ -168,30 +140,6 @@ namespace xgc
 			XGC_ASSERT_RETURN( param, -1 );
 			switch( operate_code )
 			{
-				case Operator_NewGroup:
-				{
-					Param_NewGroup* pParam = (Param_NewGroup*)param;
-					return getSocketMgr().NewGroup( pParam->self_handle );
-				}
-				break;
-				case Operator_EnterGroup:
-				{
-					Param_EnterGroup* pParam = (Param_EnterGroup*)param;
-					return getSocketMgr().EnterGroup( pParam->group, pParam->handle );
-				}
-				break;
-				case Operator_LeaveGroup:
-				{
-					Param_LeaveGroup* pParam = (Param_LeaveGroup*)param;
-					return getSocketMgr().LeaveGroup( pParam->group, pParam->handle );
-				}
-				break;
-				case Operator_RemoveGroup:
-				{
-					Param_RemoveGroup* pParam = (Param_RemoveGroup*)param;
-					return getSocketMgr().RemoveGroup( pParam->group );
-				}
-				break;
 				case Operator_GetSession:
 				{
 					Param_GetSession* pParam = (Param_GetSession*)param;

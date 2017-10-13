@@ -122,13 +122,15 @@ xgc_vector< xvariant > redisHash::get_more( xgc_vector< xgc_lpcstr > keys )
 	if( pcmd != cmd )
 		free( pcmd );
 
-	if( !reply.is_array() )
-		return lst;
-
-	for( auto it = reply.begin(); it != reply.end(); ++it )
+	if( reply.is_array() )
 	{
-		lst.emplace_back( reply.value() );
+		for( auto it = reply.begin(); it != reply.end(); ++it )
+		{
+			lst.emplace_back( reply.value() );
+		}
 	}
+
+	return lst;
 }
 
 ///

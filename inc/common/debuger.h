@@ -32,7 +32,7 @@
 	}\
 
 #define XGC_CHECK_REENTER_CALL( V ) \
-	TwiceEnterChecker XGC_CONCATENATE_MACRO( XGC_UNPAR(__func__), _CHECKER( __FILE__, __LINE__, V ) );\
+	TwiceEnterChecker XGC_CONCATENATE_MACRO( V, _CHECKER( __FILE__, __LINE__, V ) )
 
 #if defined(_WINDOWS)
 	#define FUNCTION_BEGIN\

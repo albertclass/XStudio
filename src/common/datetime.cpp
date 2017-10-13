@@ -46,7 +46,7 @@ namespace xgc
 			xgc_lpcstr splitc = ":. ";
 
 			xgc_size it = 0;
-			while( cursor > str )
+			while( cursor >= str )
 			{
 				xgc_lpcstr pc = strchr( splitc, *cursor );
 
@@ -56,8 +56,6 @@ namespace xgc
 					it = XGC_RNG( it, 0, 0 );
 					time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );
 					break;
-					case ' ':
-					it = 3;
 					case ':':
 					it = XGC_RNG( it, 1, 3 );
 					time[it++] = str2numeric<uint16_t>( cursor + 1, xgc_nullptr, 10 );

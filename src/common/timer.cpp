@@ -11,6 +11,7 @@
 /// 2. 基于固定时间的
 ///
 ///////////////////////////////////////////////////////////////
+#include "defines.h"
 #include "timer.h"
 #include "xutility.h"
 
@@ -396,24 +397,23 @@ namespace xgc
 			}
 		}
 
-		timer_h timer::insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata, xgc_lpcstr name )
+		timer_h timer::insert( timer_cb &&function, datetime start, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata, xgc_lpcstr name )
 		{
 			xgc_uint16 type = timer_event::e_unknown;
 			xgc_uint64 data = 0;
 
 			if( cycle_params_parse( args, type, data ) )
 			{
-				timer_event* evtptr = XGC_NEW timer_event( 
-					type
+				timer_event* evtptr = XGC_NEW timer_event( type
 					, std::forward< timer_cb >( function )
-					, ( deadline + duration ).to_milliseconds() / TIMER_PRECISION
+					, ( start + duration ).to_milliseconds() / TIMER_PRECISION
 					, data
 					, userdata
 					, name );
 
 				XGC_ASSERT_RETURN( evtptr, INVALID_TIMER_HANDLE );
 
-				insert_once( evtptr, deadline.to_milliseconds() / TIMER_PRECISION, true );
+				insert_once( evtptr, start.to_milliseconds() / TIMER_PRECISION, true );
 				return evtptr->handle();
 			}
 

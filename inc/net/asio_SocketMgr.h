@@ -27,34 +27,7 @@ namespace xgc
 		///
 		class asio_SocketMgr
 		{
-		friend xgc_bool LinkUp( asio_SocketPtr &pSocket );
-		friend xgc_void LinkDown( asio_SocketPtr &pSocket );
 		friend asio_SocketMgr& getSocketMgr();
-		public:
-			struct CSocketGroup : public std::unordered_set< group_t >
-			{
-				std::mutex		group_guard_;
-				network_t		network_;
-				CSocketGroup( network_t handle )
-					: network_( handle )
-				{
-				}
-
-				~CSocketGroup()
-				{
-				}
-
-				xgc_void lock_handle()
-				{
-					group_guard_.lock();
-				}
-
-				xgc_void free_handle()
-				{
-					group_guard_.unlock();
-				}
-			};
-
 		private:
 			///
 			/// \brief 构造
@@ -157,58 +130,6 @@ namespace xgc
 			xgc_bool WaitForClose( network_t handle, xgc_uint32 sleep = 100, xgc_ulong timeout = -1 );
 
 			///
-			/// \brief 新建组
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 18:04
-			///
-			group_t NewGroup( network_t self_handle );
-
-			///
-			/// \brief 进入组
-			///
-			/// \param handle GroupParam{ xgc_uint32 handle; xgc_uint32 group; } *(xgc_uint32*)param, *(((xgc_uint32*)param)+1)
-			/// \author albert.xu
-			/// \reutrn >0 成功 -1 指定的组已不存在 -2 网络句柄已被添加 -3 添加句柄到组失败
-			/// \date 2016/02/24 18:04
-			///
-			xgc_long EnterGroup( group_t group, network_t handle );
-
-			///
-			/// \brief 离开组
-			///
-			/// \param handle 网络句柄
-			/// \return >0 成功返回当前组中的句柄个数, -1 指定的组已不存在 -2 网络句柄不存在
-			/// \author albert.xu
-			/// \date 2016/02/24 18:05
-			///
-			xgc_long LeaveGroup( group_t group, network_t handle );
-
-			///
-			/// \brief 删除组
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 18:06
-			///
-			xgc_long RemoveGroup( group_t group );
-
-			///
-			/// \brief 获取组对象
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 18:06
-			///
-			CSocketGroup* FetchHandleGroup( group_t group );
-
-			///
-			/// \brief 归还组对象
-			///
-			/// \author albert.xu
-			/// \date 2016/02/24 18:07
-			///
-			xgc_void FreeHandleGroup( CSocketGroup* pGroup )const;
-
-			///
 			/// \brief 推入事件
 			///
 			/// \author albert.xu
@@ -231,7 +152,7 @@ namespace xgc
 			/// \date 2017/03/01 14:47
 			///
 			xgc_long Exec( xgc_long nStep );
-		protected:
+
 			///
 			/// \brief 连接建立
 			///
@@ -248,6 +169,7 @@ namespace xgc
 			///
 			xgc_void LinkDown( asio_SocketPtr &pSocket );
 
+		private:
 			///
 			/// \brief 定时器响应
 			///
@@ -257,7 +179,6 @@ namespace xgc
 			xgc_void OnTimer( const asio::error_code &e, xgc_uint32 id, xgc_real64 period );
 		private:
 			typedef std::queue< network_t > CFreeHandleList;
-			typedef std::unordered_map< group_t, CSocketGroup* > CGroupMap;
 
 			/// 未分配的句柄
 			CFreeHandleList	free_handles;
@@ -267,12 +188,8 @@ namespace xgc
 			/// 句柄池
 			asio_SocketPtr	handles[0xffff];
 
-			/// 组映射表
-			CGroupMap		group_map;
 			/// 多线程锁
 			std::mutex		lock_;
-			/// 多线程组锁
-			std::mutex		lock_group_;
 
 			/// 消息队列
 			std::queue< std::tuple< xgc_lpvoid, xgc_size > > event_queue_;
@@ -299,22 +216,6 @@ namespace xgc
 			/// 定时器映射表
 			xgc_unordered_map< xgc_uint32, timer_info > mTimerMap;
 		};
-
-		///
-		/// \brief 连接建立
-		///
-		/// \author albert.xu
-		/// \date 2017/07/18 18:07
-		///
-		xgc_bool LinkUp( asio_SocketPtr &pSocket );
-
-		///
-		/// \brief 连接断开
-		///
-		/// \author albert.xu
-		/// \date 2017/07/18 18:07
-		///
-		xgc_void LinkDown( asio_SocketPtr &pSocket );
 
 		///
 		/// \brief 管理器是否有效

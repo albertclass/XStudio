@@ -33,7 +33,7 @@ namespace xgc
 			e_delete,
 		};
 
-		typedef std::function < xgc_void( timer_h, intptr_t& ) > timer_cb;
+		typedef std::function < xgc_void( timer_h, xgc_lpvoid ) > timer_cb;
 
 		#if defined(_WINDOWS)
 		template class COMMON_API std::function < xgc_void( timer_h ) > ;
@@ -89,7 +89,7 @@ namespace xgc
 			/// @param nRepeat 重复次数, 至少执行一次.
 			/// @param nParam 参数
 			///
-			timer_event( xgc_uint16 type, const timer_cb &call, xgc_time64 over, xgc_uint64 data, xgc_intptr user = 0, xgc_lpcstr name = "noname" )
+			timer_event( xgc_uint16 type, const timer_cb &call, xgc_time64 over, xgc_uint64 data, xgc_lpvoid user = xgc_nullptr, xgc_lpcstr name = "noname" )
 				: auto_handle()
 				, type_( type )
 				, time_( 0 )
@@ -175,7 +175,7 @@ namespace xgc
 			 * \author xufeng04
 			 * \date 十一月 2015
 			 */
-			xgc_intptr get_user()const
+			xgc_lpvoid get_user()const
 			{
 				return user_;
 			}
@@ -186,7 +186,7 @@ namespace xgc
 			xgc_time64 time_;	///< 定时器执行时间
 			xgc_time64 over_;	///< 定时器结束时间
 			xgc_lpcstr name_;	///< 事件名（用于调试）
-			xgc_intptr user_;	///< 用户数据
+			xgc_lpvoid user_;	///< 用户数据
 
 			timer_cb call_;	///< 回调函数
 		};
@@ -232,27 +232,7 @@ namespace xgc
 			/// \param deadline 时间发生的时间
 			/// \param param 事件参数,用于描述类型及该类型所需要的参数
 			///
-			timer_h insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_intptr userdata = 0, xgc_lpcstr name = "noname" );
-
-			/// 
-			/// \brief 重新校时，取当前时间的下一次更新
-			/// \param deadline 结束时间
-			/// \param args 定时器参数
-			/// \param current 时间基准点
-			/// \return 返回校准过的实际执行时间，该时间通过clock的类型和参数校准
-			/// [1/21/2015] create by albert.xu
-			/// 
-			datetime adjust_upper( datetime deadline, xgc_lpcstr args, datetime current = datetime::from_ftime( 0 ), timespan duration = timespan( 0 ) );
-
-			/// 
-			/// \brief 重新校时，取当前时间的上一次更新
-			/// \param deadline 结束时间
-			/// \param args 定时器参数
-			/// \param current 时间基准点
-			/// \return 返回校准过的实际执行时间，该时间通过clock的类型和参数校准
-			/// [1/21/2015] create by albert.xu
-			/// 
-			datetime adjust_lower( datetime deadline, xgc_lpcstr args, datetime current = datetime::from_ftime( 0 ), timespan duration = timespan( 0 ) );
+			timer_h insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata = xgc_nullptr, xgc_lpcstr name = "noname" );
 
 			///
 			/// \brief 闹钟激活
@@ -323,8 +303,6 @@ namespace xgc
 			///
 			xgc_void insert_once( timer_event* evtptr, xgc_time64 deadline, xgc_bool adjust = false );
 		};
-
-		void timer_manager_unit_test();
 	}
 }
 

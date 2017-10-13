@@ -1,15 +1,28 @@
-#include "stdafx.h"
+#include "XHeader.h"
 #include "XObject.h"
-#include "XObjectComposition.h"
 
-namespace XGC
+namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// CXObject
-	static XImplementInfo cls_XObject_Attribute[] = { xgc_nullptr, 0, VT_VOID, 0, { 0, 0 }, xgc_nullptr, xgc_nullptr, xgc_nullptr };
+	static XAttributeImpl cls_XObject_Attribute[] =
+	{
+		{
+			{
+				VT_VOID,
+				xgc_nullptr,
+				0,
+				0,
+				xgc_nullptr,
+			},
+
+			{ 0, 0 }
+		}
+	};
+
 	const XClassInfo& XObject::GetThisClass()
 	{
-		static XClassInfo cls_XObject( TypeXObject, "XObject", cls_XObject_Attribute, xgc_nullptr );
+		static XClassInfo cls_XObject( "XObject", cls_XObject_Attribute, xgc_nullptr );
 		return cls_XObject;
 	}
 
@@ -23,22 +36,40 @@ namespace XGC
 		, mIsDestory( false )
 		, mParentID( INVALID_OBJECT_ID )
 	{
-		memset( mComposition, 0, sizeof( mComposition ) );
 	}
 
 	XObject::~XObject()
 	{
 		XGC_ASSERT_MESSAGE( mIsDestory, "对象被删除之前未销毁！(%p, 0X%08X)", this, handle()._handle );
-		// 清理组件
-		for( auto i = 0; i < XGC_COUNTOF( mComposition ); ++i )
+		free( mAttributes );
+	}
+
+	///
+	/// \brief 对象初始化
+	/// \author albert.xu
+	/// \date 2017/10/09
+	///
+	bool XObject::InitObject()
+	{
+		const XClassInfo &cls = GetRuntimeClass();
+		mAttributes = malloc( cls.GetAttributeSize() );
+
+		if( !mAttributes )
 		{
-			SAFE_RELEASE( mComposition[i] );
+			SYS_ERROR( "malloc %u failed", cls.GetAttributeSize() );
+			return false;
 		}
+
+		memset( mAttributes, 0, _msize( mAttributes ) );
+
+		mAttributeInfo = cls.GetAttributeInfo();
+		mImplementInfo = cls.GetImplementInfo();
+		return true;
 	}
 
 	xgc_bool XObject::AddChild( xObject nID, xgc_lpcvoid lpContext /*= 0*/ )
 	{
-		XObject *pObj = GetXObject( nID );
+		XObject *pObj = handle_exchange( nID );
 		return AddChild( pObj, lpContext );
 	}
 
@@ -48,7 +79,7 @@ namespace XGC
 
 		if( PreAddChild( pObj, lpContext ) )
 		{
-			XObject* pParent = GetXObject( pObj->GetParent() );
+			XObject* pParent = handle_exchange( pObj->GetParent() );
 			if( pParent )
 			{
 				pParent->RemoveChild( pObj );
@@ -69,7 +100,7 @@ namespace XGC
 	// 删除子对象ID
 	xgc_void XObject::RemoveChild( xObject nID, xgc_bool bDestroy )
 	{
-		XObject* pObj = GetXObject( nID );
+		XObject* pObj = handle_exchange( nID );
 		return RemoveChild( pObj, bDestroy );
 	}
 
@@ -119,12 +150,12 @@ namespace XGC
 	{
 		FUNCTION_BEGIN;
 		mIsDestory = true;
-		if( GetXObject( handle()._handle ) != this )
+		if( handle_exchange( handle()._handle ) != this )
 			return;
 
 		if( GetParent() != INVALID_OBJECT_ID )
 		{
-			XObject* pParent = GetXObject( GetParent() );
+			XObject* pParent = handle_exchange( GetParent() );
 			if( pParent )
 			{
 				pParent->RemoveChild( this );
@@ -141,7 +172,7 @@ namespace XGC
 		while( !mChildList.empty() )
 		{
 			auto it = mChildList.begin();
-			XObject* pObject = GetXObject( *it );
+			XObject* pObject = handle_exchange( *it );
 
 			pObject->Destroy();
 			SAFE_DELETE( pObject );
@@ -149,26 +180,181 @@ namespace XGC
 		FUNCTION_END;
 	}
 
-	xgc_bool XObject::SetComposition( xgc_uint16 eType, XObjectComposition* pComp )
+	/************************************************************************/
+	/* 事件操作
+	/************************************************************************/
+	///
+	/// \brief 注册事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_long XObject::RegistEvent( xgc_long id, const xAction &invoke, xObject hOwner /*= INVALID_OBJECT_ID*/ )
 	{
-		FUNCTION_BEGIN;
-		if( eType < XGC_COUNTOF( mComposition ) )
-		{
-			XGC_ASSERT_MESSAGE( xgc_nullptr == mComposition[eType], "重复设置组件 Type = %u", eType );
-			mComposition[eType] = pComp;
-			return true;
-		}
-		FUNCTION_END;
+		auto &observer = mEventSubject[id];
 
-		return false;
+		if( observer.count )
+			return -1;
+
+		observer.actions[++observer.token] = std::make_tuple( invoke, hOwner );
+
+		return observer.token;
 	}
 
-	XObjectComposition* XObject::GetComposition( xgc_uint16 eType )const
+	///
+	/// \brief 删除事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_void XObject::RemoveEvent( xgc_long id, xgc_long token )
 	{
-		FUNCTION_BEGIN;
-		XGC_ASSERT_RETURN( XGC_CHECK_ARRAY_INDEX( mComposition, eType ) && mComposition[eType], xgc_nullptr );
-		return mComposition[eType];
-		FUNCTION_END;
-		return xgc_nullptr;
+		auto it1 = mEventSubject.find( id );
+		if( it1 == mEventSubject.end() )
+			return;
+
+		auto &observer = it1->second;
+		// 防止在事件执行期间增删，导致迭代器失效
+		if( observer.count )
+		{
+			return;
+		}
+		else
+		{
+			auto it2 = observer.actions.find( token );
+			if( it2 == observer.actions.end() )
+				return;
+
+			observer.actions.erase( it2 );
+		}
+	}
+
+	xgc_void XObject::RemoveEvent( xObject hOwner )
+	{
+		auto it1 = mEventSubject.begin();
+		while( it1 != mEventSubject.end() )
+		{
+			auto &observer = it1->second;
+			if( 0 == observer.count )
+			{
+				auto it2 = observer.actions.begin();
+				while( it2 != observer.actions.end() )
+				{
+					if( hOwner == std::get< 1 >( it2->second ) )
+						it2 = observer.actions.erase( it2 );
+					else
+						++it2;
+				}
+			}
+			++it1;
+		}
+	}
+
+	///
+	/// \brief 提交事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_void XObject::EmmitEvent( xgc_long id, XObjectEvent & evt )
+	{
+		evt.id = id;
+		evt.result = 0;
+		evt.sender = GetObjectID();
+		evt.target = INVALID_OBJECT_ID;
+
+		EmmitEvent( evt );
+	}
+
+	///
+	/// \brief 提交事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_void XObject::EmmitEvent( XObjectEvent& evt )
+	{
+		auto it1 = mEventSubject.find( evt.id );
+		if( it1 == mEventSubject.end() )
+			return;
+
+		auto &observer = it1->second;
+
+		// 防止在触发器执行期间增删触发器
+		++observer.count;
+		for( auto &pair : observer.actions )
+		{
+			// 取token
+			evt.token = pair.first;
+			// 取目标对象ID
+			evt.target = std::get< 1 >( pair.second );
+			// 取触发函数，并执行
+			std::get< 0 >( pair.second )( evt );
+
+			if( evt.result == 1 )
+				break;
+		}
+
+		// 对于未决的事件，向层级上级传递
+		if( evt.result == 0 )
+		{
+			auto xParent = GetParent();
+			if( xParent == INVALID_OBJECT_ID )
+			{
+				// 这里可以加入全局的事件通知
+			}
+			else
+			{
+				// 父对象存在的，则通知父对象
+				auto pParent = ObjectCast< XObject >( xParent );
+				if( pParent )
+				{
+					pParent->EmmitEvent( evt );
+				}
+			}
+		}
+		--observer.count;
+	}
+
+	xgc_bool LoadObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
+	{
+		const XClassInfo &cls = pObj->GetRuntimeClass();
+
+		attr_buffer ar( reference_buffer( lpData, uSize ) );
+
+		auto nImplementCount = cls.GetImplementCount();
+		auto pImplementInfo  = cls.GetImplementInfo();
+
+		for( xgc_size i = 0, j = 0; i < nImplementCount; ++i )
+		{
+			if( uVersion < pImplementInfo[i].version.start ||
+				uVersion >= pImplementInfo[i].version.close )
+				continue;
+
+			if( pImplementInfo[i].impl.flags == ATTR_FLAG_SAVE )
+			{
+				for( xgc_size n = 0; n < pImplementInfo[i].impl.count; ++n )
+					ar >> pObj->getAttr( *pImplementInfo[i].impl.attr_ptr, n );
+			}
+			++j;
+		}
+		return true;
+	}
+
+	xgc_size SaveObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
+	{
+		const XClassInfo &cls = pObj->GetRuntimeClass();
+		auto nAttributeCount = cls.GetAttributeCount();
+		auto pAttributeInfo  = cls.GetAttributeInfo();
+
+		attr_buffer ar( reference_buffer( lpData, uSize ) );
+
+		for( xgc_size i = 0, j = 0; i < nAttributeCount; ++i )
+		{
+			if( pAttributeInfo[i].impl.flags == ATTR_FLAG_SAVE )
+			{
+				for( xgc_size n = 0; n < pAttributeInfo[i].impl.count; ++n )
+					ar << pObj->getAttr( *pAttributeInfo[i].impl.attr_ptr, n );
+			}
+			++j;
+		}
+
+		return ar.wd();
 	}
 }

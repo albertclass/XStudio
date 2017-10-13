@@ -1,8 +1,8 @@
-#include "StdAfx.h"
-#include <float.h>
+#include "XHeader.h"
 #include "XVector2.h"
 #include "XVector3.h"
-namespace XGC
+#include <float.h>
+namespace xgc
 {
 	namespace XMath
 	{

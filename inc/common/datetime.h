@@ -340,6 +340,14 @@ namespace xgc
 				return 0;
 			}
 
+			xgc_time64 to_nonaseconds() const
+			{
+				if( storage.dt >= _Time_T_Diff )
+					return storage.dt - _Time_T_Diff;
+
+				return 0;
+			}
+
 			static datetime from_ctime( xgc_time64 ctime )
 			{
 				filetime ft = { ctime * 10000000ULL + _Time_T_Diff };
@@ -540,6 +548,11 @@ namespace xgc
 			return datetime::now().to_microseconds();
 		}
 
+		XGC_INLINE xgc_time64 current_nonaseconds()
+		{
+			return datetime::now().to_nonaseconds();
+		}
+
 		template< class _Duration >
 		XGC_INLINE xgc_time64 ticks()
 		{
@@ -558,7 +571,7 @@ namespace xgc
 		/// \date 1/21/2015
 		/// \author albert.xu
 		///
-		xgc_bool cycle_params_parse( xgc_lpcstr args, xgc_uint16 & type, xgc_uint64 & data );
+		xgc_bool COMMON_API cycle_params_parse( xgc_lpcstr args, xgc_uint16 & type, xgc_uint64 & data );
 
 		///
 		/// \brief 重新校时
@@ -570,7 +583,7 @@ namespace xgc
 		/// \date 1/21/2015
 		/// \author albert.xu
 		///
-		datetime adjust_cycle_next( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
+		datetime COMMON_API adjust_cycle_next( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
 
 		///
 		/// \brief 重新校时，取当前时间的上一次更新
@@ -582,7 +595,7 @@ namespace xgc
 		/// \date 1/21/2015
 		/// \author albert.xu
 		///
-		datetime adjust_cycle_prev( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
+		datetime COMMON_API adjust_cycle_prev( datetime start, xgc_uint16 type, xgc_uint64 data, datetime current );
 
 		///
 		/// \brief 重新校时
@@ -593,7 +606,7 @@ namespace xgc
 		/// \date 1/21/2015
 		/// \author albert.xu
 		///
-		datetime adjust_cycle_next( datetime deadline, xgc_lpcstr args, datetime current );
+		datetime COMMON_API adjust_cycle_next( datetime deadline, xgc_lpcstr args, datetime current );
 
 		///
 		/// \brief 重新校时，取当前时间的上一次更新
@@ -604,7 +617,7 @@ namespace xgc
 		/// \date 1/21/2015
 		/// \author albert.xu
 		///
-		datetime adjust_cycle_prev( datetime deadline, xgc_lpcstr args, datetime current );
+		datetime COMMON_API adjust_cycle_prev( datetime deadline, xgc_lpcstr args, datetime current );
 
 	}  // end namespace common
 }  // end namespace xgc

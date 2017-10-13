@@ -515,7 +515,7 @@ namespace xgc
 				}
 				else
 				{
-					LinkDown( shared_from_this() );
+					getSocketMgr().LinkDown( shared_from_this() );
 				}
 			}
 		}
