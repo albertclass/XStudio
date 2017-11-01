@@ -17,7 +17,7 @@ namespace xgc
 	/// @var ³¡¾°±ê¼Ç
 	CORE_API xAttrIndex attrSceneFlags;
 
-	IMPLEMENT_XCLASS_BEGIN( XGameMap, XObject )
+	IMPLEMENT_XCLASS_BEGIN( XGameMap, XObjectNode )
 		IMPLEMENT_ATTRIBUTE( SceneIndex, VT_U32, ATTR_FLAG_NONE, "20140912" )
 		IMPLEMENT_ATTRIBUTE( SceneTitle, VT_STRING, ATTR_FLAG_NONE, "20150211" )
 		IMPLEMENT_ATTRIBUTE( SceneStrName, VT_STRING, ATTR_FLAG_NONE, "20140912" )
@@ -93,7 +93,7 @@ namespace xgc
 	/////
 	xgc_bool XGameMap::Insert( XGameObject* pObject, const XVector3& vPosition )
 	{
-		return AddChild( pObject, reinterpret_cast<xgc_lpcvoid>( &vPosition ) );
+		return Insert( pObject, reinterpret_cast<xgc_lpcvoid>( &vPosition ) );
 	}
 
 	/////
@@ -102,7 +102,7 @@ namespace xgc
 	/////
 	void XGameMap::Remove( XGameObject* pObject )
 	{
-		RemoveChild( pObject );
+		Remove( pObject );
 	}
 
 	// ¼ì²âÅö×²
@@ -1010,7 +1010,7 @@ namespace xgc
 		}
 	}
 
-	xgc_bool XGameMap::PreRemoveChild( XObject* pChild, xgc_bool bRelease )
+	xgc_bool XGameMap::PreDelChild( XObject* pChild, xgc_bool bRelease )
 	{
 		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
 		{
@@ -1020,7 +1020,7 @@ namespace xgc
 		return true;
 	}
 
-	xgc_void XGameMap::OnRemoveChild( XObject* pChild, xgc_bool bRelease )
+	xgc_void XGameMap::OnDelChild( XObject* pChild, xgc_bool bRelease )
 	{
 		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
 		{

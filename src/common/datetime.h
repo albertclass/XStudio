@@ -47,7 +47,7 @@ namespace xgc
 			{
 			}
 
-			explicit timespan( int64_t _span )
+			timespan( int64_t _span )
 				: span( _span )
 			{
 			}
@@ -139,45 +139,45 @@ namespace xgc
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_days( int64_t days )
+			static timespan from_days( xgc_real64 days )
 			{ 
-				return timespan( days * ( 24 * 60 * 60 * 10000000ULL ) );
+				return (int64_t)( days * ( 24 * 60 * 60 * 10000000ULL ) );
 			}
 
 			///
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_hour( int64_t hour )
+			static timespan from_hour( xgc_real64 hour )
 			{ 
-				return timespan( hour * ( 60 * 60 * 10000000ULL ) );
-			}			
-
-			///
-			/// 按秒初始化一个timespan对象
-			/// [8/8/2014] create by albert.xu
-			///
-			static timespan from_minutes( int64_t minutes )
-			{ 
-				return timespan( minutes * ( 60 * 10000000ULL ) );
+				return (int64_t)( hour * ( 60 * 60 * 10000000ULL ) );
 			}
 
 			///
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_seconds( int64_t seconds )
+			static timespan from_minutes( xgc_real64 minutes )
+			{ 
+				return (int64_t)( minutes * ( 60 * 10000000ULL ) );
+			}
+
+			///
+			/// 按秒初始化一个timespan对象
+			/// [8/8/2014] create by albert.xu
+			///
+			static timespan from_seconds( xgc_real64 seconds )
 			{
-				return timespan( seconds * 10000000ULL );
+				return (int64_t)( seconds * 10000000ULL );
 			}
 
 			///
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_milliseconds( int64_t milliseconds )
+			static timespan from_milliseconds( xgc_real64 milliseconds )
 			{
-				return timespan( milliseconds * 10000ULL );
+				return (int64_t)( milliseconds * 10000ULL );
 			}
 
 			///
@@ -187,29 +187,29 @@ namespace xgc
 			static timespan convert( xgc_lpcstr str );
 
 			// 时间片段转为单位时间
-			xgc_int32 to_days()const 
+			xgc_real64 to_days()const 
 			{ 
-				return xgc_int32( span / ( 24 * 60 * 60 * 10000000ULL ) ); 
+				return span / ( 24 * 60 * 60 * 10000000. );
 			}
 
-			xgc_int32 to_hour()const 
+			xgc_real64 to_hour()const
 			{ 
-				return xgc_int32( span / ( 60 * 60 * 10000000ULL ) ); 
+				return span / ( 60 * 60 * 10000000. ); 
 			}
 
-			xgc_int32 to_minutes()const 
+			xgc_real64 to_minutes()const
 			{ 
-				return xgc_int32( span / ( 60 * 10000000ULL ) ); 
+				return span / ( 60 * 10000000. ); 
 			}
 
-			xgc_int32 to_seconds()const 
+			xgc_real64 to_seconds()const
 			{ 
-				return xgc_int32( span / 10000000ULL ); 
+				return span / 10000000.; 
 			}
 
-			int64_t to_millisecnods()const 
+			xgc_real64 to_millisecnods()const
 			{ 
-				return int64_t( span / 10000ULL );
+				return span / 10000.;
 			}
 		};
 

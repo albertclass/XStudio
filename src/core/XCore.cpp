@@ -121,22 +121,22 @@ namespace xgc
 	// [11/18/2010 Albert]
 	// Description:	添加子对象 
 	//---------------------------------------------------//
-	xgc_bool AddChild( xObject hParent, xObject hChild )
+	xgc_bool Insert( xObject hParent, xObject hChild )
 	{
 		XObject* pObject = GetXObject( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		return pObject->AddChild( hChild );
+		return pObject->Insert( hChild );
 	}
 
 	//---------------------------------------------------//
 	// [11/18/2010 Albert]
 	// Description:	删除子对象 
 	//---------------------------------------------------//
-	xgc_void RemoveChild( xObject hParent, xObject hChild )
+	xgc_void Remove( xObject hParent, xObject hChild )
 	{
 		XObject* pObject = GetXObject( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		pObject->RemoveChild( hChild );
+		pObject->Remove( hChild );
 	}
 
 	//---------------------------------------------------//
@@ -221,25 +221,25 @@ namespace xgc
 	// [1/7/2011 Albert]
 	// Description:	设置角色状态 
 	//---------------------------------------------------//
-// 	xgc_void SetActorStatus( xObject hActor, xgc_int32 eStatus, xgc_real32 fDelayTime, xgc_int32 nMode )
-// 	{
-// 		XCharactor* pObject = static_cast<XCharactor*>( GetXObject( hActor, TypeXCharactor ) );
-// 		if( pObject )
-// 		{
-// 			pObject->SetActorStatus( ( XCharactor::ActorStatus )eStatus, fDelayTime, nMode );
-// 		}
-// 	}
+	// xgc_void SetState( xObject hActor, xgc_int32 eStatus, xgc_real32 fDelayTime, xgc_int32 nMode )
+	// {
+	// 	XCharactor* pObject = static_cast<XCharactor*>( GetXObject( hActor, TypeXCharactor ) );
+	// 	if( pObject )
+	// 	{
+	// 		pObject->SetState( ( XCharactor::enActorState )eStatus, fDelayTime, nMode );
+	// 	}
+	// }
 
 	////---------------------------------------------------//
 	//// [1/13/2011 Albert]
 	//// Description:	获取角色状态 
 	////---------------------------------------------------//
-	//xgc_int32 GetActorStatus( xObject hActor )
+	//xgc_int32 getStatus( xObject hActor )
 	//{
 	//	XCharactor* pObject = static_cast<XCharactor*>( GetXObject( hActor, TypeXCharactor ) );
 	//	if( pObject )
 	//	{
-	//		return pObject->GetActorStatus();
+	//		return pObject->getStatus();
 	//	}
 
 	//	return -1;
@@ -264,13 +264,13 @@ namespace xgc
 	// [11/19/2010 Albert]
 	// Description:	角色受到伤害 
 	//---------------------------------------------------//
-// 	xgc_void AttackTarget( xObject hAttacker, xObject hInjured, xgc_int32 nDamage )
-// 	{
-// 		XObject* pObject = GetXObject( hInjured, TypeXCharactor );
-// 		if( pObject )
-// 		{
-// 			XCharactor* pActorBase = static_cast<XCharactor*>( pObject );
-// 			pActorBase->UnderAttack( hAttacker, nDamage );
-// 		}
-// 	}
+	// 	xgc_void AttackTarget( xObject hAttacker, xObject hInjured, xgc_int32 nDamage )
+	// 	{
+	// 		XObject* pObject = GetXObject( hInjured, TypeXCharactor );
+	// 		if( pObject )
+	// 		{
+	// 			XCharactor* pActorBase = static_cast<XCharactor*>( pObject );
+	// 			pActorBase->UnderAttack( hAttacker, nDamage );
+	// 		}
+	// 	}
 }

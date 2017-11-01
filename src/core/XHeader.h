@@ -24,6 +24,9 @@
 
 using namespace xgc;
 using namespace xgc::common;
+
+using namespace std::placeholders;
+
 // 基本数据类型，及辅助计算库
 #include "XCoreDefine.h"
 
@@ -35,17 +38,20 @@ using namespace xgc::common;
 // 服务器对象基础类
 #include "XClassInfo.h"
 #include "XObject.h"
+#include "XObjectNode.h"
 
-///
-/// [10/31/2012 Albert.xu]
-/// 获取定时器
-///
-extern timer& getTimer();
+namespace xgc
+{
+	///
+	/// [10/31/2012 Albert.xu]
+	/// 获取定时器
+	///
+	extern CORE_API timer& getTimer();
 
-///
-/// [10/31/2012 Albert.xu]
-/// 获取计时器
-///
-extern timer& getClock();
-
+	///
+	/// [10/31/2012 Albert.xu]
+	/// 获取计时器
+	///
+	extern CORE_API timer& getClock();
+}
 #endif // __XHEADER_H__

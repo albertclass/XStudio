@@ -14,7 +14,7 @@ namespace xgc
 
 	XTeam::XTeam( xgc_uint32 teamID, xgc_size nMemberCount, xgc_bool bSpinLockCount )
 		: mTeamID(teamID)
-		, mLeader( INVALID_GLOBAL_ID )
+		, mLeaderGlobal( INVALID_GLOBAL_ID )
 		, mMembers( nMemberCount, default_member )
 		, mSpinLockCount( bSpinLockCount )
 		, mUserdata( 0 )
@@ -30,57 +30,58 @@ namespace xgc
 		mUserdata = 0;
 	}
 
-	xgc_bool XTeam::appendMember( xGlobal hGlobal, xObject hMember, xgc_bool isOnline, 
-		xgc_bool bLeader /*= false*/, const XVector2& vRelatively /*= XVector2::ZERO*/,
-		bool ntfNearbyPlayers /*= true */)
+	xgc_bool XTeam::appendMember( const Member &member, xgc_bool bLeader, bool ntfNearbyPlayers )
 	{
-		// XGC_ASSERT_RETURN( hMember != INVALID_OBJECT_ID, false );
-
-		Member member( hGlobal, hMember, vRelatively, isOnline );
-		MemberVec::iterator emptySlot = mMembers.end();
-		for( MemberVec::iterator iter = mMembers.begin(); iter != mMembers.end(); ++iter )
+		auto it = mMembers.begin();
+		while( it != mMembers.end() )
 		{
-			if( emptySlot == mMembers.end() && iter->hGlobal == INVALID_GLOBAL_ID )
-				emptySlot = iter;
+			if( it->hGlobal == INVALID_GLOBAL_ID )
+				break;
 
-			if( iter->hGlobal == hGlobal )
+			if( it->hGlobal == member.hGlobal )
 			{
-				if( bLeader ) mLeader = hGlobal;
+				if( bLeader )
+				{
+					mLeaderGlobal = member.hGlobal;
+					mLeaderObject = member.hMember;
+				}
+
 				return true;
 			}
+
+			++it;
 		}
 
-		if( emptySlot == mMembers.end() && mSpinLockCount )
+		/// 没有空位，且已锁定队伍人数，则返回
+		if( it == mMembers.end() )
 		{
-			return false;
-		}
-		else if( emptySlot == mMembers.end() && !mSpinLockCount )
-		{
-			MemberVec::size_type size = mMembers.size();
-			mMembers.resize( mMembers.size() + 1, default_member );
-			emptySlot = mMembers.begin() + size;
-			*emptySlot = member;
+			if( mSpinLockCount )
+				return false;
+			
+			mMembers.push_back( member );
 		}
 		else
 		{
-			*emptySlot = member;
+			it->hGlobal = member.hGlobal;
+			it->hMember = member.hMember;
+			it->vRelatively = member.vRelatively;
 		}
 
 		if( bLeader )
 		{
-			mLeader = hGlobal;
-			mLeaderObject = hMember;
+			mLeaderGlobal = member.hGlobal;
+			mLeaderObject = member.hMember;
 		}
 
-		XCharactor* pActor = static_cast< XCharactor* >( GetXObject( hMember, TypeXCharactor ) );
+		XCharactor* pActor = ObjectCast< XCharactor >( member.hMember );
 		if( pActor )
 		{
-			pActor->mTeamPtr = shared_from_this();
-			pActor->mTeamSlot = (xgc_uint16)(emptySlot - mMembers.begin());
+			pActor->setTeam( shared_from_this() );
 		}
+
 		if( ntfNearbyPlayers )
 		{
-			broadcastHeaderIDToNearbyers( hGlobal, getHeaderID() );
+			updateToNearby( member.hGlobal, getLeaderGlobalID() );
 		}
 		return true;
 	}
@@ -93,22 +94,21 @@ namespace xgc
 		XTeamPtr thisTeam = shared_from_this();
 
 		// 删除成员
-		Member MatchValue = { hGlobal, 0, XVector2::ZERO, false };
-		MemberVec::iterator iter = std::find( mMembers.begin(), mMembers.end(), MatchValue );
-		if( iter != mMembers.end() )
+		auto it = std::find( mMembers.begin(), mMembers.end(), hGlobal );
+		if( it != mMembers.end() )
 		{
-			XCharactor* pActor = static_cast< XCharactor* >( GetXObject( iter->hMember, TypeXCharactor ) );
+			XCharactor* pActor = ObjectCast< XCharactor >( it->hMember );
 			if( pActor )
 			{
 				pActor->mTeamPtr.reset();
 			}
 
-			iter->hGlobal = INVALID_GLOBAL_ID;
-			iter->hMember = INVALID_OBJECT_ID;
-			iter->vRelatively = XVector2::ZERO;
+			it->hGlobal = INVALID_GLOBAL_ID;
+			it->hMember = INVALID_OBJECT_ID;
+			it->vRelatively = XVector2::ZERO;
 		}
 
-		broadcastHeaderIDToNearbyers( hGlobal, 0 );
+		updateToNearby( hGlobal, 0 );
 		// 替换队长
 		/*if( hGlobal == mLeader && bChangeLeader )
 		{
@@ -128,7 +128,7 @@ namespace xgc
 	{
 		XGC_ASSERT_RETURN( nSlot < mMembers.size(), XVector2::ZERO );
 
-		XCharactor* pLeader = static_cast< XCharactor* >( GetXObject( getHeaderObject(), TypeXCharactor ) );
+		XCharactor* pLeader = ObjectCast< XCharactor >( getLeaderObjectID() );
 		if( pLeader )
 		{
 			const XVector2& vDir = pLeader->GetDirection();
@@ -141,25 +141,16 @@ namespace xgc
 		return XVector2::ZERO;
 	}
 
-	xgc_bool XTeam::setHeader( xGlobal hGlobal, xObject hObj )
+	xgc_bool XTeam::setLeader( xGlobal hGlobal, xObject hObject )
 	{
-		/*Member MatchValue = { hGlobal, 0, XVector2::ZERO, false };
-		auto iter = std::find( mMembers.begin(), mMembers.end(), MatchValue );
-		if( iter != mMembers.end() )
-		{
-		mLeader = iter->hGlobal;
-		mLeaderObject = iter->hMember;
-
-		return true;
-		}*/
-		mLeader = hGlobal;
-		mLeaderObject = hObj;
+		mLeaderGlobal = hGlobal;
+		mLeaderObject = hObject;
 		return false;
 	}
 
 	xgc_void XTeam::resetLeader()
 	{
-		mLeader = INVALID_GLOBAL_ID;
+		mLeaderGlobal = INVALID_GLOBAL_ID;
 		mLeaderObject = INVALID_OBJECT_ID;
 	}
 
@@ -173,98 +164,63 @@ namespace xgc
 		}
 	}
 
-
 	xgc_bool XTeam::dismissed()
 	{
-		FUNCTION_BEGIN;
 		for( auto it : mMembers )
 		{
 			XCharactor* pActor = ObjectCast<XCharactor>( it.hMember );
 			if( !pActor )
-			{
 				continue;
-			}
-			pActor->mTeamPtr.reset();
 
-			broadcastHeaderIDToNearbyers( it.hGlobal, 0 );
+			pActor->setTeam( xgc_nullptr );
 
-			it = default_member;
+			updateToNearby( it.hGlobal, 0 );
 		}
-		setHeader(INVALID_GLOBAL_ID, INVALID_OBJECT_ID);
+
+		setLeader(INVALID_GLOBAL_ID, INVALID_OBJECT_ID);
 
 		return true;
-		FUNCTION_END;
-		return false;
 	}
 
-
-	xgc_bool XTeam::changeHeader( xGlobal headerXCBID )
+	xgc_bool XTeam::changeLeader( xGlobal hLeader )
 	{
-		FUNCTION_BEGIN;
-		xGlobal oldHeadXCBID = getHeaderID();
+		xGlobal hOld = getLeaderGlobalID();
 		
-		auto newMember = getMemberByID( headerXCBID );
+		auto newMember = getMemberByID( hLeader );
 		if( !newMember )
-		{
 			return false;
-		}
 
-		setHeader( headerXCBID, newMember->hMember );
-		broadcastHeaderIDToNearbyers( headerXCBID, headerXCBID );
+		setLeader( hLeader, newMember->hMember );
+		updateToNearby( hLeader, hLeader );
 
-		auto oldMember = getMemberByID( oldHeadXCBID );
+		auto oldMember = getMemberByID( hOld );
 		if( oldMember && oldMember->hMember != INVALID_OBJECT_ID )
 		{
-			broadcastHeaderIDToNearbyers( oldHeadXCBID, headerXCBID );
+			updateToNearby( hOld, hLeader );
 		}
 
 
 		return true;
-		FUNCTION_END;
-		return false;
 	}
 
-	/*xgc_bool XTeam::memberOnline( xGlobal xcbID )
+	xgc_bool XTeam::memberOnline( xGlobal hGlobal )
 	{
-		FUNCTION_BEGIN;
-		auto pMember = getMemberByID( xcbID );
+		auto pMember = getMemberByID( hGlobal );
 		if( !pMember )
-		{
 			return false;
-		}
 
 		pMember->isOnline = true;
 		
-		XCharactor* pActor = ObjectCast<XCharactor>( pMember->hMember );
-		if( !pActor )
-		{
-			return true;
-		}
-		pMember->hMember = pActor->GetObjectID();
-		pActor->mTeamPtr = shared_from_this();
 		return true;
-		FUNCTION_END;
-		return false;
 	}
 
-	xgc_bool XTeam::memberOffline( xgc_uint64 xcbID )
+	xgc_bool XTeam::memberOffline( xgc_uint64 hGlobal )
 	{
-		FUNCTION_BEGIN;
-		auto pMember = getMemberByID( xcbID );
+		auto pMember = getMemberByID( hGlobal );
 		if( !pMember )
-		{
-			return true;
-		}
+			return false;
 
 		pMember->isOnline = false;
-		XCharactor* pActor = ObjectCast<XCharactor>( pMember->hMember );
-		if( !pActor )
-		{
-			return true;
-		}
-		pActor->mTeamPtr.reset();
 		return true;
-		FUNCTION_END;
-		return false;
-	}*/
+	}
 }

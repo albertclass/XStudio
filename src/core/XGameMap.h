@@ -8,8 +8,6 @@
 // MapBlock 格子管理
 namespace xgc
 {
-	using namespace std::placeholders;
-
 	/// @var 场景索引
 	extern CORE_API xAttrIndex attrSceneIndex;
 	/// @var 场景显示名
@@ -126,7 +124,7 @@ namespace xgc
 	/// 该类主要实现了基础的碰撞管理和视野管理两个模块
 	/// [6/25/2014] create by albert.xu
 	///
-	class CORE_API XGameMap : public XObject
+	class CORE_API XGameMap : public XObjectNode
 	{
 		DECLARE_XCLASS();
 	private:
@@ -250,24 +248,6 @@ namespace xgc
 
 		XGC_INLINE xgc_int32 GetEyesightX() const { return mMapConf.mEyesight.cx; }
 		XGC_INLINE xgc_int32 GetEyesightY() const { return mMapConf.mEyesight.cy; }
-
-		///
-		/// 设置角色事件句柄
-		/// [9/25/2014] create by albert.xu
-		///
-		//xgc_void SetActorEventHandler( IActorMapEventHandler *pHandler )
-		//{
-		//	mpActorEventHandler = pHandler;
-		//}
-
-		///
-		/// 设置角色事件句柄
-		/// [9/25/2014] create by albert.xu
-		///
-		//IActorMapEventHandler *GetActorEventHandler()
-		//{
-		//	return mpActorEventHandler;
-		//}
 
 		///
 		/// 世界坐标换算为格子坐标
@@ -734,13 +714,13 @@ namespace xgc
 		/// [8/3/2009 Albert]
 		/// @return true - 确认移除子节点, false - 子节点被否决,移除子节点失败.
 		/////
-		virtual xgc_bool PreRemoveChild( XObject* pChild, xgc_bool bRelease ) override;
+		virtual xgc_bool PreDelChild( XObject* pChild, xgc_bool bRelease ) override;
 
 		/////
 		/// 删除子节点后调用,此时对象尚未被删除
 		/// [8/3/2009 Albert]
 		/////
-		virtual xgc_void OnRemoveChild( XObject* pChild, xgc_bool bRelease ) override;
+		virtual xgc_void OnDelChild( XObject* pChild, xgc_bool bRelease ) override;
 
 		/////
 		/// 销毁地图 

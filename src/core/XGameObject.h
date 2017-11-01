@@ -11,7 +11,6 @@ namespace xgc
 	extern CORE_API xAttrIndex attrObjectAlias;		///< 对象名称
 	extern CORE_API xAttrIndex attrObjectFlags;		///< 对象标记位
 	extern CORE_API xAttrIndex attrObjectRadius;	///< 对象半径
-	extern CORE_API xAttrIndex attrObjectMobID;		///< 刷新配置索引
 
 	enum class CORE_API VisualMode
 	{
@@ -55,8 +54,6 @@ namespace xgc
 			Flag_Barrier = 3, 
 			Flag_BaTi = 4 
 		};
-
-		virtual xgc_void Release();
 
 		// 直接世界坐标
 		XGC_INLINE xgc_void GetPosition( xgc_real32 fPos[3] )const
@@ -330,7 +327,7 @@ namespace xgc
 		/////
 		virtual xgc_bool PreEnterMap( XGameMap* pScene ) 
 		{ 
-			return true; 
+			return true;
 		}
 
 		/////
@@ -339,7 +336,7 @@ namespace xgc
 		/////
 		virtual xgc_bool PreLeaveMap( XGameMap* pScene ) 
 		{ 
-			return true; 
+			return true;
 		}
 
 		/////
@@ -368,41 +365,6 @@ namespace xgc
 		{
 			EmmitEvent( evt_leave_map );
 		}
-
-		///////////////////////////////////////////////////////////////////////////
-		/// XObject接口
-
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
-		/////
-		virtual xgc_bool PreAddChild( XObject* pChild, xgc_lpcvoid lpContext ) { return true; }
-
-		/////
-		/// 加入子节点后调用
-		/// [8/3/2009 Albert]
-		/// @param pChild 添加的子对象指针
-		/// @param lpContext 添加对象时附带的参数
-		/////
-		virtual xgc_void OnAddChild( XObject* pChild, xgc_lpcvoid lpContext ) {}
-
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @param pChild 添加的子对象指针
-		/// @param bRelease 是否销毁
-		/// @return true - 确认移除子节点, false - 子节点被否决,移除子节点失败.
-		/////
-		virtual xgc_bool PreRemoveChild( XObject* pChild, xgc_bool bRelease ) { return true; }
-
-		/////
-		/// 删除子节点后调用,此时对象尚未被删除
-		/// [8/3/2009 Albert]
-		/// @param pChild 添加的子对象指针
-		/// @param bRelease 是否销毁
-		/////
-		virtual xgc_void OnRemoveChild( XObject* pChild, xgc_bool bRelease ) {}
 
 	private:
 		XVector3	mPosition;	///< 位置，世界坐标

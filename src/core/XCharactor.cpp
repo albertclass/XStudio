@@ -14,9 +14,10 @@ namespace xgc
 	CORE_API xAttrIndex	attrActorAbnormalTime;	///< 特殊状态时间
 	CORE_API xAttrIndex	attrActorBornTime;		///< 出生时间
 	CORE_API xAttrIndex	attrActorGroupMask;		///< 组别掩码，用于区分阵营
-	CORE_API xAttrIndex attrActorStatus;        ///< 角色状态
+	CORE_API xAttrIndex attrActorState;         ///< 角色状态
+	CORE_API xAttrIndex attrActorAbility;       ///< 角色能力
 
-	IMPLEMENT_XCLASS_BEGIN( XCharactor, XGameObject )
+	IMPLEMENT_XCLASS_BEGIN( XCharactor, XObjectNode )
 		IMPLEMENT_ATTRIBUTE( ActorIndex, VT_U32, ATTR_FLAG_SAVE, "20140912" )	// 角色配置索引
 		IMPLEMENT_ATTRIBUTE( ActorType, VT_U32, ATTR_FLAG_SAVE, "20140912" )	// 角色类型
 		IMPLEMENT_ATTRIBUTE( ActorBeatSpeed, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 击退速度
@@ -24,7 +25,8 @@ namespace xgc
 		IMPLEMENT_ATTRIBUTE( ActorAbnormalTime, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 特殊状态时间
 		IMPLEMENT_ATTRIBUTE( ActorBornTime, VT_I32, ATTR_FLAG_NONE, "20140912" )  // 出生时间
 		IMPLEMENT_ATTRIBUTE( ActorGroupMask, VT_I32, ATTR_FLAG_SAVE, "20140912" )	// 组别掩码，用于区分阵营
-		IMPLEMENT_ATTRIBUTE( ActorStatus, VT_BYTE, ATTR_FLAG_SAVE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( ActorState, VT_U32, ATTR_FLAG_SAVE, "20150122" )
+		IMPLEMENT_ATTRIBUTE_ARRAY( ActorAbility, VT_U32, abl_actor_count, ATTR_FLAG_SAVE, "20150122" )
 	IMPLEMENT_XCLASS_END();
 
 	static XVector3 Direction[] =
@@ -40,13 +42,10 @@ namespace xgc
 		XVector3( 0.7f, -0.7f, 0.0f ),
 	};
 
-	xObjectSet XCharactor::static_error_res;  ///< 错误的
-
-	XCharactor::XCharactor( void )
-		: XGameObject()
-		, mEyeshotGroup( -1 )
+	XCharactor::XCharactor()
+		: mEyeshotGroup( -1 )
 		, mResetStatusTimerHandler( INVALID_TIMER_HANDLE )
-		, mActorRestonStatus( ActorStatus_Live )
+		, mActorRestonState( enActorState::sta_live )
 		, mAttacker( INVALID_OBJECT_ID )
 		, mFirstAttackMeTarget( INVALID_OBJECT_ID )
 		, mMaxHateTarget( INVALID_OBJECT_ID )
@@ -56,10 +55,6 @@ namespace xgc
 		, mRadius( 1.0f )
 		, mBornPoint( XVector3::ZERO )
 		, mTarget( INVALID_OBJECT_ID )
-		, mCurrentSkill( INVALID_OBJECT_ID )
-		, mCurrentSkillTarget( INVALID_OBJECT_ID )
-		, mCurrentSkillPoint( XVector3::ZERO )
-		, mIsIgnoreSkillCD( false )
 		, mFightState( false )
 	{
 		mStatusFlags = { 0 }; // 设置状态标志位
@@ -70,40 +65,49 @@ namespace xgc
 		getTimer().remove( mResetStatusTimerHandler );
 	}
 
-	//---------------------------------------------------//
-	// [11/19/2010 Albert]
-	// Description:	 
-	//---------------------------------------------------//
-	xgc_void XCharactor::UnderAttack( xObject hAttacker, ActorAttackMode eMode, xgc_lpvoid lpContext )
+	///
+	/// \brief 收到攻击
+	/// \author albert.xu
+	/// \date 11/19/2010
+	///
+	xgc_void XCharactor::UnderAttack( xObject hAttacker, enAttackMode eMode, xgc_lpvoid lpContext )
 	{
 		FUNCTION_BEGIN;
 		// 不要鞭尸，太变态了
-		if( GetActorStatus() == ActorStatus_Dead )
+		if( isState( enActorState::sta_dead ) )
 			return;
 
 		xgc_long nDamage = 0;
 		xgc_long nHatred = 0;
 
-		// 是否命中，命中后返回伤害和仇恨
-		if( OnHit( hAttacker, eMode, lpContext, nDamage, nHatred ) )
-		{
-			if( hAttacker != INVALID_OBJECT_ID )
-			{
-				mAttacker = hAttacker;
-			}
-		}
-        //OnUnderAttacked 有可能递归调用死亡，会多次死亡
-        //之前没死，之后死了
-        ActorStatus eBefore = GetActorStatus();
-        XCharactor *pAttack = ObjectCast<XCharactor>(hAttacker);
-        if (pAttack)
-            pAttack->OnAttacked(GetObjectID(), eMode, lpContext, nDamage);
-        OnUnderAttacked(hAttacker, eMode, lpContext, nDamage);
+		// 发送受击事件
+		XCharactorEvent evt;
+		evt.hAttacker = hAttacker;
+		evt.lpContext = lpContext;
+		evt.attack.nDamage = nDamage;
+		evt.attack.eMode = eMode;
 
-        //之前死了才做死亡逻辑，没死则忽略
-  		if( eBefore == ActorStatus_Dead && ActorStatus_Dead == GetActorStatus() )
+		EmmitEvent( evt_actor_behit, evt.cast );
+
+		// 是否命中，命中后返回伤害和仇恨
+		if( evt.cast.result == 0 )
 		{
-			Dead( hAttacker, eMode, lpContext );
+			// OnUnderAttacked 有可能递归调用死亡，会多次死亡
+			// 之前没死，之后死了
+			enActorState eBefore = getStatus();
+			XCharactor *pAttack = ObjectCast<XCharactor>( hAttacker );
+			if( pAttack )
+			{
+				pAttack->EmmitEvent( evt_actor_attacked, evt.cast );
+			}
+
+			//之前死了才做死亡逻辑，没死则忽略
+			if( enActorState::sta_dead == eBefore &&
+				enActorState::sta_dead == getStatus() )
+			{
+				Dead( hAttacker, eMode, lpContext );
+			}
+
 		}
 		FUNCTION_END;
 	}
@@ -112,15 +116,21 @@ namespace xgc
 	/// [8/21/2009 Albert]
 	/// 角色死亡
 	/////
-	xgc_void XCharactor::Dead( xObject hAttacker, ActorAttackMode eMode, xgc_lpvoid lpContext )
+	xgc_void XCharactor::Dead( xObject hAttacker, enAttackMode eMode, xgc_lpvoid lpContext )
 	{
 		// 处理角色场景死亡事件
-		SetActorStatus( ActorStatus_Dead );
+		SetState( enActorState::sta_dead );
 		SetEnjoinAttack();
 		SetEnjoinMove();
 		SetEnjoinUnderAttack();
 
-		OnDead( hAttacker, eMode, lpContext );
+		// 发送角色死亡事件
+		XCharactorEvent evt;
+		evt.lpContext = lpContext;
+		evt.hAttacker = hAttacker;
+
+		evt.dead.eMode = eMode;
+		EmmitEvent( evt_actor_dead, evt.cast );
 	}
 
 	///
@@ -130,15 +140,20 @@ namespace xgc
 	xgc_void XCharactor::Relive( xgc_lpvoid lpContext )
 	{
 		// 处理场景重生事件
-		SetActorStatus( ActorStatus_Live );
-		OnRelive( lpContext );
+		SetState( enActorState::sta_live );
+
+		// 发送角色重生事件
+		XCharactorEvent evt;
+		evt.lpContext = lpContext;
+
+		EmmitEvent( evt_actor_relive, evt.cast );
 	}
 
 	/// ------------------------------------------------ ///
 	/// 设置生物状态
 	/// [5/31/2014 jianglei.kinly]
 	/// ------------------------------------------------ ///
-	xgc_void XCharactor::SetActorStatus( ActorStatus eStatus )
+	xgc_void XCharactor::SetState( enActorState eStatus )
 	{
 		if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 		{
@@ -146,61 +161,82 @@ namespace xgc
 			mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 		}
 
-		SetAttrValue<xgc_byte>( attrActorStatus, eStatus );
-		mActorRestonStatus = eStatus;
+		setValue( attrActorState, (xgc_uint32)eStatus );
+		mActorRestonState = eStatus;
 	}
 
 	//---------------------------------------------------//
 	// [8/24/2009 Albert]
 	// 设置角色状态
 	//---------------------------------------------------//
-	xgc_void XCharactor::SetActorStatus( ActorStatus eStatus, xgc_real32 fTime, xgc_int32 nMode )
+	xgc_void XCharactor::SetState( enActorState eStatus, timespan tsDuration, xgc_int32 nMode )
 	{
-		if( GetActorStatus() == ActorStatus_Dead )
+		if( isState( enActorState::sta_dead ) )
 			return;
 
-		if( fTime != 0.0f )
+		if( tsDuration != 0 )
 		{
-			xgc_real64 fRelease = 0;
+			timespan duration = tsDuration;
+			timespan remain;
 			if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 			{
-				fRelease = getTimer().remove( mResetStatusTimerHandler );
+				remain = getTimer().remove( mResetStatusTimerHandler );
 				mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 			}
 
-			if( eStatus == mActorRestonStatus )
+			if( eStatus == mActorRestonState )
 			{
 				switch( nMode )
 				{
 					case 0: // 覆盖
-					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) fTime );
+					mResetStatusTimerHandler = getTimer().insert( 
+						std::bind( &XCharactor::ResetActorState, this, eStatus ), 
+						datetime::now() + duration,
+						0,
+						"once" );
 					break;
 					case 1: // 顺延
-					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) ( fTime + fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( 
+						std::bind( &XCharactor::ResetActorState, this, eStatus ), 
+						datetime::now() + duration + remain,
+						timespan( 0 ),
+						"once" );
 					break;
 					case 2: // 取最小
-					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MIN( fTime, fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( 
+						std::bind( &XCharactor::ResetActorState, this, eStatus ), 
+						datetime::now() + XGC_MIN( duration, remain ),
+						0,
+						"once" );
 					break;
 					case 3: // 取最大
-					mResetStatusTimerHandler = getTimer().insert( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) XGC_MAX( fTime, fRelease ) );
+					mResetStatusTimerHandler = getTimer().insert( 
+						std::bind( &XCharactor::ResetActorState, this, eStatus ), 
+						datetime::now() + XGC_MAX( duration, remain ),
+						0,
+						"once" );
 					break;
 				}
 			}
 			else
 			{
-				mResetStatusTimerHandler = getTimer().insert_event( bind( &XCharactor::ResetActorStatus, this, _1, eStatus ), 1, 0.0f, (xgc_real32) fTime );
-				mActorRestonStatus = GetActorStatus();
-				SetAttrValue<xgc_byte>( attrActorStatus, eStatus );
+				mResetStatusTimerHandler = getTimer().insert( 
+					std::bind( &XCharactor::ResetActorState, this, eStatus ), 
+					datetime::now() + duration,
+					timespan( 0 ),
+					"once" );
+				mActorRestonState = getStatus();
+				SetState( eStatus );
 			}
 		}
 		else
 		{
-			if( eStatus != ActorStatus_Live )
+			if( eStatus != enActorState::sta_live )
 				SetEnjoinMove();
 			else
 				AntiSetEnjoinMove();
 
-			SetAttrValue<xgc_byte>( attrActorStatus, eStatus );
+			SetState( eStatus );
 		}
 	}
 
@@ -208,73 +244,17 @@ namespace xgc
 	// [12/23/2010 Albert]
 	// Description:	重置角色状态 
 	//---------------------------------------------------//
-	xgc_void XCharactor::ResetActorStatus( timer_h handle, ActorStatus eStatus )
+	xgc_void XCharactor::ResetActorState( enActorState eStatus )
 	{
-		if( GetActorStatus() != ActorStatus_Dead )
-			SetAttrValue<xgc_byte>( attrActorStatus, eStatus );
+		if( !isState( enActorState::sta_dead ) )
+			SetState( eStatus );
 
-		if( eStatus != ActorStatus_Live )
+		if( !isState( enActorState::sta_live ) )
 			SetEnjoinMove();
 		else
 			AntiSetEnjoinMove();
 
 		mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
-	}
-
-	//---------------------------------------------------//
-	// [11/19/2010 Albert]
-	// Description:	当加入的对象为关注的类型，则进行管理。
-	// 添加技能Child
-	//---------------------------------------------------//
-	xgc_void XCharactor::OnAddChild( XObject* pChild, xgc_lpcvoid lpContext )
-	{
-		if( pChild->IsInheritFrom( TypeXSkillBase ) )
-		{
-			mSkillMap.insert( std::make_pair( pChild->GetUnsignedAttr( attrSkillMainId ), pChild->GetObjectID() ) );
-		}
-		else if( pChild->IsInheritFrom( TypeXStateBase ) )
-		{
-			auto key = std::make_pair( pChild->GetUnsignedAttr( attrStateType ), pChild->GetUnsignedAttr( attrStateBuffID ) );
-			mStateMap[key].insert( pChild->GetObjectID() );
-		}
-
-		__super::OnAddChild( pChild, lpContext );
-	}
-
-	//---------------------------------------------------//
-	// [11/19/2010 Albert]
-	// Description:	当移除的对象为关注对象，则从列表中取出 
-	//---------------------------------------------------//
-	void XCharactor::OnRemoveChild( XObject* pChild, bool bRelease )
-	{
-		if( pChild->IsInheritFrom( TypeXSkillBase ) )
-		{
-			auto it = mSkillMap.find( pChild->GetUnsignedAttr( attrSkillMainId ) );
-			if( it != mSkillMap.end() )
-			{
-				mSkillMap.erase( it );
-			}
-			else
-				XGC_ASSERT_MESSAGE( false, "想删掉一个不存在该对象身上的技能：%u", pChild->GetUnsignedAttr( attrSkillMainId ) );
-		}
-		else if( pChild->IsInheritFrom( TypeXStateBase ) )
-		{
-			auto key = std::make_pair( pChild->GetUnsignedAttr( attrStateType ), pChild->GetUnsignedAttr( attrStateBuffID ) );
-			auto it = mStateMap.find( key );
-			if( it != mStateMap.end() )
-			{
-				it->second.erase( pChild->GetObjectID() );
-				// 如果这个的size == 0 清除这个标记
-				if( it->second.empty() )
-				{
-					mStateMap.erase( it );
-				}
-			}
-			else
-				XGC_ASSERT_MESSAGE( false, "想删掉一个不存在该对象身上的状态：%u, %u", pChild->GetUnsignedAttr( attrStateType ), pChild->GetUnsignedAttr( attrStateBuffID ) );
-		}
-
-		__super::OnRemoveChild( pChild, bRelease );
 	}
 
 	xgc_void XCharactor::UpdateHateMap( xObject hAttacker, xgc_int32 nHateValue )
@@ -292,7 +272,7 @@ namespace xgc
 		else
 		{
 			stHateInfo.iHateValue = XGC_MAX( 1, nHateValue );
-			mHateMap.insert( HateMap::value_type( hAttacker, stHateInfo ) );
+			mHateMap.insert( { hAttacker, stHateInfo } );
 		}
 
 		//插入第一个人，要同时设置最大最小目标
@@ -311,118 +291,72 @@ namespace xgc
 		mAttacker = hAttacker;
 	}
 
-	xgc_void XCharactor::CopyHateMap( xObject xCopyTarget )
+	xgc_void XCharactor::CopyHateMap( xObject hTarget )
 	{
-		XCharactor* pCharacter = ObjectCast<XCharactor>( xCopyTarget );
-		XGC_ASSERT_RETURN( pCharacter, xgc_void( 0 ) );
-		const HateMap& hateMap = pCharacter->GetHateMap();
-		for( auto& item : hateMap )
-		{
-			mHateMap.insert( HateMap::value_type( xCopyTarget, item.second ) );
-		}
-		if( mMaxHateValue < pCharacter->GetMaxHateValue() )
-		{
-			mMaxHateValue = pCharacter->GetMaxHateValue();
-			mMaxHateTarget = pCharacter->GetMaxHateTarget();
-		}
-		if( mMinHateValue == 0 || mMinHateValue > pCharacter->GetMinHateValue() )
-		{
-			mMinHateValue = pCharacter->GetMinHateValue();
-			mMinHateTarget = pCharacter->GetMinHateTarget();
-		}
-		mAttacker = pCharacter->GetAttacker();
-	}
+		XCharactor* pTarget = ObjectCast<XCharactor>( hTarget );
+		XGC_ASSERT_RETURN( pTarget, xgc_void( 0 ) );
 
-	xgc_void XCharactor::CheckOwnerChange( xgc_uint32 iTimeoutLimit )
-	{
-		if( mFirstAttackMeTarget == INVALID_OBJECT_ID )
+		for( auto& item : pTarget->mHateMap )
+			mHateMap.insert( { hTarget, item.second } );
+
+		if( mMaxHateValue < pTarget->GetMaxHateValue() )
 		{
-			return;
+			mMaxHateValue = pTarget->GetMaxHateValue();
+			mMaxHateTarget = pTarget->GetMaxHateTarget();
 		}
 
-		xgc_time64 iCurrentTime = current_time();
-		const HateMap& IdToHateInfo = GetHateMap();
-		auto item = IdToHateInfo.find( mFirstAttackMeTarget );
-		if( item != IdToHateInfo.end() )
+		if( mMinHateValue == 0 || mMinHateValue > pTarget->GetMinHateValue() )
 		{
-			if( iCurrentTime - item->second.tUpdateTime >= iTimeoutLimit )
-			{
-				//获取除当前所有者之外的仇恨值最大者作为所有者
-				if( mFirstAttackMeTarget != mMaxHateTarget )
-				{
-					//所有权归仇恨值最大者
-					mFirstAttackMeTarget = mMaxHateTarget;
-				}
-				else if( mFirstAttackMeTarget == mMaxHateTarget && mFirstAttackMeTarget == mMinHateTarget )
-				{
-					//只有一个人，所有权不变更
-					return;
-				}
-				else
-				{
-					//是所有者，并且是仇恨值最大，所有权归除自己之外的仇恨值最大者
-					xgc_int32 iSecondMaxHateValue = 0;
-					xObject oSecondMaxHateObj = INVALID_OBJECT_ID;
-					for( auto& item : mHateMap )
-					{
-						if( item.second.iHateValue > iSecondMaxHateValue && item.first != mMaxHateTarget )
-						{
-							iSecondMaxHateValue = item.second.iHateValue;
-							oSecondMaxHateObj = item.first;
-						}
-					}
-					if( oSecondMaxHateObj != INVALID_OBJECT_ID )
-					{
-						mFirstAttackMeTarget = oSecondMaxHateObj;
-					}
-					return;
-				}
-			}
+			mMinHateValue = pTarget->GetMinHateValue();
+			mMinHateTarget = pTarget->GetMinHateTarget();
 		}
+		mAttacker = pTarget->GetAttacker();
 	}
 
 	xgc_void XCharactor::CheckSpecialHate( xObject hAttacker )
 	{
 		//删除最大最小仇恨目标时会重新遍历列表，找最大最小目标
 		if( mHateMap.empty() )
-		{
 			return;
-		}
+
 		if( hAttacker == mMaxHateTarget )
 		{
-			mMaxHateValue = mHateMap.begin()->second.iHateValue;
-			mMaxHateTarget = mHateMap.begin()->first;
-			for( auto iter = mHateMap.begin(); iter != mHateMap.end(); ++iter )
+			auto it1 = mHateMap.begin();
+			mMaxHateValue  = it1->second.iHateValue;
+			mMaxHateTarget = it1->first;
+
+			for( auto iter = it1; iter != mHateMap.end(); ++iter )
 			{
 				if( iter->second.iHateValue > mMaxHateValue )
 				{
 					mMaxHateTarget = iter->first;
-					mMaxHateValue = iter->second.iHateValue;
+					mMaxHateValue  = iter->second.iHateValue;
 				}
 			}
 		}
+
 		if( hAttacker == mMinHateTarget )
 		{
-			mMinHateValue = mHateMap.begin()->second.iHateValue;
-			mMinHateTarget = mHateMap.begin()->first;
-			for( auto iter = mHateMap.begin(); iter != mHateMap.end(); ++iter )
+			auto it1 = mHateMap.begin();
+
+			mMinHateValue  = it1->second.iHateValue;
+			mMinHateTarget = it1->first;
+			for( auto iter = it1; iter != mHateMap.end(); ++iter )
 			{
 				if( iter->second.iHateValue < mMinHateValue )
 				{
 					mMinHateTarget = iter->first;
-					mMinHateValue = iter->second.iHateValue;
+					mMinHateValue  = iter->second.iHateValue;
 				}
 			}
 		}
+
 		//如果删除的是第一个攻击我的目标，将仇恨值最大的设置为首击者
 		if( hAttacker == mFirstAttackMeTarget )
-		{
 			mFirstAttackMeTarget = mMaxHateTarget;
-		}
+
 		if( hAttacker == mTarget )
-		{
 			mTarget = mMaxHateTarget;
-		}
 	}
 
 	xgc_bool XCharactor::DeleteFromHateMap( xObject hAttacker )
@@ -461,13 +395,11 @@ namespace xgc
 	{
 		if( mHateMap.empty() )
 			return INVALID_OBJECT_ID;
-		xgc_vector<xObject> vecRandom;
-		for( auto iter : mHateMap )
-		{
-			vecRandom.push_back( iter.first );
-		}
-		xgc_size nRandom = RandomRange( 0, vecRandom.size() );
-		return vecRandom[nRandom];
+
+		auto it = mHateMap.begin();
+		std::advance( it, random_range( 0ULL, mHateMap.size() ) );
+
+		return it->first;
 	}
 
 	xObject XCharactor::GetNextAsTarget( xObject xTarget )
@@ -475,12 +407,16 @@ namespace xgc
 		if( mHateMap.empty() )
 			return INVALID_OBJECT_ID;
 
-		HateMap::iterator iter = mHateMap.find( xTarget );
-		if( iter != mHateMap.end() && ( ++iter != mHateMap.end() ) )
-		{
-			return iter->first;
-		}
-		return mHateMap.begin()->first;
+		auto it2 = mHateMap.find( xTarget );
+		if( it2 == mHateMap.end() )
+			return INVALID_OBJECT_ID;
+
+		++it2;
+
+		if( it2 == mHateMap.end() )
+			return INVALID_OBJECT_ID;
+
+		return it2->first;
 	}
 
 	xgc_void XCharactor::ClearHateMap()

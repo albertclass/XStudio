@@ -114,11 +114,9 @@ namespace xgc
 			std::unique_ptr< timer_event > evtptr( timer_event::handle_exchange( handle ) );
 
 			if( evtptr )
-			{
-				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION );
-			}
+				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION * 1.0 );
 
-			return timespan( 0 );
+			return 0;
 		}
 
 		/// 
@@ -131,11 +129,9 @@ namespace xgc
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
-			{
-				return timespan::from_milliseconds( (evtptr->over_ - tickcount_) * TIMER_PRECISION );
-			}
+				return timespan::from_milliseconds( (evtptr->over_ - tickcount_) * TIMER_PRECISION * 1.0 );
 
-			return timespan( 0 );
+			return 0;
 		}
 
 		/// 
@@ -148,11 +144,9 @@ namespace xgc
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
-			{
-				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION );
-			}
+				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION * 1.0 );
 
-			return timespan( 0 );
+			return 0;
 		}
 		
 		///
@@ -179,7 +173,7 @@ namespace xgc
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			XGC_ASSERT_RETURN( evtptr, false );
 
-			insert_once( evtptr, delay.to_millisecnods() / TIMER_PRECISION, true );
+			insert_once( evtptr, (xgc_time64)( delay.to_millisecnods() / TIMER_PRECISION ), true );
 			return true;
 		}
 
@@ -333,28 +327,28 @@ namespace xgc
 		/// 插入定时器
 		/// [12/9/2014] create by albert.xu
 		///
-		xgc_void timer::insert_once( timer_event* evtptr, xgc_time64 deadline, xgc_bool adjust )
+		xgc_void timer::insert_once( timer_event* evtptr, xgc_time64 start, xgc_bool adjust )
 		{
 			// 不允许插入到当前时间点
 			if( adjust )
 			{
 				// 重新校准时间
-				deadline = adjust_cycle_next(
-					datetime::from_milliseconds( deadline * TIMER_PRECISION ),
+				start = adjust_cycle_next(
+					datetime::from_milliseconds( start * TIMER_PRECISION ),
 					evtptr->type_,
 					evtptr->data_,
 					datetime::from_milliseconds( tickcount_ * TIMER_PRECISION ) ).to_milliseconds() / TIMER_PRECISION;
 
-				XGC_ASSERT_MESSAGE( deadline >= tickcount_, "插入的时间已经过时。%I64u,%I64u", deadline, tickcount_ );
+				XGC_ASSERT_MESSAGE( start >= tickcount_, "插入的时间已经过时。%I64u,%I64u", start, tickcount_ );
 			}
 
 			// 下次执行时间在有效时间内的则插入
-			if( deadline <= evtptr->over_ )
+			if( start <= evtptr->over_ )
 			{
-				timer_clock t1 = { deadline };
+				timer_clock t1 = { start };
 				timer_clock t2 = { tickcount_ };
 
-				evtptr->time_ = deadline;
+				evtptr->time_ = start;
 
 				if( t1.m0 != t2.m0 )
 				{

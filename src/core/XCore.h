@@ -84,13 +84,13 @@ namespace xgc
 	/// [11/18/2010 Albert]
 	/// Description:	添加子对象 
 	/////
-	CORE_API xgc_bool AddChild( xObject hParent, xObject hChild );
+	CORE_API xgc_bool Insert( xObject hParent, xObject hChild );
 
 	/////
 	/// [11/18/2010 Albert]
 	/// Description:	删除子对象 
 	/////
-	CORE_API xgc_void RemoveChild( xObject hParent, xObject hChild );
+	CORE_API xgc_void Remove( xObject hParent, xObject hChild );
 
 	/////
 	/// [11/18/2010 Albert]

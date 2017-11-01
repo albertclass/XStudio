@@ -37,27 +37,20 @@ int main( int argc, char* argv[] )
 	if( false == net::CreateNetwork( 1 ) )
 		return -1;
 
-	struct net::Param_SetBufferSize param1;
-	param1.recv_buffer_size = 64 * 1024;
-	param1.send_buffer_size = 64 * 1024;
+	net::connect_options opt;
+	memset( &opt, 0, sizeof( opt ) );
+	opt.is_async = false;
+	opt.is_reconnect_passive = false;
+	opt.is_reconnect_timeout = false;
+	opt.recv_buffer_size = 64 * 1024;
+	opt.send_buffer_size = 64 * 1024;
 
-	if( 0 != net::ExecuteState( Operator_SetBufferSize, &param1 ) )
-	{
-		net::DestroyNetwork();
-		return -1;
-	}
+	opt.recv_packet_max = 64 * 1024;
+	opt.recv_packet_max = 64 * 1024;
 
-	struct net::Param_SetPacketSize param2;
-	param2.recv_packet_size = 64 * 1024;
-	param2.send_packet_size = 64 * 1024;
+	opt.timeout = 1000;
 
-	if( 0 != net::ExecuteState( Operator_SetPacketSize, &param2 ) )
-	{
-		net::DestroyNetwork();
-		return -1;
-	}
-
-	net::Connect( addr, port, NET_CONNECT_OPTION_ASYNC | NET_CONNECT_OPTION_RECONNECT, 1000, XGC_NEW CNetSession() );
+	net::Connect( addr, port, XGC_NEW CNetSession(), &opt );
 	while( running )
 	{
 		if( net::ProcessNetEvent( 100 ) == 100 )

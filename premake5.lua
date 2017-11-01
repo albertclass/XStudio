@@ -12,22 +12,22 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs "inc/common"
+		includedirs "src/common"
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/common/**.h",
-			"inc/common/**.hpp",
+			"src/common/**.h",
+			"src/common/**.hpp",
 			"src/common/**.c",
 			"src/common/**.cpp",
 			"src/common/**.inl",
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/common/**.h", "inc/common/**.hpp" },
+			["Header Files/*"] = { "src/common/**.h", "src/common/**.hpp" },
 			["Source Files/*"] = { "src/common/**.c", "src/common/**.cpp", "src/common/**.inl" }
 		}
 
@@ -53,7 +53,7 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/net", "inc/common", "dep/asio/asio/include" }
+		includedirs { "src/net", "src/common", "dep/asio/asio/include" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common" }
@@ -61,14 +61,14 @@ group "library"
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/net/**.h",
-			"inc/net/**.hpp",
+			"src/net/**.h",
+			"src/net/**.hpp",
 			"src/net/**.cpp",
 			"src/net/**.inl",
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/net/**.h", "inc/net/**.hpp" },
+			["Header Files/*"] = { "src/net/**.h", "src/net/**.hpp" },
 			["Source Files/*"] = { "src/net/**.cpp", "src/net/**.inl" }
 		}
 
@@ -97,7 +97,7 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/net_module", "inc/net", "inc/common" }
+		includedirs { "src/net_module", "src/net", "src/common" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common", "net" }
@@ -105,12 +105,12 @@ group "library"
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/net_module/**.h",
+			"src/net_module/**.h",
 			"src/net_module/**.cpp",
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/net_module/**.h" },
+			["Header Files/*"] = { "src/net_module/**.h" },
 			["Source Files/*"] = { "src/net_module/**.cpp" }
 		}
 
@@ -139,15 +139,15 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/database", "inc/common"}
+		includedirs { "src/database", "src/common"}
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/database/**.h",
-			"inc/database/**.hpp",
+			"src/database/**.h",
+			"src/database/**.hpp",
 			"src/database/**.h",
 			"src/database/**.hpp",
 			"src/database/**.cpp",
@@ -155,7 +155,7 @@ group "library"
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/database/**.h", "inc/database/**.hpp", "src/database/**.h", "src/database/**.hpp" },
+			["Header Files/*"] = { "src/database/**.h", "src/database/**.hpp", "src/database/**.h", "src/database/**.hpp" },
 			["Source Files/*"] = { "src/database/**.cpp", "src/database/**.inl" }
 		}
 
@@ -186,7 +186,7 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/nosql", "inc/common"}
+		includedirs { "src/nosql", "src/common"}
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common", "hiredis" }
@@ -194,8 +194,8 @@ group "library"
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/nosql/**.h",
-			"inc/nosql/**.hpp",
+			"src/nosql/**.h",
+			"src/nosql/**.hpp",
 			"src/nosql/**.h",
 			"src/nosql/**.hpp",
 			"src/nosql/**.cpp",
@@ -203,7 +203,7 @@ group "library"
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/nosql/**.h", "inc/nosql/**.hpp", "src/nosql/**.h", "src/nosql/**.hpp" },
+			["Header Files/*"] = { "src/nosql/**.h", "src/nosql/**.hpp", "src/nosql/**.h", "src/nosql/**.hpp" },
 			["Source Files/*"] = { "src/nosql/**.cpp", "src/nosql/**.inl" }
 		}
 
@@ -234,11 +234,11 @@ group "library"
 		cppdialect "C++11"
 		location "prj/library"
 		includedirs { 
-			"inc/framework", 
-			"inc/common", 
-			"inc/database", 
-			"inc/net", 
-			"inc/net_module",
+			"src/framework", 
+			"src/common", 
+			"src/database", 
+			"src/net", 
+			"src/net_module",
 			"dep/luajit/src",
 			"dep/LuaBridge/Source"
 		}
@@ -260,12 +260,12 @@ group "library"
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/framework/**.h",
+			"src/framework/**.h",
 			"src/framework/**.cpp"
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/framework/**.h" },
+			["Header Files/*"] = { "src/framework/**.h" },
 			["Source Files/*"] = { "src/framework/**.cpp" },
 		}
 
@@ -292,7 +292,7 @@ group "library"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/library"
-		includedirs { "inc/core", "inc/common" }
+		includedirs { "src/core", "src/common" }
 		links { "common" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -300,15 +300,15 @@ group "library"
 		flags { "MultiProcessorCompile" }
 
 		files {
-			"inc/core/**.h",
-			"inc/core/**.hpp",
+			"src/core/**.h",
+			"src/core/**.hpp",
 			"src/core/**.c",
 			"src/core/**.cpp",
 			"src/core/**.inl",
 		}
 
 		vpaths {
-			["Header Files/*"] = { "inc/core/**.h", "inc/core/**.hpp" },
+			["Header Files/*"] = { "src/core/**.h", "src/core/**.hpp" },
 			["Source Files/*"] = { "src/core/**.c", "src/core/**.cpp", "src/core/**.inl" }
 		}
 
@@ -336,7 +336,7 @@ group "sample"
 			language "C++"
 			cppdialect "C++11"
 			location "prj/sample"
-			includedirs { "sample/network", "inc/common", "inc/net", "inc/net_module" }
+			includedirs { "sample/network", "src/common", "src/net", "src/net_module" }
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 			links { "common", "net", "net_module" }
@@ -382,7 +382,7 @@ group "chat"
 			language "C++"
 			cppdialect "C++11"
 			location "prj/sample"
-			includedirs { "inc/common", "inc/net", "sample/chat", "sample/chat/chat_protocol" }
+			includedirs { "src/common", "src/net", "sample/chat", "sample/chat/chat_protocol" }
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 			links { "common", "net" }
@@ -457,7 +457,7 @@ group "servers"
 			language "C++"
 			cppdialect "C++11"
 			location "prj/servers"
-			includedirs { "sample/servers", "inc/common", "inc/database", "inc/net", "inc/net_module", "inc/framework" }
+			includedirs { "sample/servers", "src/common", "src/database", "src/net", "src/net_module", "src/framework" }
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 			links { "common", "database", "net", "net_module", "framework" }
@@ -493,7 +493,7 @@ group "servers"
 				optimize "On"
 			
 			filter "system:windows"
-				includedirs { "dep/vld/inc/" }
+				includedirs { "dep/vld/src/" }
 				libdirs { 
 					"lib/%{cfg.buildcfg}", 
 					"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
@@ -518,7 +518,7 @@ group "servers"
 		language "C++"
 		cppdialect "C++11"
 		location "prj/servers"
-		includedirs { "sample/servers", "inc/common", "inc/net" }
+		includedirs { "sample/servers", "src/common", "src/net" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common", "net" }
@@ -555,7 +555,7 @@ group "servers"
 			optimize "On"
 		
 		filter "system:windows"
-			includedirs { "dep/vld/inc/" }
+			includedirs { "dep/vld/src/" }
 			libdirs { 
 				"lib/%{cfg.buildcfg}", 
 				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
@@ -576,7 +576,7 @@ group ""
 		language "C++"
 		cppdialect "C++11"
 		location "prj"
-		includedirs {"inc/common", "inc/net", "inc/database" }
+		includedirs {"src/common", "src/net", "src/database" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common", "net", "database" }

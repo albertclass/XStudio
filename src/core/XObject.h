@@ -35,6 +35,8 @@ namespace xgc
 		xgc_long	token;
 		/// @var 返回值 -1 - err, 0 - pending, 1 - ok
 		xgc_long	result;
+		/// @var 是否处理
+		xgc_bool	over;
 	};
 
 	typedef xgc_void( XObject::* XEventBind1 )( XObjectEvent& );
@@ -52,9 +54,9 @@ namespace xgc
 	protected:
 		XObject();
 
-	public:
 		virtual	~XObject();
 
+	public:
 		///
 		/// \brief 获取类信息
 		/// \author albert.xu
@@ -121,8 +123,6 @@ namespace xgc
 
 		/// @var 是否被销毁
 		xgc_bool mIsDestory;
-		/// @var 子物体列表
-		xObjectList	mChildList;
 		/// @var 父对象ID
 		xObject	mParentID;
 	public:
@@ -134,24 +134,8 @@ namespace xgc
 		xgc_void	SetParent( xObject nID ) { mParentID = nID; }
 		// 得到父对象ID
 		xObject		GetParent()const { return mParentID; }
-		// 添加子对象
-		xgc_bool	AddChild( xObject  nObj, xgc_lpcvoid lpContext = 0 );
-		xgc_bool	AddChild( XObject* pObj, xgc_lpcvoid lpContext = 0 );
-		// 删除子对象
-		xgc_void	RemoveChild( xObject  nObj, xgc_bool bDestroy = false );
-		xgc_void	RemoveChild( XObject* pObj, xgc_bool bDestroy = false );
-		// 查询子对象
-		xgc_bool	QueryChild( XObject* pObj )const;
-		xgc_bool	QueryChild( xObject  nObj )const;
-		xgc_bool	QueryChild( const std::function< xgc_bool( xObject ) >& fnFilter )const;
-
-		/************************************************************************/
 		// 销毁对象
 		xgc_void	Destroy();
-		// 销毁所有子对象
-		xgc_void	DestroyAllChild();
-		// 获取子对象数量
-		xgc_size	GetChildrenCount()const { return mChildList.size(); }
 
 		/************************************************************************/
 		/* 事件操作
@@ -293,6 +277,16 @@ namespace xgc
 		}
 
 		///
+		/// [1/7/2014 albert.xu]
+		/// 设置属性值
+		///
+		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
+		XGC_INLINE xgc_void incValue( xAttrIndex idx, T inc )
+		{
+			getAttr( idx ) += inc;
+		}
+
+		///
 		/// [2/11/2014 albert.xu]
 		/// 获取字符串
 		///
@@ -321,7 +315,7 @@ namespace xgc
 
 		///
 		/// [1/9/2014 albert.xu]
-		/// 设置缓冲区属性
+		/// \brief 设置缓冲区属性
 		///
 		XGC_INLINE xgc_void setBuffer( xAttrIndex idx, xgc_lpvoid _Val, xgc_size nSize )
 		{
@@ -339,54 +333,28 @@ namespace xgc
 		}
 
 		///
-		/// [3/17/2014 albert.xu]
-		/// 获取缓冲区长度
+		/// \brief 获取缓冲区长度
+		/// \author albert.xu
+		/// \date 3/17/2014
 		///
 		XGC_INLINE xgc_size getBufferLength( xAttrIndex idx )
 		{
 			return getAttr( idx ).getBufferLength();
 		}
+
 	protected:
-		/************************************************************************/
-		/* 设置的一些事件响应虚函数。
-		/************************************************************************/
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
-		/////
-		virtual xgc_bool PreAddChild( XObject* pChild, xgc_lpcvoid lpContext ) = 0;
-
-		/////
-		/// 加入子节点后调用
-		/// [8/3/2009 Albert]
-		/////
-		virtual xgc_void OnAddChild( XObject* pChild, xgc_lpcvoid lpContext ) = 0;
-
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @return true - 确认移除子节点, false - 子节点被否决,移除子节点失败.
-		/////
-		virtual xgc_bool PreRemoveChild( XObject* pChild, xgc_bool bRelease ) = 0;
-
-		/////
-		/// 删除子节点后调用,此时对象尚未被删除
-		/// [8/3/2009 Albert]
-		/////
-		virtual xgc_void OnRemoveChild( XObject* pChild, xgc_bool bRelease ) = 0;
-
 		///
-		/// 销毁对象的时候调用
-		///
+		/// \brief 销毁对象时调用
+		/// \author albert.xu
+		/// \date 2017/11/01
 		virtual xgc_void OnDestroy() = 0;
 	};
 
-	//-----------------------------------//
-	// [4/25/2014 albert.xu]
-	// 将一个句柄对象转为指针对象
-	// 需提供转换的目标类型
-	//-----------------------------------//
+	///
+	/// \brief 将一个句柄对象转为指针对象，需提供转换的目标类型
+	/// \author albert.xu
+	/// \date 4/25/2014
+	///
 	template< class T, typename std::enable_if< std::is_base_of< XObject, T >::value && std::is_base_of< std::enable_shared_from_this< T >, T >::value == false, xgc_bool >::type = true >
 	T* ObjectCast( typename xObject hObject )
 	{

@@ -8,30 +8,20 @@ namespace xgc
 	CORE_API xAttrIndex attrObjectAlias;	///< 对象名称
 	CORE_API xAttrIndex attrObjectFlags;	///< 对象标记位
 	CORE_API xAttrIndex attrObjectRadius;	///< 对象半径
-	CORE_API xAttrIndex attrObjectMobID;	///< 出现在场景中
 
 	IMPLEMENT_XCLASS_BEGIN( XGameObject, XObject )
 		IMPLEMENT_ATTRIBUTE( ObjectName,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象名字
 		IMPLEMENT_ATTRIBUTE( ObjectAlias,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象名字
 		IMPLEMENT_ATTRIBUTE( ObjectFlags,	VT_U32,		ATTR_FLAG_SAVE, "20140912" )	// 是否可见
 		IMPLEMENT_ATTRIBUTE( ObjectRadius,	VT_REAL32,	ATTR_FLAG_NONE, "20140912" )	// 对象半径
-		IMPLEMENT_ATTRIBUTE( ObjectMobID,	VT_U32,		ATTR_FLAG_NONE, "20140912" )	// 刷新索引
 	IMPLEMENT_XCLASS_END()
+
 	XGameObject::XGameObject()
-		: XObject()
 	{
 	}
 
 	XGameObject::~XGameObject()
 	{
-	}
-
-	xgc_void XGameObject::Release()
-	{
-		FUNCTION_BEGIN;
-		Destroy();
-		delete this;
-		FUNCTION_END;
 	}
 
 	///

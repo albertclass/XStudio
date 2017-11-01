@@ -45,6 +45,12 @@ struct stUserInfo
 	download_queue *dl_queue;
 };
 
+template< class T >
+void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, T &req )
+{
+
+}
+
 ///
 /// \brief 开始下载文件
 ///
@@ -92,7 +98,7 @@ int download_start( CNetSession* net, xgc_lpcstr fullname, xgc_lpcstr md5, int (
 	strcpy_s( req.filepath, file.path );
 	strcpy_s( req.filename, file.name );
 
-	net->SendPacket( SERVER_MESSAGE_TYPE, FILE_INFO_REQ, &req, sizeof( req ) );
+	SendPacket( SERVER_MESSAGE_TYPE, FILE_INFO_REQ, &req, sizeof( req ) );
 
 	return idle;
 };
@@ -335,8 +341,7 @@ xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
 		{
 			switch( code )
 			{
-			case NET_ERROR_CONNECT:
-			case NET_ERROR_CONNECT_TIMEOUT:
+			case NET_ERROR_TIMEOUT:
 				SAFE_DELETE( net );
 				break;
 			}

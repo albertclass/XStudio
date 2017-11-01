@@ -67,117 +67,15 @@ namespace xgc
 		return true;
 	}
 
-	xgc_bool XObject::AddChild( xObject nID, xgc_lpcvoid lpContext /*= 0*/ )
-	{
-		XObject *pObj = handle_exchange( nID );
-		return AddChild( pObj, lpContext );
-	}
-
-	xgc_bool XObject::AddChild( XObject *pObj, xgc_lpcvoid lpContext /*= 0*/ )
-	{
-		XGC_ASSERT_RETURN( pObj, false );
-
-		if( PreAddChild( pObj, lpContext ) )
-		{
-			XObject* pParent = handle_exchange( pObj->GetParent() );
-			if( pParent )
-			{
-				pParent->RemoveChild( pObj );
-			}
-			pObj->SetParent( handle()._handle );
-
-			if( std::find( mChildList.begin(), mChildList.end(), pObj->GetObjectID() ) == mChildList.end() )
-			{
-				mChildList.push_back( pObj->GetObjectID() );
-			}
-
-			OnAddChild( pObj, lpContext );
-			return true;
-		}
-		return false;
-	}
-
-	// 删除子对象ID
-	xgc_void XObject::RemoveChild( xObject nID, xgc_bool bDestroy )
-	{
-		XObject* pObj = handle_exchange( nID );
-		return RemoveChild( pObj, bDestroy );
-	}
-
-	xgc_void XObject::RemoveChild( XObject* pObj, xgc_bool bDestroy /* = false */ )
-	{
-		XGC_ASSERT_RETURN( pObj, void( 0 ) );
-
-		xObject nID = pObj->GetObjectID();
-		xObjectList::iterator iter = std::find( mChildList.begin(), mChildList.end(), nID );
-		if( iter != mChildList.end() && PreRemoveChild( pObj, bDestroy ) )
-		{
-			mChildList.erase( iter );
-
-			OnRemoveChild( pObj, bDestroy );
-			// 确认是自己的子物体，根据指示销毁对象
-			if( pObj->GetParent() == GetObjectID() )
-				pObj->SetParent( INVALID_OBJECT_ID );
-
-			if( bDestroy )
-				pObj->Destroy();
-		}
-	}
-
-	xgc_bool XObject::QueryChild( xObject nID )const
-	{
-		return std::find( mChildList.begin(), mChildList.end(), nID ) != mChildList.end();
-	}
-
-	xgc_bool XObject::QueryChild( XObject* pObj )const
-	{
-		if( pObj )
-			return QueryChild( pObj->GetObjectID() );
-
-		return false;
-	}
-
-	xgc_bool XObject::QueryChild( const std::function< xgc_bool( xObject ) >& fnFilter )const
-	{
-		for( auto it : mChildList )
-			if( fnFilter( it ) )
-				return true;
-
-		return false;
-	}
-
 	xgc_void XObject::Destroy()
 	{
-		FUNCTION_BEGIN;
-		mIsDestory = true;
-		if( handle_exchange( handle()._handle ) != this )
-			return;
-
-		if( GetParent() != INVALID_OBJECT_ID )
+		if( false == mIsDestory )
 		{
-			XObject* pParent = handle_exchange( GetParent() );
-			if( pParent )
-			{
-				pParent->RemoveChild( this );
-			}
-		}
-		DestroyAllChild();
-		OnDestroy();
-		FUNCTION_END;
-	}
+			mIsDestory = true;
 
-	void XObject::DestroyAllChild()
-	{
-		FUNCTION_BEGIN;
-		while( !mChildList.empty() )
-		{
-			auto it = mChildList.begin();
-			XObject* pObject = handle_exchange( *it );
-
-			pObject->Destroy();
-			SAFE_DELETE( pObject );
+			OnDestory();
+			delete this;
 		}
-		FUNCTION_END;
 	}
 
 	/************************************************************************/
@@ -256,6 +154,7 @@ namespace xgc
 	xgc_void XObject::EmmitEvent( xgc_long id, XObjectEvent & evt )
 	{
 		evt.id = id;
+		evt.over = false;
 		evt.result = 0;
 		evt.sender = GetObjectID();
 		evt.target = INVALID_OBJECT_ID;
@@ -287,7 +186,7 @@ namespace xgc
 			// 取触发函数，并执行
 			std::get< 0 >( pair.second )( evt );
 
-			if( evt.result == 1 )
+			if( evt.over )
 				break;
 		}
 

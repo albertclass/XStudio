@@ -317,9 +317,9 @@ namespace xgc
 		using NewT = decltype( Min + Max );
 
 		if( Min > Max )
-			std::swap( Min, Max );
-
-		return std::uniform_int_distribution<NewT>( Min, Max )( get_random_driver() );
+			return std::uniform_int_distribution<NewT>( Max, Min )( get_random_driver() );
+		else
+			return std::uniform_int_distribution<NewT>( Min, Max )( get_random_driver() );
 	}
 
 	template< class T1, class T2, typename std::enable_if< std::is_floating_point< T1 >::value && std::is_floating_point<T2>::value, xgc_bool >::type = true>

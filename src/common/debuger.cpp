@@ -186,7 +186,7 @@ namespace xgc
 			{
 				fputs( "--------------------------------------------------------------\n", fp );
 				fputs( "invoke watcher log\n", fp );
-				fprintf( fp, "%s.%u timeout %lld millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods());
+				fprintf( fp, "%s.%u timeout %.4lf millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods());
 				fputs( "-----------------------------CALL STACK-----------------------\n", fp );
 
 				xgc_size length = 0;
