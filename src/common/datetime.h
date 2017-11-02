@@ -207,9 +207,9 @@ namespace xgc
 				return span / 10000000.; 
 			}
 
-			xgc_real64 to_millisecnods()const
+			xgc_uint64 to_millisecnods()const
 			{ 
-				return span / 10000.;
+				return span / 10000;
 			}
 		};
 
@@ -511,6 +511,16 @@ namespace xgc
 		XGC_INLINE timespan operator - ( const datetime& lhs, const datetime& rhs )
 		{
 			return timespan( lhs.storage.dt - rhs.storage.dt );
+		}
+
+		XGC_INLINE timespan operator + ( const timespan& lhs, const timespan& rhs )
+		{
+			return timespan( lhs.span + rhs.span );
+		}
+
+		XGC_INLINE timespan operator - ( const timespan& lhs, const timespan& rhs )
+		{
+			return timespan( lhs.span - rhs.span );
 		}
 
 		XGC_INLINE timespan operator * ( const timespan& lhs, xgc_real64 rhs )

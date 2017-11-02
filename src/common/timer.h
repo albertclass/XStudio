@@ -59,7 +59,8 @@ namespace xgc
 			{ 
 				e_unknown, 
 				e_week, 
-				e_moon, 
+				e_moon,
+				e_year,
 				e_rept,
 			};
 
@@ -232,7 +233,15 @@ namespace xgc
 			/// \param deadline 时间发生的时间
 			/// \param param 事件参数,用于描述类型及该类型所需要的参数
 			///
-			timer_h insert( timer_cb &&function, datetime deadline, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata = xgc_nullptr, xgc_lpcstr name = "noname" );
+			timer_h insert( const timer_cb &cb, datetime start, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata = xgc_nullptr, xgc_lpcstr name = xgc_nullptr );
+
+			///
+			/// \brief 插入定时器事件
+			/// \param function 事件回调
+			/// \param deadline 时间发生的时间
+			/// \param param 事件参数,用于描述类型及该类型所需要的参数
+			///
+			timer_h insert( const timer_cb &cb, datetime start, timespan duration, xgc_uint16 type, xgc_uint64 data, xgc_lpvoid userdata = xgc_nullptr, xgc_lpcstr name = xgc_nullptr );
 
 			///
 			/// \brief 闹钟激活

@@ -391,7 +391,7 @@ namespace xgc
 			}
 		}
 
-		timer_h timer::insert( timer_cb &&function, datetime start, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata, xgc_lpcstr name )
+		timer_h timer::insert( const timer_cb &cb, datetime start, timespan duration, xgc_lpcstr args, xgc_lpvoid userdata, xgc_lpcstr name )
 		{
 			xgc_uint16 type = timer_event::e_unknown;
 			xgc_uint64 data = 0;
@@ -399,7 +399,7 @@ namespace xgc
 			if( cycle_params_parse( args, type, data ) )
 			{
 				timer_event* evtptr = XGC_NEW timer_event( type
-					, std::forward< timer_cb >( function )
+					, cb
 					, ( start + duration ).to_milliseconds() / TIMER_PRECISION
 					, data
 					, userdata
@@ -412,6 +412,21 @@ namespace xgc
 			}
 
 			return INVALID_TIMER_HANDLE;
+		}
+
+		timer_h timer::insert( const timer_cb &cb, datetime start, timespan duration, xgc_uint16 type, xgc_uint64 data, xgc_lpvoid userdata, xgc_lpcstr name )
+		{
+			timer_event* evtptr = XGC_NEW timer_event( type
+				, cb
+				, ( start + duration ).to_milliseconds() / TIMER_PRECISION
+				, data
+				, userdata
+				, name );
+
+			XGC_ASSERT_RETURN( evtptr, INVALID_TIMER_HANDLE );
+
+			insert_once( evtptr, start.to_milliseconds() / TIMER_PRECISION, true );
+			return evtptr->handle();
 		}
 	}
 }

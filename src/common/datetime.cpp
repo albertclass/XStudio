@@ -372,15 +372,13 @@ namespace xgc
 				break;
 				case cycle_mode::e_repeat:
 				{
-					datetime set = start;
-					if( set <= now )
+					if( start <= now )
 					{
 						if( data )
-							set += timespan::from_milliseconds( ( ( now - set ).to_millisecnods() + data ) / data * data );
+							start += timespan::from_milliseconds( ( ( now - start ).to_millisecnods() + data ) / data * data );
 						else
-							set = now;
+							start = now;
 					}
-					start = set;
 				}
 				break;
 			}
