@@ -331,45 +331,44 @@ group "library"
 
 group "sample"
 	function sample_project( prj_name, src_path )
-		local prj = project( prj_name )
-			kind "ConsoleApp"
-			language "C++"
-			cppdialect "C++11"
-			location "prj/sample"
-			includedirs { "sample/network", "src/common", "src/net", "src/net_module" }
-			targetdir "bin/%{cfg.buildcfg}"
-			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-			links { "common", "net", "net_module" }
-			defines { "PDC_WIDE" }
+		project( prj_name )
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/sample"
+		includedirs { "sample/network", "src/common", "src/net", "src/net_module" }
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+		links { "common", "net", "net_module" }
+		defines { "PDC_WIDE" }
 
-			flags { "MultiProcessorCompile" }
+		flags { "MultiProcessorCompile" }
 
-			files {
-				"sample/network/header.h",
-				"sample/network/protocol.h",
-				"sample/network/session.h",
-				"sample/network/session.cpp",
-				"sample/network/" .. src_path .. "/**",
-			}
+		files {
+			"sample/network/header.h",
+			"sample/network/protocol.h",
+			"sample/network/session.h",
+			"sample/network/session.cpp",
+			"sample/network/" .. src_path .. "/**",
+		}
 
-			filter "configurations:Debug"
-				defines { "_DEBUG", "_DEBUG_OUTPUT" }
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT" }
 
-			filter "configurations:Release"
-				defines { "NDEBUG", "_ASSERT_LOG" }
-				optimize "On"
-			
-			filter "system:windows"
-				libdirs { "lib/%{cfg.buildcfg}" }
-				systemversion "10.0.14393.0"
-				defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG" }
+			optimize "On"
+		
+		filter "system:windows"
+			libdirs { "lib/%{cfg.buildcfg}" }
+			systemversion "10.0.14393.0"
+			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
-			filter "system:linux"
-				libdirs { "bin/%{cfg.buildcfg}" }
-				links { "stdc++", "rt", "pthread" }
-				buildoptions { "-pthread" }
-				defines { "LINUX64" }
-		return prj
+		filter "system:linux"
+			libdirs { "bin/%{cfg.buildcfg}" }
+			links { "stdc++", "rt", "pthread" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
 	end
 
 	sample_project( "file_server", "server" )

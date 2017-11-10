@@ -22,6 +22,31 @@ struct XActive
 };
 
 ///
+/// \brief 时间线触发事件
+///
+enum CORE_API eTimelineEvent
+{
+	evt_tline_start,
+	evt_tline_update,
+	evt_tline_cancel,
+	evt_tline_finish,
+	evt_tline_enable,
+};
+
+///
+/// \brief 时间线事件对象定义
+///
+struct CORE_API XTimelineEvent
+{
+	/// 继承自XObjectEvent
+	XObjectEvent cast;
+	/// 时间点
+	datetime current;
+	/// 相对时间
+	timespan relative;
+};
+
+///
 /// \brief 时间线类，用于管理时间线内的活动
 ///
 class XTimeline : public XObject
@@ -74,6 +99,12 @@ public:
 	///
 	xgc_bool Start( datetime start );
 
+	///
+	/// \brief 运行时间线
+	/// \author albert.xu
+	/// \date 2017/11/03
+	///
+	xgc_void Stop();
 protected:
 	///
 	/// \brief 更新时间线状态

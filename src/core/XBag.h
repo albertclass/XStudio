@@ -9,11 +9,15 @@ namespace xgc
 
 	#define INVALID_SLOT_ID (xSlot)(-1)
 
-	// 包裹每个位置的存储信息 有了 xGoodsPtr 就不可能是POD了
+	/// 
+	/// \brief 包裹每个位置的存储信息
+	/// \date 11/6/2017
+	/// \author xufeng04
+	///
 	struct CORE_API XSlot
 	{
 		/// @var 存储的物品
-		xObject mGoods;   
+		xObject mGoods;
 		/// @var 该位置物品个数
 		xgc_uint32 mCount;
 
@@ -42,6 +46,12 @@ namespace xgc
 			mCount = 0;
 		}
 
+		xgc_void set( xObject hGoods, xgc_uint32 nCount )
+		{
+			mGoods = hGoods;
+			mCount = nCount;
+		}
+
 		xObject getGoodsId()const
 		{
 			return mGoods;
@@ -59,7 +69,7 @@ namespace xgc
 
 		xgc_bool isEmpty() const
 		{
-			return ( 0 == mCount );
+			return INVALID_OBJECT_ID == mGoods && 0 == mCount;
 		}
 
 		xgc_void setEmpty()
@@ -85,10 +95,13 @@ namespace xgc
 		}
 
 		///
-		/// 是否是相同的物品配置
-		/// [9/26/2014] create by wuhailin.jerry
+		/// \brief 是否是相同的物品配置 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param 物品索引
+		/// \return 
 		///
-		xgc_bool isThisGoodsIndex( xgc_uint32 nGoodsIndex ) const
+		xgc_bool isSameGoods( xgc_uint32 nGoodsIndex ) const
 		{
 			if( isEmpty() ) // 没有放物品
 				return false;
@@ -122,19 +135,35 @@ namespace xgc
 		}
 
 		///
-		/// 放入物品,返回成功放入的个数 
-		/// [9/26/2014] create by wuhailin.jerry
+		/// \brief 放入物品，返回成功放入的个数 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param hGoods 物品句柄
+		/// \param nCount 物品数量
+		/// \return 放入的物品数量， 0 - 未放入任何物品
 		///
 		xgc_uint32 putGoods( xObject hGoods, xgc_uint32 nCount )
 		{
-			auto pItem = ObjectCast< XGoods >( hGoods );
-			if( xgc_nullptr == pItem )
+			return putGoods( ObjectCast< XGoods >( hGoods ), nCount );
+		}
+
+		///
+		/// \brief 放入物品，返回成功放入的个数 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param pGoods 物品指针
+		/// \param nCount 物品数量
+		/// \return 放入的物品数量， 0 - 未放入任何物品
+		///
+		///
+		xgc_uint32 putGoods( XGoods *pGoods, xgc_uint32 nCount )
+		{
+			XGC_ASSERT_RETURN( pGoods, 0 );
+
+			if( mCount && !isThisGoods( pGoods ) )
 				return 0;
 
-			if( mCount && mGoods != hGoods )
-				return 0;
-
-			auto nEmpty = pItem->GetOverlapNum() - mCount;
+			auto nEmpty = pGoods->GetOverlapNum() - mCount;
 			auto nNeeds = nEmpty >= nCount ? nCount : nEmpty;
 
 			mCount += nNeeds;
@@ -142,8 +171,11 @@ namespace xgc
 		}
 
 		///
-		/// 删除物品，返回成功删除的个数 
-		/// [9/26/2014] create by wuhailin.jerry
+		/// \brief 删除物品，返回成功删除的个数
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param nCount 删除的个数
+		/// \return 实际删除的物品个数
 		///
 		xgc_uint32 delGoods( xgc_uint32 nCount )
 		{
@@ -164,17 +196,52 @@ namespace xgc
 		}
 	};
 
-	struct CORE_API XBagTrans;
+	///
+	/// \brief 背包事件ID
+	/// \date 11/6/2017
+	/// \author xufeng04
+	///
+	enum enBagEvent
+	{
+		evt_slot_changed,
+	};
 
-	// 背包类
+	///
+	/// \brief 背包事件结构定义
+	/// \date 11/6/2017
+	/// \author xufeng04
+	///
+	struct XBagEvent
+	{
+		/// 参数转换
+		XObjectEvent cast;
+
+		/// 操作的格子编号
+		xSlot nSlot;
+		/// 格子变更
+		struct
+		{
+			/// 操作结束后格子中的物品ID
+			xObject		hGoods;
+			/// 此次操作的数量
+			xgc_uint32  nCount;
+		} Befor, After;
+	};
+
+	///
+	/// \brief  背包类 
+	/// \date 11/6/2017
+	/// \author xufeng04
+	///
 	class CORE_API XBag : public XObject
 	{
 	public:
 		DECLARE_XCLASS();
 
-		// eType 必须配置
-		XBag( xgc_uint32 nCapacity )
-			: mCapacity( 0 )
+		///
+		XBag( xgc_uint32 nType, xgc_uint32 nCapacity )
+			: mType( nType )
+			, mCapacity( nCapacity )
 			, mSlots( xgc_nullptr )
 		{
 
@@ -198,7 +265,7 @@ namespace xgc
 		///
 		xgc_bool setOwner( xObject hOwner ) 
 		{
-			auto pNewOwner = ObjectCast< XCharactor >( GetParent() );
+			auto pNewOwner = ObjectCast< XActor >( GetParent() );
 			if( xgc_nullptr == pNewOwner )
 				return false;
 
@@ -310,177 +377,167 @@ namespace xgc
 		///
 		xgc_uint32 getEmptyCount() const;
 
+		///
+		/// \brief 整理背包（先根据Compare的算法排序,然后把一样的物品叠加）  
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param fnCompair 比较算法
+		/// \param bOverlap 是否堆叠
+		///
+		xgc_void Sort( const std::function< xgc_bool( const XSlot&, const XSlot& ) > &fnCompair, xgc_bool bOverlap = true );
+
 	protected:
 		///
 		/// \brief 销毁对象时调用 
 		/// \author albert.xu
 		/// \date 6/9/2014
 		///
-		virtual xgc_void Destroy() override
+		virtual xgc_void OnDestroy() override
 		{
 			for( xSlot i = 0; i < mCapacity; ++i )
 				mSlots[i].delGoods( -1 );
-
-			XObject::Destroy();
-		}
-
-		///
-		/// \brief 获取背包剩余空格子数量
-		/// \author jianglei.kinly
-		/// \date 6/26/2015
-		///
-		xgc_uint32 PackageEmptySize()
-		{
-			xgc_uint32 nCount = 0;
-
-			for( xgc_uint32 i = 0; i < mCapacity; ++i )
-			{
-				if( mSlots[i].isEmpty() )
-					nCount += 1;
-			}
-
-			return nCount;
 		}
 
 	protected:
+		/// @var 背包类型
+		xgc_uint32 mType;
 		/// @var 包裹最大容量
 		xgc_uint32 mCapacity;
-		/// @var 背包类型
-		xgc_uint16 mType;
 		/// @var 指向包裹位置存储结构指针的指针
 		XSlot *mSlots; 
-
 	};
 
 	// 背包事务操作
 	struct CORE_API XBagTrans : public noncopyable
 	{
-	private:
-		enum enMode
+	protected:
+		enum enOperator
 		{
-			///< 新的格子,需要通知客户端Add
-			slot_op_new = 0,
-			///< 旧的格子,需要通知客户端Update
-			slot_op_old = 1, 
+			/// 添加物品
+			slot_op_put = 0,
+			/// 删除物品
+			slot_op_del = 1,
+			/// 交换物品
+			slot_op_swap = 2,
+			/// 转移物品
+			slot_op_move = 3,
 		};
 
-		struct CORE_API stSlotOperatorInfo ///< 格子操作信息
+		struct CORE_API stSlotCommand ///< 格子操作信息
 		{
-			xSlot       nSlot;        ///< 格子
-			enMode		eMode;        ///< 操作类型
-			xgc_bool    bIsAdd;       ///< Put还是Remove
-			xgc_uint32  nAfterNum;    ///< 此次操作后格子内物品个数
-			xgc_uint32  nOperatorNum; ///< 此次操作的数量
-			xgc_uint32  nEvtType;     ///< 物品操作类型
-
-			xObject hNewGoods;   ///< 物品
-			xObject	hOldGoods;   ///< 原来的物品（如果有合并操作，这个字段就不是空的了）
-			xgc_uint32 nOperatorNumTemp; ///< 此次操作的数量
+			/// 操作序号
+			xgc_uint32	nSequence;
+			/// 操作的包裹
+			xObject		hBag;
+			/// 操作的格子编号
+			xSlot       nSlot;
+			/// 操作类型
+			enOperator	eOperator;
+			/// 格子变更
+			struct
+			{
+				/// 操作结束后格子中的物品ID
+				xObject		hGoods;
+				/// 此次操作的数量
+				xgc_uint32  nCount;
+			} Befor, After;
 		};
 
-		typedef xgc_map<xgc_uint32, stSlotOperatorInfo> xSlotOperatorMap; ///< key:高16 背包类型 低16 背包格子,value: 
+		/// 操作序号
+		xgc_uint32 mSequence;
+		/// 操作的背包
+		XBag &mBag;
+		/// 操作的记录
+		xgc_vector< stSlotCommand > mSlotCommands;
 
 	public:
-		explicit XBagTrans(XBag &Bag) 
-			: mBag( Bag )
-		{
-
-		}
-
-		~XBagTrans()
-		{
-			Cancel();
-		}
+		///
+		/// \brief 背包事务构造 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param 操作目标
+		///
+		explicit XBagTrans(XBag &Bag);
 
 		///
-		/// 确定包裹操作完成 
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 背包事务析构 
+		/// \date 11/6/2017
+		/// \author xufeng04
 		///
-		xgc_void Commit( xgc_bool bNoticeClinet )
-		{
-			m_ChangedSlotMap.clear();
-		}
+		~XBagTrans();
 
 		///
-		/// 事务取消 
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 提交包裹操作 
+		/// \authro albert.xu
+		/// \date 2017/11/06
+		///
+		xgc_void Commit();
+
+		///
+		/// \brief 事务取消 
+		/// \authro albert.xu
+		/// \date 2017/11/06
 		///
 		xgc_void Cancel();
 
 		///
-		/// 将dwGoodsNum 个 Goods放入背包中,如果 nSlot ！= INVALID_SLOT_ID 那么从该
-		/// 值得位置开始放,否则从0开始放， bOverLap控制为是否堆叠放
-		/// 返回真正放入的数目
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 将物品放入背包
+		/// \authro albert.xu
+		/// \date 2017/11/06
+		/// \return 全部放入返回 true，否则返回 false
 		///
-		xgc_bool Put( xObject hGoods, xgc_uint32 mCount, xgc_uint32 nEvtType, xgc_bool bOverlap = true, xSlot nSlot = 0 );
+		xgc_bool Put( xObject hGoods, xgc_uint32 nCount, xSlot nStartSlot = 0 );
 
 		///
-		/// 扣除指定的道具,不够扣除时也会扣除,会返回扣除个数,所以需要自己判断是否够扣除
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 扣除指定的道具
+		/// \authro albert.xu
+		/// \date 2017/11/06
+		/// \return 全部删除返回 true，否则返回 false
 		///
-		xgc_uint32 Remove( xGoodsPtr pShGoods, xgc_uint32 mCount, xgc_uint32 nEvtType, xSlot &nSlot );
+		xgc_bool Del( xObject hGoods, xgc_uint32 nCount, xSlot nStartSlot = 0 );
 
 		///
-		/// 删除格子N中的物品M个 ,不够扣除时也会扣除,会返回扣除个数,所以需要自己判断是否够扣除
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 交换格子
+		/// \date 2017/11/06
+		/// \author albert.xu
 		///
-		xgc_uint32 RemoveBySlot( xSlot nSlot, ENPacketType eType, xgc_uint32 mCount, xgc_uint32 nEvtType );
+		xgc_bool Swap( xSlot nFrom, xSlot nTo, xObject hTarget = INVALID_OBJECT_ID );
 
 		///
-		/// 删除指定格子内所有物品 
-		/// [8/6/2014] create by wuhailin.jerry
+		/// \brief 移动格子中的物品 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param Slot1 当前包裹的格子，要移动的格子
+		/// \param hBag 移动到哪个背包
+		/// \param Slot2 移动到背包的哪个格子中
+		/// \param nCount 移动的物品数量
+		/// \return 移动了多少个物品
 		///
-		xgc_void EmptySlot( xSlot nSlot );
+		xgc_uint32 Move( xSlot nFrom, xSlot nTo, xgc_uint32 nCount )
+		{
+			return MoveTo( INVALID_OBJECT_ID, nTo, nFrom, nCount );
+		}
 
 		///
-		/// 自动整理背包（先根据Compare的算法排序,然后把一样的物品叠加） 
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 移动格子中的物品 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \param Slot1 当前包裹的格子，要移动的格子
+		/// \param hBag 移动到哪个背包
+		/// \param Slot2 移动到背包的哪个格子中
+		/// \param nCount 移动的物品数量
+		/// \return 移动了多少个物品
 		///
-		xgc_void AutoPackPacket( xgc_uint32 nEvtType, std::function< xgc_bool( const xObject ) > fnCheckGoods = xgc_nullptr );
+		xgc_uint32 MoveTo( xObject hTarget, xSlot nTo, xSlot nFrom, xgc_uint32 nCount );
 
 		///
-		/// 交换格子或者合并,将dwSlot2中dwNum个物品放到dwSlot1中，如果是0，就取dwSlot2中的最大值
-		/// dwNum ！ = dwSlot2的物品个数 时，两个格子中物品必须相同 
-		/// [8/27/2014] create by wuhailin.jerry
+		/// \brief 撤回操作 
+		/// \date 11/6/2017
+		/// \author xufeng04
+		/// \return 撤回是否成功
 		///
-		xgc_bool Swap( xSlot Slot1, xSlot Slot2, xgc_uint32 nEvtType, xgc_uint32 nNum = 0, std::function< xgc_bool( const xObject ) > fnCheckGoods = xgc_nullptr );
-
-		///
-		/// 根据物品，交换格子或者合并,将dwSlot2中dwNum个物品放到dwSlot1中，如果是0，就取dwSlot2中的最大值
-		/// dwNum ！ = dwSlot2的物品个数 时，两个格子中物品必须相同 
-		/// [8/27/2014] create by wuhailin.jerry
-		///
-		xgc_bool Swap( xGoodsPtr pGoods1, xGoodsPtr pGoods2, xSlot &Slot1, xSlot &Slot2, xgc_uint32 nEvtType, xgc_uint32 nNum = 0, std::function< xgc_bool( const xObject ) > fnCheckGoods = xgc_nullptr );
-
-		const xgc_list<stSlotOperatorInfo> &GetSlotOperatorList() const { return m_SlotOperatorList; }
-
-	private:
-		///
-		/// 保存该格子数据 
-		/// [8/27/2014] create by wuhailin.jerry
-		///
-		xgc_void RecordOldSlot( ENPacketType eType, xSlot nSlot );
-
-protected:
-		XBag &mBag;
-
-		xgc_list<stSlotOperatorInfo> m_SlotOperatorList; ///< 本次Commit前对格子的操作,按照顺序保存，所以也需要按照顺序通知客户端
-		xgc_map<xgc_uint32, stPackageSlot> m_ChangedSlotMap;  // 操作过的格子数据,每个格子只保存第一个操作过的 高16 背包类型 低16 背包格子
+		xgc_bool Undo();
 	};
-
-	//  高16 背包类型 低16 背包格子
-	inline xgc_uint32 MakeChangedSlotMapKey( ENPacketType eType, xSlot slot )
-	{
-		return ( ( (xgc_uint16) eType ) << 16 ) + slot;
-	}
-
-	//  高16 背包类型 低16 背包格子
-	inline xgc_void GetChangedSlotMapKey( xgc_uint32 nKey, ENPacketType &eType, xSlot &slot )
-	{
-		slot = nKey & 0x0000FFFF;
-		eType = (ENPacketType) ( nKey >> 16 );
-	}
 }
 
 

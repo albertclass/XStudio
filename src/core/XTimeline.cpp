@@ -11,7 +11,7 @@ XTimeline::XTimeline( timespan interval )
 
 XTimeline::~XTimeline()
 {
-
+	Stop();
 }
 
 ///
@@ -22,7 +22,23 @@ XTimeline::~XTimeline()
 
 xgc_void XTimeline::AddActive( XActive * pActive )
 {
-	mActives.push_back( pActive );
+	if( INVALID_TIMER_HANDLE == mTimerHandle )
+	{
+		// 直接添加，运行时排序
+		mActives.push_back( pActive );
+	}
+	else
+	{
+		// 运行时新增活动
+		auto _Pred = []( const XActive* pAct1, const XActive* pAct2 ){
+			return pAct1->relative + pAct1->duration < pAct2->relative + pAct2->duration;
+		};
+
+		auto it = std::upper_bound( mActives.begin(), mActives.end(), pActive, _Pred );
+	
+		if( it - mActives.begin() > mNext )
+			mActives.insert( it, pActive );
+	}
 }
 
 ///
@@ -48,6 +64,35 @@ xgc_bool XTimeline::Start( datetime start )
 		DURATION_FOREVER,
 		timer_event::e_rept,
 		mInterval.to_millisecnods() );
+
+	// 提交事件
+	XTimelineEvent evt;
+	evt.current = datetime::now();
+	EmmitEvent( evt_tline_start, evt.cast );
+
+	return true;
+}
+
+///
+/// \brief 停止时间线
+/// \author albert.xu
+/// \date 2017/11/03
+///
+
+xgc_void XTimeline::Stop()
+{
+	if( INVALID_TIMER_HANDLE != mTimerHandle )
+	{
+		getTimer().remove( mTimerHandle );
+		mTimerHandle = INVALID_TIMER_HANDLE;
+
+		// 提交事件
+		XTimelineEvent evt;
+		evt.current = datetime::now();
+		EmmitEvent( evt_tline_cancel, evt.cast );
+	}
+
+	mUpdates.clear();
 }
 
 ///
@@ -63,10 +108,11 @@ xgc_void XTimeline::Update()
 
 	// 根据结束时间排序，此处排序未考虑 relative 和 duration 改变的情况
 	// WRAN 若值改变，可能导致一个不正确的堆出现。
-	auto _Pred = [now]( const XActive* pAct1, const XActive* pAct2 ){
+	auto _Pred = []( const XActive* pAct1, const XActive* pAct2 ){
 		return pAct1->relative + pAct1->duration < pAct2->relative + pAct2->duration;
 	};
 
+	// 检查是否有需要更新的活动
 	while( mStart + mActives[mNext]->relative >= now )
 	{
 		auto pAct = mActives[mNext];
@@ -81,6 +127,7 @@ xgc_void XTimeline::Update()
 		++mNext;
 	}
 
+	// 开始更新活动
 	while( mUpdates.size() )
 	{
 		auto pAct = mUpdates[0];
@@ -92,11 +139,26 @@ xgc_void XTimeline::Update()
 		if( now < mStart + pAct->relative + pAct->duration )
 			break; // 所有该结束的活动都结束了，则跳出。
 
-				   // 活动对象生命周期已结束
+		// 活动对象生命周期已结束
 		std::pop_heap( mUpdates.begin(), mUpdates.end(), _Pred );
 		// 删除最后一个元素
 		mUpdates.pop_back();
 		// 通知活动关闭
 		pAct->onClose();
+	}
+
+	// 提交事件
+	XTimelineEvent evt;
+	evt.current = now;
+	evt.relative = now - mStart;
+
+	if( mUpdates.empty() && mNext == mActives.size() )
+	{
+		// 提交事件
+		EmmitEvent( evt_tline_finish, evt.cast );
+	}
+	else
+	{
+		EmmitEvent( evt_tline_update, evt.cast );
 	}
 }

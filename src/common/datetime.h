@@ -175,9 +175,9 @@ namespace xgc
 			/// 按秒初始化一个timespan对象
 			/// [8/8/2014] create by albert.xu
 			///
-			static timespan from_milliseconds( xgc_real64 milliseconds )
+			static timespan from_milliseconds( xgc_uint64 milliseconds )
 			{
-				return (int64_t)( milliseconds * 10000ULL );
+				return milliseconds * 10000ULL;
 			}
 
 			///

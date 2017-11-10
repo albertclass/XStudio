@@ -1,6 +1,6 @@
 #include "XHeader.h"
 #include "XTeam.h"
-#include "XCharactor.h"
+#include "XActor.h"
 
 namespace xgc
 {
@@ -73,7 +73,7 @@ namespace xgc
 			mLeaderObject = member.hMember;
 		}
 
-		XCharactor* pActor = ObjectCast< XCharactor >( member.hMember );
+		XActor* pActor = ObjectCast< XActor >( member.hMember );
 		if( pActor )
 		{
 			pActor->setTeam( shared_from_this() );
@@ -97,7 +97,7 @@ namespace xgc
 		auto it = std::find( mMembers.begin(), mMembers.end(), hGlobal );
 		if( it != mMembers.end() )
 		{
-			XCharactor* pActor = ObjectCast< XCharactor >( it->hMember );
+			XActor* pActor = ObjectCast< XActor >( it->hMember );
 			if( pActor )
 			{
 				pActor->mTeamPtr.reset();
@@ -128,7 +128,7 @@ namespace xgc
 	{
 		XGC_ASSERT_RETURN( nSlot < mMembers.size(), XVector2::ZERO );
 
-		XCharactor* pLeader = ObjectCast< XCharactor >( getLeaderObjectID() );
+		XActor* pLeader = ObjectCast< XActor >( getLeaderObjectID() );
 		if( pLeader )
 		{
 			const XVector2& vDir = pLeader->GetDirection();
@@ -168,7 +168,7 @@ namespace xgc
 	{
 		for( auto it : mMembers )
 		{
-			XCharactor* pActor = ObjectCast<XCharactor>( it.hMember );
+			XActor* pActor = ObjectCast<XActor>( it.hMember );
 			if( !pActor )
 				continue;
 

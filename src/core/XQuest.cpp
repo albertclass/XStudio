@@ -1,6 +1,6 @@
 #include "XHeader.h"
 #include "XQuest.h"
-#include "XCharactor.h"
+#include "XActor.h"
 
 namespace xgc
 {
@@ -38,14 +38,14 @@ namespace xgc
 
 	xgc_int32 XQuestObjective::OnKill( xObject hKiller, xObject hDead )
 	{
-		XCharactor *pActor = ObjectCast< XCharactor >( hDead );
+		XActor *pActor = ObjectCast< XActor >( hDead );
 		if( pActor )
 		{
 			xgc_lpcstr name = pActor->getString( attrObjectName );
 			XGC_ASSERT_POINTER( name );
 			if( name && m_strName == name && Increment() )
 			{
-				XCharactor *pKiller = ObjectCast< XCharactor >( hKiller );
+				XActor *pKiller = ObjectCast< XActor >( hKiller );
 
 				if( pKiller )
 				{

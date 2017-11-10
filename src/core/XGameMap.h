@@ -145,7 +145,7 @@ namespace xgc
 		xObjectSet *mpAreas; ///< 区域列表
 
 	public:
-		typedef xgc_unordered_map< xgc_string, xgc_list< xgc_tuple< xgc_long, xAction > > > MapEventConf;
+		typedef xgc_unordered_map< xgc_string, xgc_list< xgc_tuple< xgc_long, xNotify > > > MapEventConf;
 		typedef xgc_unordered_map< xgc_string, xgc_tuple< xgc_long, xgc_long, xgc_long > > MapCounter;
 		typedef xgc_unordered_map< xgc_string, xgc_long > MapSwitch;
 		typedef xgc_unordered_map< xgc_string, timer_h > MapTimer;
@@ -389,19 +389,19 @@ namespace xgc
 		///
 		xgc_bool GetMoveFlag()const
 		{
-			return getAttr( attrSceneFlags ).GetBit( (xgc_size)MapFlags::eCanMove, true );
+			return GetBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove, true );
 		}
 
 		///
 		/// 设置地图是否允许移动
 		/// [9/12/2014] create by albert.xu
 		///
-		xgc_void SetMoveFlag( xgc_bool bCanMove = true )const
+		xgc_void SetMoveFlag( xgc_bool bCanMove = true )
 		{
 			if( bCanMove )
-				getAttr( attrSceneFlags ).SetBit( (xgc_size)MapFlags::eCanMove );
+				SetBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove );
 			else
-				getAttr( attrSceneFlags ).ClrBit( (xgc_size)MapFlags::eCanMove );
+				ClrBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove );
 		}
 
 		///
@@ -474,7 +474,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 12/22/2010
 		///
-		xgc_void AddEventConf( xgc_lpcstr lpSourceName, xgc_long nEventId, xAction &&doAction )
+		xgc_void AddEventConf( xgc_lpcstr lpSourceName, xgc_long nEventId, xNotify &&doAction )
 		{
 			XGC_ASSERT_RETURN( lpSourceName && lpSourceName[0], xgc_void( 0 ) );
 			mMapEventConf[lpSourceName].emplace_back( std::make_tuple( nEventId, doAction ) );

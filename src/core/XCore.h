@@ -5,7 +5,7 @@
 //#include "XAction.h"
 //#include "XGameObject.h"
 //#include "XGameMap.h"
-//#include "XCharactor.h"
+//#include "XActor.h"
 //#include "XSkillBase.h"
 //#include "XStateObject.h"
 //#include "XTeam.h"
@@ -69,7 +69,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/10
 	///
-	CORE_API XObject* GetXObject( xObject xObjectID, const XClassInfo* pClassInfo );
+	CORE_API XObject* GetXObject( xObject xObjectID, const XClassInfo *pClassInfo );
 
 	//////////////////////////////////////////////////////////////////////////
 	// object function
@@ -78,13 +78,13 @@ namespace xgc
 	/// [11/18/2010 Albert]
 	/// Description:	获取父对象 
 	/////
-	CORE_API xObject GetParentObject( xObject hObject );
+	CORE_API xObject GetParent( xObject hObject );
 
 	/////
 	/// [11/18/2010 Albert]
 	/// Description:	添加子对象 
 	/////
-	CORE_API xgc_bool Insert( xObject hParent, xObject hChild );
+	CORE_API xgc_bool Insert( xObject hParent, xObject hChild, xgc_lpvoid pContext );
 
 	/////
 	/// [11/18/2010 Albert]
@@ -96,7 +96,7 @@ namespace xgc
 	/// [11/18/2010 Albert]
 	/// Description:	 查询子对象
 	/////
-	CORE_API xgc_bool QueryChild( xObject hParent, xObject hChild );
+	CORE_API xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter, const XClassInfo * pClass );
 
 	/////
 	/// [11/18/2010 Albert]

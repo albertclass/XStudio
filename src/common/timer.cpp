@@ -114,7 +114,7 @@ namespace xgc
 			std::unique_ptr< timer_event > evtptr( timer_event::handle_exchange( handle ) );
 
 			if( evtptr )
-				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION * 1.0 );
+				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION );
 
 			return 0;
 		}
@@ -129,7 +129,7 @@ namespace xgc
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
-				return timespan::from_milliseconds( (evtptr->over_ - tickcount_) * TIMER_PRECISION * 1.0 );
+				return timespan::from_milliseconds( (evtptr->over_ - tickcount_) * TIMER_PRECISION );
 
 			return 0;
 		}
@@ -144,7 +144,7 @@ namespace xgc
 		{
 			timer_event* evtptr = timer_event::handle_exchange( handle );
 			if( evtptr )
-				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION * 1.0 );
+				return timespan::from_milliseconds( (evtptr->time_ - tickcount_) * TIMER_PRECISION );
 
 			return 0;
 		}

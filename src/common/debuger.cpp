@@ -161,7 +161,7 @@ namespace xgc
 				if( now > pre )
 				{
 					timespan spn = now - pre;
-					if( spn.to_millisecnods() > (xgc_int64)timeout )
+					if( spn.to_millisecnods() > timeout )
 					{
 						mIsClose = true;
 						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].lpFuncName, mStack[mCallDeep].nLine, "invoke watch", "∫Ø ˝÷¥––≥¨ ±%I64u∫¡√Î", spn.to_millisecnods() );
@@ -186,7 +186,7 @@ namespace xgc
 			{
 				fputs( "--------------------------------------------------------------\n", fp );
 				fputs( "invoke watcher log\n", fp );
-				fprintf( fp, "%s.%u timeout %.4lf millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods());
+				fprintf( fp, "%s.%u timeout %llu millsecnods\n", str, now.to_systime().milliseconds, ( now - mLastUpdate ).to_millisecnods());
 				fputs( "-----------------------------CALL STACK-----------------------\n", fp );
 
 				xgc_size length = 0;

@@ -150,9 +150,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetVisible( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				getAttr( attrObjectFlags ).SetBit( Flag_NotifyEyeshot );
+				SetBit( attrObjectFlags, Flag_NotifyEyeshot );
 			else
-				getAttr( attrObjectFlags ).ClrBit( Flag_NotifyEyeshot );
+				ClrBit( attrObjectFlags, Flag_NotifyEyeshot );
 		}
 
 		///
@@ -161,7 +161,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool IsVisible()
 		{
-			return getAttr( attrObjectFlags ).GetBit( Flag_NotifyEyeshot, true );
+			return GetBit( attrObjectFlags, Flag_NotifyEyeshot, true );
 		}
 
 		///
@@ -171,9 +171,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetMoveFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				getAttr( attrObjectFlags ).SetBit( Flag_CanMove );
+				SetBit( attrObjectFlags, Flag_CanMove );
 			else
-				getAttr( attrObjectFlags ).ClrBit( Flag_CanMove );
+				ClrBit( attrObjectFlags, Flag_CanMove );
 		}
 
 		///
@@ -182,7 +182,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetMoveFlag()
 		{
-			return getAttr( attrObjectFlags ).GetBit( Flag_CanMove, true );
+			return GetBit( attrObjectFlags, Flag_CanMove, true );
 		}
 
 		///
@@ -191,7 +191,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetBarrierFlag()
 		{
-			return getAttr( attrObjectFlags ).GetBit( Flag_Barrier, false );
+			return GetBit( attrObjectFlags, Flag_Barrier, false );
 		}
 
 		///
@@ -201,9 +201,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetBarrierFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				getAttr( attrObjectFlags ).SetBit( Flag_Barrier );
+				SetBit( attrObjectFlags, Flag_Barrier );
 			else
-				getAttr( attrObjectFlags ).ClrBit( Flag_Barrier );
+				ClrBit( attrObjectFlags, Flag_Barrier );
 		}
 
 		///
@@ -212,7 +212,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetBaTiFlag()
 		{
-			return getAttr( attrObjectFlags ).GetBit( Flag_BaTi, false );
+			return GetBit( attrObjectFlags, Flag_BaTi, false );
 		}
 
 		///
@@ -222,9 +222,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetBaTiFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				getAttr( attrObjectFlags ).SetBit( Flag_BaTi );
+				SetBit( attrObjectFlags, Flag_BaTi );
 			else
-				getAttr( attrObjectFlags ).ClrBit( Flag_BaTi );
+				ClrBit( attrObjectFlags, Flag_BaTi );
 		}
 
 		XGC_INLINE xgc_real32 GetPosX()const { return mPosition.x; }

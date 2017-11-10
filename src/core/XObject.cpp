@@ -73,7 +73,7 @@ namespace xgc
 		{
 			mIsDestory = true;
 
-			OnDestory();
+			OnDestroy();
 			delete this;
 		}
 	}
@@ -86,7 +86,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/12
 	///
-	xgc_long XObject::RegistEvent( xgc_long id, const xAction &invoke, xObject hOwner /*= INVALID_OBJECT_ID*/ )
+	xgc_long XObject::RegistEvent( xgc_long id, const xNotify &invoke, xObject hOwner /*= INVALID_OBJECT_ID*/ )
 	{
 		auto &observer = mEventSubject[id];
 
@@ -147,6 +147,21 @@ namespace xgc
 	}
 
 	///
+	/// \brief 屏蔽事件
+	/// \author albert.xu
+	/// \date 2017/11/03
+	///
+
+	xgc_void XObject::EnableEvent( xgc_long id, xgc_bool enable )
+	{
+		auto it = mEventSubject.find( id );
+		if( it == mEventSubject.end() )
+			return;
+
+		it->second.close = !enable;
+	}
+
+	///
 	/// \brief 提交事件
 	/// \author albert.xu
 	/// \date 2017/10/12
@@ -174,6 +189,10 @@ namespace xgc
 			return;
 
 		auto &observer = it1->second;
+
+		// 关闭消息通知
+		if( observer.close == false )
+			return;
 
 		// 防止在触发器执行期间增删触发器
 		++observer.count;
@@ -211,9 +230,9 @@ namespace xgc
 		--observer.count;
 	}
 
-	xgc_bool LoadObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
+	xgc_bool XObject::LoadObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
 	{
-		const XClassInfo &cls = pObj->GetRuntimeClass();
+		const XClassInfo &cls = GetRuntimeClass();
 
 		attr_buffer ar( reference_buffer( lpData, uSize ) );
 
@@ -222,23 +241,51 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nImplementCount; ++i )
 		{
-			if( uVersion < pImplementInfo[i].version.start ||
-				uVersion >= pImplementInfo[i].version.close )
+			auto &version = pImplementInfo[i].version;
+			if( uVersion < version.start ||	uVersion >= version.close )
 				continue;
 
-			if( pImplementInfo[i].impl.flags == ATTR_FLAG_SAVE )
+			auto &impl = pImplementInfo[i].impl;
+			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
 			{
-				for( xgc_size n = 0; n < pImplementInfo[i].impl.count; ++n )
-					ar >> pObj->getAttr( *pImplementInfo[i].impl.attr_ptr, n );
+				if( impl.flags & 0x80 )
+				{
+					decltype( impl.count ) count;
+					ar >> count;
+					/// 此处问题在于，如果缩减了数组，则必须调整读指针，忽略掉缩减的部分！
+					for( xgc_size n = 0; n < count; ++n )
+					{
+						if( n < impl.count )
+						{
+							ar >> getAttr( *impl.attr_ptr, n );
+						}
+						else if( impl.type == VT_STRING )
+						{
+							xgc_lpcstr str; ar >> str;
+						}
+						else if( impl.type == VT_STRING )
+						{
+							xgc_uint16 len; ar >> len; ar.plus_rd( len );
+						}
+						else
+						{
+							ar.plus_rd( (xgc_long)XAttribute::Type2Size( impl.type ) );
+						}
+					}
+				}
+				else
+				{
+					ar >> getAttr( *impl.attr_ptr, 0 );
+				}
 			}
 			++j;
 		}
 		return true;
 	}
 
-	xgc_size SaveObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
+	xgc_size XObject::SaveObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
 	{
-		const XClassInfo &cls = pObj->GetRuntimeClass();
+		const XClassInfo &cls = GetRuntimeClass();
 		auto nAttributeCount = cls.GetAttributeCount();
 		auto pAttributeInfo  = cls.GetAttributeInfo();
 
@@ -246,14 +293,44 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nAttributeCount; ++i )
 		{
-			if( pAttributeInfo[i].impl.flags == ATTR_FLAG_SAVE )
+			auto &impl = pAttributeInfo[i].impl;
+			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
 			{
-				for( xgc_size n = 0; n < pAttributeInfo[i].impl.count; ++n )
-					ar << pObj->getAttr( *pAttributeInfo[i].impl.attr_ptr, n );
+				if( impl.flags & 0x80 )
+				{
+					ar << impl.count;
+					for( xgc_size n = 0; n < impl.count; ++n )
+						ar << getAttr( *impl.attr_ptr, n );
+				}
+				else
+				{
+					ar << getAttr( *impl.attr_ptr, 0 );
+				}
 			}
 			++j;
 		}
 
 		return ar.wd();
+	}
+
+	///
+	/// [2/11/2014 albert.xu]
+	/// 获取属性
+	/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
+	///
+
+	XAttribute XObject::getAttr( xAttrIndex nAttr, xgc_size nIndex ) const
+	{
+		XGC_ASSERT_THROW( checkIndex( nAttr ), std::logic_error( "get attribute, index out of bound." ) );
+
+		auto &info = mAttributeInfo[nAttr];
+
+		xgc_lpstr lpValue = (xgc_lpstr)mAttributes + info.offset;
+
+		// 生成属性操作对象
+		if( nIndex >= info.impl.count )
+			return XAttribute( info.impl.type, xgc_nullptr );
+		else
+			return XAttribute( info.impl.type, lpValue + nIndex * XAttribute::Type2Size( info.impl.type ) );
 	}
 }

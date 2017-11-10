@@ -376,10 +376,10 @@ namespace xgc
 		//		pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );
 		//}
 
-		if( pTarget->getAttr( attrObjectFlags ).GetBit( XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pTarget->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pTarget->OnEnterEyeshot( pObject, eMode );
 
-		if( pObject->getAttr( attrObjectFlags ).GetBit( XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pObject->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pObject->OnEnterEyeshot( pTarget, eMode );
 	}
 
@@ -402,12 +402,12 @@ namespace xgc
 		//		pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );
 		//}
 
-		if( pTarget->getAttr( attrObjectFlags ).GetBit( XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pTarget->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pTarget->OnLeaveEyeshot( pObject, eMode );
 		//else if( pObject->IsInheritFrom( 0x14611100 ) )
 		//	DBG_INFO( "[%s:%08x]µÄ[Flag_NotifyEyeshot]=false¡£", pObject->GetStrAttr( attrObjectName ), pObject->GetObjectID() );
 
-		if( pObject->getAttr( attrObjectFlags ).GetBit( XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pObject->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pObject->OnLeaveEyeshot( pTarget, eMode );
 		//else if( pTarget->IsInheritFrom( 0x14611100 ) )
 		//	DBG_INFO( "[%s:%08x]µÄ[Flag_NotifyEyeshot]=false¡£", pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );

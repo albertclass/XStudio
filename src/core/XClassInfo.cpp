@@ -100,6 +100,7 @@ namespace xgc
 
 			mAttributeInfo[nAttrIdx].impl = pImplementInfo[j].impl;
 			mAttributeInfo[nAttrIdx].offset = nAttrPos;
+			mAttributeInfo[nAttrIdx].OnValueChanged = xgc_nullptr;
 
 			// º∆À„ Ù–‘À˜“˝∫≈
 			mAttributeInfo[nAttrIdx].impl.attr_ptr[0] = nAttrIdx++;
@@ -116,5 +117,4 @@ namespace xgc
 		mAttributeInfo = xgc_nullptr;
 		FUNCTION_END;
 	}
-
 }

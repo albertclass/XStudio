@@ -42,7 +42,7 @@ namespace xgc
 	typedef xgc_void( XObject::* XEventBind1 )( XObjectEvent& );
 	typedef xgc_void( XObject::* XEventBind2 )( xgc_long, XObjectEvent& );
 
-	typedef std::function< void( XObjectEvent& ) > xAction;
+	typedef std::function< void( XObjectEvent& ) > xNotify;
 
 	///
 	/// \brief 游戏对象基类
@@ -91,12 +91,24 @@ namespace xgc
 		}
 
 		///
+		/// \brief 是否继承于某个类
+		/// \author albert.xu
+		/// \date 2014/06/30
+		/// \param clsType 类的GUID
+		/// \param nStartDeep 测试开始的继承深度
+		///
+		XGC_INLINE xgc_bool IsInheritFrom( const XClassInfo &cls )const
+		{
+			return GetRuntimeClass().IsInheritFrom( &cls );
+		}
+
+		///
 		/// 获取指定继承层次的类类型ID
 		/// [6/30/2014] create by albert.xu
 		///
 		XGC_INLINE xgc_lpcstr GetClassName()const
 		{
-			return  GetRuntimeClass().GetClassName();
+			return GetRuntimeClass().GetClassName();
 		}
 
 	private:
@@ -113,9 +125,14 @@ namespace xgc
 		/// \brief 观察者信息
 		struct Observer
 		{
+			/// 开启状态
+			xgc_bool close;
+			/// 令牌分配
 			xgc_long token;
+			/// 重入计数，防止map迭代器失效
 			xgc_long count;
-			xgc_map< xgc_long, xgc_tuple< xAction, xObject > > actions;
+			/// 观察者通知接口
+			xgc_map< xgc_long, xgc_tuple< xNotify, xObject > > actions;
 		};
 
 		/// @var 事件观察者
@@ -145,7 +162,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/10/12
 		///
-		xgc_long	RegistEvent( xgc_long id, const xAction &invoke, xObject hOwner = INVALID_OBJECT_ID );
+		xgc_long	RegistEvent( xgc_long id, const xNotify &invoke, xObject hOwner = INVALID_OBJECT_ID );
 
 		///
 		/// \brief 删除事件
@@ -162,6 +179,13 @@ namespace xgc
 		xgc_void	RemoveEvent( xObject hOwner );
 
 		///
+		/// \brief 屏蔽事件
+		/// \author albert.xu
+		/// \date 2017/11/03
+		///
+		xgc_void	EnableEvent( xgc_long id, xgc_bool enable = true );
+
+		///
 		/// \brief 提交事件
 		/// \author albert.xu
 		/// \date 2017/10/12
@@ -174,7 +198,6 @@ namespace xgc
 		/// \date 2017/10/12
 		///
 		xgc_void	EmmitEvent( XObjectEvent& evt );
-
 		/************************************************************************/
 		/* 属性操作
 		/************************************************************************/
@@ -230,34 +253,19 @@ namespace xgc
 		}
 
 		///
-		/// [2/11/2014 albert.xu]
-		/// 获取属性
-		/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
-		///
-		XGC_INLINE XAttribute getAttr( xAttrIndex idx, xgc_size nIndex = 0 ) const
-		{
-			XGC_ASSERT_THROW( checkIndex( idx ), std::logic_error( "get attribute, index out of bound." ) );
-			xgc_lpstr lpValue = (xgc_lpstr)mAttributes + mAttributeInfo[idx].offset;
-
-			// 生成属性操作对象
-			return XAttribute( mAttributeInfo[idx].impl.type,
-				lpValue + nIndex * XAttribute::Type2Size( mAttributeInfo[idx].impl.type ) );
-		}
-
-		///
 		/// [1/7/2014 albert.xu]
 		/// 获取有符号数
 		///
 		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
-		XGC_INLINE T getValue( xAttrIndex idx ) const
+		XGC_INLINE T getValue( xAttrIndex nAttr ) const
 		{
-			return getAttr( idx ).toNumeric< T >();
+			return getAttr( nAttr ).toNumeric< T >();
 		}
 
 		template<>
-		xgc_bool getValue<xgc_bool>( xAttrIndex idx ) const
+		xgc_bool getValue<xgc_bool>( xAttrIndex nAttr ) const
 		{
-			return getAttr( idx ).toBool();
+			return getAttr( nAttr ).toBool();
 		}
 
 		///
@@ -265,15 +273,17 @@ namespace xgc
 		/// 设置属性值
 		///
 		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
-		XGC_INLINE xgc_void setValue( xAttrIndex idx, T attrValue )
+		XGC_INLINE xgc_void setValue( xAttrIndex nAttr, T _Val )
 		{
-			getAttr( idx ) = attrValue;
+			getAttr( nAttr ) = _Val;
+			OnValueChanged( nAttr );
 		}
 
 		template<>
-		XGC_INLINE xgc_void setValue<xgc_bool>( xAttrIndex idx, xgc_bool attrValue )
+		XGC_INLINE xgc_void setValue<xgc_bool>( xAttrIndex nAttr, xgc_bool _Val )
 		{
-			getAttr( idx ) = attrValue;
+			getAttr( nAttr ) = _Val;
+			OnValueChanged( nAttr );
 		}
 
 		///
@@ -281,45 +291,48 @@ namespace xgc
 		/// 设置属性值
 		///
 		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
-		XGC_INLINE xgc_void incValue( xAttrIndex idx, T inc )
+		XGC_INLINE xgc_void incValue( xAttrIndex nAttr, T inc )
 		{
-			getAttr( idx ) += inc;
+			getAttr( nAttr ) += inc;
+			OnValueChanged( nAttr );
 		}
 
 		///
 		/// [2/11/2014 albert.xu]
 		/// 获取字符串
 		///
-		XGC_INLINE xgc_lpcstr getString( xAttrIndex idx ) const
+		XGC_INLINE xgc_lpcstr getString( xAttrIndex nAttr ) const
 		{
-			return getAttr( idx ).toRawString( xgc_nullptr );
+			return getAttr( nAttr ).toRawString( xgc_nullptr );
 		}
 
 		///
 		/// [2/11/2014 albert.xu]
 		/// 获取缓冲区
 		///
-		XGC_INLINE xgc_lpvoid getBuffer( xAttrIndex idx ) const
+		XGC_INLINE xgc_lpvoid getBuffer( xAttrIndex nAttr ) const
 		{
-			return getAttr( idx ).toRawBuffer();
+			return getAttr( nAttr ).toRawBuffer();
 		}
 
 		///
 		/// [1/9/2014 albert.xu]
 		/// 设置字符串属性
 		///
-		XGC_INLINE xgc_void setString( xAttrIndex idx, xgc_lpcstr _Val, xgc_size nLength = -1 )
+		XGC_INLINE xgc_void setString( xAttrIndex nAttr, xgc_lpcstr _Val, xgc_size nLength = -1 )
 		{
-			getAttr( idx ).setString( _Val, nLength );
+			getAttr( nAttr ).setString( _Val, nLength );
+			OnValueChanged( nAttr );
 		}
 
 		///
 		/// [1/9/2014 albert.xu]
 		/// \brief 设置缓冲区属性
 		///
-		XGC_INLINE xgc_void setBuffer( xAttrIndex idx, xgc_lpvoid _Val, xgc_size nSize )
+		XGC_INLINE xgc_void setBuffer( xAttrIndex nAttr, xgc_lpvoid _Val, xgc_size nSize )
 		{
-			getAttr( idx ).setBuffer( _Val, nSize );
+			getAttr( nAttr ).setBuffer( _Val, nSize );
+			OnValueChanged( nAttr );
 		}
 
 		///
@@ -327,9 +340,9 @@ namespace xgc
 		/// 设置缓冲区长度
 		/// 设置缓冲区长度不影响已有的缓冲区内容。
 		///
-		XGC_INLINE xgc_bool setBufferLength( xAttrIndex idx, xgc_size nSize, xgc_byte szFill = 0 )
+		XGC_INLINE xgc_bool setBufferLength( xAttrIndex nAttr, xgc_size nSize, xgc_byte szFill = 0 )
 		{
-			return getAttr( idx ).setBufferLength( nSize, szFill );
+			return getAttr( nAttr ).setBufferLength( nSize, szFill );
 		}
 
 		///
@@ -337,12 +350,90 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 3/17/2014
 		///
-		XGC_INLINE xgc_size getBufferLength( xAttrIndex idx )
+		XGC_INLINE xgc_size getBufferLength( xAttrIndex nAttr )
 		{
-			return getAttr( idx ).getBufferLength();
+			return getAttr( nAttr ).getBufferLength();
 		}
 
+		///
+		/// \brief 设置位
+		/// \author albert.xu
+		/// \date 2017/11/09
+		///
+		XGC_INLINE xgc_void SetBit( xAttrIndex nAttr, xgc_size _Bit )
+		{
+			getAttr( nAttr ).SetBit( _Bit );
+			OnValueChanged( nAttr );
+		}
+
+		///
+		/// \brief 清除位
+		/// \author albert.xu
+		/// \date 2017/11/09
+		///
+		XGC_INLINE xgc_void ClrBit( xAttrIndex nAttr, xgc_size _Bit )
+		{
+			getAttr( nAttr ).ClrBit( _Bit );
+			OnValueChanged( nAttr );
+		}
+
+		///
+		/// \brief 获取位
+		/// \author albert.xu
+		/// \date 2017/11/09
+		///
+		XGC_INLINE xgc_bool GetBit( xAttrIndex nAttr, xgc_size _Bit, xgc_bool bDefault = false ) const
+		{
+			return getAttr( nAttr ).GetBit( _Bit, bDefault );
+		}
+
+		///
+		/// \brief 检查位
+		/// \author albert.xu
+		/// \date 2017/11/09
+		///
+		XGC_INLINE xgc_bool ChkBit( xAttrIndex nAttr, xgc_size _Bit, xgc_bool bTest ) const
+		{
+			return getAttr( nAttr ).CmpBit( _Bit, bTest );
+		}
+
+		///
+		/// \brief 载入持久化数据 
+		/// \date 11/9/2017
+		/// \author xufeng04
+		/// \param uVersion 数据的版本号
+		/// \return 载入是否成功
+		///
+		virtual xgc_bool LoadObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
+
+		///
+		/// \brief 保存持久化数据 
+		/// \date 11/9/2017
+		/// \author xufeng04
+		/// \param uVersion 数据的版本号
+		/// \return 保存了多少数据
+		///
+		virtual xgc_size SaveObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
+
 	protected:
+		///
+		/// [2/11/2014 albert.xu]
+		/// 获取属性
+		/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
+		///
+		XAttribute getAttr( xAttrIndex nAttr, xgc_size nIndex = 0 ) const;
+
+		///
+		/// \brief 属性变化时调用
+		/// \author albert.xu
+		/// \date 2017/11/09
+		///
+		xgc_void OnValueChanged( xAttrIndex nAttr, int nIndex = 0 )
+		{
+			if( mAttributeInfo[nAttr].OnValueChanged )
+				( this->*mAttributeInfo[nAttr].OnValueChanged )( nAttr, nIndex );
+		}
+
 		///
 		/// \brief 销毁对象时调用
 		/// \author albert.xu
@@ -390,31 +481,5 @@ namespace xgc
 	///
 	xgc_size SaveObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
 }
-
-_STD_BEGIN;
-template<>
-struct default_delete< xgc::XObject >
-{	// default deleter for unique_ptr
-	typedef default_delete<xgc::XObject> _Myt;
-
-	default_delete() _NOEXCEPT
-	{	// default construct
-	}
-
-	template<class _Ty2,
-	class = typename enable_if<is_convertible<_Ty2 *, XGC::XObject *>::value,
-		void>::type>
-		default_delete( const default_delete<_Ty2>& ) _NOEXCEPT
-	{	// construct from another default_delete
-	}
-
-	void operator()( xgc::XObject *_Ptr ) const _NOEXCEPT
-	{	// delete a pointer
-		static_assert( 0 < sizeof ( xgc::XObject ), "can't delete an incomplete type" );
-		_Ptr->Destroy();
-		delete _Ptr;
-	}
-};
-_STD_END;
 
 #endif //_XOBJECT_

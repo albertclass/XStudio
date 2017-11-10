@@ -7,9 +7,7 @@ namespace xgc
 	// ×Ö·û´®¸³Öµ
 	xgc_void XAttribute::setString( xgc_lpcstr _Val, xgc_size _Length )
 	{
-		XGC_ASSERT_POINTER( _Val );
-		FUNCTION_BEGIN;
-		XGC_ASSERT_RETURN( _Val && isString(), xgc_void( 0 ) );
+		XGC_ASSERT_RETURN( _Val && isString(), XGC_NONE );
 
 		xgc_size _Len = ( -1 == _Length ) ? strlen( _Val ) : _Length;
 
@@ -34,14 +32,11 @@ namespace xgc
 
 		strcpy_s( ( *mpString )->str, ( *mpString )->alc, _Val );
 		( *mpString )->len = (xgc_uint16) _Len;
-		FUNCTION_END;
 	}
 
 	// »º³åÇø¸³Öµ
 	xgc_void XAttribute::setBuffer( xgc_lpvoid _Val, xgc_size _Length )
 	{
-		XGC_ASSERT_POINTER( _Val );
-		FUNCTION_BEGIN;
 		XGC_ASSERT_RETURN( isBuffer(), xgc_void( 0 ) );
 
 		if( ( *mpBuffer ) == xgc_nullptr )
@@ -67,7 +62,6 @@ namespace xgc
 		}
 
 		memcpy( ( *mpBuffer )->buf, _Val, _Length );
-		FUNCTION_END;
 	}
 
 	xgc_bool XAttribute::setBufferLength( xgc_size _Len, xgc_byte _Fill /*= 0 */ )const
@@ -500,7 +494,7 @@ namespace xgc
 		FUNCTION_END;
 	}
 
-	attr_buffer& operator >> ( attr_buffer& stream, XAttribute&& c )
+	attr_buffer& operator >> ( attr_buffer& stream, XAttribute& c )
 	{
 		switch( c.getType() )
 		{
@@ -542,8 +536,8 @@ namespace xgc
 				xgc_lpcstr _Val;
 				stream >> _Val;
 				c = _Val;
-				break;
 			}
+			break;
 			case VT_BUFFER:
 			{
 				xgc_uint16 uLength = 0;
@@ -552,8 +546,8 @@ namespace xgc
 				c.setBuffer( (xgc_lpvoid)stream.rd_ptr(), uLength );
 
 				stream.plus_rd( uLength );
-				break;
 			}
+			break;
 		}
 		return stream;
 	}

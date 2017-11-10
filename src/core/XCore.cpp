@@ -110,7 +110,7 @@ namespace xgc
 	// [11/18/2010 Albert]
 	// Description:	获取父对象 
 	//---------------------------------------------------//
-	xObject GetParentObject( xObject hObject )
+	xObject GetParent( xObject hObject )
 	{
 		XObject* pObject = GetXObject( hObject );
 		XGC_ASSERT_RETURN( pObject, INVALID_OBJECT_ID );
@@ -121,11 +121,11 @@ namespace xgc
 	// [11/18/2010 Albert]
 	// Description:	添加子对象 
 	//---------------------------------------------------//
-	xgc_bool Insert( xObject hParent, xObject hChild )
+	xgc_bool Insert( xObject hParent, xObject hChild, xgc_lpvoid pContext )
 	{
-		XObject* pObject = GetXObject( hParent );
+		auto pObject = ObjectCast< XObjectNode >( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		return pObject->Insert( hChild );
+		return pObject->Insert( GetXObject( hChild ), pContext );
 	}
 
 	//---------------------------------------------------//
@@ -134,20 +134,20 @@ namespace xgc
 	//---------------------------------------------------//
 	xgc_void Remove( xObject hParent, xObject hChild )
 	{
-		XObject* pObject = GetXObject( hParent );
+		auto pObject = ObjectCast< XObjectNode >( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		pObject->Remove( hChild );
+		pObject->Remove( GetXObject( hChild ) );
 	}
 
 	//---------------------------------------------------//
 	// [11/18/2010 Albert]
 	// Description:	 查询子对象
 	//---------------------------------------------------//
-	xgc_bool QueryChild( xObject hParent, xObject hChild )
+	xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter, const XClassInfo *pClass )
 	{
-		XObject* pObject = GetXObject( hParent );
+		auto pObject = ObjectCast< XObjectNode >( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		return pObject->QueryChild( hChild );
+		return pObject->Search( filter, pClass );
 	}
 
 	//---------------------------------------------------//
@@ -159,7 +159,6 @@ namespace xgc
 		XObject* pObject = GetXObject( hObject );
 		XGC_ASSERT_POINTER( pObject );
 		pObject->Destroy();
-		SAFE_DELETE( pObject );
 	}
 
 	////---------------------------------------------------//
@@ -223,10 +222,10 @@ namespace xgc
 	//---------------------------------------------------//
 	// xgc_void SetState( xObject hActor, xgc_int32 eStatus, xgc_real32 fDelayTime, xgc_int32 nMode )
 	// {
-	// 	XCharactor* pObject = static_cast<XCharactor*>( GetXObject( hActor, TypeXCharactor ) );
+	// 	XActor* pObject = static_cast<XActor*>( GetXObject( hActor, TypeXCharactor ) );
 	// 	if( pObject )
 	// 	{
-	// 		pObject->SetState( ( XCharactor::enActorState )eStatus, fDelayTime, nMode );
+	// 		pObject->SetState( ( XActor::enActorState )eStatus, fDelayTime, nMode );
 	// 	}
 	// }
 
@@ -236,7 +235,7 @@ namespace xgc
 	////---------------------------------------------------//
 	//xgc_int32 getStatus( xObject hActor )
 	//{
-	//	XCharactor* pObject = static_cast<XCharactor*>( GetXObject( hActor, TypeXCharactor ) );
+	//	XActor* pObject = static_cast<XActor*>( GetXObject( hActor, TypeXCharactor ) );
 	//	if( pObject )
 	//	{
 	//		return pObject->getStatus();
@@ -269,7 +268,7 @@ namespace xgc
 	// 		XObject* pObject = GetXObject( hInjured, TypeXCharactor );
 	// 		if( pObject )
 	// 		{
-	// 			XCharactor* pActorBase = static_cast<XCharactor*>( pObject );
+	// 			XActor* pActorBase = static_cast<XActor*>( pObject );
 	// 			pActorBase->UnderAttack( hAttacker, nDamage );
 	// 		}
 	// 	}

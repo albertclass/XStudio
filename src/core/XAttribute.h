@@ -41,7 +41,7 @@ namespace xgc
 
 	class CORE_API XAttribute
 	{
-		friend CORE_API attr_buffer& operator >>( attr_buffer& stream, XAttribute&& c );
+		friend CORE_API attr_buffer& operator >>( attr_buffer& stream, XAttribute& c );
 		friend CORE_API attr_buffer& operator <<( attr_buffer& stream, const XAttribute& c );
 
 	public:
@@ -315,7 +315,7 @@ namespace xgc
 				case xgc::VT_U16: nTypeSize = sizeof UShort;    break;
 				case xgc::VT_U32: nTypeSize = sizeof Unsigned;  break;
 				case xgc::VT_U64: nTypeSize = sizeof ULong;     break;
-				case xgc::VT_REAL32: nTypeSize = sizeof Real32;      break;
+				case xgc::VT_REAL32: nTypeSize = sizeof Real32;    break;
 				case xgc::VT_REAL64: nTypeSize = sizeof Real64;    break;
 				case xgc::VT_STRING: nTypeSize = sizeof StringPtr; break;
 				case xgc::VT_BUFFER: nTypeSize = sizeof BufferPtr; break;
@@ -963,6 +963,9 @@ namespace xgc
 		template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 		XAttribute& operator /= ( V _Val ) { division( _Val ); return *this; }
 
+		XAttribute& operator ++ () { plus( 1 ); return *this; }
+		XAttribute& operator -- () { minus( 1 ); return *this; }
+
 	private:
 		xAttrType mType;
 		union
@@ -1103,7 +1106,7 @@ namespace xgc
 	/// [3/17/2014 albert.xu]
 	/// ÐòÁÐ»¯¶Á
 	///
-	CORE_API attr_buffer& operator >> ( attr_buffer& stream, XAttribute&& c );
+	CORE_API attr_buffer& operator >> ( attr_buffer& stream, XAttribute& c );
 
 	///
 	/// [3/17/2014 albert.xu]

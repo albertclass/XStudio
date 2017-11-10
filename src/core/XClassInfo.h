@@ -9,57 +9,6 @@
 #define ATTR_FLAG_FIELD 2
 #define ATTR_FLAG_MORE	3
 
-/// 属性索引类型
-typedef xgc_size xAttrIndex;
-
-/// 属性版本信息
-struct CORE_API XAttrVersion
-{
-	xgc_uint32 start;
-	xgc_uint32 close;
-};
-
-///
-/// \brief 属性定义
-/// \author create by albert.xu
-/// \date [6/27/2014]
-///
-struct CORE_API XAttributeBase
-{
-	xAttrType	type;	///< 属性类型
-
-	xgc_lpcstr	name;	///< 属性名
-	xgc_byte	flags;	///< 属性标志, ATTR_FLAG_SAVE - 保存到数据库
-	xgc_size	count;	///< 数组长度
-
-	xAttrIndex  *attr_ptr;
-};
-
-///
-/// \brief 属性信息
-/// \author create by albert.xu
-/// \date [6/27/2014]
-///
-struct CORE_API XAttributeImpl
-{
-	///< 属性定义
-	XAttributeBase impl;
-	///< 属性版本
-	XAttrVersion version;
-};
-
-///
-/// 属性信息
-/// [6/27/2014] create by albert.xu
-///
-struct CORE_API XAttributeInfo
-{
-	///< 属性定义
-	XAttributeBase impl;
-	///< 属性偏移量
-	xgc_size	offset;
-};
-
 #define DECLARE_XCLASS()\
 public: \
 	static	const XClassInfo& GetThisClass(); \
@@ -101,7 +50,7 @@ public: \
 			{ { TYPE, #NAME, FLAGS, 1, &attr##NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_ATTRIBUTE_ARRAY( NAME, TYPE, COUNT, FLAGS, VERSION )\
-			{ { TYPE, #NAME, FLAGS, COUNT, &attr##NAME, }, ConvertVersion( VERSION ) }, \
+			{ { TYPE, #NAME, FLAGS | 0x80, COUNT, &attr##NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_XCLASS_END() \
 			{ { VT_VOID, xgc_nullptr, 0, 0, xgc_nullptr }, { 0, 0 } }, \
@@ -111,6 +60,61 @@ public: \
 
 namespace xgc
 {
+	class XObject;
+
+	/// 属性索引类型
+	typedef xgc_size xAttrIndex;
+
+	/// 属性版本信息
+	struct CORE_API XAttrVersion
+	{
+		xgc_uint32 start;
+		xgc_uint32 close;
+	};
+
+	///
+	/// \brief 属性定义
+	/// \author create by albert.xu
+	/// \date [6/27/2014]
+	///
+	struct CORE_API XAttributeBase
+	{
+		xAttrType	type;	///< 属性类型
+
+		xgc_lpcstr	name;	///< 属性名
+		xgc_byte	flags;	///< 属性标志, ATTR_FLAG_SAVE - 保存到数据库
+		xgc_size	count;	///< 数组长度
+
+		xAttrIndex  *attr_ptr;
+	};
+
+	///
+	/// \brief 属性信息
+	/// \author create by albert.xu
+	/// \date [6/27/2014]
+	///
+	struct CORE_API XAttributeImpl
+	{
+		///< 属性定义
+		XAttributeBase impl;
+		///< 属性版本
+		XAttrVersion version;
+	};
+
+	///
+	/// 属性信息
+	/// [6/27/2014] create by albert.xu
+	///
+	struct CORE_API XAttributeInfo
+	{
+		///< 属性定义
+		XAttributeBase impl;
+		///< 属性偏移量
+		xgc_size	offset;
+		///< 属性监听
+		xgc_void( XObject::* OnValueChanged )( xAttrIndex nAttr, int nIndex );
+	};
+
 	/************************************************************************/
 	/* 列表系统，属性系统，以及对象基础类的实现								*/
 	/************************************************************************/
@@ -150,7 +154,7 @@ namespace xgc
 		/// 构造函数
 		/// [1/6/2014 albert.xu]
 		///
-		XClassInfo( xgc_lpcstr lpClassName, XAttributeImpl *pAttributeConf, const XClassInfo *pParent = xgc_nullptr );
+		XClassInfo( xgc_lpcstr lpClassName, XAttributeImpl *pAttributeImpl, const XClassInfo *pParent = xgc_nullptr );
 
 		///
 		/// 析构函数
@@ -260,6 +264,16 @@ namespace xgc
 			return -1;
 		}
 
+		template< class T >
+		XGC_INLINE xgc_void SetAttrListener( xAttrIndex nAttr, xgc_void( T::* OnValueChanged )( xAttrIndex, int ) )
+		{
+			XGC_ASSERT_RETURN( nAttr < mAttributeSize, XGC_NONE );
+
+			auto &info = mAttributeInfo[nAttr];
+			XGC_ASSERT( info.impl.attr_ptr[0] = nAttr );
+
+			info.OnValueChanged = static_cast<xgc_void( XObject::* )( xAttrIndex, int nIndex )>( OnValueChanged );
+		}
 	};
 }
 #endif // __XCLASS_H__

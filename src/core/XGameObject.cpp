@@ -32,7 +32,7 @@ namespace xgc
 	xgc_void XGameObject::Appear( const std::function< xgc_bool( xObject ) > &fnNotifyFilter )
 	{
 		FUNCTION_BEGIN;
-		if( getAttr( attrObjectFlags ).CmpBit( Flag_NotifyEyeshot, true ) )
+		if( ChkBit( attrObjectFlags, Flag_NotifyEyeshot, true ) )
 			return;
 
 		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
@@ -52,7 +52,7 @@ namespace xgc
 			}
 		}
 
-		getAttr( attrObjectFlags ).SetBit( Flag_NotifyEyeshot );
+		SetBit( attrObjectFlags, Flag_NotifyEyeshot );
 		FUNCTION_END;
 	}
 
@@ -64,7 +64,7 @@ namespace xgc
 	xgc_void XGameObject::Vanish( const std::function< xgc_bool( xObject ) > &fnNotifyFilter )
 	{
 		FUNCTION_BEGIN;
-		if( getAttr( attrObjectFlags ).CmpBit( Flag_NotifyEyeshot, false ) )
+		if( ChkBit( attrObjectFlags, Flag_NotifyEyeshot, false ) )
 			return;
 
 		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
@@ -84,7 +84,7 @@ namespace xgc
 			}
 		}
 
-		getAttr( attrObjectFlags ).ClrBit( Flag_NotifyEyeshot );
+		ClrBit( attrObjectFlags, Flag_NotifyEyeshot );
 		FUNCTION_END;
 	}
 

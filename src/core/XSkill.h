@@ -29,7 +29,7 @@ namespace xgc
 			setValue( attrSkillCloseTime, nStart + nDuration );
 			setValue( attrSkillResetTime, nStart + nReset );
 
-			Start();
+			Start( datetime::now() );
 		}
 	};
 }
