@@ -2,6 +2,7 @@
 #ifndef __XCHARACTOR_H__
 #define __XCHARACTOR_H__
 #include "XTeam.h"
+#include "XGameObject.h"
 
 namespace xgc
 {
@@ -202,6 +203,17 @@ namespace xgc
 	public:
 		XActor( void );
 		~XActor( void );
+
+		///
+		/// \brief 获取地图对象 
+		/// \date 11/10/2017
+		/// \author xufeng04
+		/// \return 地图对象引用
+		///
+		XGC_INLINE XGameObject& getGameObject()
+		{
+			return mGameObject;
+		}
 
 		///
 		/// \brief 受到攻击
@@ -475,24 +487,28 @@ namespace xgc
 		xgc_void ResetActorState( enActorState eStatus );
 
 	protected:
-		timer_h			mResetStatusTimerHandler;
+		/// @var 状态重置的定时器句柄
+		timer_h mResetStatusTimerHandler;
+		/// @var 地图对象
+		XGameObject mGameObject;
 
 	private:
-		xgc_bool		mFightState;		///< 战斗状态
-		xgc_real32		mRadius;
-
-		enActorState	mActorRestonState;	///< 角色重置状态
-
-		xObject			mAttacker;			///< 攻击者
-		xObject			mFriend;			///< 载具或者伴生对象
-		xObject			mTarget;			///< 当前目标
-
-		XVector3		mBornPoint;
-
-		XTeamPtr		mTeamPtr;
-
-		datetime		mLastAttackTime;    ///< 上一次尝试攻击其他角色
-		datetime		mLastAttackedTime;  ///< 上一次被其他角色尝试攻击
+		/// @var 角色重置状态
+		enActorState mActorRestonState;
+		/// @var 战斗状态
+		xgc_bool mFightState;
+		/// @var 角色碰撞半径
+		xgc_real32 mRadius;
+		/// @var 攻击者
+		xObject	mAttacker;
+		/// @var 载具或者伴生对象
+		xObject	mFriend;
+		/// @var 当前目标
+		xObject	mTarget;
+		/// @var 出生点
+		XVector3 mBornPoint;
+		/// @var 队伍对象
+		XTeamPtr mTeamPtr;
 	};
 }
 #endif //__XCHARACTOR_H__

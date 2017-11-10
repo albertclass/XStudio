@@ -5,18 +5,17 @@
 namespace xgc
 {
 	CORE_API xAttrIndex attrObjectName;		///< 对象名称
-	CORE_API xAttrIndex attrObjectAlias;	///< 对象名称
+	CORE_API xAttrIndex attrObjectAlias;	///< 对象别名
 	CORE_API xAttrIndex attrObjectFlags;	///< 对象标记位
-	CORE_API xAttrIndex attrObjectRadius;	///< 对象半径
 
 	IMPLEMENT_XCLASS_BEGIN( XGameObject, XObject )
 		IMPLEMENT_ATTRIBUTE( ObjectName,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象名字
-		IMPLEMENT_ATTRIBUTE( ObjectAlias,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象名字
+		IMPLEMENT_ATTRIBUTE( ObjectAlias,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象别名
 		IMPLEMENT_ATTRIBUTE( ObjectFlags,	VT_U32,		ATTR_FLAG_SAVE, "20140912" )	// 是否可见
-		IMPLEMENT_ATTRIBUTE( ObjectRadius,	VT_REAL32,	ATTR_FLAG_NONE, "20140912" )	// 对象半径
 	IMPLEMENT_XCLASS_END()
 
-	XGameObject::XGameObject()
+	XGameObject::XGameObject( xObject hOwner )
+		: mOwner( hOwner )
 	{
 	}
 

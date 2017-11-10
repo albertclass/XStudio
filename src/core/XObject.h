@@ -123,6 +123,7 @@ namespace xgc
 
 		///
 		/// \brief 观察者信息
+		///
 		struct Observer
 		{
 			/// 开启状态

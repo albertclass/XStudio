@@ -6,11 +6,9 @@ namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// 基础对象类， 所有屏幕上的对象都从此类派生
-	typedef function< xgc_void( xObject, xObject, xgc_uintptr, xgc_uintptr, xgc_uint16 ) > TriggerFunctor;
 	extern CORE_API xAttrIndex attrObjectName;		///< 对象名称
 	extern CORE_API xAttrIndex attrObjectAlias;		///< 对象名称
 	extern CORE_API xAttrIndex attrObjectFlags;		///< 对象标记位
-	extern CORE_API xAttrIndex attrObjectRadius;	///< 对象半径
 
 	enum class CORE_API VisualMode
 	{
@@ -27,8 +25,8 @@ namespace xgc
 		evt_born,
 		evt_dead,
 		evt_move,
-		evt_enter,
-		evt_leave,
+		evt_enter_vision,
+		evt_leave_vision,
 		evt_appear,
 		evt_vanish,
 		evt_enter_map,
@@ -43,7 +41,7 @@ namespace xgc
 		friend class XGameMap;
 		friend class CStateMachine;
 	public:
-		XGameObject();
+		XGameObject( xObject hOwner );
 		~XGameObject();
 
 		enum 
@@ -54,6 +52,17 @@ namespace xgc
 			Flag_Barrier = 3, 
 			Flag_BaTi = 4 
 		};
+
+		///
+		/// \brief 获取所有者 
+		/// \date 11/10/2017
+		/// \author xufeng04
+		/// \return 所有者的句柄
+		///
+		XGC_INLINE xObject GetOwner()const
+		{
+			return mOwner;
+		}
 
 		// 直接世界坐标
 		XGC_INLINE xgc_void GetPosition( xgc_real32 fPos[3] )const
@@ -263,50 +272,6 @@ namespace xgc
 		xgc_void HideOther( const std::function< xgc_bool( xObject ) > &fnNotifyFilter );
 
 	protected:
-		/////
-		/// [8/3/2009 Albert]
-		/// 对象进入视野
-		/// @param pObject 进入视野的对象指针
-		/////
-		virtual xgc_void OnEnterEyeshot( XGameObject* pObject, VisualMode eMode )
-		{
-			EmmitEvent( evt_enter );
-		}
-
-		//---------------------------------------------------//
-		// [8/3/2009 Albert]
-		// Description:	对象离开视野
-		// pObject	:	离开视野的对象指针
-		//---------------------------------------------------//
-		virtual xgc_void OnLeaveEyeshot( XGameObject* pObject, VisualMode eMode )
-		{
-			EmmitEvent( evt_leave );
-		}
-
-		/////
-		/// [2/17/2014 baomin]
-		/// 对象在视野内移动
-		/// @param vOldPosition 老的坐标位置
-		/// @param lpContext 上下文
-		/////
-		virtual xgc_void OnMove( const XVector3& vOldPosition, xgc_uintptr lpContext )
-		{
-			EmmitEvent( evt_move );
-		}
-
-		/////
-		/// [2/17/2014 baomin]
-		/// 对象传送
-		/// @param nStep 调用进度 0 - 传送前, 1 - 传送中, 2 - 传送后
-		/// @param iNewArea 目标的区域
-		/// @param iOldArea 原先的区域
-		/// @param lpContext 上下文
-		/////
-		virtual xgc_void OnTeleport( xgc_uint16 nStep, const XVector3& vOldPosition, xgc_uintptr lpContext )
-		{
-			EmmitEvent( evt_teleport );
-		}
-
 		//////////////////////////////////////////////////////////////////////////
 		// 对象位置
 		XGC_INLINE xgc_void SetPosition( xgc_real32 fPosX, xgc_real32 fPosY, xgc_real32 fPosZ )
@@ -321,37 +286,81 @@ namespace xgc
 			mPosition[2] = fPos[2];
 		}
 
-		/////
+		///
+		/// [8/3/2009 Albert]
+		/// 对象进入视野
+		/// @param pObject 进入视野的对象指针
+		///
+		virtual xgc_void OnEnterEyeshot( XGameObject* pObject, VisualMode eMode )
+		{
+			EmmitEvent( evt_enter_vision );
+		}
+
+		///
+		/// [8/3/2009 Albert]
+		/// Description:	对象离开视野
+		/// pObject	:	离开视野的对象指针
+		///
+		virtual xgc_void OnLeaveEyeshot( XGameObject* pObject, VisualMode eMode )
+		{
+			EmmitEvent( evt_leave_vision );
+		}
+
+		///
+		/// [2/17/2014 baomin]
+		/// 对象在视野内移动
+		/// @param vOldPosition 老的坐标位置
+		/// @param lpContext 上下文
+		///
+		virtual xgc_void OnMove( const XVector3& vOldPosition, xgc_uintptr lpContext )
+		{
+			EmmitEvent( evt_move );
+		}
+
+		///
+		/// [2/17/2014 baomin]
+		/// 对象传送
+		/// @param nStep 调用进度 0 - 传送前, 1 - 传送中, 2 - 传送后
+		/// @param iNewArea 目标的区域
+		/// @param iOldArea 原先的区域
+		/// @param lpContext 上下文
+		///
+		virtual xgc_void OnTeleport( xgc_uint16 nStep, const XVector3& vOldPosition, xgc_uintptr lpContext )
+		{
+			EmmitEvent( evt_teleport );
+		}
+
+		///
 		/// 进入场景 
 		/// [11/8/2010 Albert]
-		/////
+		///
 		virtual xgc_bool PreEnterMap( XGameMap* pScene ) 
 		{ 
 			return true;
 		}
 
-		/////
+		///
 		/// 离开场景 
 		/// [11/8/2010 Albert]
-		/////
+		///
 		virtual xgc_bool PreLeaveMap( XGameMap* pScene ) 
 		{ 
 			return true;
 		}
 
-		/////
+		///
 		/// 初始化进入场景数据
 		/// [11/8/2010 Albert]
-		/////
+		///
 		virtual xgc_void OnBornInMap( XGameMap* pScene ) 
 		{
 			EmmitEvent( evt_born );
 		}
 
-		/////
+		///
 		/// 进入场景 
 		/// [11/8/2010 Albert]
-		/////
+		///
 		virtual xgc_void OnEnterMap( XGameMap* pScene ) 
 		{
 			EmmitEvent( evt_enter_map );
@@ -366,10 +375,21 @@ namespace xgc
 			EmmitEvent( evt_leave_map );
 		}
 
+		///
+		/// \brief 对象销毁时调用
+		/// \date 11/10/2017
+		/// \author xufeng04
+		///
+		xgc_void OnDestroy() override {}
 	private:
-		XVector3	mPosition;	///< 位置，世界坐标
-		XVector3	mDirection; ///< 方向，向量
-		XVector3	mSpeed;		///< 速度，标量
+		/// @var 位置，世界坐标
+		XVector3	mPosition;	
+		/// @var 方向，向量
+		XVector3	mDirection; 
+		/// @var 速度，标量
+		XVector3	mSpeed;		
+		/// @var 设置所有者
+		xObject		mOwner;
 	};
 }
 #endif // _XGAME_OBJECT_H_

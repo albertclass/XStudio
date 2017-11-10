@@ -93,10 +93,23 @@ namespace xgc
 		XObjectEvent cast;
 		/// @var 源的名字
 		xgc_lpcstr alias;
-		/// @var 计数器值
-		xgc_long val;
-		/// @var 计数器增量
-		xgc_long inc;
+
+		union
+		{
+			struct
+			{
+				/// @var 计数器值
+				xgc_long val;
+				/// @var 计数器增量
+				xgc_long inc;
+			}counter;
+
+			struct
+			{
+				/// @var 计数器值
+				xgc_long val;
+			}switches;
+		};
 	};
 
 	/// 地图初始化参数
@@ -250,7 +263,7 @@ namespace xgc
 		XGC_INLINE xgc_int32 GetEyesightY() const { return mMapConf.mEyesight.cy; }
 
 		///
-		/// 世界坐标换算为格子坐标
+		/// \brief 世界坐标换算为格子坐标
 		/// [6/25/2014] create by albert.xu
 		///
 		iPoint WorldToCell( xgc_real32 rx, xgc_real32 ry )const
@@ -268,7 +281,7 @@ namespace xgc
 		}
 
 		///
-		/// 格子坐标换算为世界坐标，取中心点位置
+		/// \brief 格子坐标换算为世界坐标，取中心点位置
 		/// [6/25/2014] create by albert.xu
 		///
 		XVector2 CellToWorld( xgc_int32 x, xgc_int32 y )const
@@ -279,7 +292,7 @@ namespace xgc
 		}
 
 		///
-		/// 世界坐标换算视野管理单元索引
+		/// \brief 世界坐标换算视野管理单元索引
 		/// [10/14/2014] create by albert.xu
 		///
 		iPoint WorldToArea( xgc_real32 x, xgc_real32 y )const
@@ -290,7 +303,7 @@ namespace xgc
 		}
 
 		///
-		/// 世界管理单元索引换算世界坐标（取中心点）
+		/// \brief 世界管理单元索引换算世界坐标（取中心点）
 		/// [10/14/2014] create by albert.xu
 		///
 		XVector2 AreaToWorld( xgc_int32 x, xgc_int32 y )const
@@ -301,90 +314,90 @@ namespace xgc
 		}
 
 		///
-		/// 设置扩展属性索引
+		/// \brief 设置扩展属性索引
 		/// [6/25/2014] create by albert.xu
-		/// @param ptCell 地砖的坐标
-		/// @see iPoint
+		/// \param ptCell 地砖的坐标
+		/// \see iPoint
 		///
 		xgc_void SetBlockExternIdx( iPoint ptCell, xgc_uint32 nIdx );
 
 		///
-		/// 获取扩展属性索引
+		/// \brief 获取扩展属性索引
 		/// [6/25/2014] create by albert.xu
-		/// @param ptCell 地砖的坐标
-		/// @see iPoint
+		/// \param ptCell 地砖的坐标
+		/// \see iPoint
 		///
 		xgc_uint32 GetBlockExternIdx( iPoint ptCell );
 
 		///
-		/// 设置地砖扩展信息
+		/// \brief 设置地砖扩展信息
 		/// [6/25/2014] create by albert.xu
-		/// @param pExtern 扩展接口的指针
-		/// @param ptCell 地砖的坐标
-		/// @see iPoint
-		/// @see IBlockExtern
+		/// \param pExtern 扩展接口的指针
+		/// \param ptCell 地砖的坐标
+		/// \see iPoint
+		/// \see IBlockExtern
 		///
 		xgc_void SetBlockExternInfo( xgc_uint32 nBlockExternIdx, IBlockExtern* pExtern );
 
 		///
-		/// 设置扩展信息槽个数
+		/// \brief 设置扩展信息槽个数
 		/// [6/25/2014] create by albert.xu
-		/// @param pExtern 扩展接口的指针
-		/// @param ptCells 地砖的坐标列表
-		/// @see iPoint
-		/// @see IBlockExtern
+		/// \param pExtern 扩展接口的指针
+		/// \param ptCells 地砖的坐标列表
+		/// \see iPoint
+		/// \see IBlockExtern
 		///
 		xgc_void SetBlockExternSize( xgc_size nBlockExternSize );
 
 		///
-		/// 获取扩展信息槽个数
+		/// \brief 获取扩展信息槽个数
 		/// [7/4/2014] create by albert.xu
-		/// @return 扩展信息槽个数
+		/// \return 扩展信息槽个数
 		///
 		xgc_size GetBlockExternSize()const;
 
 		///
-		/// 扩展扩展信息槽个数
+		/// \brief 扩展扩展信息槽个数
 		/// [7/4/2014] create by albert.xu
-		/// @return 扩展信息槽个数
+		/// \return 扩展信息槽个数
 		///
 		xgc_size ExpandBlockExternSize( xgc_size nExpandCount );
 
 		///
-		/// 获取地砖扩展信息
+		/// \brief 获取地砖扩展信息
 		/// [6/25/2014] create by albert.xu
-		/// @param ptCell 地砖的坐标
-		/// @see iPoint
+		/// \param ptCell 地砖的坐标
+		/// \see iPoint
 		///
 		IBlockExtern* GetBlockExternInfo( iPoint ptCell );
 
 		///
-		/// 获取地砖扩展信息
+		/// \brief 获取地砖扩展信息
 		/// [6/25/2014] create by albert.xu
-		/// @param nBlockExternIdx 扩展信息索引号
+		/// \param nBlockExternIdx 扩展信息索引号
 		///
 		IBlockExtern* GetBlockExternInfo( xgc_uint32 nBlockExternIdx );
 
 		///
-		/// 设置格子掩码
+		/// \brief 设置格子掩码
 		/// [10/14/2014] create by albert.xu
 		///
 		xgc_void SetCellBlock( xgc_int32 x, xgc_int32 y, xgc_bool bBlock = true );
 
-		/////
+		///
 		/// [1/4/2011 Albert]
-		/// Description:	测试是否碰撞 
-		/////
+		/// \brief 测试是否碰撞 
+		///
 		xgc_bool IsCellBlock( xgc_int32 x, xgc_int32 y, xgc_bool bTestBarrier = true );
 
 		///
-		/// 测试是否是安全区
+		/// \brief 测试是否是安全区
 		/// [6/16/2014] create by jianglei.kinly
 		///
 		xgc_bool IsCellSafety( xgc_int32 x, xgc_int32 y );
 
 		///
-		/// 地图是否允许移动
+		/// \brief 地图是否允许移动
 		/// [9/12/2014] create by albert.xu
 		///
 		xgc_bool GetMoveFlag()const
@@ -393,7 +406,7 @@ namespace xgc
 		}
 
 		///
-		/// 设置地图是否允许移动
+		/// \brief 设置地图是否允许移动
 		/// [9/12/2014] create by albert.xu
 		///
 		xgc_void SetMoveFlag( xgc_bool bCanMove = true )
@@ -447,7 +460,7 @@ namespace xgc
 		}
 
 		///
-		/// 获取计数器名字列表
+		/// \brief 获取计数器名字列表
 		/// [8/12/2014] create by albert.xu
 		///
 		const MapTimer& GetMapTimer()const
@@ -456,92 +469,92 @@ namespace xgc
 		}
 
 		///
-		/// 创建闹钟
+		/// \brief 创建闹钟
 		/// \author albert.xu
 		/// \date 12/7/2012
 		///
-		xgc_void CreateClock( xObject hSender, xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration );
+		xgc_void CreateClock( xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration );
 
 		///
-		/// \brief 创建闹钟
+		/// \brief 创建定时器
 		/// \author albert.xu
 		/// \date 12/22/2010
 		///
-		xgc_void CreateTimer( xObject hSender, xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration );
+		xgc_void CreateTimer( xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration );
 
 		///
 		/// \brief 插入触发器 
 		/// \author albert.xu
 		/// \date 12/22/2010
-		///
-		xgc_void AddEventConf( xgc_lpcstr lpSourceName, xgc_long nEventId, xNotify &&doAction )
+		/// \example AddEventConf( "test", evt_actor_dead, std::bind( &XGameMap::IncCounter, "counter", 1 ) );
+		xgc_void AddEventConf( xgc_lpcstr lpAlias, xgc_long nEventId, const xNotify &fn )
 		{
-			XGC_ASSERT_RETURN( lpSourceName && lpSourceName[0], xgc_void( 0 ) );
-			mMapEventConf[lpSourceName].emplace_back( std::make_tuple( nEventId, doAction ) );
+			XGC_ASSERT_RETURN( lpAlias && lpAlias[0], xgc_void( 0 ) );
+			mMapEventConf[lpAlias].emplace_back( std::make_tuple( nEventId, fn ) );
 		}
 
 		///
-		/// 删除计数器
+		/// \brief 删除计数器
 		/// [7/28/2014] create by albert.xu
 		///
 		xgc_void DeleteCounter( xgc_lpcstr lpSourceName );
 
 		///
-		/// 删除场景开关
+		/// \brief 删除场景开关
 		/// [7/28/2014] create by albert.xu
 		///
 		xgc_void DeleteSwitch( xgc_lpcstr lpSourceName );
 
 		///
-		/// 删除定时器
+		/// \brief 删除定时器
 		/// [7/28/2014] create by albert.xu
 		///
 		xgc_void DeleteClock( xgc_lpcstr lpSourceName );
 
 		///
-		/// 删除定时器
+		/// \brief 删除定时器
 		/// [7/28/2014] create by albert.xu
 		///
 		xgc_void DeleteTimer( xgc_lpcstr lpSourceName );
 
-		/////
-		/// 增加计数器 
+		///
+		/// \brief 增加计数器 
 		/// [1/5/2011 Albert]
-		/////
+		///
 		xgc_void IncCounter( xgc_lpcstr lpCounterName, xgc_long nInc );
 
-		/////
-		/// 设置计数器 
+		///
+		/// \brief 设置计数器 
 		/// [1/5/2011 Albert]
-		/////
+		///
 		xgc_void SetCounter( xgc_lpcstr lpCounterName, xgc_long nVal );
 
 		///
-		/// 获取计数器值
+		/// \brief 获取计数器值
 		/// [11/5/2014] create by albert.xu
 		///
 		xgc_bool GetCounter( xgc_lpcstr lpCounterName, xgc_long &nVal );
 
-		/////
-		/// 转换开关
+		///
+		/// \brief 转换开关
 		/// [1/5/2011 Albert]
-		/////
+		///
 		xgc_void TurnSwitch( xgc_lpcstr lpSwitchName, xgc_long nSwitch );
 
 		///
-		/// 客户端场景事件触发
+		/// \brief 客户端场景事件触发
 		/// [10/2/2014] create by albert.xu
 		///
 		xgc_bool TriggerClientEvent( xgc_uint16 nEvent, xgc_uint16 nState );
 
 		///
-		/// 服务器场景事件触发
+		/// \brief 服务器场景事件触发
 		/// [10/27/2014] create by albert.xu
 		///
 		xgc_bool TriggerServerEvent( xgc_uint16 nEvent, xgc_uint16 nState );
 
 		///
-		/// 获取客户端事件列表
+		/// \brief 获取客户端事件列表
 		/// [10/28/2014] create by albert.xu
 		///
 		const decltype( mClientEvents )& GetClientEvents()const
@@ -550,7 +563,7 @@ namespace xgc
 		}
 
 		///
-		/// 获取指定场景事件的值
+		/// \brief 获取指定场景事件的值
 		/// [4/3/2015] create by jianglei.kinly
 		///
 		xgc_uint16 GetClientEvent( xgc_uint16 _key )const
@@ -562,46 +575,40 @@ namespace xgc
 		}
 
 		///
-		/// 调试输出文字地图
+		/// \brief 调试输出文字地图
 		/// [8/6/2014] create by albert.xu
 		///
 		xgc_void OutputStringMap( xgc_lpcstr lpFileName );
 
-		/////
+		///
 		/// [12/29/2010 Albert]
-		/// Description:	 根据世界坐标获取区域
-		/////
+		/// \brief 根据世界坐标获取区域
+		///
 		xObjectSet* GetArea( xgc_real32 x, xgc_real32 y )const;
 
-		/////
+		///
 		/// [12/29/2010 Albert]
-		/// Description:	获取区域 
-		/////
+		/// \brief 获取区域 
+		///
 		xObjectSet* GetArea( xgc_int32 x, xgc_int32 y )const;
 
-		/////
-		/// 移动对象
+		///
+		/// \brief 移动对象
 		/// [8/7/2009 Albert]
-		/////
+		///
 		xgc_bool DynamicMoveTo( XGameObject* pObject, XVector3 &vPosition, xgc_uint32 nCollistionMask = COLLISION_PATH, xgc_uintptr lpContext = 0 );
 
-		/////
-		/// 传送对象
+		///
+		/// \brief 传送对象
 		/// [8/7/2009 Albert]
-		/////
+		///
 		xgc_bool TeleportTo( XGameObject* pObject, XVector3 &vPosition, xgc_uintptr lpContext = 0 );
 
-		/////
+		///
 		/// [1/5/2011 Albert]
-		/// Description:	建立触发器 
-		/////
+		/// \brief 建立触发器 
+		///
 		xgc_void BuildTrigger( XGameObject* pServerObject );
-
-		///
-		/// 手动执行触发器
-		/// [11/19/2012 Albert.xu]
-		///
-		//xgc_void ExecuteTrigger( xgc_lpcstr lpSourceName, TriggerKey tTriggerKey, xObject hSender, xObject hReciver, xgc_uintptr wParam, xgc_uintptr lParam )const;
 
 		/////
 		/// 在地图中添加场景对象 
@@ -668,12 +675,6 @@ namespace xgc
 		///
 		xObjectSet FetchObject( iRect rc, const std::function< xgc_bool( xObject ) > &fnFilter );
 
-		///
-		/// 执行触发器
-		/// [11/19/2012 Albert.xu]
-		///
-		//xgc_void ExecuteObjectTrigger( xObject hGameObject, TriggerKey tTriggerKey, xObject hSender, xObject hReciver, xgc_uintptr wParam, xgc_uintptr lParam )const;
-
 		/////
 		/// 碰撞检测
 		/// [8/3/2009 Albert]
@@ -688,45 +689,31 @@ namespace xgc
 		/// 对象所占格子发生改变时调用,若在同一视野区的时候会直接返回
 		/// [8/3/2009 Albert]
 		/////
-		xgc_void ExchangeEyeshotArea( XGameObject *pObject, const iPoint &vOldPosition, const iPoint &vNewPosition, const iSize &iEyeshot, xgc_uint32 nCollistionMask = 0 );
+		xgc_void ExchangeArea( XGameObject *pObject, const iPoint &vOldPosition, const iPoint &vNewPosition, const iSize &iEyeshot, xgc_uint32 nCollistionMask = 0 );
 
 		///
 		/// 设置格子阻挡信息
 		/// [6/28/2014] create by albert.xu
 		///
-		xgc_void ExchangeBlockCell( XGameObject *pObject, iPoint &iOldCell, iPoint &iNewCell );
-
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
-		/////
-		virtual xgc_bool PreAddChild( XObject* pChild, xgc_lpcvoid lpContext ) override;
+		xgc_void ExchangeBlock( XGameObject *pObject, iPoint &iOldCell, iPoint &iNewCell );
 
 		/////
 		/// 加入子节点后调用
 		/// [8/3/2009 Albert]
 		/////
-		virtual xgc_void OnAddChild( XObject* pChild, xgc_lpcvoid lpContext ) override;
-
-		/////
-		/// 增加子节点前调用
-		/// [8/3/2009 Albert]
-		/// @return true - 确认移除子节点, false - 子节点被否决,移除子节点失败.
-		/////
-		virtual xgc_bool PreDelChild( XObject* pChild, xgc_bool bRelease ) override;
+		xgc_void OnInsertChild( XObject* pChild, xgc_lpvoid lpContext ) override;
 
 		/////
 		/// 删除子节点后调用,此时对象尚未被删除
 		/// [8/3/2009 Albert]
 		/////
-		virtual xgc_void OnDelChild( XObject* pChild, xgc_bool bRelease ) override;
+		xgc_void OnRemoveChild( XObject* pChild ) override;
 
 		/////
 		/// 销毁地图 
 		/// [1/4/2011 Albert]
 		/////
-		virtual xgc_void OnDestroy() override;
+		xgc_void OnDestroy() override;
 
 		/////
 		/// 通知格子内的所有对象,有人进入了视野

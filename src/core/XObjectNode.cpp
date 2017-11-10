@@ -10,7 +10,6 @@ namespace xgc
 	/// \date 8/3/2009
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
-
 	xgc_bool XObjectNode::Insert( XObject * pObject, xgc_lpvoid pContext )
 	{
 		if( !InsertChild( pObject->GetObjectID() ) )
@@ -43,9 +42,10 @@ namespace xgc
 		XGC_ASSERT_RETURN( pObject, false );
 
 		if( !RemoveChild( pObject->GetObjectID() ) )
-			return;
+			return false;
 
 		OnRemoveChild( pObject );
+		return true;
 	}
 
 	///
@@ -92,7 +92,7 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xgc_void XObjectNode::DeleteAll( const XClassInfo *pClass = xgc_nullptr )
+	xgc_void XObjectNode::DeleteAll( const XClassInfo *pClass /*= xgc_nullptr*/ )
 	{
 		while( GetChildrenCount( pClass ) )
 		{
@@ -222,10 +222,4 @@ namespace xgc
 		it1->second.erase( it2 );
 		return true;
 	}
-
-	xgc_void XObjectNode::OnDestroy()
-	{
-		return xgc_void();
-	}
-
 }

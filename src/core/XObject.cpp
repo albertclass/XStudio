@@ -185,33 +185,34 @@ namespace xgc
 	xgc_void XObject::EmmitEvent( XObjectEvent& evt )
 	{
 		auto it1 = mEventSubject.find( evt.id );
-		if( it1 == mEventSubject.end() )
-			return;
-
-		auto &observer = it1->second;
-
-		// 关闭消息通知
-		if( observer.close == false )
-			return;
-
-		// 防止在触发器执行期间增删触发器
-		++observer.count;
-		for( auto &pair : observer.actions )
+		if( it1 != mEventSubject.end() )
 		{
-			// 取token
-			evt.token = pair.first;
-			// 取目标对象ID
-			evt.target = std::get< 1 >( pair.second );
-			// 取触发函数，并执行
-			std::get< 0 >( pair.second )( evt );
+			auto &observer = it1->second;
 
-			if( evt.over )
-				break;
+			// 关闭消息通知
+			if( observer.close == false )
+			{
+				// 防止在触发器执行期间增删触发器
+				++observer.count;
+				for( auto &pair : observer.actions )
+				{
+					// 取token
+					evt.token = pair.first;
+					// 取目标对象ID
+					evt.target = std::get< 1 >( pair.second );
+					// 取触发函数，并执行
+					std::get< 0 >( pair.second )( evt );
+
+					if( evt.over )
+						break;
+				}
+				--observer.count;
+			}
 		}
 
-		// 对于未决的事件，向层级上级传递
-		if( evt.result == 0 )
+		if( !evt.over )
 		{
+			// 对于未决的事件，向层级上级传递
 			auto xParent = GetParent();
 			if( xParent == INVALID_OBJECT_ID )
 			{
@@ -227,7 +228,30 @@ namespace xgc
 				}
 			}
 		}
-		--observer.count;
+
+		if( !evt.over )
+		{
+			// 透传消息
+			auto it2 = mEventSubject.find( -1 );
+			if( it2 == mEventSubject.end() )
+				return;
+			
+			auto &observer = it2->second;
+			++observer.count;
+			for( auto &pair : observer.actions )
+			{
+				// 取token
+				evt.token = pair.first;
+				// 取目标对象ID
+				evt.target = std::get< 1 >( pair.second );
+				// 取触发函数，并执行
+				std::get< 0 >( pair.second )( evt );
+
+				if( evt.over )
+					break;
+			}
+			--observer.count;
+		}
 	}
 
 	xgc_bool XObject::LoadObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )

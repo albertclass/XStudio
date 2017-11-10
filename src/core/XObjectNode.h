@@ -136,7 +136,7 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		virtual xgc_void OnInsertChild( XObject* pChild, xgc_lpcvoid lpContext ) = 0;
+		virtual xgc_void OnInsertChild( XObject* pChild, xgc_lpvoid lpContext ) = 0;
 
 		/////
 		/// 删除子节点后调用,此时对象尚未被删除

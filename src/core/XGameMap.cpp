@@ -93,7 +93,23 @@ namespace xgc
 	/////
 	xgc_bool XGameMap::Insert( XGameObject* pObject, const XVector3& vPosition )
 	{
-		return Insert( pObject, reinterpret_cast<xgc_lpcvoid>( &vPosition ) );
+		if( pObject->IsInheritFrom( XGameObject::GetThisClass() ) )
+		{
+			iPoint ptCell = WorldToCell( vPosition.x, vPosition.y );
+			if( IsCellBlock( ptCell.x, ptCell.y, false ) )
+			{
+				USR_ERROR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( attrObjectName ),
+					getString( attrSceneStrName ), vPosition.x, vPosition.y );
+				return false;
+			}
+
+			if( false == pObject->PreEnterMap( this ) )
+			{
+				return false;
+			}
+		}
+
+		return XObjectNode::Insert( pObject, (xgc_lpvoid)( &vPosition ) );
 	}
 
 	/////
@@ -102,7 +118,10 @@ namespace xgc
 	/////
 	void XGameMap::Remove( XGameObject* pObject )
 	{
-		Remove( pObject );
+		if( pObject->PreLeaveMap( this ) )
+		{
+			XObjectNode::Remove( pObject );
+		}
 	}
 
 	// 检测碰撞
@@ -244,9 +263,9 @@ namespace xgc
 		iPoint iNewArea = WorldToArea( vPositionNew.x, vPositionNew.y );
 
 		pObject->SetPosition( vPositionNew ); //设置新位置
-		ExchangeBlockCell( pObject, iOldCell, iNewCell );
+		ExchangeBlock( pObject, iOldCell, iNewCell );
 		//XGC_DEBUG_CODE( CMapBlock *pArea = GetBlock(x,y); if( pArea ) XGC_ASSERT_MSG( pArea->CheckExist(pObj->GetObjID()), "发现飞机。" ); )
-		ExchangeEyeshotArea( pObject, iOldArea, iNewArea, mMapConf.mEyesight, nCollistionMask );
+		ExchangeArea( pObject, iOldArea, iNewArea, mMapConf.mEyesight, nCollistionMask );
 		//放在ExchangeEyeshotArea后触发
 		pObject->OnMove( vPositionOld, lpContext );
 
@@ -275,21 +294,21 @@ namespace xgc
 
 		pObject->OnTeleport( 0, vPositionNew, lpContext );
 
-		ExchangeBlockCell( pObject, iOldCell, iPoint( -1, -1 ) );
-		ExchangeEyeshotArea( pObject, iOldArea, iSize( -1, -1 ), mMapConf.mEyesight );
+		ExchangeBlock( pObject, iOldCell, iPoint( -1, -1 ) );
+		ExchangeArea( pObject, iOldArea, iSize( -1, -1 ), mMapConf.mEyesight );
 
 		pObject->OnTeleport( 1, vPositionNew, lpContext );
 
 		pObject->SetPosition( vPositionNew ); //设置新位置
-		ExchangeBlockCell( pObject, iPoint( -1, -1 ), iNewCell );
-		ExchangeEyeshotArea( pObject, iSize( -1, -1 ), iNewArea, mMapConf.mEyesight );
+		ExchangeBlock( pObject, iPoint( -1, -1 ), iNewCell );
+		ExchangeArea( pObject, iSize( -1, -1 ), iNewArea, mMapConf.mEyesight );
 
 		pObject->OnTeleport( 2, vPositionOld, lpContext );
 
 		return ret;
 	}
 
-	xgc_void XGameMap::ExchangeEyeshotArea( XGameObject* pObject, const iPoint& iOldArea, const iPoint& iNewArea, const iSize& iEyeshot, xgc_uint32 nCollistionMask )
+	xgc_void XGameMap::ExchangeArea( XGameObject* pObject, const iPoint& iOldArea, const iPoint& iNewArea, const iSize& iEyeshot, xgc_uint32 nCollistionMask )
 	{
 		XGC_CHECK_REENTER_CALL( mEyeshotChecker );
 		if( !( nCollistionMask & EYESHOTAREA_FORCEfLUSH ) && iOldArea == iNewArea )
@@ -433,12 +452,15 @@ namespace xgc
 
 	xgc_void XGameMap::OutputStringMap( xgc_lpcstr lpFileName )
 	{
-		FILE* fp;
-		if( lpFileName )
-		{
-			if( 0 != fopen_s( &fp, lpFileName, "w+" ) )
-				return;
-		}
+		XGC_ASSERT_RETURN( lpFileName, XGC_NONE );
+
+		FILE* fp = xgc_nullptr;
+		fp = fopen( lpFileName, "w+" );
+		
+		XGC_ASSERT_RETURN( fp, XGC_NONE );
+
+		if( fp == xgc_nullptr )
+			return;
 
 		for( xgc_int32 y = 0; y < mMapConf.mCellConf.cy; ++y )
 		{
@@ -446,22 +468,19 @@ namespace xgc
 			{
 				if( mpCells[y * mMapConf.mCellConf.cx + x].block )
 				{
-					if( fp ) fputc( '#', fp );
-					OutputDebugStringA( "#" );
+					fputc( '#', fp );
 				}
 				else if( mpCells[y * mMapConf.mCellConf.cx + x].barrier )
 				{
-					if( fp ) fputc( '@', fp );
-					OutputDebugStringA( "@" );
+					fputc( '@', fp );
 				}
 				else
 				{
-					if( fp ) fputc( ' ', fp );
-					OutputDebugStringA( " " );
+					fputc( ' ', fp );
 				}
 			}
-			if( fp ) fputc( '\n', fp );
-			OutputDebugStringA( "\r\n" );
+			
+			fputc( '\n', fp );
 		}
 
 		fclose( fp );
@@ -475,7 +494,7 @@ namespace xgc
 		return mpAreas ? mpAreas + ( y * mAreaConf.cx + x ) : xgc_nullptr;
 	}
 
-	xgc_void XGameMap::CreateClock( xObject hSender, xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration )
+	xgc_void XGameMap::CreateClock( xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration )
 	{
 		auto it = mMapClock.find( lpName );
 		if( it != mMapClock.end() )
@@ -501,13 +520,17 @@ namespace xgc
 		xgc_char szDateTime[64] = { 0 };
 		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( attrSceneMapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
-		XGameMapEvent evt = { { evt_map_timer, INVALID_OBJECT_ID, INVALID_OBJECT_ID, 0, 0 }, lpName, 0, 0 };
+		XGameMapEvent evt;
+		evt.cast.id = evt_map_clock;
+		evt.cast.sender = GetObjectID();
+		evt.alias = it->first.c_str();
+
 		mMapClock[lpName] = getClock().insert(
 			std::bind( (XEventBind1)&XObject::EmmitEvent, this, evt.cast ),
 			dt_start, ts_duration, lpParam );
 	}
 
-	xgc_void XGameMap::CreateTimer( xObject hSender, xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration )
+	xgc_void XGameMap::CreateTimer( xgc_lpcstr lpName, xgc_lpcstr lpStart, xgc_lpcstr lpParam, xgc_lpcstr lpDuration )
 	{
 		auto it = mMapTimer.find( lpName );
 		if( it != mMapTimer.end() )
@@ -533,7 +556,11 @@ namespace xgc
 		xgc_char szDateTime[64] = { 0 };
 		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( attrSceneMapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
-		XGameMapEvent evt = { { evt_map_timer, INVALID_OBJECT_ID, INVALID_OBJECT_ID, 0, 0 }, lpName, 0, 0 };
+		XGameMapEvent evt;
+		evt.cast.id = evt_map_timer;
+		evt.cast.sender = GetObjectID();
+		evt.alias = it->first.c_str();
+
 		mMapTimer[lpName] = getTimer().insert(
 			std::bind( (XEventBind1)&XObject::EmmitEvent, this, evt.cast ),
 			dt_start,
@@ -577,24 +604,26 @@ namespace xgc
 		// ExecuteTrigger后Counter可能会被删除掉，所以，ExecuteTrigger后不要再继续使用该引用值。
 		xgc_long nVal = (std::get< 2 >(iter->second) += nInc);
 
+		XGameMapEvent evt;
+		evt.alias = lpCounterName;
+		evt.counter.val = nVal;
+		evt.counter.inc = nInc;
+	
 		if( nInc != 0 )
 		{
 			// 计数改变
-			XGameMapEvent evt = { XObjectEvent(), lpCounterName, nVal, nInc };
 			EmmitEvent( evt_map_counter_change, evt.cast );
 		}
 
 		if( nVal <= std::get< 0 >( iter->second ) )
 		{
 			// 下溢
-			XGameMapEvent evt = { XObjectEvent(), lpCounterName, nVal, nInc };
 			EmmitEvent( evt_map_counter_underflow, evt.cast );
 			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( attrSceneTitle ), lpCounterName, nVal, nInc );
 		}
 		else if( nVal >= std::get< 1 >( iter->second ) )
 		{
 			// 上溢
-			XGameMapEvent evt = { XObjectEvent(), lpCounterName, nVal, nInc };
 			EmmitEvent( evt_map_counter_overflow, evt.cast );
 			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( attrSceneTitle ), lpCounterName, nVal, nInc );
 		}
@@ -625,7 +654,7 @@ namespace xgc
 			case -1:
 			{
 				// 关
-				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, -1, 0 };
+				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, -1 };
 				EmmitEvent( evt_map_turn_off, evt.cast );
 			}
 			break;
@@ -636,7 +665,7 @@ namespace xgc
 			case 1:
 			// 开
 			{
-				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, +1, 0 };
+				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, +1 };
 				EmmitEvent( evt_map_turn_on, evt.cast );
 			}
 			break;
@@ -662,9 +691,7 @@ namespace xgc
 
 		for( auto &item : iter->second )
 		{
-			auto id = std::get< 0 >( item );
-
-			pGameObject->RegistEvent( id, std::get< 1 >( item ) );
+			RegistEvent( std::get< 0 >( item ), std::bind( std::get< 1 >( item ), _1 ) );
 		}
 	}
 
@@ -934,7 +961,7 @@ namespace xgc
 		return FetchObject( rc, fn );
 	}
 
-	xgc_void XGameMap::ExchangeBlockCell( XGameObject* pObject, iPoint& iOldCell, iPoint& iNewCell )
+	xgc_void XGameMap::ExchangeBlock( XGameObject* pObject, iPoint& iOldCell, iPoint& iNewCell )
 	{
 		FUNCTION_BEGIN;
 		if( pObject->GetBarrierFlag() )
@@ -968,30 +995,7 @@ namespace xgc
 		}
 	}
 
-	xgc_bool XGameMap::PreAddChild( XObject* pChild, xgc_lpcvoid lpContext )
-	{
-		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
-		{
-			XGameObject* pObject = (XGameObject*) pChild;
-
-			const XVector3* pvPosition = reinterpret_cast<const XVector3*>( lpContext );
-			iPoint ptCell = WorldToCell( pvPosition->x, pvPosition->y );
-			if( IsCellBlock( ptCell.x, ptCell.y, false ) )
-			{
-				USR_ERROR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( attrObjectName ),
-					getString( attrSceneStrName ), pvPosition->x, pvPosition->y );
-				return false;
-			}
-
-			if( false == pObject->PreEnterMap( this ) )
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-	xgc_void XGameMap::OnAddChild( XObject* pChild, xgc_lpcvoid lpContext )
+	xgc_void XGameMap::OnInsertChild( XObject* pChild, xgc_lpvoid lpContext )
 	{
 		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
 		{
@@ -1003,31 +1007,21 @@ namespace xgc
 
 			const XVector3& vPosition = pObject->GetPosition();
 			// 加入到区域列表中
-			ExchangeBlockCell( pObject, iPoint( -1, -1 ), WorldToCell( vPosition.x, vPosition.y ) );
-			ExchangeEyeshotArea( pObject, iPoint( -1, -1 ), WorldToArea( vPosition.x, vPosition.y ), mMapConf.mEyesight );
+			ExchangeBlock( pObject, iPoint( -1, -1 ), WorldToCell( vPosition.x, vPosition.y ) );
+			ExchangeArea( pObject, iPoint( -1, -1 ), WorldToArea( vPosition.x, vPosition.y ), mMapConf.mEyesight );
 
 			pObject->OnEnterMap( this );
 		}
 	}
 
-	xgc_bool XGameMap::PreDelChild( XObject* pChild, xgc_bool bRelease )
-	{
-		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
-		{
-			XGameObject* pObject = static_cast<XGameObject*>( pChild );
-			return pObject->PreLeaveMap( this );
-		}
-		return true;
-	}
-
-	xgc_void XGameMap::OnDelChild( XObject* pChild, xgc_bool bRelease )
+	xgc_void XGameMap::OnRemoveChild( XObject* pChild )
 	{
 		if( pChild->IsInheritFrom( &XGameObject::GetThisClass() ) )
 		{
 			XGameObject* pObject = static_cast<XGameObject*>( pChild );
 			XVector3 vPosition = pObject->GetPosition();
-			ExchangeBlockCell( pObject, WorldToCell( vPosition.x, vPosition.y ), iPoint( -1, -1 ) );
-			ExchangeEyeshotArea( pObject, WorldToArea( vPosition.x, vPosition.y ), iPoint( -1, -1 ), mMapConf.mEyesight );
+			ExchangeBlock( pObject, WorldToCell( vPosition.x, vPosition.y ), iPoint( -1, -1 ) );
+			ExchangeArea( pObject, WorldToArea( vPosition.x, vPosition.y ), iPoint( -1, -1 ), mMapConf.mEyesight );
 
 			pObject->OnLeaveMap( this );
 			pObject->RemoveEvent( GetObjectID() );
