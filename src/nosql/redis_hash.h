@@ -51,14 +51,14 @@ public:
 	/// \date 2017/9/11
 	/// \author albert.xu
 	/// 
-	xgc_vector< xvariant > keys();
+	xgc::vector< xvariant > keys();
 
 	///
 	/// \brief 获取表中所有值
 	/// \date 2017/9/11
 	/// \author albert.xu
 	/// 
-	xgc_vector< xvariant > vals();
+	xgc::vector< xvariant > vals();
 
 	///
 	/// \brief 获取值
@@ -72,14 +72,14 @@ public:
 	/// \date 2017/9/11
 	/// \author albert.xu
 	/// 
-	xgc_vector< xvariant > get_more( xgc_vector< xgc_lpcstr > keys );
+	xgc::vector< xvariant > get_more( xgc::vector< xgc_lpcstr > keys );
 
 	///
 	/// \brief 获取值
 	/// \date 2017/9/11
 	/// \author albert.xu
 	/// 
-	xgc_vector< xvariant > get_all();
+	xgc::vector< xvariant > get_all();
 
 	///
 	/// \brief 设置值

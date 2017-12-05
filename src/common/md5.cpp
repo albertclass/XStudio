@@ -8,7 +8,7 @@ namespace xgc
 {
 	namespace encrypt
 	{
-		static xgc_string intToString( uint64_t i )
+		static xgc::string intToString( uint64_t i )
 		{
 			char str[33] = { 0 };
 			char* buf = str + 31;

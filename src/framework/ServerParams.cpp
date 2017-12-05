@@ -8,7 +8,7 @@ using namespace xgc::sql;
 static xgc_void( *gNotifyCallback )( const stGlobalParam& Parameter ) = xgc_nullptr;
 
 /// @var 服务器全局参数
-static xgc_unordered_map< xgc_string, stGlobalParam > gGlobalParams;
+static xgc::unordered_map< xgc::string, stGlobalParam > gGlobalParams;
 
 ///
 /// 设置同步回调
@@ -221,9 +221,9 @@ xgc_bool GetGlobalParameter_DefaultFillter( const stGlobalParam& st, xgc_lpcstr 
 /// 获取符合条件的全局变量
 /// [1/16/2015] create by albert.xu
 ///
-xgc_vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const stGlobalParam& ) > fnFillter )
+xgc::vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const stGlobalParam& ) > fnFillter )
 {
-	xgc_vector< stGlobalParam > Container;
+	xgc::vector< stGlobalParam > Container;
 	FUNCTION_BEGIN;
 	for ( auto const &it : gGlobalParams )
 	{

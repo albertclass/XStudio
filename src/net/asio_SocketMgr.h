@@ -214,7 +214,7 @@ namespace xgc
 			std::atomic_ullong exec_dec_;
 
 			/// ¶¨Ê±Æ÷Ó³Éä±í
-			xgc_unordered_map< xgc_uint32, timer_info > mTimerMap;
+			xgc::unordered_map< xgc_uint32, timer_info > mTimerMap;
 		};
 
 		///

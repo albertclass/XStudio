@@ -17,11 +17,11 @@ protected:
 	/// 聊天标识
 	xgc_uint32 chat_id_;
 	/// 昵称
-	xgc_string nickname_;
+	xgc::string nickname_;
 	/// 其他数据
-	xgc_string extra_;
+	xgc::string extra_;
 	/// 登陆令牌
-	xgc_string token_;
+	xgc::string token_;
 	/// 聊天的token号
 	xgc_uint32 chat_token_;
 
@@ -29,30 +29,30 @@ protected:
 	CGameSrvSession *game_session_;
 
 	/// 已进入的频道
-	xgc_map< xgc_uint32, xgc_string > channels_;
+	xgc::map< xgc_uint32, xgc::string > channels_;
 
 	/// 角色信息
 	struct user_info
 	{
 		xgc_uint64 user_id;
 		xgc_uint32 chat_id;
-		xgc_string nick;
-		xgc_string extra;
+		xgc::string nick;
+		xgc::string extra;
 	};
 
 	/// 角色信息映射表
-	xgc_map< xgc_uint32, user_info > users_;
+	xgc::map< xgc_uint32, user_info > users_;
 	
 	/// 聊天信息
 	struct chat_info
 	{
 		xgc_time64 timestamp;
 		xgc_uint32 channel_id;
-		xgc_string text;
+		xgc::string text;
 	};
 
 	/// 未决的聊天列表
-	xgc_map< xgc_uint32, xgc_list< chat_info > > pending_chat_;
+	xgc::map< xgc_uint32, xgc::list< chat_info > > pending_chat_;
 public:
 	///
 	/// \brief 构造
@@ -60,7 +60,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	CChatSrvSession( CGameSrvSession *session, xgc_uint64 user_id, const xgc_string &token );
+	CChatSrvSession( CGameSrvSession *session, xgc_uint64 user_id, const xgc::string &token );
 
 	///
 	/// \brief 析构

@@ -204,8 +204,8 @@ namespace xgc
 		class COMMON_API timer
 		{
 		protected:
-			typedef xgc_list< timer_h >		event_s;
-			typedef xgc_vector< event_s >	wheel_s;
+			typedef xgc::list< timer_h >		event_s;
+			typedef xgc::vector< event_s >	wheel_s;
 
 			///< 时间轮
 			wheel_s	time_wheel_;
@@ -291,20 +291,20 @@ namespace xgc
 			/// \brief 获取指定时间执行的事件
 			/// \date [9/7/2015] create by albert.xu
 			///
-			xgc_list< timer_h > get_event_list( datetime stime )const;
+			xgc::list< timer_h > get_event_list( datetime stime )const;
 
 			///
 			/// \brief 获取指定时间执行的事件
 			/// \date [9/7/2015] create by albert.xu
 			///
-			xgc_list< timer_h > get_event_list( xgc_lpcstr pname )const;
+			xgc::list< timer_h > get_event_list( xgc_lpcstr pname )const;
 
 		private:
 			///
 			/// \brief 执行一个链表内的事件
 			/// [7/18/2014] create by albert.xu
 			///
-			xgc_void step_list( xgc_list< timer_h >& lst );
+			xgc_void step_list( xgc::list< timer_h >& lst );
 
 			///
 			/// \brief 插入对象到定时器列表中

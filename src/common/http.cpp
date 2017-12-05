@@ -48,9 +48,9 @@ namespace xgc
 			}
 		}
 
-		xgc_string EnCodeEscapeURL( xgc_lpcstr URL )
+		xgc::string EnCodeEscapeURL( xgc_lpcstr URL )
 		{
-			xgc_string result = "";
+			xgc::string result = "";
 			while( *URL )
 			{
 				char c = *URL;
@@ -81,9 +81,9 @@ namespace xgc
 			return result;
 		}
 
-		xgc_string DeCodeEscapeURL( xgc_lpcstr URL )
+		xgc::string DeCodeEscapeURL( xgc_lpcstr URL )
 		{
-			xgc_string result = "";
+			xgc::string result = "";
 			while( *URL )
 			{
 				char c = *URL;
@@ -121,7 +121,7 @@ namespace xgc
 			return true;
 		}
 
-		xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc_string &result )
+		xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc::string &result )
 		{
 			#if defined(_WINDOWS)
 			HINTERNET hInternetSession = InternetOpen( "Microsoft Internet Explorer", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0 );

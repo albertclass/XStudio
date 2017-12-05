@@ -169,7 +169,7 @@ namespace xgc
 		return xgc_nullptr;
 	}
 
-	xgc_string XAttribute::toString()const
+	xgc::string XAttribute::toString()const
 	{
 		FUNCTION_BEGIN;
 		xgc_char szValue[64] = { 0 };
@@ -204,11 +204,11 @@ namespace xgc
 			break;
 		case VT_STRING:
 			if( *mpString )
-				xgc_string( (xgc_lpcstr) ( *mpString )->str, ( *mpString )->len );
+				xgc::string( (xgc_lpcstr) ( *mpString )->str, ( *mpString )->len );
 			break;
 		case VT_BUFFER:
 			if( *mpBuffer )
-				xgc_string( (xgc_lpcstr) ( *mpBuffer )->buf, ( *mpBuffer )->len );
+				xgc::string( (xgc_lpcstr) ( *mpBuffer )->buf, ( *mpBuffer )->len );
 			break;
 		default:
 			break;

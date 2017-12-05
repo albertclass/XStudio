@@ -369,7 +369,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 1/9/2014
 	///
-	xgc_string xvariant::to_string()const
+	xgc::string xvariant::to_string()const
 	{
 		xgc_char buf[64] = { 0 };
 		int copid = 0;
@@ -404,11 +404,11 @@ namespace xgc
 			break;
 			case vt_string:
 			if( mString )
-				return xgc_string( (xgc_lpcstr)mString->str, mString->len );
+				return xgc::string( (xgc_lpcstr)mString->str, mString->len );
 			break;
 			case vt_buffer:
 			if( mBuffer )
-				return xgc_string( (xgc_lpcstr)mBuffer->buf, mBuffer->len );
+				return xgc::string( (xgc_lpcstr)mBuffer->buf, mBuffer->len );
 			break;
 		}
 

@@ -105,7 +105,7 @@ xgc_bool CServer::Setup( xgc_lpcstr lpConfigFile )
 /// \author albert.xu
 /// \date 2017/08/05
 ///
-xgc_long CServer::VerificationUser( const xgc_string &username, const xgc_string &password, xgc_uint64 &user_id )
+xgc_long CServer::VerificationUser( const xgc::string &username, const xgc::string &password, xgc_uint64 &user_id )
 {
 	if( strncmp( username.c_str(), "test", 4 ) == 0 )
 	{

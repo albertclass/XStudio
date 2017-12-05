@@ -86,9 +86,9 @@ namespace xgc
 		{
 		private:
 			// 线程池
-			xgc_vector<std::thread> pool;
+			xgc::vector<std::thread> pool;
 			// 任务队列
-			xgc_queue<task_base*> tasks;
+			xgc::queue<task_base*> tasks;
 			// 同步
 			std::mutex m_lock_queue;
 			// 同步

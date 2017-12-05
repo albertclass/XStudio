@@ -223,8 +223,8 @@ namespace xgc
 
 			sql_format rule = (sql_format) dlsym( _M, node.attribute( "rule" ).as_string() );
 			#endif
-			xgc_string name = node.attribute( "name" ).as_string();
-			xgc_string params = node.attribute( "params" ).as_string();
+			xgc::string name = node.attribute( "name" ).as_string();
+			xgc::string params = node.attribute( "params" ).as_string();
 			xgc_lpcstr next = xgc_nullptr;
 
 			xgc_uint32 version = node.attribute( "version" ).as_uint( 1 );
@@ -233,7 +233,7 @@ namespace xgc
 			sql_result res = sql_failed;
 			sql_recordset rs = xgc_nullptr;
 
-			xgc_string chk = "select max(version) as version from __tables where name='" + name + "';";
+			xgc::string chk = "select max(version) as version from __tables where name='" + name + "';";
 			res = execute_sql_rc( conn, chk.c_str(), rs );
 
 			if( res == sql_failed )
@@ -378,9 +378,9 @@ extern "C"
 
 		while( token )
 		{
-			xgc_string tmp = sql;
-			xgc_string::size_type pos = 0;
-			while( (pos = tmp.find( name, pos )) != xgc_string::npos )
+			xgc::string tmp = sql;
+			xgc::string::size_type pos = 0;
+			while( (pos = tmp.find( name, pos )) != xgc::string::npos )
 			{
 				pos += strlen( name );
 				tmp.insert( pos, token );

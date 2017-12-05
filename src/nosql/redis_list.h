@@ -45,7 +45,7 @@ public:
 	/// \date 2017/9/8
 	/// \author albert.xu
 	/// 
-	xgc_list< xvariant > get( int start = 0, int stop = -1 );
+	xgc::list< xvariant > get( int start = 0, int stop = -1 );
 
 	///
 	/// \brief 弹出一个元素

@@ -19,13 +19,13 @@ namespace xgc
 		/// 编码URL连接
 		/// [7/23/2015] create by albert.xu
 		///
-		COMMON_API xgc_string EnCodeEscapeURL( xgc_lpcstr URL );
+		COMMON_API xgc::string EnCodeEscapeURL( xgc_lpcstr URL );
 
 		///
 		/// 解码URL连接
 		/// [7/23/2015] create by albert.xu
 		///
-		COMMON_API xgc_string DeCodeEscapeURL( xgc_lpcstr URL );
+		COMMON_API xgc::string DeCodeEscapeURL( xgc_lpcstr URL );
 
 		///
 		/// HTTP请求设置最大连接数
@@ -37,7 +37,7 @@ namespace xgc
 		/// 同步HTTP请求
 		/// [7/23/2015] create by albert.xu
 		///
-		COMMON_API xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc_string &result );
+		COMMON_API xgc_bool SyncHttpRequest( xgc_lpcstr url, xgc::string &result );
 	}
 }
 #endif // _HTTP_H_

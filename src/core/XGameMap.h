@@ -158,11 +158,11 @@ namespace xgc
 		xObjectSet *mpAreas; ///< 区域列表
 
 	public:
-		typedef xgc_unordered_map< xgc_string, xgc_list< xgc_tuple< xgc_long, xNotify > > > MapEventConf;
-		typedef xgc_unordered_map< xgc_string, xgc_tuple< xgc_long, xgc_long, xgc_long > > MapCounter;
-		typedef xgc_unordered_map< xgc_string, xgc_long > MapSwitch;
-		typedef xgc_unordered_map< xgc_string, timer_h > MapTimer;
-		typedef xgc_unordered_map< xgc_string, timer_h > MapClock;
+		typedef xgc::unordered_map< xgc::string, xgc::list< xgc::tuple< xgc_long, xNotify > > > MapEventConf;
+		typedef xgc::unordered_map< xgc::string, xgc::tuple< xgc_long, xgc_long, xgc_long > > MapCounter;
+		typedef xgc::unordered_map< xgc::string, xgc_long > MapSwitch;
+		typedef xgc::unordered_map< xgc::string, timer_h > MapTimer;
+		typedef xgc::unordered_map< xgc::string, timer_h > MapClock;
 
 	protected:
 		///
@@ -200,13 +200,13 @@ namespace xgc
 		MapClock	mMapClock;
 
 		/// @var 地砖扩展信息
-		xgc_vector< IBlockExtern* > mBlockExtern; 
+		xgc::vector< IBlockExtern* > mBlockExtern; 
 
 		/// @var 客户端事件列表 < event, state >
-		xgc_map< xgc_uint16, xgc_uint16 > mClientEvents;
+		xgc::map< xgc_uint16, xgc_uint16 > mClientEvents;
 
 		/// @var 服务器事件列表 < event, eventHandle >
-		xgc_map< xgc_uint16, function< xgc_void( XGameMap*, xgc_uint16, xgc_uint16 ) > > mServerEvents;
+		xgc::map< xgc_uint16, function< xgc_void( XGameMap*, xgc_uint16, xgc_uint16 ) > > mServerEvents;
 
 		/// @var 触发器日志
 		function< xgc_void( xgc_lpcstr, xgc_uint32, xObject, xObject ) > mpTriggerLogger;

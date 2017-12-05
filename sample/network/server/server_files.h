@@ -25,12 +25,12 @@ private:
 	std::unordered_map< xgc_uint32, fileinfo* > files_seq_;
 
 	/// 文件映射表 - 文件名
-	std::unordered_map< xgc_string, xgc_uint32 > files_;
+	std::unordered_map< xgc::string, xgc_uint32 > files_;
 	/// 文件序列号
 	xgc_uint32 sequence_;
 
 	/// 文件忽略列表
-	std::list< xgc_string > ignore_files;
+	std::list< xgc::string > ignore_files;
 	
 private:
 	CServerFiles();

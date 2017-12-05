@@ -31,11 +31,11 @@ private:
 	struct Account
 	{
 		xgc_uint64 user_id;
-		xgc_string username;
-		xgc_string password;
+		xgc::string username;
+		xgc::string password;
 	};
 
-	xgc_unordered_map< xgc_string, Account > mAccountMap;
+	xgc::unordered_map< xgc::string, Account > mAccountMap;
 public:
 	CServer();
 
@@ -55,7 +55,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	xgc_long VerificationUser( const xgc_string &username, const xgc_string &password, xgc_uint64 &user_id );
+	xgc_long VerificationUser( const xgc::string &username, const xgc::string &password, xgc_uint64 &user_id );
 
 	///
 	/// \brief 运行服务器

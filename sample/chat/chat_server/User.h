@@ -11,11 +11,11 @@ private:
 	/// 角色的游戏ID
 	xgc_uint64 mUserID;
 	/// 角色昵称
-	xgc_string mNick;
+	xgc::string mNick;
 	/// 角色所属的服务器
-	xgc_string mServer;
+	xgc::string mServer;
 	/// 角色的其他数据
-	xgc_string mExtra;
+	xgc::string mExtra;
 	/// 角色Token
 	xgc_char mToken[64];
 	/// ForEachChannel protected
@@ -24,7 +24,7 @@ private:
 	CClientSession *mClientSession;
 
 	/// 加入的频道列表
-	xgc_set< xgc_uint32 > mChannelSet;
+	xgc::set< xgc_uint32 > mChannelSet;
 public:
 	CUser( xgc_uint64 nUserID );
 	~CUser();
@@ -61,7 +61,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void setServer( const xgc_string &strServer )
+	xgc_void setServer( const xgc::string &strServer )
 	{
 		mServer = strServer;
 	}
@@ -71,7 +71,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void setNickName( const xgc_string &strNick )
+	xgc_void setNickName( const xgc::string &strNick )
 	{
 		mNick = strNick;
 	}
@@ -81,7 +81,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_void setExtra( const xgc_string &strExtra )
+	xgc_void setExtra( const xgc::string &strExtra )
 	{
 		mExtra = strExtra;
 	}
@@ -91,7 +91,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	const xgc_string& getNickName()const
+	const xgc::string& getNickName()const
 	{
 		return mNick;
 	}
@@ -101,7 +101,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	const xgc_string& getExtra()const
+	const xgc::string& getExtra()const
 	{
 		return mExtra;
 	}
@@ -118,7 +118,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_bool checkToken( const xgc_string &strToken );
+	xgc_bool checkToken( const xgc::string &strToken );
 
 	///
 	/// \brief 角色加入频道

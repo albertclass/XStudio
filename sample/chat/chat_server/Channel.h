@@ -20,7 +20,7 @@ public:
 
 private:
 	/// 频道名字
-	xgc_string mName;
+	xgc::string mName;
 
 	/// 是否自动删除
 	xgc_bool mAutoDestory;
@@ -32,20 +32,20 @@ private:
 	xgc_long mAutoKickDelay;
 
 	/// 房间密码
-	xgc_string mPassword;
+	xgc::string mPassword;
 
 	/// 房间删除的时间
 	xgc_time64 mDestoryTime;
 
 	/// 用户列表
-	xgc_map< xgc_uint32, user > mUserConfigMap;
+	xgc::map< xgc_uint32, user > mUserConfigMap;
 public:
 	///
 	/// \brief 构造
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	CChannel( const xgc_string &strName );
+	CChannel( const xgc::string &strName );
 
 	///
 	/// \brief 析构

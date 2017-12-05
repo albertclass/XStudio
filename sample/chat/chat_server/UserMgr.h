@@ -8,10 +8,10 @@ class CUserMgr
 
 private:
 	/// 游戏ID映射表
-	xgc_unordered_map< xgc_uint64, xgc_uint32 > mUserMap;
+	xgc::unordered_map< xgc_uint64, xgc_uint32 > mUserMap;
 
 	/// 昵称映射表
-	xgc_unordered_map< xgc_string, xgc_uint32 > mNickMap;
+	xgc::unordered_map< xgc::string, xgc_uint32 > mNickMap;
 
 private:
 	///
@@ -34,7 +34,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	xgc_long UserLogin( xgc_uint64 nUserID, const xgc_string &strServer, const xgc_string &strNick, const xgc_string &strExtra );
+	xgc_long UserLogin( xgc_uint64 nUserID, const xgc::string &strServer, const xgc::string &strNick, const xgc::string &strExtra );
 
 	///
 	/// \brief 角色登出

@@ -25,7 +25,7 @@ struct UnitTest
 /// ²âÊÔ×¢²á°ïÖú
 /// [5/12/2015] create by albert.xu
 ///
-struct UnitTestManager : public xgc_vector< xgc_tuple< xgc_string, UnitTest * > >
+struct UnitTestManager : public xgc::vector< xgc::tuple< xgc::string, UnitTest * > >
 {
 	friend UnitTestManager& getUnitTestMgr();
 private:

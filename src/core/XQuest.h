@@ -14,7 +14,7 @@ namespace xgc
 			type_item,	// 得到物品
 		};
 
-		XQuestObjective( xgc_string strName, xgc_uint16 nFinishCount );
+		XQuestObjective( xgc::string strName, xgc_uint16 nFinishCount );
 		~XQuestObjective();
 
 		xgc_int32 OnKill( xObject hKiller, xObject hDead );
@@ -34,7 +34,7 @@ namespace xgc
 		}
 	private:
 		//objective_type	m_ObjectiveType;	// 目标类型
-		xgc_string			m_strName;			// 对象名字
+		xgc::string			m_strName;			// 对象名字
 		xgc_uint16			m_nSerial;			// 序号
 		xgc_uint16			m_nCount;			// 当前计数
 		xgc_uint16			m_nFinishCount;		// 完成计数

@@ -73,7 +73,7 @@ xgc_bool GetGlobalParameter_DefaultFillter( const stGlobalParam& st, xgc_lpcstr 
 /// 获取符合条件的全局变量
 /// [1/16/2015] create by albert.xu
 ///
-xgc_vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const stGlobalParam& ) > fnFillter );
+xgc::vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const stGlobalParam& ) > fnFillter );
 
 ///
 /// 获取开关型全局变量

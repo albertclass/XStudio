@@ -66,10 +66,10 @@ private:
 	timespan mInterval;
 
 	/// 需要更新的对象
-	xgc_vector< XActive* > mUpdates;
+	xgc::vector< XActive* > mUpdates;
 
 	/// 帧信息
-	xgc_vector< XActive* > mActives;
+	xgc::vector< XActive* > mActives;
 public:
 	///
 	/// \brief 时间线构造

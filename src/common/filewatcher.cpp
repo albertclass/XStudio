@@ -23,7 +23,7 @@ namespace xgc
 		/// 线程互斥量
 		static std::mutex thread_guard;
 		/// 工作线程数组
-		static xgc_vector< std::thread > work_threads;
+		static xgc::vector< std::thread > work_threads;
 
 		///
 		/// \brief 事件句柄
@@ -332,7 +332,7 @@ namespace xgc
 		/// 线程互斥量
 		static std::mutex thread_guard;
 		/// 工作线程数组
-		static xgc_vector< std::thread > work_threads;
+		static xgc::vector< std::thread > work_threads;
 
 		///
 		/// \brief 事件句柄

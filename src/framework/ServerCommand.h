@@ -121,19 +121,19 @@ namespace DebugCommand
 	/// 获取别名列表
 	/// [11/11/2014] create by albert.xu
 	///
-	xgc_void GetAlias( xgc_vector< xgc_string >& Container, xgc_lpcstr lpConfName = xgc_nullptr );
+	xgc_void GetAlias( xgc::vector< xgc::string >& Container, xgc_lpcstr lpConfName = xgc_nullptr );
 
 	///
 	/// 获取别名映射
 	/// [11/11/2014] create by albert.xu
 	///
-	xgc_bool GetAlias( const xgc_string &strName, xgc_lpstr lpValue, xgc_size nSize, xgc_lpcstr lpConfName = xgc_nullptr );
+	xgc_bool GetAlias( const xgc::string &strName, xgc_lpstr lpValue, xgc_size nSize, xgc_lpcstr lpConfName = xgc_nullptr );
 
 	///
 	/// 设置别名映射
 	/// [11/11/2014] create by albert.xu
 	///
-	xgc_void SetAlias( const xgc_string &strName, xgc_lpcstr lpValue, xgc_lpcstr lpConfName = xgc_nullptr );
+	xgc_void SetAlias( const xgc::string &strName, xgc_lpcstr lpValue, xgc_lpcstr lpConfName = xgc_nullptr );
 
 	///
 	/// 发送消息到客户端

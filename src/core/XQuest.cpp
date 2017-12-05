@@ -7,7 +7,7 @@ namespace xgc
 	IMPLEMENT_XCLASS_BEGIN( XQuestObjective, XObject )
 	IMPLEMENT_XCLASS_END()
 
-	XQuestObjective::XQuestObjective( xgc_string strName, xgc_uint16 nFinishCount )
+	XQuestObjective::XQuestObjective( xgc::string strName, xgc_uint16 nFinishCount )
 		: XObject()
 		, m_strName( strName )
 		, m_nFinishCount( nFinishCount )

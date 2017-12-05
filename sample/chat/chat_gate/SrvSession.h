@@ -13,9 +13,9 @@ protected:
 	/// 最后一次接收ping消息的时间
 	xgc_time64 pinglast_;
 	/// 公共频道
-	xgc_map< xgc_uint32, xgc_string > channels_;
+	xgc::map< xgc_uint32, xgc::string > channels_;
 	/// 服务器上的用户
-	xgc_map< xgc_uint64, xgc_uint32 > users_;
+	xgc::map< xgc_uint64, xgc_uint32 > users_;
 public:
 	///
 	/// \brief 构造
@@ -120,7 +120,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	xgc_long UserLogin( xgc_uint64 user_id, const xgc_string &nickname, xgc_uint32 session_id );
+	xgc_long UserLogin( xgc_uint64 user_id, const xgc::string &nickname, xgc_uint32 session_id );
 
 	///
 	/// \brief 用户登出
@@ -136,7 +136,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/05
 	///
-	xgc_void SendSystemNote( xgc_uint32 channel_id, xgc_string note, xgc_uint32 flags );
+	xgc_void SendSystemNote( xgc_uint32 channel_id, xgc::string note, xgc_uint32 flags );
 
 	///
 	/// \brief 发送数据

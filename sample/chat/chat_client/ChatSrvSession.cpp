@@ -2,7 +2,7 @@
 #include "ChatSrvSession.h"
 #include "GameSrvSession.h"
 
-CChatSrvSession::CChatSrvSession( CGameSrvSession *session, xgc_uint64 user_id, const xgc_string &token )
+CChatSrvSession::CChatSrvSession( CGameSrvSession *session, xgc_uint64 user_id, const xgc::string &token )
 	: user_id_( user_id )
 	, chat_id_( -1 )
 	, token_( token )

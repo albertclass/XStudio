@@ -147,7 +147,7 @@ namespace xgc
 
 		const XClassInfo *mParent;			///< ´ÓÄÄ¶ù¼Ì³ÐµÄ
 
-		xgc_unordered_map<xgc_string, xAttrIndex*> mName2Index;
+		xgc::unordered_map<xgc::string, xAttrIndex*> mName2Index;
 
 	public:
 		///

@@ -37,11 +37,11 @@ xgc_int64 redisHash::exist( xgc_lpcstr key )
 /// \date 2017/9/11
 /// \author albert.xu
 /// 
-xgc_vector< xvariant > redisHash::keys()
+xgc::vector< xvariant > redisHash::keys()
 {
 	auto reply = conn_->exec( "HKEYS %s", key_ );
 
-	xgc_vector< xvariant > lst;
+	xgc::vector< xvariant > lst;
 	if( !reply.is_array() )
 		return lst;
 
@@ -58,11 +58,11 @@ xgc_vector< xvariant > redisHash::keys()
 /// \date 2017/9/11
 /// \author albert.xu
 /// 
-xgc_vector< xvariant > redisHash::vals()
+xgc::vector< xvariant > redisHash::vals()
 {
 	auto reply = conn_->exec( "HVALS %s", key_ );
 
-	xgc_vector< xvariant > lst;
+	xgc::vector< xvariant > lst;
 	if( !reply.is_array() )
 		return lst;
 
@@ -95,9 +95,9 @@ int redisHash::get( xgc_lpcstr key, xvariant &val )
 /// \date 2017/9/11
 /// \author albert.xu
 /// 
-xgc_vector< xvariant > redisHash::get_more( xgc_vector< xgc_lpcstr > keys )
+xgc::vector< xvariant > redisHash::get_more( xgc::vector< xgc_lpcstr > keys )
 {
-	xgc_vector< xvariant > lst;
+	xgc::vector< xvariant > lst;
 	char cmd[256], *pcmd = cmd;
 
 	xgc_size size = sizeof( cmd );
@@ -138,11 +138,11 @@ xgc_vector< xvariant > redisHash::get_more( xgc_vector< xgc_lpcstr > keys )
 /// \date 2017/9/11
 /// \author albert.xu
 /// 
-xgc_vector< xvariant > redisHash::get_all()
+xgc::vector< xvariant > redisHash::get_all()
 {
 	auto reply = conn_->exec( "HGETALL %s", key_ );
 
-	xgc_vector< xvariant > lst;
+	xgc::vector< xvariant > lst;
 	if( !reply.is_array() )
 		return lst;
 

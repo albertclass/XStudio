@@ -42,7 +42,7 @@ namespace xgc
 					return xgc_nullptr;
 			}
 
-			xgc_unordered_map< id_type, func_type >	message;
+			xgc::unordered_map< id_type, func_type >	message;
 		};
 
 		template< class func_type >
@@ -73,7 +73,7 @@ namespace xgc
 				return ret;
 			}
 
-			xgc_vector< func_type >	message;
+			xgc::vector< func_type >	message;
 		};
 
 		#define IMPLEMENT_DISPATCHER_TABLE( N )\

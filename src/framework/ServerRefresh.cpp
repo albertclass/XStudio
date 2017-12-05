@@ -3,8 +3,6 @@
 #include "ServerRefresh.h"
 #include "ServerScript.h"
 
-using namespace xgc::sql;
-
 ///
 /// 刷新信息
 /// [1/20/2015] create by albert.xu
@@ -14,7 +12,7 @@ struct RefreshInfo
 	/// @var 最后一次调用时间
 	datetime next_invoke_time;
 	/// @var 刷新类型
-	xgc_string params;
+	xgc::string params;
 	/// @var 函数调用
 	LuaRef call;
 	/// @var 函数调用
@@ -27,7 +25,7 @@ xgc_bool operator<( const RefreshInfo &lhs, const RefreshInfo &rhs )
 }
 
 /// @var 刷新信息
-static xgc_set< RefreshInfo > mRefreshSet;
+static xgc::set< RefreshInfo > mRefreshSet;
 
 xgc_bool InitServerRefresh( ini_reader &ini )
 {
@@ -85,9 +83,7 @@ xgc_void ExecServerRefresh( datetime now )
 				info.call.push( info.call.state() );
 				int argc = 0;
 				for( Iterator iter( info.args ); !iter.isNil(); ++iter, ++argc )
-				{
 					info.args.push( info.args.state() );
-				}
 
 				LuaException::pcall( info.call.state(), argc, 0 );
 			}
@@ -99,7 +95,8 @@ xgc_void ExecServerRefresh( datetime now )
 			info.next_invoke_time = adjust_cycle_next( info.next_invoke_time, info.params.c_str(), now );
 
 			mRefreshSet.insert( info );
-			it = mRefreshSet.erase( it );
+
+			it = mRefreshSet.begin();
 		}
 		else
 		{

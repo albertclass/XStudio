@@ -230,7 +230,7 @@ namespace xgc
 	xgc_void XBagTrans::Commit()
 	{
 		// 根据背包和位置生成一个更新索引
-		xgc_map< xgc_tuple< xObject, xSlot >, xgc_list< stSlotCommand* > > mapUpdate;
+		xgc::map< xgc::tuple< xObject, xSlot >, xgc::list< stSlotCommand* > > mapUpdate;
 
 		// 将相同位置的操作进行合并处理
 		for( auto &cmd : mSlotCommands )

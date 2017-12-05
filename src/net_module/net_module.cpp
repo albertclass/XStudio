@@ -35,7 +35,7 @@ INetworkSession * CreateSession()
 }
 
 /// 所有的监听端口
-static xgc_vector< xgc_lpvoid > g_listener;
+static xgc::vector< xgc_lpvoid > g_listener;
 
 xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 {

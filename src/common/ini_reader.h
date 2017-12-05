@@ -35,7 +35,7 @@ namespace xgc
 				/// 文件名
 				xgc_char file_name[XGC_MAX_FNAME];
 				/// 包含的文件
-				xgc_list< file_info* > externs;
+				xgc::list< file_info* > externs;
 			};
 
 			/// @var 文件缓冲

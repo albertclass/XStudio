@@ -25,11 +25,11 @@ xgc_int64 redisList::length()
 /// \date 2017/9/8
 /// \author albert.xu
 /// 
-xgc_list< xvariant > redisList::get( int start/* = 0*/, int stop/* = -1*/ )
+xgc::list< xvariant > redisList::get( int start/* = 0*/, int stop/* = -1*/ )
 {
 	auto reply = conn_->exec( "LRANGE %d %d", start, stop );
 
-	xgc_list< xvariant > lst;
+	xgc::list< xvariant > lst;
 
 	if( !reply || !reply.is_array() )
 		return lst;

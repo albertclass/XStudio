@@ -112,7 +112,7 @@ int redisSet::exist( xgc_lpcstr member ) const
 /// \author albert.xu
 /// 
 
-int redisSet::members( xgc_vector<xvariant>& lst ) const
+int redisSet::members( xgc::vector<xvariant>& lst ) const
 {
 	auto reply = conn_->exec( "SMEMBERS %s", key_ );
 

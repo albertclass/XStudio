@@ -33,7 +33,7 @@ struct stFileInfo
 	int (*action)( CNetSession* net );
 };
 
-typedef xgc_list< xgc_tuple< xgc_string, xgc_string > > download_queue;
+typedef xgc::list< xgc::tuple< xgc::string, xgc::string > > download_queue;
 
 struct stUserInfo
 {

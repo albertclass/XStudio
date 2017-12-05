@@ -889,7 +889,7 @@ namespace xgc
 		/// [1/9/2014 albert.xu]
 		/// ×ªÎª×Ö·û´®
 		///
-		xgc_string toString()const;
+		xgc::string toString()const;
 
 		///
 		/// [1/9/2014 albert.xu]

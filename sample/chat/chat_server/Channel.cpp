@@ -2,7 +2,7 @@
 #include "Channel.h"
 #include "User.h"
 
-CChannel::CChannel( const xgc_string &strName )
+CChannel::CChannel( const xgc::string &strName )
 	: mName( strName )
 	, mAutoDestory( true )
 	, mAutoDestoryDelay( 10000 )

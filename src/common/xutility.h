@@ -220,7 +220,7 @@ namespace xgc
 	/// \return 以数组的形式返回分割好的字符串
 	/// \date [5/30/2014]
 	///
-	template< template< class, class > class _Container = xgc_vector, template< class > class _Ax = xgc_allocator >
+	template< template< class, class > class _Container = xgc::vector, template< class > class _Ax = xgc_allocator >
 	_Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim )
 	{
 		_Container< std::string, _Ax< std::string > > r;
@@ -236,7 +236,7 @@ namespace xgc
 				break;
 			}
 
-			r.push_back( xgc_string( str, brk ) );
+			r.push_back( xgc::string( str, brk ) );
 			str = brk + strspn( brk, delim );
 		}
 
@@ -250,9 +250,9 @@ namespace xgc
 	/// \date 2017/04/01 12:26
 	///
 	template< class _Iterator >
-	xgc_string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
+	xgc::string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
 	{
-		xgc_string r;
+		xgc::string r;
 		auto it = _Begin;
 		r += *it;
 

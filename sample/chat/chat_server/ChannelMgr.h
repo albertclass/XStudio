@@ -9,7 +9,7 @@ class CChannelMgr
 	friend CChannelMgr& getChannelMgr();
 private:
 	/// 频道映射表
-	xgc_map< xgc_string, xgc_uint32 > mChannelMap;
+	xgc::map< xgc::string, xgc_uint32 > mChannelMap;
 
 private:
 	CChannelMgr();
@@ -21,14 +21,14 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	CChannel* CreateChannel( const xgc_string &strChannelName );
+	CChannel* CreateChannel( const xgc::string &strChannelName );
 
 	///
 	/// \brief 获取频道
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
-	CChannel* getChannelByName( const xgc_string &strChannelName );
+	CChannel* getChannelByName( const xgc::string &strChannelName );
 
 	///
 	/// \brief 获取频道数
@@ -46,7 +46,7 @@ public:
 	/// \date 2017/08/03
 	///
 	template< template< class, class > class _Container, template< class > class _Ax = xgc_allocator >
-	_Container< CChannel*, _Ax< CChannel* > > getChannelByWildcard( const xgc_string &strWildcard )
+	_Container< CChannel*, _Ax< CChannel* > > getChannelByWildcard( const xgc::string &strWildcard )
 	{
 		_Container< CChannel*, _Ax< CChannel* > > C;
 		auto it = std::back_inserter( C );

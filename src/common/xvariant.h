@@ -872,7 +872,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 1/9/2014
 		///
-		xgc_string to_string()const;
+		xgc::string to_string()const;
 
 		///
 		/// \brief ×ªÎª×Ö·û´®

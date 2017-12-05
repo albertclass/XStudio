@@ -16,7 +16,7 @@ namespace DebugCommand
 		/// 指令信息
 		struct CommandInfo* lpCmdInfo;
 		/// 允许的子指令列表
-		xgc_unordered_map< xgc_string, Command* > mChildren;
+		xgc::unordered_map< xgc::string, Command* > mChildren;
 	};
 
 	///
@@ -26,8 +26,8 @@ namespace DebugCommand
 	struct Group
 	{
 		xgc_uint32 mLevel;
-		xgc_string mName;
-		xgc_unordered_map< xgc_string, Command* > mCommands;
+		xgc::string mName;
+		xgc::unordered_map< xgc::string, Command* > mCommands;
 	};
 
 	///
@@ -43,9 +43,9 @@ namespace DebugCommand
 		/// @var 批处理文件路径
 		xgc_char mScriptPath[XGC_MAX_PATH];
 		/// @var 权限映射表
-		xgc_map< xgc_uint32, Group > mGroupMap;
+		xgc::map< xgc_uint32, Group > mGroupMap;
 		/// @var 别名映射表
-		xgc_map< xgc_string, xgc_string > mAliasMap;
+		xgc::map< xgc::string, xgc::string > mAliasMap;
 		/// @var 入口指令表
 		CommandTable *mEntryTable;
 		/// @var 信息输出回调
@@ -58,7 +58,7 @@ namespace DebugCommand
 	///
 	struct CommandCache
 	{
-		xgc_string mCmd;
+		xgc::string mCmd;
 		xgc_uint32 mUpdateTime;
 	};
 
@@ -69,10 +69,10 @@ namespace DebugCommand
 }
 
 /// @var 指令表名映射
-static xgc_unordered_map< xgc_string, DebugCommand::CommandInstance* > gCommandInstMap;
+static xgc::unordered_map< xgc::string, DebugCommand::CommandInstance* > gCommandInstMap;
 
 /// @var 指令表缓存，用来二次确认命令
-static xgc_unordered_map< xgc_string, DebugCommand::CommandCache > gCommandInstCache;
+static xgc::unordered_map< xgc::string, DebugCommand::CommandCache > gCommandInstCache;
 
 ///
 /// 清理指令表
@@ -113,7 +113,7 @@ static struct DebugCommand::Command* ReadCommands( DebugCommand::CommandInfo* lp
 static struct DebugCommand::Command* ReadCommands( pugi::xml_node &node, DebugCommand::CommandInfo* lpCmdInfo );
 
 /// 根据配置读取指令列表
-static xgc_bool ReadCommands( pugi::xml_node &node, DebugCommand::CommandTable* lpCmdTable, xgc_unordered_map< xgc_string, DebugCommand::Command* > &Commands )
+static xgc_bool ReadCommands( pugi::xml_node &node, DebugCommand::CommandTable* lpCmdTable, xgc::unordered_map< xgc::string, DebugCommand::Command* > &Commands )
 {
 	int nCount = 0;
 
@@ -590,7 +590,7 @@ namespace DebugCommand
 
 		xgc_char szCmdString[ECHO_MESSAGE_LENGTH] = { 0 };
 		// 处理别名
-		auto it1 = gpInstance->mAliasMap.find( xgc_string( lpCmdString, lpCmdEnd ) );
+		auto it1 = gpInstance->mAliasMap.find( xgc::string( lpCmdString, lpCmdEnd ) );
 		if( it1 != gpInstance->mAliasMap.end() )
 		{
 			// 找到别名指令
@@ -746,7 +746,7 @@ namespace DebugCommand
 		return false;
 	}
 
-	xgc_void GetAlias( xgc_vector< xgc_string >& Container, xgc_lpcstr lpConfName )
+	xgc_void GetAlias( xgc::vector< xgc::string >& Container, xgc_lpcstr lpConfName )
 	{
 		FUNCTION_BEGIN;
 		if( lpConfName )
@@ -766,7 +766,7 @@ namespace DebugCommand
 		FUNCTION_END;
 	}
 
-	xgc_bool GetAlias( const xgc_string &strName, xgc_lpstr lpValue, xgc_size nSize, xgc_lpcstr lpConfName )
+	xgc_bool GetAlias( const xgc::string &strName, xgc_lpstr lpValue, xgc_size nSize, xgc_lpcstr lpConfName )
 	{
 		FUNCTION_BEGIN;
 		if( lpConfName )
@@ -791,7 +791,7 @@ namespace DebugCommand
 		return false;
 	}
 
-	xgc_void SetAlias( const xgc_string &strName, xgc_lpcstr lpValue, xgc_lpcstr lpConfName )
+	xgc_void SetAlias( const xgc::string &strName, xgc_lpcstr lpValue, xgc_lpcstr lpConfName )
 	{
 		FUNCTION_BEGIN;
 		if( lpConfName )

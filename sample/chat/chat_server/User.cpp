@@ -49,7 +49,7 @@ xgc_lpcstr CUser::genToken()
 /// \author albert.xu
 /// \date 2017/08/03
 ///
-xgc_bool CUser::checkToken( const xgc_string &strToken )
+xgc_bool CUser::checkToken( const xgc::string &strToken )
 {
 	if( strToken.size() != sizeof( mToken ) - 1 )
 		return false;

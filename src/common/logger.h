@@ -98,7 +98,7 @@ namespace xgc
 			xgc_lpstr message_;
 
 			// 消息格式化序列
-			xgc_vector< format_span > format;
+			xgc::vector< format_span > format;
 		protected:
 			static xgc_size date( xgc_char* buf, xgc_size len );
 
@@ -118,7 +118,7 @@ namespace xgc
 
 			static xgc_size endl( xgc_char* buf, xgc_size len );
 
-			static xgc_size span( xgc_char* buf, xgc_size len, const xgc_string &span );
+			static xgc_size span( xgc_char* buf, xgc_size len, const xgc::string &span );
 
 			static xgc_size message( const context &ctx, xgc_char* buf, xgc_size len );
 
@@ -262,11 +262,11 @@ namespace xgc
 			xgc_char logger_name[32];
 
 			/// 过滤包含关键字的消息
-			xgc_unordered_set<xgc_string> filter_include;
+			xgc::unordered_set<xgc::string> filter_include;
 			/// 过滤排除关键字的消息
-			xgc_unordered_set<xgc_string> filter_exclude;
+			xgc::unordered_set<xgc::string> filter_exclude;
 			/// 输出适配器
-			xgc_vector< logger_adapter* > adapters;
+			xgc::vector< logger_adapter* > adapters;
 			/// 格式化器
 			logger_formater formater;
 

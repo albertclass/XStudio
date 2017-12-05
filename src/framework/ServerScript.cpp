@@ -58,7 +58,7 @@ xgc_bool InitServerScript( ini_reader &ini )
 		;
 
 	LuaRef package = getGlobal( _Lua, "package" );
-	std::stringstream package_path( package["path"].cast< xgc_string >() );
+	std::stringstream package_path( package["path"].cast< xgc::string >() );
 
 	auto count = ini.get_item_count( "LuaScripts", "Path" );
 	for( xgc_size i = 0; i < count; ++i )

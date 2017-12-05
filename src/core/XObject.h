@@ -13,10 +13,10 @@
 namespace xgc
 {
 	using namespace common;
-	typedef xgc_unordered_set< xObject > xObjectSet;
-	typedef xgc_list< xObject > xObjectList;
-	typedef xgc_vector< xObject > xObjectVec;
-	typedef xgc_list< xgc_uint64 > xGlobalIdList;
+	typedef xgc::unordered_set< xObject > xObjectSet;
+	typedef xgc::list< xObject > xObjectList;
+	typedef xgc::vector< xObject > xObjectVec;
+	typedef xgc::list< xgc_uint64 > xGlobalIdList;
 
 	///
 	/// \brief 对象事件基类
@@ -133,11 +133,11 @@ namespace xgc
 			/// 重入计数，防止map迭代器失效
 			xgc_long count;
 			/// 观察者通知接口
-			xgc_map< xgc_long, xgc_tuple< xNotify, xObject > > actions;
+			xgc::map< xgc_long, xgc::tuple< xNotify, xObject > > actions;
 		};
 
 		/// @var 事件观察者
-		xgc_map< xgc_long, Observer > mEventSubject;
+		xgc::map< xgc_long, Observer > mEventSubject;
 		/// @var 是否被销毁
 		xgc_bool mIsDestory;
 		/// @var 父对象ID

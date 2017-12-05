@@ -53,7 +53,7 @@ public:
 	/// \date 2017/9/13
 	/// \author albert.xu
 	/// 
-	int members( xgc_vector< xvariant > &lst ) const;
+	int members( xgc::vector< xvariant > &lst ) const;
 
 	///
 	/// \brief 移动元素到其他集合

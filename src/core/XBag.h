@@ -448,7 +448,7 @@ namespace xgc
 		/// 操作的背包
 		XBag &mBag;
 		/// 操作的记录
-		xgc_vector< stSlotCommand > mSlotCommands;
+		xgc::vector< stSlotCommand > mSlotCommands;
 
 	public:
 		///

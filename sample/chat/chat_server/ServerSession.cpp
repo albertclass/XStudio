@@ -111,7 +111,7 @@ xgc_void CServerSession::onUserLoginReq( xgc_lpvoid ptr, int len )
 
 	Send2GameServer( chat::MSG_LOGIN_ACK, ack );
 
-	auto vChannel = getChannelMgr().getChannelByWildcard< xgc_vector >( req.channel_wild() );
+	auto vChannel = getChannelMgr().getChannelByWildcard< xgc::vector >( req.channel_wild() );
 	for( auto pChannel : vChannel )
 	{
 		pChannel->Enter( pUser->handle(), xgc_nullptr );

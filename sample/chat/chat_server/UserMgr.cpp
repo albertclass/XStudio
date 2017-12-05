@@ -22,7 +22,7 @@ CUserMgr::~CUserMgr()
 /// \author albert.xu
 /// \date 2017/08/03
 ///
-xgc_long CUserMgr::UserLogin( xgc_uint64 nUserID, const xgc_string &strServer, const xgc_string &strNick, const xgc_string &strExtra )
+xgc_long CUserMgr::UserLogin( xgc_uint64 nUserID, const xgc::string &strServer, const xgc::string &strNick, const xgc::string &strExtra )
 {
 	CUser* pUser = xgc_nullptr;
 

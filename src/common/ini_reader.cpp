@@ -718,7 +718,7 @@ namespace xgc
 
 			// ¼ÇÂ¼µã
 			xgc_lpcstr lpMem = xgc_nullptr;
-			xgc_string loMem[4];
+			xgc::string loMem[4];
 
 			xgc_size nMem = 0;
 

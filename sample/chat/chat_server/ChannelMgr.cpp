@@ -18,7 +18,7 @@ CChannelMgr::~CChannelMgr()
 	}
 }
 
-CChannel * CChannelMgr::CreateChannel( const xgc_string &strChannelName )
+CChannel * CChannelMgr::CreateChannel( const xgc::string &strChannelName )
 {
 	auto it = mChannelMap.find( strChannelName );
 	if( it != mChannelMap.end() )
@@ -54,7 +54,7 @@ CChannel * CChannelMgr::CreateChannel( const xgc_string &strChannelName )
 /// \date 2017/08/03
 ///
 
-CChannel * CChannelMgr::getChannelByName( const xgc_string & strChannelName )
+CChannel * CChannelMgr::getChannelByName( const xgc::string & strChannelName )
 {
 	auto it = mChannelMap.find( strChannelName );
 	if( it == mChannelMap.end() )

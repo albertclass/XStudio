@@ -188,7 +188,7 @@ xgc_void CClientSession::onEnterChannelReq( xgc_lpvoid ptr, int len )
 		case chat::channel_enter_req::WILDCARD:
 		{
 			/// 根据通配符进入频道
-			auto vChannel = getChannelMgr().getChannelByWildcard< xgc_vector >( req.channel_name() );
+			auto vChannel = getChannelMgr().getChannelByWildcard< xgc::vector >( req.channel_name() );
 
 			for( auto pChannel : vChannel )
 			{

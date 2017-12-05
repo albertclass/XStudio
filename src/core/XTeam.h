@@ -231,7 +231,7 @@ namespace xgc
 		virtual xgc_void resetLeader();
 
 	protected:
-		typedef xgc_vector< Member > MemberVec;
+		typedef xgc::vector< Member > MemberVec;
 		MemberVec mMembers; // members
 
 	private:

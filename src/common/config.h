@@ -77,56 +77,59 @@
 #endif
 
 #pragma warning( disable:4251 )
-using xgc_string = std::basic_string< char, std::char_traits<char>, xgc_allocator< char > >;
 
-template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
-using xgc_set = std::set< _Kty, _Pr, _Alloc >;
+namespace xgc
+{
+	using string = std::basic_string< char, std::char_traits<char>, xgc_allocator< char > >;
 
-template<class _Ty1, class _Ty2 >
-using xgc_pair = std::pair< _Ty1, _Ty2 >;
+	template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
+	using set = std::set< _Kty, _Pr, _Alloc >;
 
-template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
-using xgc_multiset = std::multiset< _Kty, _Pr, _Alloc >;
+	template<class _Ty1, class _Ty2 >
+	using pair = std::pair< _Ty1, _Ty2 >;
 
-template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
-using xgc_map = std::map< _Kty, _Ty, _Pr, _Alloc >;
+	template<class _Kty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast<_Kty> >
+	using multiset = std::multiset< _Kty, _Pr, _Alloc >;
 
-template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
-using xgc_multimap = std::multimap< _Kty, _Ty, _Pr, _Alloc >;
+	template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+	using map = std::map< _Kty, _Ty, _Pr, _Alloc >;
 
-template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
-using xgc_unordered_map = std::unordered_map< _Kty, _Ty, _Hasher, _Keyeq, _Alloc >;
+	template<class _Kty, class _Ty, class _Pr = std::less<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+	using multimap = std::multimap< _Kty, _Ty, _Pr, _Alloc >;
 
-template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
-using xgc_unordered_set = std::unordered_set< _Kty, _Hasher, _Keyeq, _Alloc >;
+	template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+	using unordered_map = std::unordered_map< _Kty, _Ty, _Hasher, _Keyeq, _Alloc >;
 
-template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
-using xgc_unordered_multimap = std::unordered_multimap < _Kty, _Ty, _Hasher, _Keyeq, _Alloc >;
+	template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
+	using unordered_set = std::unordered_set< _Kty, _Hasher, _Keyeq, _Alloc >;
 
-template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
-using xgc_unordered_multiset = std::unordered_multiset < _Kty, _Hasher, _Keyeq, _Alloc >;
+	template<class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< std::pair<const _Kty, _Ty> > >
+	using xgc_unordered_multimap = std::unordered_multimap < _Kty, _Ty, _Hasher, _Keyeq, _Alloc >;
 
-template<class _Ty, class _Ax = xgc_allocator< _Ty > >
-using xgc_list = std::list< _Ty, _Ax >;
+	template<class _Kty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>, class _Alloc = xgc_allocator_fast< _Kty > >
+	using unordered_multiset = std::unordered_multiset < _Kty, _Hasher, _Keyeq, _Alloc >;
 
-template<class _Ty, class _Ax = xgc_allocator< _Ty > >
-using xgc_deque = std::deque< _Ty, _Ax >;
+	template<class _Ty, class _Ax = xgc_allocator< _Ty > >
+	using list = std::list< _Ty, _Ax >;
 
-template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
-using xgc_queue = std::queue< _Ty, _Container >;
+	template<class _Ty, class _Ax = xgc_allocator< _Ty > >
+	using deque = std::deque< _Ty, _Ax >;
 
-template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
-using xgc_stack = std::stack< _Ty, _Container >;
+	template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
+	using queue = std::queue< _Ty, _Container >;
 
-template< class _Ty, class _Ax = xgc_allocator_fast<_Ty> >
-using xgc_vector = std::vector< _Ty, _Ax >;
+	template< class _Ty, class _Ax = xgc_allocator_fast<_Ty>, class _Container = std::deque<_Ty, _Ax> >
+	using stack = std::stack< _Ty, _Container >;
 
-template < class _Ty, size_t _Size >
-using xgc_array = std::array< _Ty, _Size >;
+	template< class _Ty, class _Ax = xgc_allocator_fast<_Ty> >
+	using vector = std::vector< _Ty, _Ax >;
 
-template < class ... _Types >
-using xgc_tuple = std::tuple < _Types... >;
+	template < class _Ty, size_t _Size >
+	using array = std::array< _Ty, _Size >;
 
+	template < class ... _Types >
+	using tuple = std::tuple < _Types... >;
+}
 ///////////////////////////////////////////////////////////
 // adpater linux to windows
 

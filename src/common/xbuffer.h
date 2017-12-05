@@ -62,7 +62,7 @@ namespace xgc
 		private:
 			// ´íÎóÂë
 			int code;
-			xgc_string message;
+			xgc::string message;
 
 		};
 

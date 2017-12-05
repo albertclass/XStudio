@@ -29,11 +29,11 @@ namespace net_module
 		/// 连接信息定义
 		struct SynInfo;
 		/// 连接等待列表
-		xgc_list< SynInfo* > mSynList;
+		xgc::list< SynInfo* > mSynList;
 		/// 网络令牌
 		volatile xgc_uint32 mEventToken;
 		/// 中继连接映射表
-		xgc_unordered_map< net::network_t, CBaseSession* > mRelayMap;
+		xgc::unordered_map< net::network_t, CBaseSession* > mRelayMap;
 	public:
 		///
 		/// \brief 构造函数

@@ -149,7 +149,7 @@ xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
 /// \author albert.xu
 /// \date 2017/08/05
 ///
-xgc_long CServerSession::UserLogin( xgc_uint64 user_id, const xgc_string &nickname, xgc_uint32 session_id )
+xgc_long CServerSession::UserLogin( xgc_uint64 user_id, const xgc::string &nickname, xgc_uint32 session_id )
 {
 	if( handle_ == INVALID_NETWORK_HANDLE )
 		return -1;
@@ -195,7 +195,7 @@ xgc_void CServerSession::UserLogout( xgc_uint64 user_id )
 /// \author albert.xu
 /// \date 2017/08/05
 ///
-xgc_void CServerSession::SendSystemNote( xgc_uint32 channel_id, xgc_string note, xgc_uint32 flags )
+xgc_void CServerSession::SendSystemNote( xgc_uint32 channel_id, xgc::string note, xgc_uint32 flags )
 {
 	chat::system_chat_req req;
 

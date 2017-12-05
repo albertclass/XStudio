@@ -177,7 +177,7 @@ namespace xgc
 			return true;
 		}
 
-		xgc_void timer::step_list( xgc_list< timer_h >& lst )
+		xgc_void timer::step_list( xgc::list< timer_h >& lst )
 		{
 			auto iter = lst.begin();
 			while( iter != lst.end() )
@@ -260,7 +260,7 @@ namespace xgc
 		/// 获取指定时间执行的事件
 		/// [9/7/2015] create by albert.xu
 		///
-		xgc_list< timer_h > timer::get_event_list( datetime stime )const
+		xgc::list< timer_h > timer::get_event_list( datetime stime )const
 		{
 			timer_clock t1 = { stime.to_milliseconds() / TIMER_PRECISION  };
 			timer_clock t2 = { tickcount_ };
@@ -306,9 +306,9 @@ namespace xgc
 		/// 获取指定时间执行的事件
 		/// [9/7/2015] create by albert.xu
 		///
-		xgc_list< timer_h > timer::get_event_list( xgc_lpcstr pname )const
+		xgc::list< timer_h > timer::get_event_list( xgc_lpcstr pname )const
 		{
-			xgc_list< timer_h > lst;
+			xgc::list< timer_h > lst;
 			for( auto &wheel : time_wheel_ )
 			{
 				for( auto &it : wheel )

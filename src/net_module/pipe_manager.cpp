@@ -8,7 +8,7 @@ namespace net_module
 	struct PipeHandlerInfo
 	{
 		/// 管道网络ID
-		xgc_string network_id;
+		xgc::string network_id;
 
 		/// 管道消息处理函数
 		PipeMsgHandler pipe_msg_handler;
@@ -25,7 +25,7 @@ namespace net_module
 	static std::unordered_map< NETWORK_ID, CPipeSession* >	mPipeMap;
 
 	/// 管道处理函数映射表
-	static xgc_list< PipeHandlerInfo >	mPipeHandlerInfos;
+	static xgc::list< PipeHandlerInfo >	mPipeHandlerInfos;
 
 	xgc_bool InitPipeManager()
 	{

@@ -364,7 +364,7 @@ namespace xgc
 		return name;
 	}
 
-	static xgc_size _MemMarkReport( xgc_size root, xgc_string& prefix, xgc_int32( *Report )( xgc_lpcstr fmt, ... ) )
+	static xgc_size _MemMarkReport( xgc_size root, xgc::string& prefix, xgc_int32( *Report )( xgc_lpcstr fmt, ... ) )
 	{
 		MemStatusHead* pMemHeader = (MemStatusHead*) gpMemStatus;
 
@@ -431,7 +431,7 @@ namespace xgc
 		if( pos == pMemHeader->current )
 			pos = 0;
 
-		xgc_string prefix = "";
+		xgc::string prefix = "";
 		_MemMarkReport( pos, prefix, Report );
 	}
 

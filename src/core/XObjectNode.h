@@ -156,7 +156,7 @@ namespace xgc
 
 	private:
 		/// @var children
-		xgc_unordered_map< xgc_lpcvoid, xgc_vector< xObject > > mChildren;
+		xgc::unordered_map< xgc_lpcvoid, xgc::vector< xObject > > mChildren;
 	};
 }
 

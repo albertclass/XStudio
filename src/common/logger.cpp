@@ -545,9 +545,9 @@ namespace xgc
 		class COMMON_API logger
 		{
 		private:
-			xgc_unordered_map< xgc_string, logger_impl* > loggers;
+			xgc::unordered_map< xgc::string, logger_impl* > loggers;
 
-			xgc_unordered_map< xgc_string, logger_adapter* > adapters;
+			xgc::unordered_map< xgc::string, logger_adapter* > adapters;
 
 		public:
 			logger_impl& get( xgc_lpcstr name )
@@ -683,7 +683,7 @@ namespace xgc
 				XGC_ASSERT_RETURN( adapter, false, "pipe conf, create adapter failed." );
 				((pipe_adapter*)adapter)->init();
 
-				auto outputs = string_split< xgc_vector >( output, " ," );
+				auto outputs = string_split< xgc::vector >( output, " ," );
 				for( auto &name : outputs )
 				{
 					auto redirect = logger_instance.create_logger_impl( ini, name.c_str() );
@@ -892,7 +892,7 @@ namespace xgc
 				{
 					if( ptr > beg )
 					{
-						format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc_string( beg, ptr - beg ) ) );
+						format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc::string( beg, ptr - beg ) ) );
 					}
 
 					if( strncmp( ptr, "$(date)", 7 ) == 0 )
@@ -954,7 +954,7 @@ namespace xgc
 
 			if( ptr > beg )
 			{
-				format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc_string( beg, ptr - beg ) ) );
+				format.emplace_back( std::bind( &logger_formater::span, _2, _3, xgc::string( beg, ptr - beg ) ) );
 			}
 		}
 
@@ -1088,7 +1088,7 @@ namespace xgc
 			return sprintf_s( buf, len, "(%lu)", ctx.line );
 		}
 
-		inline xgc_size logger_formater::span( xgc_char * buf, xgc_size len, const xgc_string & span )
+		inline xgc_size logger_formater::span( xgc_char * buf, xgc_size len, const xgc::string & span )
 		{
 			return sprintf_s( buf, len, "%s", span.c_str() );
 		}

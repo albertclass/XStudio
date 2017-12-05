@@ -16,9 +16,9 @@ protected:
 	/// 聊天服务器连接会话
 	CChatSrvSession* mChatSrvSession;
 	/// 用户名
-	xgc_string mUsername;
+	xgc::string mUsername;
 	/// 密码
-	xgc_string mPassword;
+	xgc::string mPassword;
 public:
 	///
 	/// \brief 构造

@@ -321,7 +321,7 @@ namespace xgc
 				opad[j] ^= key[j];
 			}
 
-			xgc_string buffer;
+			xgc::string buffer;
 			buffer.append( (const char*)ipad, SHA1_BLOCK_SIZE );
 			buffer.append( (const char*)_data, _dataLen );
 
