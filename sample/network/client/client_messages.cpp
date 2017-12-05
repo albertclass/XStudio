@@ -210,11 +210,11 @@ int download_check( CNetSession* net, xgc_byte file_id )
 		XGC_ASSERT_RETURN( path, -1 );
 
 		xgc_char md5[16];
-		if( false == Encryption::Md5_file( path, md5 ) )
+		if( false == encrypt::md5_file( path, md5 ) )
 			return -2;
 
 		xgc_char md5_text[33];
-		Encryption::Md5_text( md5, md5_text );
+		encrypt::md5_text( md5, md5_text );
 
 		if( strcasecmp( file.md5, md5_text ) != 0 )
 			return -3;

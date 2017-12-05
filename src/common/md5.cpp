@@ -6,7 +6,7 @@
 #pragma warning( disable:4996 )
 namespace xgc
 {
-	namespace Encryption
+	namespace encrypt
 	{
 		static xgc_string intToString( uint64_t i )
 		{
@@ -20,7 +20,7 @@ namespace xgc
 			return ( buf + 1 );
 		}
 
-		void Md5_text( char md5[16], char text[33], bool caps )
+		void md5_text( char md5[16], char text[33], bool caps )
 		{
 			char* buf = text;
 			const char* hex = caps ? "0123456789ABCDEF" : "0123456789abcdef";
@@ -217,7 +217,7 @@ namespace xgc
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		};
 
-		void Md5( const char *data, int data_len, char md5[16] )
+		void md5_data( const char *data, int data_len, char md5[16] )
 		{
 			if( data_len < 0 )
 			{
@@ -294,12 +294,12 @@ namespace xgc
 		}
 
 		///
-		/// \brief 获取文件Md5摘要
+		/// \brief 获取文件md5摘要
 		///
 		/// \author albert.xu
 		/// \date 2016/08/04 11:37
 		///
-		xgc_bool Md5_file( const char *filename, char md5[16] )
+		xgc_bool md5_file( const char *filename, char md5[16] )
 		{
 			int fd;
 			int retry = 5;
@@ -432,5 +432,5 @@ namespace xgc
 		}
 
 
-	} // namepsace Encryption
+	} // namepsace encrypt
 }

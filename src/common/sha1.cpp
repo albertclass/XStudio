@@ -19,13 +19,13 @@
 
 	======== Test Vectors (from FIPS PUB 180-1) ========
 
-	SHA1("abc") =
+	sha1("abc") =
 		A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
 
-	SHA1("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") =
+	sha1("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") =
 		84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1
 
-	SHA1(A million repetitions of "a") =
+	sha1(A million repetitions of "a") =
 		34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
 */
 #pragma warning( disable:4996 )
@@ -43,9 +43,9 @@
 #include <stdlib.h>
 #endif
 
-// You can define the endian mode in your files, without modifying the SHA1
+// You can define the endian mode in your files, without modifying the sha1
 // source files. Just #define SHA1_LITTLE_ENDIAN or #define SHA1_BIG_ENDIAN
-// in your files, before including the SHA1.h header file. If you don't
+// in your files, before including the sha1.h header file. If you don't
 // define anything, the class defaults to little endian.
 
 # if !defined(SHA1_LITTLE_ENDIAN) && !defined(SHA1_BIG_ENDIAN)
@@ -62,10 +62,10 @@
 
 namespace xgc
 {
-	namespace Encryption
+	namespace encrypt
 	{
 		/////////////////////////////////////////////////////////////////////////////
-		// Declare SHA1 workspace
+		// Declare sha1 workspace
 		enum
 		{
 			SHA1_DIGEST_LENGTH = 20,
@@ -108,7 +108,7 @@ namespace xgc
 
 			// Member variables
 			xgc_uint8 m_workspace[64];
-			SHA1_WORKSPACE_BLOCK *m_block; // SHA1 pointer to the byte array above
+			SHA1_WORKSPACE_BLOCK *m_block; // sha1 pointer to the byte array above
 		};
 
 #ifdef SHA1_UTILITY_FUNCTIONS
@@ -155,7 +155,7 @@ namespace xgc
 
 		void CSHA1::Reset()
 		{
-			// SHA1 initialization constants
+			// sha1 initialization constants
 			m_state[0] = 0x67452301;
 			m_state[1] = 0xEFCDAB89;
 			m_state[2] = 0x98BADCFE;
@@ -286,7 +286,7 @@ namespace xgc
 		}
 
 
-		void SHA1( const char * _data, int _dataLen, const char * _key, int _keyLen, char * digest, bool hex /* = true */ )
+		void sha1( const char * _data, int _dataLen, const char * _key, int _keyLen, char * digest, bool hex /* = true */ )
 		{
 			CSHA1 csha1;
 

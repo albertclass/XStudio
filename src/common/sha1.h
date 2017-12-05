@@ -19,13 +19,13 @@
 
 	======== Test Vectors (from FIPS PUB 180-1) ========
 
-	SHA1("abc") =
+	sha1("abc") =
 		A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
 
-	SHA1("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") =
+	sha1("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") =
 		84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1
 
-	SHA1(A million repetitions of "a") =
+	sha1(A million repetitions of "a") =
 		34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
 */
 
@@ -34,7 +34,7 @@
 
 namespace xgc
 {
-	namespace Encryption
+	namespace encrypt
 	{
 		//----------------------------------------//
 		//
@@ -50,7 +50,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2016/08/10 14:27
 		///
-		COMMON_API void SHA1( const char * _data, int _dataLen, const char * _key, int _keyLen, char * digest, bool hex = true );
+		COMMON_API void sha1( const char * _data, int _dataLen, const char * _key, int _keyLen, char * digest, bool hex = true );
 	}
 }
 #endif

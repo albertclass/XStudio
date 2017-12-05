@@ -104,9 +104,9 @@ xgc_long CServerFiles::GenFileList(xgc_lpcstr root)
 
 			xgc_char md5[16];
 			xgc_char md5_text[33];
-			if( Encryption::Md5_file( path, md5 ) )
+			if( encrypt::md5_file( path, md5 ) )
 			{
-				Encryption::Md5_text( md5, md5_text );
+				encrypt::md5_text( md5, md5_text );
 				fprintf( fp, "%s:%s%c%s\n", md5_text, relative, SLASH, name );
 			}
 
