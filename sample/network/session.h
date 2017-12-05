@@ -127,5 +127,33 @@ public:
 	xgc_void SendPacket( xgc_lpvoid data, xgc_size size );
 };
 
+
+template< class T >
+void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, T &req )
+{
+	MessageHeader header;
+	header.type = type;
+	header.code = id;
+	header.length = htons( (xgc_uint16)( sizeof( header ) + sizeof( req ) ) );
+
+	net::SendPacketChains( net->GetHandle(), {
+		{ (xgc_lpvoid)&header, sizeof( header ) },
+		{ &req, sizeof( req ) },
+	} );
+}
+
+XGC_INLINE void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, xgc_lpvoid data, xgc_size size )
+{
+	MessageHeader header;
+	header.type = type;
+	header.code = id;
+	header.length = htons( xgc_uint16( sizeof( header ) + size ) );
+
+	net::SendPacketChains( net->GetHandle(), {
+		{ (xgc_lpvoid)&header, sizeof( header ) },
+		{ &data, size },
+	} );
+}
+
 #endif // _NETSESSION_H_ 
 

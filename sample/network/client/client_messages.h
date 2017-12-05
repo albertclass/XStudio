@@ -8,7 +8,7 @@
 /// \author albert.xu
 /// \date 2017/03/27 11:24
 ///
-xgc_void OnClientMessage( CNetSession* net, xgc_uint8 code, xgc_lpvoid data, xgc_size size );
+xgc_void OnClientMessage( CNetSession* net, xgc_uint16 code, xgc_lpvoid data, xgc_size size );
 
 ///
 /// \brief 

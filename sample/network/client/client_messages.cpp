@@ -45,12 +45,6 @@ struct stUserInfo
 	download_queue *dl_queue;
 };
 
-template< class T >
-void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, T &req )
-{
-
-}
-
 ///
 /// \brief 开始下载文件
 ///
@@ -98,7 +92,7 @@ int download_start( CNetSession* net, xgc_lpcstr fullname, xgc_lpcstr md5, int (
 	strcpy_s( req.filepath, file.path );
 	strcpy_s( req.filename, file.name );
 
-	SendPacket( SERVER_MESSAGE_TYPE, FILE_INFO_REQ, &req, sizeof( req ) );
+	SendPacket( net, SERVER_MESSAGE_TYPE, FILE_INFO_REQ, req );
 
 	return idle;
 };
@@ -259,7 +253,7 @@ int download_again( CNetSession* net, xgc_byte file_id )
 	strcpy_s( req.filepath, file.path );
 	strcpy_s( req.filename, file.name );
 
-	net->SendPacket( SERVER_MESSAGE_TYPE, FILE_INFO_REQ, &req, sizeof( req ) );
+	SendPacket( net, SERVER_MESSAGE_TYPE, FILE_INFO_REQ, req );
 
 	return 0;
 }
@@ -303,17 +297,26 @@ int download_close( CNetSession* net, xgc_byte file_id )
 	return 0;
 }
 
-xgc_void OnMessage( CNetSession* net, xgc_uint8 type, xgc_uint8 code, xgc_lpvoid data, xgc_size size )
+xgc_void OnMessage( CNetSession* net, xgc_lpvoid data, xgc_size size )
 {
+	MessageHeader* pHeader = (MessageHeader*)data;
+	auto type = pHeader->type;
+	auto code = pHeader->code;
+
+	auto pstr = (char*)data;
+
+	pstr += sizeof MessageHeader;
+	size -= sizeof MessageHeader;
+
 	switch( type )
 	{
 	case CLIENT_MESSAGE_TYPE:
-		OnClientMessage( net, code, data, size );
+		OnClientMessage( net, code, pstr, size );
 		break;
 	}
 }
 
-xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
+xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint64 code )
 {
 	switch( event )
 	{
@@ -375,7 +378,7 @@ xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
 	}
 }
 
-xgc_void OnClientMessage( CNetSession* net, xgc_uint8 code, xgc_lpvoid data, xgc_size size )
+xgc_void OnClientMessage( CNetSession* net, xgc_uint16 code, xgc_lpvoid data, xgc_size size )
 {
 	switch( code )
 	{
@@ -476,7 +479,7 @@ xgc_void OnFileInfoAck( CNetSession * net, xgc_lpvoid data, xgc_size size )
 	req.file_sequence = ack.file_sequence;
 	req.file_offset = 0;
 
-	net->SendPacket( SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, &req, sizeof(req) );
+	SendPacket( net, SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, req );
 }
 
 xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
@@ -553,6 +556,6 @@ xgc_void OnFileStreamAck( CNetSession* net, xgc_lpvoid data, xgc_size size )
 		req.file_offset = htonll( file.file_offset );
 		req.file_sequence = ack.file_sequence;
 
-		net->SendPacket( SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, &req, sizeof(req) );
+		SendPacket( net, SERVER_MESSAGE_TYPE, FILE_STREAM_REQ, req );
 	}
 }

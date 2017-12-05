@@ -5,8 +5,17 @@
 #include "server_messages.h"
 #include "server_files.h"
 
-xgc_void OnMessage( CNetSession* net, xgc_uint8 type, xgc_uint8 code, xgc_lpvoid data, xgc_size size )
+xgc_void OnMessage( CNetSession* net, xgc_lpvoid data, xgc_size size )
 {
+	MessageHeader* pHeader = (MessageHeader*)data;
+	auto type = pHeader->type;
+	auto code = pHeader->code;
+
+	auto pstr = (char*)data;
+
+	pstr += sizeof MessageHeader;
+	size -= sizeof MessageHeader;
+
 	switch( type )
 	{
 	case SERVER_MESSAGE_TYPE:
@@ -15,7 +24,7 @@ xgc_void OnMessage( CNetSession* net, xgc_uint8 type, xgc_uint8 code, xgc_lpvoid
 	}
 }
 
-xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
+xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint64 code )
 {
 	switch( event )
 	{
@@ -26,7 +35,7 @@ xgc_void OnEvent( CNetSession* net, xgc_uint32 event, xgc_uint32 code )
 	}
 }
 
-xgc_void OnServerMessage( CNetSession* net, xgc_uint8 code, xgc_lpvoid data, xgc_size size )
+xgc_void OnServerMessage( CNetSession* net, xgc_uint16 code, xgc_lpvoid data, xgc_size size )
 {
 	switch( code )
 	{
@@ -47,11 +56,6 @@ xgc_void OnFileInfoReq( CNetSession * net, xgc_lpvoid data, xgc_size size )
 	xgc_uint64 length = 0;
 	auto sequence = getServerFiles().GetFileInfo( req.filepath, req.filename, &length );
 
-	MessageHeader header;
-	header.length = htons( (xgc_uint16) (sizeof( MessageHeader ) + sizeof( MessageFileInfoAck )) );
-	header.type = SERVER_MESSAGE_TYPE;
-	header.code = FILE_INFO_ACK;
-
 	MessageFileInfoAck ack;
 	ack.file_id = req.file_id;
 	strcpy_s( ack.filepath, req.filepath );
@@ -71,7 +75,7 @@ xgc_void OnFileInfoReq( CNetSession * net, xgc_lpvoid data, xgc_size size )
 		ack.file_length = htonll( length );
 	}
 
-	net->SendPacket( CLIENT_MESSAGE_TYPE, FILE_INFO_ACK, &ack, sizeof( ack ) );
+	SendPacket( net, CLIENT_MESSAGE_TYPE, FILE_INFO_ACK, ack );
 }
 
 xgc_void OnFileStreamReq( CNetSession * net, xgc_lpvoid data, xgc_size size )
@@ -94,5 +98,5 @@ xgc_void OnFileStreamReq( CNetSession * net, xgc_lpvoid data, xgc_size size )
 
 	ack.data_size = htonl( (xgc_long)length );
 
-	net->SendPacket( CLIENT_MESSAGE_TYPE, FILE_STREAM_ACK, &ack, sizeof(ack) + length );
+	SendPacket( net, CLIENT_MESSAGE_TYPE, FILE_STREAM_ACK, &ack, sizeof(ack) + length );
 }

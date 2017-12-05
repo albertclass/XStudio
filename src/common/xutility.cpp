@@ -342,6 +342,8 @@ namespace xgc
 		{
 			if( strchr( controls, str[n] ) )
 				str[n] = 0;
+			else
+				break;
 
 			--n;
 		};
