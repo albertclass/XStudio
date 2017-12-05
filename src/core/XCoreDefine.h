@@ -12,6 +12,10 @@
 #	define CORE_API __declspec(dllimport)
 #endif
 
+#define NODE_TYPE_XBAG		1
+#define NODE_TYPE_XSKILL	2
+#define NODE_TYPE_XSTATUS	3
+
 /// 触发器事件类型
 enum eTriggerEvent : xgc_uint16
 {

@@ -40,7 +40,7 @@ namespace xgc
 		xgc_uint16			m_nFinishCount;		// 完成计数
 	};
 
-	class XQuest :	public XObject
+	class XQuest :	public XObjectNode
 	{
 		friend class XQuestObjective;
 	public:

@@ -17,7 +17,7 @@ namespace xgc
 		DECLARE_XCLASS()
 
 	public:
-		XSkill();
+		XSkill( timespan interval );
 
 		~XSkill();
 

@@ -67,7 +67,7 @@ public:
 	}
 
 	///
-	/// \brief 设置角色服务器
+	/// \brief 设置角色名
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
@@ -77,7 +77,7 @@ public:
 	}
 
 	///
-	/// \brief 设置角色服务器
+	/// \brief 设置角色扩展数据
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
@@ -87,7 +87,7 @@ public:
 	}
 
 	///
-	/// \brief 设置角色服务器
+	/// \brief 获取角色名
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
@@ -97,7 +97,7 @@ public:
 	}
 
 	///
-	/// \brief 设置角色服务器
+	/// \brief 获取角色扩展数据
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
@@ -107,7 +107,7 @@ public:
 	}
 
 	///
-	/// \brief 重置角色Token
+	/// \brief 获取角色Token
 	/// \author albert.xu
 	/// \date 2017/08/03
 	///
@@ -119,7 +119,6 @@ public:
 	/// \date 2017/08/03
 	///
 	xgc_bool checkToken( const xgc_string &strToken );
-
 
 	///
 	/// \brief 角色加入频道

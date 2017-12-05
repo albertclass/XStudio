@@ -5,6 +5,27 @@
 namespace xgc
 {
 	///
+	/// \brief 节点构造 
+	/// \date 11/13/2017
+	/// \author xufeng04
+	///
+
+	XObjectNode::XObjectNode()
+	{
+
+	}
+
+	///
+	/// \brief 节点析构
+	/// \date 11/13/2017
+	/// \author xufeng04
+	///
+
+	XObjectNode::~XObjectNode()
+	{
+	}
+
+	///
 	/// \brief 增加子节点
 	/// \author albert.xu
 	/// \date 8/3/2009
@@ -131,6 +152,8 @@ namespace xgc
 						return hObject;
 			}
 		}
+
+		return INVALID_OBJECT_ID;
 	}
 
 	///
@@ -194,6 +217,8 @@ namespace xgc
 		// 此处可以使用堆来优化
 		auto pClass = &pObject->GetRuntimeClass();
 		mChildren[pClass].push_back( hObject );
+
+		return true;
 	}
 
 	///

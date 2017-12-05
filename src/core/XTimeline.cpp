@@ -36,7 +36,7 @@ xgc_void XTimeline::AddActive( XActive * pActive )
 
 		auto it = std::upper_bound( mActives.begin(), mActives.end(), pActive, _Pred );
 	
-		if( it - mActives.begin() > mNext )
+		if( it - mActives.begin() > (int)mNext )
 			mActives.insert( it, pActive );
 	}
 }

@@ -70,8 +70,7 @@ namespace xgc
 	IMPLEMENT_XCLASS_END()
 
 	XQuest::XQuest(void)
-		: XObject()
-		, m_FinishMask( 0 )
+		: m_FinishMask( 0 )
 		, m_Mask( 0 )
 	{
 	}

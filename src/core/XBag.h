@@ -269,7 +269,7 @@ namespace xgc
 			if( xgc_nullptr == pNewOwner )
 				return false;
 
-			return pNewOwner->Insert( this, xgc_nullptr );
+			return pNewOwner->AddNode( NODE_TYPE_XBAG, GetObjectID() );
 		}
 
 		///

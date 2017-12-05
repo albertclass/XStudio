@@ -378,9 +378,9 @@ namespace xgc
 
 	//---------------------------------------------------//
 	// [8/3/2009 Albert]
-	// Description:	通知格子内的所有对象,有人进入了视野
-	// nObjID:		被通知的对象ID
-	// pObj:		正在移动的对象
+	// \brief	通知格子内的所有对象,有人进入了视野
+	// \param nObjID 被通知的对象ID
+	// \param pObj 正在移动的对象
 	//---------------------------------------------------//
 	xgc_void XGameMap::NotifyEnterEyeshot( XGameObject* pObject, xObject nObjID, VisualMode eMode )
 	{

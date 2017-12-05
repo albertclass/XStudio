@@ -14,8 +14,7 @@ namespace xgc
 		IMPLEMENT_ATTRIBUTE( ObjectFlags,	VT_U32,		ATTR_FLAG_SAVE, "20140912" )	// ÊÇ·ñ¿É¼û
 	IMPLEMENT_XCLASS_END()
 
-	XGameObject::XGameObject( xObject hOwner )
-		: mOwner( hOwner )
+	XGameObject::XGameObject()
 	{
 	}
 

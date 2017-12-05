@@ -12,7 +12,7 @@
 #define DECLARE_XCLASS()\
 public: \
 	static	const XClassInfo& GetThisClass(); \
-	virtual const XClassInfo& GetRuntimeClass()const;
+	virtual const XClassInfo& GetRuntimeClass()const;\
 
 #define DECLARE_POOL_OBJECT()\
 	static void * operator new( xgc_size s );\

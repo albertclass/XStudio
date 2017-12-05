@@ -381,7 +381,13 @@ group "chat"
 			language "C++"
 			cppdialect "C++11"
 			location "prj/sample"
-			includedirs { "src/common", "src/net", "sample/chat", "sample/chat/chat_protocol" }
+			includedirs { 
+				"sample/chat", 
+				"sample/chat/chat_protocol",
+				"src/common", 
+				"src/net"
+			}
+			
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 			links { "common", "net" }

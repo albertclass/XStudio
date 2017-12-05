@@ -8,16 +8,16 @@ namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// 角色属性索引
-	extern CORE_API xAttrIndex	attrActorIndex;			///< 角色配置索引
-	extern CORE_API xAttrIndex	attrActorType;			///< 角色类型
-	extern CORE_API xAttrIndex  attrActorHP;			///< 当前生命值
-	extern CORE_API xAttrIndex  attrActorHP_Max;		///< 生命上限
-	extern CORE_API xAttrIndex	attrActorBeatSpeed;		///< 击退速度
-	extern CORE_API xAttrIndex	attrActorFaintTime;		///< 眩晕时间
-	extern CORE_API xAttrIndex	attrActorAbnormalTime;	///< 特殊状态时间
-	extern CORE_API xAttrIndex	attrActorBornTime;		///< 出生时间
-	extern CORE_API xAttrIndex	attrActorGroupMask;		///< 组别掩码，用于区分阵营
-	extern CORE_API xAttrIndex  attrActorStatus;        ///< 角色状态
+	extern CORE_API xAttrIndex attrActorIndex;			///< 角色配置索引
+	extern CORE_API xAttrIndex attrActorType;			///< 角色类型
+	extern CORE_API xAttrIndex attrActorHP;				///< 当前生命值
+	extern CORE_API xAttrIndex attrActorHP_Max;			///< 生命上限
+	extern CORE_API xAttrIndex attrActorBeatSpeed;		///< 击退速度
+	extern CORE_API xAttrIndex attrActorFaintTime;		///< 眩晕时间
+	extern CORE_API xAttrIndex attrActorAbnormalTime;	///< 特殊状态时间
+	extern CORE_API xAttrIndex attrActorBornTime;		///< 出生时间
+	extern CORE_API xAttrIndex attrActorGroupMask;		///< 组别掩码，用于区分阵营
+	extern CORE_API xAttrIndex attrActorStatus;			///< 角色状态
 	extern CORE_API xAttrIndex attrActorCanMove;		///< 可移动
 	extern CORE_API xAttrIndex attrActorCanAttack;		///< 可攻击
 	extern CORE_API xAttrIndex attrActorCanBeHit;		///< 可受击
@@ -194,7 +194,7 @@ namespace xgc
 	//	virtual xgc_void Release() = 0;
 	//};
 
-	class CORE_API XActor : public XObjectNode
+	class CORE_API XActor : public XGameObject
 	{
 		DECLARE_XCLASS();
 		friend class XGameMap;
@@ -203,17 +203,6 @@ namespace xgc
 	public:
 		XActor( void );
 		~XActor( void );
-
-		///
-		/// \brief 获取地图对象 
-		/// \date 11/10/2017
-		/// \author xufeng04
-		/// \return 地图对象引用
-		///
-		XGC_INLINE XGameObject& getGameObject()
-		{
-			return mGameObject;
-		}
 
 		///
 		/// \brief 受到攻击
@@ -489,8 +478,6 @@ namespace xgc
 	protected:
 		/// @var 状态重置的定时器句柄
 		timer_h mResetStatusTimerHandler;
-		/// @var 地图对象
-		XGameObject mGameObject;
 
 	private:
 		/// @var 角色重置状态

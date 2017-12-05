@@ -41,7 +41,7 @@ namespace xgc
 		friend class XGameMap;
 		friend class CStateMachine;
 	public:
-		XGameObject( xObject hOwner );
+		XGameObject();
 		~XGameObject();
 
 		enum 
@@ -52,17 +52,6 @@ namespace xgc
 			Flag_Barrier = 3, 
 			Flag_BaTi = 4 
 		};
-
-		///
-		/// \brief 获取所有者 
-		/// \date 11/10/2017
-		/// \author xufeng04
-		/// \return 所有者的句柄
-		///
-		XGC_INLINE xObject GetOwner()const
-		{
-			return mOwner;
-		}
 
 		// 直接世界坐标
 		XGC_INLINE xgc_void GetPosition( xgc_real32 fPos[3] )const
@@ -383,13 +372,11 @@ namespace xgc
 		xgc_void OnDestroy() override {}
 	private:
 		/// @var 位置，世界坐标
-		XVector3	mPosition;	
+		XVector3 mPosition;	
 		/// @var 方向，向量
-		XVector3	mDirection; 
+		XVector3 mDirection; 
 		/// @var 速度，标量
-		XVector3	mSpeed;		
-		/// @var 设置所有者
-		xObject		mOwner;
+		XVector3 mSpeed;		
 	};
 }
 #endif // _XGAME_OBJECT_H_

@@ -138,7 +138,6 @@ namespace xgc
 
 		/// @var 事件观察者
 		xgc_map< xgc_long, Observer > mEventSubject;
-
 		/// @var 是否被销毁
 		xgc_bool mIsDestory;
 		/// @var 父对象ID
@@ -154,6 +153,54 @@ namespace xgc
 		xObject		GetParent()const { return mParentID; }
 		// 销毁对象
 		xgc_void	Destroy();
+
+		///
+		/// \brief 获取对象的键值 
+		/// \date 11/16/2017
+		/// \author xufeng04
+		/// \return 键值
+		///
+		virtual xgc_long Key()const { return GetObjectID(); }
+
+		///
+		/// \brief 获取节点个数 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		/// \return 节点个数
+		///
+		virtual xgc_bool HasNode()const { return false; }
+
+		///
+		/// \brief 添加节点 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		///
+		virtual	xgc_bool AddNode( xgc_ulong nType, xObject hObject ) { return true; }
+
+		///
+		/// \brief 删除节点 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		///
+		virtual xgc_void DelNode( xgc_ulong nType ) {}
+
+		///
+		/// \brief 获取节点 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		/// \param nType 节点类型
+		/// \return 节点句柄
+		///
+		virtual xObject GetNode( xgc_ulong nType ) const { return INVALID_OBJECT_ID; }
+
+		///
+		/// \brief 获取节点 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		/// \param nType 节点类型
+		/// \return 节点句柄
+		///
+		virtual xgc_void EnumNode( const std::function< void(xgc_ulong, xObject) > &fn ) const {}
 
 		/************************************************************************/
 		/* 事件操作
@@ -264,7 +311,7 @@ namespace xgc
 		}
 
 		template<>
-		xgc_bool getValue<xgc_bool>( xAttrIndex nAttr ) const
+		XGC_INLINE xgc_bool getValue<xgc_bool>( xAttrIndex nAttr ) const
 		{
 			return getAttr( nAttr ).toBool();
 		}

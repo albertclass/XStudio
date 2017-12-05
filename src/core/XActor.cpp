@@ -22,7 +22,7 @@ namespace xgc
 	CORE_API xAttrIndex attrActorCanDead;		///< 可死亡
 	CORE_API xAttrIndex attrActorCanHurt;		///< 可受伤
 
-	IMPLEMENT_XCLASS_BEGIN( XActor, XObjectNode )
+	IMPLEMENT_XCLASS_BEGIN( XActor, XGameObject )
 		IMPLEMENT_ATTRIBUTE( ActorIndex, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 角色配置索引
 		IMPLEMENT_ATTRIBUTE( ActorType, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 角色类型
 		IMPLEMENT_ATTRIBUTE( ActorHP, VT_U32, ATTR_FLAG_SAVE, "20140912" )			// 当前生命值
@@ -55,9 +55,7 @@ namespace xgc
 	};
 
 	XActor::XActor()
-		: XObjectNode()
-		, mGameObject( GetObjectID() )
-		, mResetStatusTimerHandler( INVALID_TIMER_HANDLE )
+		: mResetStatusTimerHandler( INVALID_TIMER_HANDLE )
 		, mActorRestonState( enActorState::sta_live )
 		, mRadius( 1.0f )
 		, mBornPoint( XVector3::ZERO )
@@ -66,18 +64,12 @@ namespace xgc
 		, mFriend( INVALID_OBJECT_ID )
 		, mFightState( false )
 	{
-		// 初始化对象属性
-		mGameObject.InitObject();
-		// 设置事件转发的目标为自己
-		mGameObject.RegistEvent( -1, std::bind( (XEventBind1)&XObject::EmmitEvent, this, _1 ), GetObjectID() );
 	}
 
 	XActor::~XActor( void )
 	{
 		// 将注册的定时器从定时器队列里移除
 		getTimer().remove( mResetStatusTimerHandler );
-		// 将自己注册到代理对象中的事件全部移除。
-		mGameObject.RemoveEvent( GetObjectID() );
 	}
 
 	///

@@ -17,9 +17,10 @@ namespace xgc
 		IMPLEMENT_ATTRIBUTE( SkillStartTime, VT_U64, ATTR_FLAG_SAVE, "20171023" )
 		IMPLEMENT_ATTRIBUTE( SkillCloseTime, VT_U64, ATTR_FLAG_SAVE, "20171023" )
 		IMPLEMENT_ATTRIBUTE( SkillResetTime, VT_U64, ATTR_FLAG_SAVE, "20171023" )
-		IMPLEMENT_XCLASS_END()
+	IMPLEMENT_XCLASS_END()
 
-	XSkill::XSkill()
+	XSkill::XSkill( timespan interval )
+		: XTimeline( interval )
 	{
 
 	}

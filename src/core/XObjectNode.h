@@ -5,19 +5,21 @@ namespace xgc
 {
 	class CORE_API XObjectNode : public XObject
 	{
-		DECLARE_XCLASS();
-	protected:
-		XObjectNode()
-		{
-
-		}
-
-		~XObjectNode()
-		{
-
-		}
-
 	public:
+		///
+		/// \brief 节点构造 
+		/// \date 11/13/2017
+		/// \author xufeng04
+		///
+		XObjectNode();
+
+		///
+		/// \brief 节点析构
+		/// \date 11/13/2017
+		/// \author xufeng04
+		///
+		~XObjectNode();
+
 		///
 		/// \brief 增加子节点
 		/// \author albert.xu
