@@ -2,10 +2,7 @@
 #define _SERVER_BASE_H_
 #include "ServerService.h"
 #include "ServerCommand.h"
-#include "ServerDatabase.h"
 #include "ServerParams.h"
-#include "ServerDatabase.h"
-#include "ServerLogger.h"
 #include "ServerRefresh.h"
 #include "ServerEvent.h"
 #include "ServerSequence.h"
@@ -18,19 +15,19 @@
 /// \param InitConfiguration 配置初始化回调
 /// \param lpParam 配置初始化参数
 ///
-xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )( xgc::common::ini_reader &, xgc_lpvoid ), xgc_lpvoid lpParam );
+xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_reader & ) > & fnInitConf );
 
 ///
 /// 运行服务器
 /// [11/29/2014] create by albert.xu
 ///
-xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam );
+xgc_void LoopServer( const std::function< bool( bool ) > &GameLogic );
 
 ///
 /// 结束服务器
 /// [11/26/2014] create by albert.xu
 ///
-xgc_void ServerFini( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam );
+xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam );
 
 ///
 /// 获取配置文件路径

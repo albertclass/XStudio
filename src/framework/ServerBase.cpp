@@ -2,23 +2,13 @@
 //
 #include "ServerDefines.h"
 #include "ServerBase.h"
+#include "ServerLogger.h"
+#include "ServerDatabase.h"
 
 const char* __version__ = "1.0.0.0";
 const char* __version_svn__ = "37687";
 const char* __version_url__ = "github.com/albertclass/XStudio";
 const char* __version_build__ = "37686";
-
-///
-/// 初始化数据库连接
-/// [1/15/2014 albert.xu]
-///
-extern xgc_bool InitServerDatabase( ini_reader &ini );
-
-///
-/// 清理数据库连接模块
-/// [1/15/2014 albert.xu]
-///
-extern xgc_void FiniServerDatabase();
 
 // 服务器配置
 /// @var 服务器名
@@ -40,7 +30,7 @@ int __cdecl PrintMemReport( xgc_lpcstr fmt, ... )
 	return cpy;
 }
 
-xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc::common::ini_reader &, xgc_lpvoid), xgc_lpvoid lpParam )
+xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_reader & ) > & fnInitConf )
 {
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
@@ -114,12 +104,6 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 
 	SYS_INFO( "刷新系统初始化成功！" );
 
-	MemMark( "asyncevent", pInitNode );
-	if( false == InitServerEvent() )
-		return false;
-
-	SYS_INFO( "异步逻辑处理初始化成功！" );
-
 	MemMark( "debugcommand", pInitNode );
 	if( false == InitDebugCmd( ini, xgc_nullptr ) )
 		return false;
@@ -129,7 +113,7 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 	if( bUseSequence )
 	{
 		MemMark( "sequence", pInitNode );
-		if( false == ServerSequence::InitServerSequence() )
+		if( false == InitServerSequence() )
 			return false;
 
 		SYS_INFO( "Sequence 初始化成功！" );
@@ -137,7 +121,7 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 
 	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 	MemMark( "configuration", pInitNode );
-	if( false == InitConfiguration( ini, lpParam ) )
+	if( false == fnInitConf( ini ) )
 	{
 		USR_ERROR( "InitConfiguration failed." );
 		return false;
@@ -163,7 +147,7 @@ xgc_bool ServerInit( xgc_lpcstr lpConfigPath, xgc_bool( *InitConfiguration )(xgc
 /// 运行服务器
 /// [11/29/2014] create by albert.xu
 ///
-xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvoid lpParam )
+xgc_void LoopServer( const std::function< bool( bool ) > &GameLogic )
 {
 	// 开启超时监控
 	getInvokeWatcherMgr().Start();
@@ -192,7 +176,7 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 		bBusy = AsyncDBExecuteResp( 50 ) > 0 || bBusy;
 
 		// 处理服务器逻辑
-		if( OnServerStep( bBusy, lpParam ) )
+		if( GameLogic( bBusy ) )
 			break;
 
 		// 处理刷新事件
@@ -221,7 +205,7 @@ xgc_void ServerLoop( xgc_bool( *OnServerStep )( xgc_bool, xgc_lpvoid ), xgc_lpvo
 	getInvokeWatcherMgr().Stop();
 }
 
-xgc_void ServerFini( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam )
+xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lpParam )
 {
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_STOP_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );

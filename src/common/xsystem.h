@@ -102,7 +102,7 @@ namespace xgc
 	COMMON_API xgc_long make_dirs( xgc_lpcstr path, xgc_bool recursion = true );
 
 	///
-	/// \brief 遍历目录
+	/// \brief 从root开始遍历目录，最大深度为deep_map，探索到目录或文件时回调on_file
 	///
 	/// \author albert.xu
 	/// \date 2017/03/30 16:05
@@ -117,6 +117,12 @@ namespace xgc
 	///
 	COMMON_API xgc_lpcstr path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname );
 
+	///
+	/// \brief 获取路径的目录部分
+	///
+	/// \author albert.xu
+	/// \date 2017/04/01 15:07
+	///
 	template< size_t size >
 	xgc_lpcstr path_dirs( xgc_char( &path )[size], xgc_lpcstr fullname )
 	{
@@ -131,6 +137,12 @@ namespace xgc
 	///
 	COMMON_API xgc_lpcstr path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname );
 
+	///
+	/// \brief 获取路径的目录部分
+	///
+	/// \author albert.xu
+	/// \date 2017/04/01 15:07
+	///
 	template< size_t size >
 	xgc_lpcstr path_name( xgc_char( &path )[size], xgc_lpcstr fullname )
 	{

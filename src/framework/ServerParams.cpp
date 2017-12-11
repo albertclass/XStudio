@@ -2,100 +2,298 @@
 #include "ServerParams.h"
 #include "ServerDatabase.h"
 
-using namespace xgc::sql;
-
-/// @var 通知回调
-static xgc_void( *gNotifyCallback )( const stGlobalParam& Parameter ) = xgc_nullptr;
+const char* params_version = "2017.12.11";
 
 /// @var 服务器全局参数
-static xgc::unordered_map< xgc::string, stGlobalParam > gGlobalParams;
+static xgc::unordered_map< xgc::string, stGlobalParam > G_Params;
+
+/// @var 全局回调
+static PF_NotifyCallback G_NotifyCallback = xgc_nullptr;
+
+/// @var 模式
+static xgc_long G_ParamsMode = 0;
+
+/// @var 服务器句柄
+static xgc_lpvoid G_Server = xgc_nullptr;
+
+/// @var 客户端句柄
+static xgc::set< network_t > G_Clients;
+
+/// @var 全局量保存位置
+static xgc::string G_ParamsFile;
+
+///
+/// \brief 连接会话接口
+///
+/// \author albert.xu
+/// \date 2017/03/01 10:41
+///
+class CParamsSession : public INetworkSession
+{
+private:
+	/// 连接句柄
+	network_t handle_;
+
+public:
+	///
+	/// \brief 构造 
+	/// \date 12/5/2017
+	/// \author xufeng04
+	///
+	CParamsSession()
+	{
+
+	}
+
+	///
+	/// \brief 析构
+	/// \date 12/5/2017
+	/// \author xufeng04
+	///
+	~CParamsSession()
+	{
+
+	}
+
+	///
+	/// \brief 数据包是否
+	/// \return	数据包大小
+	///
+	virtual int OnParsePacket( const void* data, xgc_size size )
+	{
+		if( size < sizeof( xgc_uint16 ) )
+			return 0;
+
+		return ntohs( *(xgc_uint16*)data );
+	}
+
+	///
+	/// \brief 连接建立
+	///
+	/// \author albert.xu
+	/// \date 2017/02/28 11:09
+	///
+	virtual xgc_void OnAccept( net::network_t handle )
+	{
+		handle_ = handle;
+		G_Clients.insert( handle );
+		SendCommand( "version %s", params_version );
+	}
+
+	///
+	/// \brief 连接建立
+	///
+	/// \author albert.xu
+	/// \date 2017/02/28 11:09
+	///
+	virtual xgc_void OnConnect( net::network_t handle )
+	{
+		handle_ = handle;
+	}
+
+	///
+	/// \brief 连接错误
+	///
+	/// \author albert.xu
+	/// \date 2017/02/28 11:09
+	///
+	virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code )
+	{
+		SYS_ERROR( "Params Socket Error: type = %d, code = %d", error_type, error_code );
+	}
+
+	///
+	/// \brief 连接关闭
+	///
+	/// \author albert.xu
+	/// \date 2017/02/28 11:10
+	///
+	virtual xgc_void OnClose()
+	{
+
+	}
+
+	///
+	/// \brief 接收数据
+	///
+	/// \author albert.xu
+	/// \date 2017/02/28 11:10
+	///
+	virtual xgc_void OnRecv( xgc_lpvoid data, xgc_size size )
+	{
+		auto len = *(xgc_uint16 *)data;
+
+		ParseCommand( (char*)data + sizeof( xgc_uint16 ), size - sizeof( xgc_uint16 ) );
+	}
+
+	///
+	/// \brief 网络保活事件
+	///
+	/// \author albert.xu
+	/// \date 2017/03/03 10:41
+	///
+	virtual xgc_void OnAlive()
+	{
+		SendCommand( "ping %llu", datetime::now().to_milliseconds() );
+	}
+
+	///
+	/// \brief 发送消息 
+	/// \date 12/5/2017
+	/// \author xufeng04
+	///
+	xgc_void SendCommand( xgc_lpcstr fmt, ... )
+	{
+		char buf[1024] = { 0 };
+		va_list ap;
+		va_start( ap, fmt );
+		int cpy = vsprintf_s( buf, fmt, ap );
+		va_end( ap );
+
+		auto len = xgc_uint16( cpy );
+
+		SendPacketChains( handle_, {
+			{ MakeBuffer( len ) },
+			{ MakeBuffer( buf, len + 1 ) },
+		} );
+	}
+
+	///
+	/// \brief 解析命令行 
+	/// \date 12/5/2017
+	/// \author xufeng04
+	///
+	xgc_void ParseCommand( xgc_lpstr str, xgc_size len )
+	{
+		auto args = string_split( str, ", " );
+		if( args.size() < 1 )
+			return;
+
+		auto &command = args[0];
+
+		if( G_ParamsMode == 1 )
+		{
+			if( command == "sync" )
+			{
+				char szDateTime[64] = { 0 };
+
+				for( auto &kv : G_Params )
+				{
+					auto &info = kv.second;
+					SendCommand( "set %s %s %08X %s", info.key, info.val, info.mask, szDateTime );
+				}
+			}
+		}
+		else if( G_ParamsMode == 2 )
+		{
+			if( command == "version" )
+			{
+				if( args[1] != params_version )
+					CloseLink( handle_ );
+			}
+		}
+		
+		if( command == "set" )
+		{
+			auto it = G_Params.find( args[1] );
+			if( it != G_Params.end() )
+			{
+				datetime update = datetime::convert( args[4].c_str() );
+				stGlobalParam &info = it->second;
+				if( update > info.update )
+				{
+					info.val = args[2];
+					info.mask = str2numeric< xgc_uint32 >( args[3].c_str(), xgc_nullptr, 16 );
+					info.update = update;
+
+					G_NotifyCallback( info, false );
+				}
+			}
+			else
+			{
+				stGlobalParam info;
+				info.key = args[1];
+				info.val = args[2];
+				info.mask = str2numeric< xgc_uint32 >( args[3].c_str(), xgc_nullptr, 16 );
+				info.update = datetime::convert( args[4].c_str() );
+
+				G_NotifyCallback( info, true );
+			}
+		}
+		else if( command == "get" )
+		{
+			auto it = G_Params.find( args[1] );
+			if( it != G_Params.end() )
+			{
+				char szDateTime[64] = { 0 };
+
+				auto &info = it->second;
+				info.update.to_string( szDateTime );
+				SendCommand( "set %s %s %08X %s", info.key, info.val, info.mask, szDateTime );
+			}
+		}
+	}
+};
+
+/// @var 客户端对象
+static CParamsSession *GP_Client = XGC_NEW CParamsSession();
 
 ///
 /// 设置同步回调
 /// [12/19/2014] create by albert.xu
 ///
-xgc_void SetGlobalParameterNotifier( xgc_void( *pfnNotify )( const stGlobalParam& Parameter ) )
+xgc_void SetGlobalParameterNotifier( PF_NotifyCallback pfnNotifier )
 {
-	gNotifyCallback = pfnNotify;
+	G_NotifyCallback = pfnNotifier;
 }
 
 ///
 /// 从配置文件加载
 /// [12/19/2014] create by albert.xu
 ///
-static xgc_bool LoadGlobalConfig( ini_reader &ini )
+static xgc_bool Load( xgc_lpcstr file )
 {
-	xgc_lpcstr lpSecionName = "ServerParams";
-	xgc_uint32 nNewParamCount = 0;
+	csv_reader csv;
+	csv.load( file, ',', false );
 
-	if( ini.is_exist_section( lpSecionName ) )
+	auto rows = csv.get_rows();
+	
+	for( decltype( rows ) row = 0; row < rows; ++row )
 	{
 		// 存在配置则读取，不存在则略过
-		for( xgc_size nIdx = 0; nIdx < ini.get_item_count( lpSecionName ); ++nIdx )
+		xgc_lpcstr lpKey = csv.get_value( row, 0ULL, xgc_nullptr );
+		xgc_lpcstr lpVal = csv.get_value( row, 1ULL, xgc_nullptr );
+
+		XGC_ASSERT_CONTINUE( lpKey && lpVal );
+
+		// 此名字保留，用于重定向
+		// 判断是否已读取该服务器端配置
+		xgc_uint32 nMask = csv.get_value( row, 2ULL, 0U );
+		
+		// XGC_ASSERT_MESSAGE( nMask, "全局变量未配置属性，这将导致该属性仅在本地服务器生效。" );
+		SetGlobalParameter( lpKey, lpVal, nMask );
+	}
+	return true;
+}
+
+static xgc_void Save( xgc_lpcstr file )
+{
+	std::fstream fs( file, std::ios_base::out | std::ios_base::trunc );
+
+	for( auto &kv : G_Params )
+	{
+		if( XGC_CHK_FLAGS( kv.second.mask, GLOBAL_PARAM_MASK_HOLDON ) )
 		{
-			xgc_lpcstr lpKey = ini.get_item_name( lpSecionName, nIdx );
-			xgc_lpcstr lpVal = ini.get_item_value( lpSecionName, nIdx, xgc_nullptr );
-
-			XGC_ASSERT_CONTINUE( lpVal );
-			// 此名字保留，用于重定向
-			if( strcmp( "ConfigurationPath", lpKey ) == 0 )
-			{
-				xgc_char szIniFile[XGC_MAX_PATH] = { 0 };
-				get_absolute_path( szIniFile, XGC_MAX_PATH, lpVal );
-
-				// 加载重定向的配置文件
-				ini_reader params;
-				if( false == params.load( szIniFile ) )
-				{
-					SYS_ERROR( "无法打开服务器参数配置文件 - %s", szIniFile );
-					return false;
-				}
-
-				// 递归调用，逐级读取。
-				XGC_ASSERT_RETURN( LoadGlobalConfig( params ), false );
-			}
-			else
-			{
-				// 判断是否已读取该服务器端配置
-				if( xgc_nullptr == GetGlobalParameter( lpKey, xgc_nullptr ) )
-				{
-					xgc_char szVal[256] = { 0 };
-					strcpy_s( szVal, lpVal );
-					xgc_uint32 nMask = 0;
-					xgc_lpstr lpNext = xgc_nullptr;
-					xgc_lpstr lpVal = strtok_s( szVal, " ,", &lpNext );
-					if( xgc_nullptr == lpVal )
-						continue;
-
-					xgc_lpstr lpMask = strtok_s( lpNext, " ,", &lpNext );
-					while( lpMask )
-					{
-						if( strcmp( lpMask, "CLIENT" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_CLIENT;
-						else if( strcmp( lpMask, "SYNCDB" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_SYNCDB;
-						else if( strcmp( lpMask, "SYNCMS" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_SYNCMS;
-						else if( strcmp( lpMask, "SYNCGS" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_SYNCGS;
-						else if( strcmp( lpMask, "SYNCGG" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_SYNCGG;
-						else if( strcmp( lpMask, "SCRIPT" ) == 0 )
-							nMask |= GLOBAL_PARAM_MASK_SCRIPT;
-						else
-							XGC_DEBUG_MESSAGE( "未知的属性配置" );
-
-						lpMask = strtok_s( xgc_nullptr, " ,", &lpNext );
-					}
-
-					// XGC_ASSERT_MESSAGE( nMask, "全局变量未配置属性，这将导致该属性仅在本地服务器生效。" );
-					SetGlobalParameter( lpKey, lpVal, nMask | GLOBAL_PARAM_MASK_SYSTEM );
-				}
-			}
+			fs
+				<< kv.second.key << ","
+				<< kv.second.val << ","
+				<< kv.second.mask << std::endl;
 		}
 	}
 
-	return true;
+	fs.flush();
+
+	fs.close();
 }
 
 ///
@@ -104,94 +302,57 @@ static xgc_bool LoadGlobalConfig( ini_reader &ini )
 ///
 xgc_bool InitGlobalParams( ini_reader& ini )
 {
-	//if( false == ini.is_exist_section( "ServerParams" ) )
-	//	return false;
-
-	//auto host = ini.get_item_value( "ServerParams", "host", "127.0.0.1" );
-	//auto port = ini.get_item_value( "ServerParams", "port", 6379 );
-	//auto index = ini.get_item_value( "ServerParams", "database", 0 );
-
-	//redisContext *c = redisConnect( host, port );
-	//if( xgc_nullptr == c )
-	//{
-	//	SYS_ERROR( "无法分配redis上下文。" );
-	//	return false;
-	//}
-
-	//if( 0 == c->err )
-	//{
-	//	SYS_ERROR( "redis 连接错误 %s", c->errstr );
-	//	return false;
-	//}
-
-	//__redis = c;
-
-	if( false == SyncGlobalParams() )
+	if( false == ini.is_exist_section( "ServerParams" ) )
 		return false;
 
-	return LoadGlobalConfig( ini );
-}
+	auto host = ini.get_item_value( "ServerParams", "host", "127.0.0.1" );
+	auto port = ini.get_item_value( "ServerParams", "port", 6379 );
 
-///
-/// 同步全局变量表
-/// [8/27/2014] create by albert.xu
-///
-xgc_bool SyncGlobalParams()
-{
-	sql_recordset rs;
-	sql_result res = SyncDBExecuteRc( "select `key`, `value`, `mask`, `updatetime` from `global_memory`;", rs );
-	if( sql_failed == res )
+	auto mode = ini.get_item_value( "Serverparams", "mode", "client" );
+	auto file = ini.get_item_value( "Serverparams", "file", "params" );
+
+	if( strcasecmp( mode, "server" ) == 0 )
 	{
-		SYS_ERROR( "%u - %s", SyncDBErrorCode(), SyncDBErrorInfo() );
-		release( rs );
-		return false;
-	}
+		char path[XGC_MAX_PATH] = { 0 };
 
-	if( sql_success == res )
+		G_ParamsMode = 1;
+		get_absolute_path( path, "%s", file );
+
+		if( false == Load( path ) )
+			return false;
+
+		G_ParamsFile = path;
+
+		server_options options;
+		memset( &options, 0, sizeof( options ) );
+		options.acceptor_count = 10;
+		options.acceptor_smart = true;
+		options.heartbeat_interval = 1000;
+
+		options.recv_buffer_size = 4096;
+		options.send_buffer_size = 4096;
+
+		options.recv_packet_max = 1024;
+		options.send_packet_max = 1024;
+		
+		G_Server = StartServer( host, port, &options, [](){ return XGC_NEW CParamsSession(); } );
+	}
+	else if( strcasecmp( mode, "client" ) == 0 )
 	{
-		while( movenext( rs ) )
-		{
-			xgc_lpcstr key = field_string( rs, 0 );
-			xgc_lpcstr val = field_string( rs, 1 );
+		G_ParamsMode = 2;
 
-			xgc_uint32 mask = field_unsigned( rs, 2, 0 );
+		connect_options options;
+		options.is_async = true;
+		options.is_reconnect_passive = true;
+		options.is_reconnect_timeout = true;
+		options.recv_buffer_size = 4096;
+		options.send_buffer_size = 4096;
 
-			datetime update = datetime::convert( field_string( rs, 3 ) );
+		options.recv_packet_max = 1024;
+		options.send_packet_max = 1024;
 
-			auto it = gGlobalParams.find( key );
-			if( it == gGlobalParams.end() )
-			{
-				// 没有则添加
-				stGlobalParam stParam;
-				strcpy_s( stParam.key, key );
-				strcpy_s( stParam.val, val );
-				stParam.mask = mask;
-				stParam.update = datetime::now();
-
-				gGlobalParams.insert( std::make_pair( key, stParam ) );
-			}
-			else if( it->second.update > update )
-			{
-				// 写回数据库
-				xgc_char sql[256];
-				sprintf_s( sql, "update global_memory set `value`='%s'", val );
-				if( false == SyncDBExecute( sql ) )
-				{
-					SYS_ERROR( "%u - %s", SyncDBErrorCode(), SyncDBErrorInfo() );
-					release( rs );
-					return false;
-				}
-			}
-			else
-			{
-				// 更新本地
-				strcpy_s( it->second.val, val );
-				it->second.mask = mask;
-				it->second.update = update;
-			}
-		}
+		Connect( host, port, GP_Client, &options );
 	}
-	release( rs );
 
 	return true;
 }
@@ -204,7 +365,7 @@ xgc_bool GetGlobalParameter_DefaultFillter( const stGlobalParam& st, xgc_lpcstr 
 {
 	if( lpKey )
 	{
-		if( xgc_nullptr == strstr( st.key, lpKey ) )
+		if( xgc_nullptr == strstr( st.key.c_str(), lpKey ) )
 			return false;
 	}
 
@@ -221,13 +382,13 @@ xgc_bool GetGlobalParameter_DefaultFillter( const stGlobalParam& st, xgc_lpcstr 
 /// 获取符合条件的全局变量
 /// [1/16/2015] create by albert.xu
 ///
-xgc::vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const stGlobalParam& ) > fnFillter )
+xgc::vector< stGlobalParam > GetGlobalParameter( const std::function< xgc_bool( const stGlobalParam& ) > &pfnFillter )
 {
 	xgc::vector< stGlobalParam > Container;
 	FUNCTION_BEGIN;
-	for ( auto const &it : gGlobalParams )
+	for ( auto const &it : G_Params )
 	{
-		if( fnFillter( it.second ) )
+		if( pfnFillter( it.second ) )
 			Container.push_back( it.second );
 	}
 
@@ -236,88 +397,35 @@ xgc::vector< stGlobalParam > GetGlobalParameter( std::function< xgc_bool( const 
 }
 
 ///
+/// 获取字符串型的全局变量
+/// [8/27/2014] create by albert.xu
+///
+xgc_lpcstr GetGlobalParameter( xgc_lpcstr lpKey, xgc_lpcstr lpDefault )
+{
+	auto it = G_Params.find( lpKey );
+	if( it != G_Params.end() )
+		lpDefault = it->second.val.c_str();
+
+	return lpDefault;
+}
+
+///
 /// 获取开关型全局变量
 /// [8/27/2014] create by albert.xu
 ///
-xgc_bool GetGlobalParameter( xgc_lpcstr lpKey, xgc_bool bDefault, xgc_bool bFromDB )
+xgc_bool GetGlobalParameter( xgc_lpcstr lpKey, xgc_bool bDefault )
 {
-	xgc_lpcstr lpValue = GetGlobalParameter( lpKey, xgc_nullptr, bFromDB );
+	xgc_lpcstr lpValue = GetGlobalParameter( lpKey, xgc_nullptr );
 	if( lpValue == xgc_nullptr )
 		return bDefault;
 
 	if( strcasecmp( "true", lpValue ) == 0 )
 		return true;
 
-	if( atoi( lpValue ) != 0 )
+	if( str2numeric< int >( lpValue ) != 0 )
 		return true;
 
 	return false;
-}
-
-///
-/// 获取字符串型的全局变量
-/// [8/27/2014] create by albert.xu
-///
-xgc_lpcstr GetGlobalParameter( xgc_lpcstr lpKey, xgc_lpcstr lpDefault, xgc_bool bFromDB )
-{
-	if( bFromDB )
-	{
-		sql_recordset rs = 0;
-
-		xgc_char sql[128];
-		sprintf_s( sql, "select `key`, `value`, `mask`, `updatetime` from `global_memory` where `key`='%s'", lpKey );
-		sql_result res = SyncDBExecuteRc( sql, rs );
-		if( sql_failed == res )
-		{
-			SYS_ERROR( "%u - %s", SyncDBErrorCode(), SyncDBErrorInfo() );
-		}
-		else if( sql_success == res && movenext( rs ) )
-		{
-			xgc_lpcstr key = field_string( rs, 0 );
-			xgc_lpcstr val = field_string( rs, 1 );
-
-			xgc_uint32 mask = field_unsigned( rs, 2, 0 );
-			datetime update = datetime::convert( field_string( rs, 3 ) );
-
-			auto it = gGlobalParams.find( key );
-			if( it == gGlobalParams.end() )
-			{
-				// 没有则添加
-				stGlobalParam stParam;
-				strcpy_s( stParam.key, key );
-				strcpy_s( stParam.val, val );
-				stParam.mask = mask;
-				stParam.update = datetime::now();
-
-				gGlobalParams.insert( std::make_pair( key, stParam ) );
-			}
-			else
-			{
-				strcpy_s( it->second.val, val );
-				it->second.mask		= mask;
-				it->second.update	= update;
-			}
-		}
-
-		release( rs );
-	}
-
-	auto it = gGlobalParams.find( lpKey );
-	if( it != gGlobalParams.end() )
-		lpDefault = it->second.val;
-
-	return lpDefault;
-}
-
-//--------------------------------------------------//
-
-///
-/// 设置开关型全局变量
-/// [8/27/2014] create by albert.xu
-///
-xgc_bool SetGlobalParameter( xgc_lpcstr lpKey, xgc_bool bValue, xgc_uint32 nMask )
-{
-	return SetGlobalParameter( lpKey, bValue ? "true" : "false", nMask );
 }
 
 ///
@@ -326,90 +434,64 @@ xgc_bool SetGlobalParameter( xgc_lpcstr lpKey, xgc_bool bValue, xgc_uint32 nMask
 ///
 xgc_bool SetGlobalParameter( xgc_lpcstr lpKey, xgc_lpcstr lpValue, xgc_uint32 nMask )
 {
-	// 保存到DB
-	if( nMask & GLOBAL_PARAM_MASK_SAVEDB )
+	auto bNew = false;
+	auto it = G_Params.find( lpKey );
+	if( it == G_Params.end() )
 	{
-		xgc_char sql[1024] = { 0 };
-		if( lpValue )
-		{
-			if( nMask & GLOBAL_PARAM_MASK_CREATE )
-			{
-				// 允许新建
-				sprintf_s( sql,
-					"insert global_memory( `key`, `value`, `mask` ) values( '%s', '%s', %u ) "
-					"on duplicate key update value='%s';",
-					lpKey,
-					lpValue,
-					nMask & 0xffff,
-					lpValue );
-			}
-			else
-			{
-				// 仅作更新
-				sprintf_s( sql, "update global_memory set value='%s' where `key`='%s';", lpValue, lpKey );
-			}
-		}
-		else
-		{
-			sprintf_s( sql, "delete from global_memory where `key` = '%s';", lpKey );
-		}
-
-		if( false == SyncDBExecute( sql ) )
-		{
-			SYS_ERROR( "%u - %s", SyncDBErrorCode(), SyncDBErrorInfo() );
-			return false;
-		}
-	}
-
-	// 清除全局变量
-	if( xgc_nullptr == lpValue )
-	{
-		gGlobalParams.erase( lpKey );
-		return true;
-	}
-
-	auto it = gGlobalParams.find( lpKey );
-	if( it == gGlobalParams.end() )
-	{
-		if( 0 == XGC_CHK_FLAGS( nMask, GLOBAL_PARAM_MASK_CREATE ) )
-			return false;
+		bNew = true;
 
 		if( xgc_nullptr == lpValue )
 			return false;
-		
+
 		// 没有则添加
 		stGlobalParam stParam;
-		strcpy_s( stParam.key, lpKey );
-		strcpy_s( stParam.val, lpValue );
+		stParam.key = lpKey;
+		stParam.val = lpValue;
 		stParam.mask = nMask & 0xffff;
 		stParam.update = datetime::now();
 
-		auto ib = gGlobalParams.insert( std::make_pair( lpKey, stParam ) );
+		auto ib = G_Params.insert( std::make_pair( lpKey, stParam ) );
 		XGC_ASSERT_RETURN( ib.second, false );
 		it = ib.first;
 	}
 
-	strcpy_s( it->second.val, lpValue );
+	it->second.val = lpValue;
 	it->second.update = datetime::now();
 
-	if( XGC_CHK_FLAGS( nMask, GLOBAL_PARAM_MASK_NOTIFY ) && gNotifyCallback )
-		gNotifyCallback( it->second );
+	if( XGC_CHK_FLAGS( nMask, GLOBAL_PARAM_MASK_NOTIFY ) && G_NotifyCallback )
+		G_NotifyCallback( it->second, bNew );
 
+	if( G_ParamsMode == 1)
+	{
+		char szDateTime[64] = { 0 };
+		datetime::now( szDateTime );
+
+		Save( G_ParamsFile.c_str() );
+
+		// Server Mode, Sync Param to every client.
+		for( auto handle : G_Clients )
+		{
+			Param_GetSession netOperatorParams;
+			netOperatorParams.handle = handle;
+			netOperatorParams.session = xgc_nullptr;
+
+			if( 0 == ExecuteState( Operator_GetSession, &netOperatorParams ) )
+			{
+				CParamsSession* pSession = (CParamsSession*)netOperatorParams.session;
+				if( pSession )
+					pSession->SendCommand( "set %s %s %08X %s", lpKey, lpValue, nMask, szDateTime );
+			}
+		}
+	}
+	
 	return true;
 }
 
-
 ///
-/// 依赖总开关获取子开关 
-/// [3/9/2015] create by wuhailin.jerry
+/// 设置开关型全局变量
+/// [8/27/2014] create by albert.xu
 ///
-xgc_bool GetGlobalParameterWithFather( xgc_lpcstr lpFatherkey, xgc_lpcstr lpSunKey, xgc_bool bDefault, xgc_bool bFromDB )
+xgc_bool SetGlobalParameter( xgc_lpcstr lpKey, xgc_bool bValue, xgc_uint32 nMask )
 {
-	// 父开关关闭
-	if (!GetGlobalParameter( lpFatherkey, false ))
-	{
-		return false;
-	}
-
-	return GetGlobalParameter( lpSunKey, bDefault );
+	return SetGlobalParameter( lpKey, bValue ? "true" : "false", nMask );
 }

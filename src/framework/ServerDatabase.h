@@ -5,6 +5,21 @@
 // 数据库相关的函数
 //////////////////////////////////////////////////////////////////////////
 ///
+/// \brief 初始化数据库 
+/// \date 12/11/2017
+/// \author xufeng04
+/// \return 是否初始化成功
+///
+xgc_bool InitServerDatabase( ini_reader &ini );
+
+///
+/// \brief 清理数据库 
+/// \date 12/11/2017
+/// \author xufeng04
+///
+xgc_void FiniServerDatabase();
+
+///
 /// 同步执行数据库操作
 /// [8/13/2014] create by albert.xu
 ///

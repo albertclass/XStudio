@@ -171,6 +171,12 @@ namespace xgc
 				if( val[0] == 0 )
 					return value;
 
+				if( val[0] == '0' && ( val[1] == 'X' || val[1] == 'x' ) )
+					return str2numeric< T >( val, xgc_nullptr, 16 );
+
+				if( val[0] == 'B' || val[0] == 'b' )
+					return str2numeric< T >( val, xgc_nullptr, 02 );
+
 				return str2numeric< T >( val );
 			}
 

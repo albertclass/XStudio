@@ -2,22 +2,22 @@
 #include "protocol.h"
 #include "gate_message.h"
 
-xgc_bool InitConfiguration( ini_reader &ini, xgc_lpvoid params );
-xgc_bool MainLoop( xgc_bool busy, xgc_lpvoid params );
+xgc_bool InitGameServer( ini_reader &ini );
+xgc_bool ProcGameServer( xgc_bool busy );
 xgc_void FiniConfiguration( xgc_lpvoid params );
 
 int ServerMain( int argc, char **argv )
 {
-	if( ServerInit( argv[1], InitConfiguration, nullptr ) )
+	if( InitServer( argv[1], InitGameServer ) )
 	{
-		ServerLoop( MainLoop, nullptr );
+		LoopServer( ProcGameServer );
 	}
 
-	ServerFini( FiniConfiguration, nullptr );
+	FiniServer( FiniConfiguration, nullptr );
 	return 0;
 }
 
-xgc_bool InitConfiguration( ini_reader &ini, xgc_lpvoid params )
+xgc_bool InitGameServer( ini_reader &ini )
 {
 	RegistPipeHandler( "*-*-1-*", OnPipeMsg, OnPipeEvt );
 	RegistVirtualSockHandler( "*-*-1-*", OnVirtualSockMsg, OnVirtualSockEvt );
@@ -25,7 +25,7 @@ xgc_bool InitConfiguration( ini_reader &ini, xgc_lpvoid params )
 	return true;
 }
 
-xgc_bool MainLoop( xgc_bool busy, xgc_lpvoid params )
+xgc_bool ProcGameServer( xgc_bool busy )
 {
 	return false;
 }

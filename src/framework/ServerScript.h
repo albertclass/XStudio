@@ -64,7 +64,7 @@ xgc_bool luaDoFile( xgc_lpcstr lpScriptFile );
 /// \date 2017/08/28 
 /// \author albert.xu
 ///
-xgc_bool luaDoFileEx( xgc_lpcstr lpScriptFile, LuaRef* luaRet, xgc_size nCount );
+xgc_bool luaDoFileEx( xgc_lpcstr lpScriptFile, LuaRef* luaRet, int &nCount );
 
 ///
 /// \brief ¥Ú”°Ω≈±æ∂—’ª

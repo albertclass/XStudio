@@ -49,8 +49,8 @@ namespace xgc
 		#define NET_ETYPE_CLOSE		5
 		#define NET_ETYPE_TIMER		6
 
-		#define NET_ERROR_RECONNECT	-1L
-		#define NET_ERROR_TIMEOUT	-2L
+		#define NET_ERROR_RECONNECT			-1L
+		#define NET_ERROR_TIMEOUT			-2L
 		#define NET_ERROR_MESSAGE_SIZE		-3L
 		#define NET_ERROR_NO_SPACE			-4L
 		#define NET_ERROR_NO_MEMORY			-5L
@@ -266,7 +266,13 @@ namespace xgc
 		typedef std::function< INetworkSession* () > SessionCreator;
 
 		/// 缓冲链定义
-		typedef std::list< std::tuple< xgc_lpvoid, xgc_size > > BufferChains;
+		typedef xgc::list< xgc::tuple< xgc_lpvoid, xgc_size > > BufferChains;
+
+		/// 创建缓冲
+		template< class T >
+		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( T &value ) { return { &value, sizeof( value ) }; }
+		XGC_INLINE
+		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( xgc_lpcvoid data, xgc_size size ) { return { ( xgc_lpvoid )data, size }; }
 
 		extern "C"
 		{

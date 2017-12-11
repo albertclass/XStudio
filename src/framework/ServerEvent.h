@@ -18,13 +18,7 @@ _EventType* make_event( int id, int event )
 	return XGC_NEW _EventType{ id, event, 0 };
 }
 
-///
-/// \brief 事件注册
-/// 
-/// \author albert.xu
-/// \date 2017/08/21
-///
-xgc_bool InitServerEvent();
+typedef std::function< xgc_void( EventObject& ) > EventListener;
 
 ///
 /// \brief 事件注册
@@ -32,7 +26,7 @@ xgc_bool InitServerEvent();
 /// \author albert.xu
 /// \date 2017/08/21
 ///
-xgc_bool RegistEventListener( int id, int event, std::function< xgc_void( EventObject& ) > &&invoke );
+xgc_bool RegistEventListener( int id, int event, const EventListener &invoke );
 
 ///
 /// \brief 触发事件（立即执行)
