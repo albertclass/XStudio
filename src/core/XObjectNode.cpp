@@ -10,9 +10,9 @@ namespace xgc
 	/// \author xufeng04
 	///
 
-	XObjectNode::XObjectNode()
+	XObjectNode::XObjectNode( xObject hParent )
 	{
-
+		SetParent( hParent );
 	}
 
 	///
@@ -196,7 +196,7 @@ namespace xgc
 		{
 			auto pParent = ObjectCast< XObjectNode >( hParent );
 			if( pParent )
-				pParent->RemoveChild( GetObjectID() );
+				pParent->Remove( this );
 		}
 
 		DeleteAll();

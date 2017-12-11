@@ -4,6 +4,7 @@ end
 
 Refresh = {
 	{
+		name = 'aaa',
 		start = '2017-08-31 20:00:00',
 		params = 'week:1-7',
 		invoke = {

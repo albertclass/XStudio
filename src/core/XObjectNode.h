@@ -11,7 +11,7 @@ namespace xgc
 		/// \date 11/13/2017
 		/// \author xufeng04
 		///
-		XObjectNode();
+		XObjectNode( xObject hParent = INVALID_OBJECT_ID );
 
 		///
 		/// \brief ½ÚµãÎö¹¹

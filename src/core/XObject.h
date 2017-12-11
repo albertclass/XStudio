@@ -514,20 +514,6 @@ namespace xgc
 
 		return Pointer ? Pointer->shared_from_this() : xgc_nullptr;
 	}
-
-	///
-	/// \brief 加载对象属性
-	/// \author albert.xu
-	/// \date 2017/10/10
-	///
-	xgc_bool LoadObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
-
-	///
-	/// \brief 保存对象属性
-	/// \author albert.xu
-	/// \date 2017/10/10
-	///
-	xgc_size SaveObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
 }
 
 #endif //_XOBJECT_
