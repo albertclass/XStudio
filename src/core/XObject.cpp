@@ -166,15 +166,17 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/12
 	///
-	xgc_void XObject::EmmitEvent( xgc_long id, XObjectEvent & evt )
+	xgc_void XObject::EmmitEvent( xgc_long id, xgc_long direction )
 	{
-		evt.id = id;
-		evt.over = false;
-		evt.result = 0;
-		evt.sender = GetObjectID();
-		evt.target = INVALID_OBJECT_ID;
+		XObjectEvent evt;
 
-		EmmitEvent( evt );
+		evt.id		= id;
+		evt.over	= direction;
+		evt.result	= 0;
+		evt.sender	= GetObjectID();
+		evt.target	= INVALID_OBJECT_ID;
+
+		EmmitEvent( &evt, false );
 	}
 
 	///
@@ -182,11 +184,28 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/12
 	///
-	xgc_void XObject::EmmitEvent( XObjectEvent& evt )
+	xgc_void XObject::EmmitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction )
 	{
-		auto it1 = mEventSubject.find( evt.id );
+		evt.id = id;
+		evt.over = direction;
+		evt.result = 0;
+		evt.sender = GetObjectID();
+		evt.target = INVALID_OBJECT_ID;
+
+		EmmitEvent( &evt, false );
+	}
+
+	///
+	/// \brief 提交事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_void XObject::EmmitEvent( XObjectEvent* evt, xgc_void( *DeleteIt )( XObjectEvent* ) )
+	{
+		auto it1 = mEventSubject.find( evt->id );
 		if( it1 != mEventSubject.end() )
 		{
+			// 先通知本地的观察者
 			auto &observer = it1->second;
 
 			// 关闭消息通知
@@ -197,20 +216,44 @@ namespace xgc
 				for( auto &pair : observer.actions )
 				{
 					// 取token
-					evt.token = pair.first;
+					evt->token = pair.first;
 					// 取目标对象ID
-					evt.target = std::get< 1 >( pair.second );
+					evt->target = std::get< 1 >( pair.second );
 					// 取触发函数，并执行
-					std::get< 0 >( pair.second )( evt );
+					std::get< 0 >( pair.second )( *evt );
 
-					if( evt.over )
+					if( evt->over < 0 )
 						break;
 				}
 				--observer.count;
 			}
 		}
 
-		if( !evt.over )
+		if( evt->over > 0 )
+		{
+			// 透传消息， id 为 -1 的观察者监听该对象的所有消息
+			auto it2 = mEventSubject.find( -1 );
+			if( it2 == mEventSubject.end() )
+				return;
+
+			auto &observer = it2->second;
+			++observer.count;
+			for( auto &pair : observer.actions )
+			{
+				// 取token
+				evt->token = pair.first;
+				// 取目标对象ID
+				evt->target = std::get< 1 >( pair.second );
+				// 取触发函数，并执行
+				std::get< 0 >( pair.second )( *evt );
+
+				if( evt->over < 0 )
+					break;
+			}
+			--observer.count;
+		}
+
+		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 1 ) )
 		{
 			// 对于未决的事件，向层级上级传递
 			auto xParent = GetParent();
@@ -229,29 +272,24 @@ namespace xgc
 			}
 		}
 
-		if( !evt.over )
+		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 2 ) )
 		{
-			// 透传消息
-			auto it2 = mEventSubject.find( -1 );
-			if( it2 == mEventSubject.end() )
-				return;
-			
-			auto &observer = it2->second;
-			++observer.count;
-			for( auto &pair : observer.actions )
+			// 传递给子对象
+			XObjectNode* pNode = ObjectCast< XObjectNode >( GetObjectID() );
+			if( pNode )
 			{
-				// 取token
-				evt.token = pair.first;
-				// 取目标对象ID
-				evt.target = std::get< 1 >( pair.second );
-				// 取触发函数，并执行
-				std::get< 0 >( pair.second )( evt );
+				// 枚举出所有的子对象，并将事件推送给子对象
+				pNode->Search( [evt ]( xObject hObject )->xgc_bool{
+					auto pChild = ObjectCast< XObject >( hObject );
+					if( pChild )
+						pChild->EmmitEvent( evt );
 
-				if( evt.over )
-					break;
+					return false;
+				} );
 			}
-			--observer.count;
 		}
+
+		if( DeleteIt ) DeleteIt( evt );
 	}
 
 	xgc_bool XObject::LoadObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
@@ -342,7 +380,6 @@ namespace xgc
 	/// 获取属性
 	/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
 	///
-
 	XAttribute XObject::getAttr( xAttrIndex nAttr, xgc_size nIndex ) const
 	{
 		XGC_ASSERT_THROW( checkIndex( nAttr ), std::logic_error( "get attribute, index out of bound." ) );

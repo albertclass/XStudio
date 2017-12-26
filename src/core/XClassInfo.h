@@ -9,53 +9,58 @@
 #define ATTR_FLAG_FIELD 2
 #define ATTR_FLAG_MORE	3
 
-#define DECLARE_XCLASS()\
+#define DECLARE_XCLASS() \
 public: \
 	static	const XClassInfo& GetThisClass(); \
-	virtual const XClassInfo& GetRuntimeClass()const;\
+	virtual const XClassInfo& GetRuntimeClass()const; \
 
-#define DECLARE_POOL_OBJECT()\
-	static void * operator new( xgc_size s );\
-	static void * operator new( xgc_size s, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line );\
-	static void operator delete( void * p );\
-	static void operator delete( void * p, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line );\
+#define DECLARE_POOL_OBJECT() \
+	static void * operator new( xgc_size s ); \
+	static void * operator new( xgc_size s, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ); \
+	static void operator delete( void * p ); \
+	static void operator delete( void * p, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ); \
 
-#define IMPLEMENT_POOL_OBJECT( thisClass, thisThread )\
-	static XGC::memory::freelist< thisClass, std::mutex > thisClass##_Pool;\
-	void * thisClass::operator new( xgc_size s ){ return thisClass##_Pool.alloc_memory( _NORMAL_BLOCK, __FILE__, __LINE__ ); }\
-	void * thisClass::operator new( xgc_size s, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ){ return thisClass##_Pool.alloc_memory( block, file, line ); }\
-	void thisClass::operator delete( void * p ){ thisClass##_Pool.garbage_memory( p ); }\
-	void thisClass::operator delete( void * p, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ){ thisClass##_Pool.garbage_memory( p ); }\
+#define IMPLEMENT_POOL_OBJECT( thisClass, thisThread ) \
+	static XGC::memory::freelist< thisClass, std::mutex > thisClass##_Pool; \
+	void * thisClass::operator new( xgc_size s ){ return thisClass##_Pool.alloc_memory( _NORMAL_BLOCK, __FILE__, __LINE__ ); } \
+	void * thisClass::operator new( xgc_size s, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ){ return thisClass##_Pool.alloc_memory( block, file, line ); } \
+	void thisClass::operator delete( void * p ){ thisClass##_Pool.garbage_memory( p ); } \
+	void thisClass::operator delete( void * p, xgc_uint32 block, xgc_lpcstr file, xgc_uint32 line ){ thisClass##_Pool.garbage_memory( p ); } \
 
-#define IMPLEMENT_XCLASS_BEGIN( thisClass, baseClass )\
-	static XAttributeImpl*	__get_##thisClass##_Attribute(); \
-	const XClassInfo& thisClass##::GetThisClass() \
-	{ \
-		static XClassInfo cls_##thisClass( #thisClass, __get_##thisClass##_Attribute(), &baseClass::GetThisClass() ); \
-		return cls_##thisClass; \
-	} \
-	const XClassInfo& cls_##thisClass = thisClass##::GetThisClass(); \
+#define IMPLEMENT_XCLASS_BEGIN( thisClass, baseClass ) \
+	template< class T > \
+	static const XClassInfo& __get_##thisClass(); \
+	static const XClassInfo& __loc_##thisClass = __get_##thisClass<thisClass>(); \
 	const XClassInfo& thisClass##::GetRuntimeClass() const \
 	{ \
-		return thisClass##::GetThisClass(); \
+		return __loc_##thisClass; \
 	} \
-	static XAttributeImpl *	__get_##thisClass##_Attribute() \
+	const XClassInfo& thisClass##::GetThisClass() \
 	{ \
-		thisClass* pClass = xgc_nullptr; \
-		static XAttributeImpl attribute[] = \
-		{ \
+		return __loc_##thisClass; \
+	} \
+	template< class T > \
+	static const XClassInfo& __get_##thisClass() \
+	{ \
+		auto thisClassName = #thisClass; \
+		auto baseClassInfo = &baseClass::GetThisClass(); \
+		static XAttributeImpl __attribute[] = { \
 
 // 定义类所持有的属性
+//#define IMPLEMENT_ATTRIBUTE( NAME, TYPE, FLAGS, VERSION )\
+//		thisClass##::##Name = { { TYPE, #NAME, FLAGS, 1, &##NAME, }, ConvertVersion( VERSION ) }
+
 #define IMPLEMENT_ATTRIBUTE( NAME, TYPE, FLAGS, VERSION )\
-			{ { TYPE, #NAME, FLAGS, 1, &attr##NAME, }, ConvertVersion( VERSION ) }, \
+			{ { TYPE, #NAME, FLAGS, 1, &T::##NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_ATTRIBUTE_ARRAY( NAME, TYPE, COUNT, FLAGS, VERSION )\
-			{ { TYPE, #NAME, FLAGS | 0x80, COUNT, &attr##NAME, }, ConvertVersion( VERSION ) }, \
+			{ { TYPE, #NAME, FLAGS | 0x80, COUNT, &T::##NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_XCLASS_END() \
 			{ { VT_VOID, xgc_nullptr, 0, 0, xgc_nullptr }, { 0, 0 } }, \
 		}; \
-		return attribute; \
+		static XClassInfo __cls__( thisClassName, __attribute, baseClassInfo ); \
+		return __cls__; \
 	} \
 
 namespace xgc

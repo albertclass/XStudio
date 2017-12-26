@@ -1,6 +1,9 @@
 #include "XHeader.h"
 #include "XTimeline.h"
 
+IMPLEMENT_XCLASS_BEGIN( XTimeline, XObject )
+IMPLEMENT_XCLASS_END();
+
 XTimeline::XTimeline( timespan interval )
 	: mTimerHandle( INVALID_OBJECT_ID )
 	, mNext( 0 )
@@ -68,7 +71,7 @@ xgc_bool XTimeline::Start( datetime start )
 	// 提交事件
 	XTimelineEvent evt;
 	evt.current = datetime::now();
-	EmmitEvent( evt_tline_start, evt.cast );
+	EmmitEvent( evt.cast, evt_tline_start );
 
 	return true;
 }
@@ -89,7 +92,7 @@ xgc_void XTimeline::Stop()
 		// 提交事件
 		XTimelineEvent evt;
 		evt.current = datetime::now();
-		EmmitEvent( evt_tline_cancel, evt.cast );
+		EmmitEvent( evt.cast, evt_tline_cancel );
 	}
 
 	mUpdates.clear();
@@ -155,10 +158,10 @@ xgc_void XTimeline::Update()
 	if( mUpdates.empty() && mNext == mActives.size() )
 	{
 		// 提交事件
-		EmmitEvent( evt_tline_finish, evt.cast );
+		EmmitEvent( evt.cast, evt_tline_finish );
 	}
 	else
 	{
-		EmmitEvent( evt_tline_update, evt.cast );
+		EmmitEvent( evt.cast, evt_tline_update );
 	}
 }

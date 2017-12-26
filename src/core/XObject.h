@@ -35,12 +35,29 @@ namespace xgc
 		xgc_long	token;
 		/// @var 返回值 -1 - err, 0 - pending, 1 - ok
 		xgc_long	result;
-		/// @var 是否处理
-		xgc_bool	over;
+		/// @var 是否处理 
+		/// 0 - 只向本对象的观察者传递消息
+		/// 1 - 向上传递消息
+		/// 2 - 向下传递消息
+		/// 3 - 先向上后向下传递消息
+		/// < 0 消息已处理
+		xgc_long	over;
 	};
 
-	typedef xgc_void( XObject::* XEventBind1 )( XObjectEvent& );
-	typedef xgc_void( XObject::* XEventBind2 )( xgc_long, XObjectEvent& );
+	///
+	/// \brief 删除回调，主要是为了用模板保存类型信息，防止析构函数未能正确调用
+	/// \date 12/26/2017
+	/// \author xufeng04
+	///
+	template< class TObjectEvent >
+	xgc_void DeleteEvent( XObjectEvent* p )
+	{
+		delete (TObjectEvent*)p;
+	}
+
+	typedef xgc_void( XObject::* XEventBind1 )( xgc_long, xgc_long );
+	typedef xgc_void( XObject::* XEventBind2 )( XObjectEvent&, xgc_long, xgc_long );
+	typedef xgc_void( XObject::* XEventBind3 )( XObjectEvent*, xgc_void(*)( XObjectEvent* ) );
 
 	typedef std::function< void( XObjectEvent& ) > xNotify;
 
@@ -163,44 +180,18 @@ namespace xgc
 		virtual xgc_long Key()const { return GetObjectID(); }
 
 		///
-		/// \brief 获取节点个数 
-		/// \date 11/13/2017
+		/// \brief 获取子对象数量
+		/// \date 12/26/2017
 		/// \author xufeng04
-		/// \return 节点个数
 		///
-		virtual xgc_bool HasNode()const { return false; }
+		virtual xgc_size GetChildCount()const { return 0; }
 
 		///
-		/// \brief 添加节点 
-		/// \date 11/13/2017
+		/// \brief 枚举子对象  
+		/// \date 12/26/2017
 		/// \author xufeng04
 		///
-		virtual	xgc_bool AddNode( xgc_ulong nType, xObject hObject ) { return true; }
-
-		///
-		/// \brief 删除节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		///
-		virtual xgc_void DelNode( xgc_ulong nType ) {}
-
-		///
-		/// \brief 获取节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		/// \param nType 节点类型
-		/// \return 节点句柄
-		///
-		virtual xObject GetNode( xgc_ulong nType ) const { return INVALID_OBJECT_ID; }
-
-		///
-		/// \brief 获取节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		/// \param nType 节点类型
-		/// \return 节点句柄
-		///
-		virtual xgc_void EnumNode( const std::function< void(xgc_ulong, xObject) > &fn ) const {}
+		virtual xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const { return INVALID_OBJECT_ID; };
 
 		/************************************************************************/
 		/* 事件操作
@@ -234,18 +225,75 @@ namespace xgc
 		xgc_void	EnableEvent( xgc_long id, xgc_bool enable = true );
 
 		///
-		/// \brief 提交事件
-		/// \author albert.xu
-		/// \date 2017/10/12
+		/// \brief 分配一个事件对象并初始化
+		/// \date 12/26/2017
+		/// \author xufeng04
 		///
-		xgc_void	EmmitEvent( xgc_long id, XObjectEvent& evt = XObjectEvent() );
+		template< class TObjectEvent >
+		TObjectEvent* MakeEvent( xgc_long id, xgc_long direction = 0 )
+		{
+			TObjectEvent *evt = XGC_NEW TObjectEvent;
+
+			evt->cast.id = id;
+			evt->cast.over = direction;
+			evt->cast.result = 0;
+			evt->cast.sender = GetObjectID();
+			evt->cast.target = INVALID_OBJECT_ID;
+
+			return evt;
+		}
+
+		template<>
+		XObjectEvent* MakeEvent< XObjectEvent >( xgc_long id, xgc_long direction )
+		{
+			XObjectEvent *evt = XGC_NEW XObjectEvent;
+
+			evt->id     = id;
+			evt->over   = direction;
+			evt->result = 0;
+			evt->sender = GetObjectID();
+			evt->target = INVALID_OBJECT_ID;
+
+			return evt;
+		}
+
+		///
+		/// \brief 初始化一个已分配事件对象
+		/// \date 12/26/2017
+		/// \author xufeng04
+		///
+		XObjectEvent* InitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction = 0 )
+		{
+			evt.id = id;
+			evt.over = direction;
+			evt.result = 0;
+			evt.sender = GetObjectID();
+			evt.target = INVALID_OBJECT_ID;
+
+			return &evt;
+		}
 
 		///
 		/// \brief 提交事件
 		/// \author albert.xu
 		/// \date 2017/10/12
 		///
-		xgc_void	EmmitEvent( XObjectEvent& evt );
+		xgc_void EmmitEvent( xgc_long id, xgc_long direction = 0 );
+
+		///
+		/// \brief 提交事件
+		/// \author albert.xu
+		/// \date 2017/10/12
+		///
+		xgc_void EmmitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction = 0 );
+
+		///
+		/// \brief 提交事件
+		/// \author albert.xu
+		/// \date 2017/10/12
+		///
+		xgc_void EmmitEvent( XObjectEvent* evt, xgc_void( *DeleteIt )( XObjectEvent* ) = xgc_nullptr );
+
 		/************************************************************************/
 		/* 属性操作
 		/************************************************************************/

@@ -254,7 +254,7 @@ namespace xgc
 			evt.After.hGoods = top->After.hGoods;
 			evt.After.nCount = top->After.nCount;
 
-			pBag->EmmitEvent( evt_slot_changed, evt.cast );
+			pBag->EmmitEvent( evt.cast, evt_slot_changed );
 		}
 
 		mSlotCommands.clear();

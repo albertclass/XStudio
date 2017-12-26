@@ -6,11 +6,12 @@ struct stBaseGoodsInfo;
 
 namespace xgc
 {
-	extern CORE_API xAttrIndex	 attrGoodsIndex;	   // 索引
-
 	class CORE_API XGoods : public XObject
 	{
 		DECLARE_XCLASS();
+		static xAttrIndex Index;	///< 物品配置索引
+		static xAttrIndex Sequence;	///< 物品全局索引
+		static xAttrIndex Alias;	///< 物品别名
 
 	protected:
 		XGoods();

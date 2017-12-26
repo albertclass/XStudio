@@ -5,40 +5,40 @@ namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// 角色属性索引
-	CORE_API xAttrIndex	attrActorIndex;			///< 角色配置索引
-	CORE_API xAttrIndex	attrActorType;			///< 角色类型
-	CORE_API xAttrIndex attrActorHP;			///< 当前生命值               
-	CORE_API xAttrIndex attrActorHP_Max;		///< 生命上限    
-	CORE_API xAttrIndex	attrActorBeatSpeed;		///< 击退速度
-	CORE_API xAttrIndex	attrActorFaintTime;		///< 眩晕时间
-	CORE_API xAttrIndex	attrActorAbnormalTime;	///< 特殊状态时间
-	CORE_API xAttrIndex	attrActorBornTime;		///< 出生时间
-	CORE_API xAttrIndex	attrActorGroupMask;		///< 组别掩码，用于区分阵营
-	CORE_API xAttrIndex attrActorState;         ///< 角色状态
-	CORE_API xAttrIndex attrActorCanMove;		///< 可移动
-	CORE_API xAttrIndex attrActorCanAttack;		///< 可攻击
-	CORE_API xAttrIndex attrActorCanBeHit;		///< 可受击
-	CORE_API xAttrIndex attrActorCanBeTanunt;	///< 可嘲讽
-	CORE_API xAttrIndex attrActorCanDead;		///< 可死亡
-	CORE_API xAttrIndex attrActorCanHurt;		///< 可受伤
+	xAttrIndex XActor::Index;		///< 角色配置索引
+	xAttrIndex XActor::Type;		///< 角色类型
+	xAttrIndex XActor::HP;			///< 当前生命值
+	xAttrIndex XActor::HP_Max;		///< 生命上限
+	xAttrIndex XActor::BeatSpeed;	///< 击退速度
+	xAttrIndex XActor::FaintTime;	///< 眩晕时间
+	xAttrIndex XActor::AbnormalTime;///< 特殊状态时间
+	xAttrIndex XActor::BornTime;	///< 出生时间
+	xAttrIndex XActor::GroupMask;	///< 组别掩码，用于区分阵营
+	xAttrIndex XActor::Status;		///< 角色状态
+	xAttrIndex XActor::CanMove;		///< 可移动
+	xAttrIndex XActor::CanAttack;	///< 可攻击
+	xAttrIndex XActor::CanBeHit;	///< 可受击
+	xAttrIndex XActor::CanBeTanunt;	///< 可嘲讽
+	xAttrIndex XActor::CanDead;		///< 可死亡
+	xAttrIndex XActor::CanHurt;		///< 可受伤
 
 	IMPLEMENT_XCLASS_BEGIN( XActor, XGameObject )
-		IMPLEMENT_ATTRIBUTE( ActorIndex, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 角色配置索引
-		IMPLEMENT_ATTRIBUTE( ActorType, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 角色类型
-		IMPLEMENT_ATTRIBUTE( ActorHP, VT_U32, ATTR_FLAG_SAVE, "20140912" )			// 当前生命值
-		IMPLEMENT_ATTRIBUTE( ActorHP_Max, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 生命上限
-		IMPLEMENT_ATTRIBUTE( ActorBeatSpeed, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 击退速度
-		IMPLEMENT_ATTRIBUTE( ActorFaintTime, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 眩晕时间
-		IMPLEMENT_ATTRIBUTE( ActorAbnormalTime, VT_I32, ATTR_FLAG_NONE, "20140912" )// 特殊状态时间
-		IMPLEMENT_ATTRIBUTE( ActorBornTime, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 出生时间
-		IMPLEMENT_ATTRIBUTE( ActorGroupMask, VT_I32, ATTR_FLAG_SAVE, "20140912" )	// 组别掩码，用于区分阵营
-		IMPLEMENT_ATTRIBUTE( ActorState, VT_U32, ATTR_FLAG_SAVE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanMove, VT_I32, ATTR_FLAG_NONE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanAttack, VT_I32, ATTR_FLAG_NONE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanBeHit, VT_I32, ATTR_FLAG_NONE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanBeTanunt, VT_I32, ATTR_FLAG_NONE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanDead, VT_I32, ATTR_FLAG_NONE, "20150122" )
-		IMPLEMENT_ATTRIBUTE( ActorCanHurt, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 角色配置索引
+		IMPLEMENT_ATTRIBUTE( Type, VT_U32, ATTR_FLAG_SAVE, "20140912" )			// 角色类型
+		IMPLEMENT_ATTRIBUTE( HP, VT_U32, ATTR_FLAG_SAVE, "20140912" )			// 当前生命值
+		IMPLEMENT_ATTRIBUTE( HP_Max, VT_U32, ATTR_FLAG_SAVE, "20140912" )		// 生命上限
+		IMPLEMENT_ATTRIBUTE( BeatSpeed, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 击退速度
+		IMPLEMENT_ATTRIBUTE( FaintTime, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 眩晕时间
+		IMPLEMENT_ATTRIBUTE( AbnormalTime, VT_I32, ATTR_FLAG_NONE, "20140912" )	// 特殊状态时间
+		IMPLEMENT_ATTRIBUTE( BornTime, VT_I32, ATTR_FLAG_NONE, "20140912" )		// 出生时间
+		IMPLEMENT_ATTRIBUTE( GroupMask, VT_I32, ATTR_FLAG_SAVE, "20140912" )	// 组别掩码，用于区分阵营
+		IMPLEMENT_ATTRIBUTE( Status, VT_U32, ATTR_FLAG_SAVE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanMove, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanAttack, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanBeHit, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanBeTanunt, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanDead, VT_I32, ATTR_FLAG_NONE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( CanHurt, VT_I32, ATTR_FLAG_NONE, "20150122" )
 	IMPLEMENT_XCLASS_END();
 
 	static XVector3 Direction[] =
@@ -94,7 +94,7 @@ namespace xgc
 		evt.attack.nDamage = nDamage;
 		evt.attack.nMode = nMode;
 
-		EmmitEvent( evt_actor_behit, evt.cast );
+		EmmitEvent( evt.cast, evt_actor_behit );
 
 		// 是否命中，命中后返回伤害和仇恨
 		if( evt.cast.result == 0 )
@@ -105,7 +105,7 @@ namespace xgc
 			XActor *pAttack = ObjectCast<XActor>( hAttacker );
 			if( pAttack )
 			{
-				pAttack->EmmitEvent( evt_actor_attacked, evt.cast );
+				pAttack->EmmitEvent( evt.cast, evt_actor_attacked );
 			}
 
 			//之前死了才做死亡逻辑，没死则忽略
@@ -140,7 +140,7 @@ namespace xgc
 		evt.hAttacker = hAttacker;
 
 		evt.dead.nMode = nMode;
-		EmmitEvent( evt_actor_dead, evt.cast );
+		EmmitEvent( evt.cast, evt_actor_dead );
 	}
 
 	///
@@ -156,7 +156,7 @@ namespace xgc
 		XActorEvent evt;
 		evt.lpContext = lpContext;
 
-		EmmitEvent( evt_actor_relive, evt.cast );
+		EmmitEvent( evt.cast, evt_actor_relive );
 	}
 
 	/// ------------------------------------------------ ///
@@ -171,7 +171,7 @@ namespace xgc
 			mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 		}
 
-		setValue( attrActorState, (xgc_uint32)eStatus );
+		setValue( Status, (xgc_uint32)eStatus );
 		mActorRestonState = eStatus;
 	}
 

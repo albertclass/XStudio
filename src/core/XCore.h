@@ -96,7 +96,7 @@ namespace xgc
 	/// [11/18/2010 Albert]
 	/// Description:	 查询子对象
 	/////
-	CORE_API xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter, const XClassInfo * pClass );
+	CORE_API xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter );
 
 	/////
 	/// [11/18/2010 Albert]

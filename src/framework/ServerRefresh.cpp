@@ -64,7 +64,7 @@ xgc_bool InitServerRefresh( ini_reader &ini )
 		info.name = ref ? ref.cast< xgc_lpcstr >() : xgc_nullptr;
 
 		auto invoke = val["invoke"];
-		XGC_ASSERT_CONTINUE( invoke );
+		XGC_ASSERT_CONTINUE( invoke.isFunction() );
 
 		info.params = params;
 		info.call = invoke["call"];

@@ -6,25 +6,6 @@
 
 namespace xgc
 {
-	//////////////////////////////////////////////////////////////////////////
-	// 角色属性索引
-	extern CORE_API xAttrIndex attrActorIndex;			///< 角色配置索引
-	extern CORE_API xAttrIndex attrActorType;			///< 角色类型
-	extern CORE_API xAttrIndex attrActorHP;				///< 当前生命值
-	extern CORE_API xAttrIndex attrActorHP_Max;			///< 生命上限
-	extern CORE_API xAttrIndex attrActorBeatSpeed;		///< 击退速度
-	extern CORE_API xAttrIndex attrActorFaintTime;		///< 眩晕时间
-	extern CORE_API xAttrIndex attrActorAbnormalTime;	///< 特殊状态时间
-	extern CORE_API xAttrIndex attrActorBornTime;		///< 出生时间
-	extern CORE_API xAttrIndex attrActorGroupMask;		///< 组别掩码，用于区分阵营
-	extern CORE_API xAttrIndex attrActorStatus;			///< 角色状态
-	extern CORE_API xAttrIndex attrActorCanMove;		///< 可移动
-	extern CORE_API xAttrIndex attrActorCanAttack;		///< 可攻击
-	extern CORE_API xAttrIndex attrActorCanBeHit;		///< 可受击
-	extern CORE_API xAttrIndex attrActorCanBeTanunt;	///< 可嘲讽
-	extern CORE_API xAttrIndex attrActorCanDead;		///< 可死亡
-	extern CORE_API xAttrIndex attrActorCanHurt;		///< 可受伤
-
 	enum class enActorState
 	{
 		sta_live,   ///< 正常状态
@@ -197,6 +178,26 @@ namespace xgc
 	class CORE_API XActor : public XGameObject
 	{
 		DECLARE_XCLASS();
+
+		//////////////////////////////////////////////////////////////////////////
+		// 角色属性索引
+		static xAttrIndex Index;		///< 角色配置索引
+		static xAttrIndex Type;			///< 角色类型
+		static xAttrIndex HP;			///< 当前生命值
+		static xAttrIndex HP_Max;		///< 生命上限
+		static xAttrIndex BeatSpeed;	///< 击退速度
+		static xAttrIndex FaintTime;	///< 眩晕时间
+		static xAttrIndex AbnormalTime;	///< 特殊状态时间
+		static xAttrIndex BornTime;		///< 出生时间
+		static xAttrIndex GroupMask;	///< 组别掩码，用于区分阵营
+		static xAttrIndex Status;		///< 角色状态
+		static xAttrIndex CanMove;		///< 可移动
+		static xAttrIndex CanAttack;	///< 可攻击
+		static xAttrIndex CanBeHit;		///< 可受击
+		static xAttrIndex CanBeTanunt;	///< 可嘲讽
+		static xAttrIndex CanDead;		///< 可死亡
+		static xAttrIndex CanHurt;		///< 可受伤
+
 		friend class XGameMap;
 		friend class XTeam;
 
@@ -297,7 +298,7 @@ namespace xgc
 		///
 		enActorState getStatus()const 
 		{ 
-			return enActorState( getValue<xgc_byte>( attrActorStatus ) ); \
+			return enActorState( getValue<xgc_byte>( Status ) ); \
 		}
 
 		///
@@ -333,7 +334,7 @@ namespace xgc
 		{
 			XGC_ASSERT_RETURN( eAbility < abl_actor_count, XGC_NONE );
 		
-			incValue( attrActorCanMove + eAbility, bEnable ? -1 : +1 );
+			incValue( CanMove + eAbility, bEnable ? -1 : +1 );
 		}
 
 		///
@@ -345,7 +346,7 @@ namespace xgc
 		{
 			XGC_ASSERT_RETURN( eAbility < abl_actor_count, XGC_NONE );
 
-			setValue( attrActorCanMove + eAbility, 0 );
+			setValue( CanMove + eAbility, 0 );
 		}
 
 		///
@@ -357,7 +358,7 @@ namespace xgc
 		{
 			XGC_ASSERT_RETURN( eAbility < abl_actor_count, false );
 
-			return 0 == getValue< xgc_int32 >( attrActorCanMove + eAbility );
+			return 0 == getValue< xgc_int32 >( CanMove + eAbility );
 		}
 
 		///

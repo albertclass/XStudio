@@ -1,18 +1,25 @@
 #include "XHeader.h"
 #include "XQuest.h"
 #include "XActor.h"
+#include "XGoods.h"
 
 namespace xgc
 {
-	IMPLEMENT_XCLASS_BEGIN( XQuestObjective, XObject )
-	IMPLEMENT_XCLASS_END()
+	xAttrIndex XQuestObjective::Index;			// 配置ID
+	xAttrIndex XQuestObjective::TargetName;		// 对象名字
+	xAttrIndex XQuestObjective::Serial;			// 序号
+	xAttrIndex XQuestObjective::Count;			// 当前计数
+	xAttrIndex XQuestObjective::FinishCount;	// 完成计数
 
-	XQuestObjective::XQuestObjective( xgc::string strName, xgc_uint16 nFinishCount )
-		: XObject()
-		, m_strName( strName )
-		, m_nFinishCount( nFinishCount )
-		, m_nCount( 0 )
-		, m_nSerial( 0 )
+	IMPLEMENT_XCLASS_BEGIN( XQuestObjective, XObject )
+		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_SAVE )
+		IMPLEMENT_ATTRIBUTE( TargetName, VT_STRING, ATTR_FLAG_SAVE )
+		IMPLEMENT_ATTRIBUTE( Serial, VT_U32, ATTR_FLAG_SAVE )
+		IMPLEMENT_ATTRIBUTE( Count, VT_U32, ATTR_FLAG_SAVE )
+		IMPLEMENT_ATTRIBUTE( FinishCount, VT_U32, ATTR_FLAG_SAVE )
+	IMPLEMENT_XCLASS_END();
+
+	XQuestObjective::XQuestObjective()
 	{
 
 	}
@@ -24,26 +31,28 @@ namespace xgc
 
 	bool XQuestObjective::Increment()
 	{
-		++m_nCount;
-		if( m_nCount == m_nFinishCount )
+		incValue( XQuestObjective::Count, 1 );
+		
+		if( getValue< xgc_uint32 >( Count ) >= getValue< xgc_uint32 >( FinishCount ) )
 		{
 			XQuest *pQuest = ObjectCast< XQuest >( GetParent() );
 			if( pQuest )
-				pQuest->ObjectiveNotify( m_nSerial );
+				pQuest->ObjectiveNotify( getValue< xgc_uint32 >( Serial ) );
 
 			return true;
 		}
+
 		return false;
 	}
 
-	xgc_int32 XQuestObjective::OnKill( xObject hKiller, xObject hDead )
+	xgc_void XQuestObjective::OnKill( xObject hKiller, xObject hDead )
 	{
 		XActor *pActor = ObjectCast< XActor >( hDead );
 		if( pActor )
 		{
-			xgc_lpcstr name = pActor->getString( attrObjectName );
+			xgc_lpcstr name = pActor->getString( XGameObject::Alias );
 			XGC_ASSERT_POINTER( name );
-			if( name && m_strName == name && Increment() )
+			if( name && getString( TargetName ) == name && Increment() )
 			{
 				XActor *pKiller = ObjectCast< XActor >( hKiller );
 
@@ -55,19 +64,38 @@ namespace xgc
 				}
 			}
 		}
-		return false;
 	}
 
-	xgc_int32 XQuestObjective::OnItem( xObject hSource, xgc_uintptr lParam )
+	xgc_void XQuestObjective::OnItem( xObject hSource, xgc_uintptr lParam )
 	{
-		return false;
+		XGoods *pGoods = ObjectCast< XGoods >( hSource );
+		if( pGoods )
+		{
+			xgc_lpcstr pName = pGoods->getString( XGoods::Alias );
+			XGC_ASSERT_POINTER( pName );
+			if( pName && getString( TargetName ) == pName && Increment() )
+			{
+				XActor *pPicker = ObjectCast< XActor >( pGoods->GetParent() );
+
+				if( pPicker )
+				{
+					// 任务完成则将触发器摘除
+					// ThisTriggerMgr()->DismissTrigger( hKiller, 0, this, &XQuestObjective::OnKill );
+					// pKiller->DismissTrigger( hDead, 0 );
+				}
+			}
+		}
 	}
 
+	xgc_void XQuestObjective::OnTalk( xObject hSource, xgc_uintptr lParam )
+	{
+
+	}
 	//////////////////////////////////////////////////////////////////////////
 	// 任务
 	//////////////////////////////////////////////////////////////////////////
 	IMPLEMENT_XCLASS_BEGIN( XQuest, XObject )
-	IMPLEMENT_XCLASS_END()
+	IMPLEMENT_XCLASS_END();
 
 	XQuest::XQuest(void)
 		: m_FinishMask( 0 )
@@ -81,7 +109,7 @@ namespace xgc
 
 	xgc_void XQuest::OnAddChild( XObject* pChild, xgc_lpcvoid lpContext )
 	{
-		xgc_size nChildCount = GetChildrenCount();
+		xgc_size nChildCount = GetChildCount();
 		if( nChildCount >= 16 )
 		{
 			SYS_WARNING( "任务目标已经超过数量限制. %I", nChildCount );
@@ -91,8 +119,8 @@ namespace xgc
 		XGC_ASSERT( pChild && pChild->IsInheritFrom( &XQuestObjective::GetThisClass() ) );
 		XQuestObjective* pObjective = ObjectCast< XQuestObjective >( pChild->GetObjectID() );
 
-		pObjective->setSerial(1<<nChildCount);
-		m_FinishMask |= pObjective->getSerial();
+		pObjective->setValue( XQuestObjective::Serial, 1 << nChildCount );
+		m_FinishMask |= pObjective->getValue< xgc_uint32 >( XQuestObjective::Serial );
 	}
 
 	xgc_void XQuest::ObjectiveNotify( xgc_uint16 nSerial )

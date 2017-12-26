@@ -35,7 +35,7 @@ namespace xgc
 			XGC_ASSERT( nCount <= pGoods->GetOverlapNum() );
 			if( nCount > pGoods->GetOverlapNum() )
 			{
-				USR_WARNING( "overlap overflow dbid = %u", pGoods->getValue< xgc_uint32 >( attrGoodsIndex ) );
+				USR_WARNING( "overlap overflow dbid = %u", pGoods->getValue< xgc_uint32 >( XGoods::Index ) );
 				DumpStackFrame();
 			}
 		}
@@ -110,7 +110,7 @@ namespace xgc
 			if( xgc_nullptr == pGoods )
 				return false;
 
-			if( pGoods->getValue< xgc_uint32 >( attrGoodsIndex ) != nGoodsIndex ) // 物品不一样
+			if( pGoods->getValue< xgc_uint32 >( XGoods::Index ) != nGoodsIndex ) // 物品不一样
 				return false;
 
 			return true;
@@ -258,28 +258,6 @@ namespace xgc
 
 		XBag( const XBag &) = delete;
 		XBag( XBag &&) = delete;
-
-		///
-		/// 背包拥有者 
-		/// [1/21/2015] create by wuhailin.jerry
-		///
-		xgc_bool setOwner( xObject hOwner ) 
-		{
-			auto pNewOwner = ObjectCast< XActor >( GetParent() );
-			if( xgc_nullptr == pNewOwner )
-				return false;
-
-			return pNewOwner->AddNode( NODE_TYPE_XBAG, GetObjectID() );
-		}
-
-		///
-		/// 获取背包的主人 角色 
-		/// [9/12/2014] create by wuhailin.jerry
-		///
-		xObject getOwner() const 
-		{ 
-			return GetParent(); 
-		}
 
 		///
 		/// 设置背包容量，如果有数据,就先复制，然后再删除之 

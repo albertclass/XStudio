@@ -8,52 +8,41 @@
 // MapBlock 格子管理
 namespace xgc
 {
-	/// @var 场景索引
-	extern CORE_API xAttrIndex attrSceneIndex;
-	/// @var 场景显示名
-	extern CORE_API xAttrIndex attrSceneTitle;
-	/// @var 场景索引名(唯一ID)
-	extern CORE_API xAttrIndex attrSceneStrName;
-	/// @var 场景地图名
-	extern CORE_API xAttrIndex attrSceneMapName;
-	/// @var 场景标记
-	extern CORE_API xAttrIndex attrSceneFlags;
-
 	class XAction;
 	class XGameObject;
-	///
-	/// 格子对象
-	/// [6/25/2014] create by albert.xu
-	///
-	struct IBlockExtern
-	{
-		///
-		/// 进入时调用
-		/// [6/25/2014] create by albert.xu
-		/// @param pObject 作用的对象
-		///
-		virtual xgc_void OnEnterBlock( XGameObject* pObject ) = 0;
+	/////
+	///// 格子对象
+	///// [6/25/2014] create by albert.xu
+	/////
+	//struct IBlockExtern
+	//{
+	//	///
+	//	/// 进入时调用
+	//	/// [6/25/2014] create by albert.xu
+	//	/// @param pObject 作用的对象
+	//	///
+	//	virtual xgc_void OnEnterBlock( XGameObject* pObject ) = 0;
 
-		///
-		/// 越过时调用
-		/// [6/25/2014] create by albert.xu
-		/// @param pObject 作用的对象
-		///
-		virtual xgc_void OnCrossBlock( XGameObject* pObject ) = 0;
+	//	///
+	//	/// 越过时调用
+	//	/// [6/25/2014] create by albert.xu
+	//	/// @param pObject 作用的对象
+	//	///
+	//	virtual xgc_void OnCrossBlock( XGameObject* pObject ) = 0;
 
-		///
-		/// 离开时调用
-		/// [6/25/2014] create by albert.xu
-		/// @param pObject 作用的对象
-		///
-		virtual xgc_void OnLeaveBlock( XGameObject* pObject ) = 0;
+	//	///
+	//	/// 离开时调用
+	//	/// [6/25/2014] create by albert.xu
+	//	/// @param pObject 作用的对象
+	//	///
+	//	virtual xgc_void OnLeaveBlock( XGameObject* pObject ) = 0;
 
-		///
-		/// 释放对象，该函数应当被每个继承类重载
-		/// [6/25/2014] create by albert.xu
-		///
-		virtual xgc_void Release() = 0;
-	};
+	//	///
+	//	/// 释放对象，该函数应当被每个继承类重载
+	//	/// [6/25/2014] create by albert.xu
+	//	///
+	//	virtual xgc_void Release() = 0;
+	//};
 
 	#define COLLISION_NONE	      0	  ///< 什么也不检测
 	#define COLLISION_PATH	      1	  ///< 检测路径碰撞
@@ -84,6 +73,10 @@ namespace xgc
 		evt_map_counter_underflow,
 		evt_map_turn_off,
 		evt_map_turn_on,
+
+		evt_map_enter_block,
+		evt_map_leave_block,
+		evt_map_cross_block,
 	};
 
 	/// 地图事件
@@ -91,12 +84,14 @@ namespace xgc
 	{
 		/// @var 事件
 		XObjectEvent cast;
+		/// @var 谁触发的事件
+		xObject object;
 		/// @var 源的名字
 		xgc_lpcstr alias;
 
 		union
 		{
-			struct
+			struct // 计数器事件
 			{
 				/// @var 计数器值
 				xgc_long val;
@@ -104,11 +99,19 @@ namespace xgc
 				xgc_long inc;
 			}counter;
 
-			struct
+			struct // 开关事件
 			{
-				/// @var 计数器值
+				/// @var 开关当前值
 				xgc_long val;
 			}switches;
+
+			struct // 地图格子变换事件
+			{
+				/// @var 源格子事件ID
+				int old_id;
+				/// @var 新格子事件ID
+				int new_id;
+			}block;
 		};
 	};
 
@@ -140,6 +143,18 @@ namespace xgc
 	class CORE_API XGameMap : public XObjectNode
 	{
 		DECLARE_XCLASS();
+
+		/// @var 场景索引
+		static xAttrIndex Index;
+		/// @var 场景显示名
+		static xAttrIndex MapTitle;
+		/// @var 场景索引名(唯一ID)
+		static xAttrIndex MapIndex;
+		/// @var 场景地图名
+		static xAttrIndex MapName;
+		/// @var 场景标记
+		static xAttrIndex MapFlags;
+
 	private:
 		struct MapConf mMapConf;
 
@@ -199,9 +214,6 @@ namespace xgc
 		/// @var 场景内的定时器
 		MapClock	mMapClock;
 
-		/// @var 地砖扩展信息
-		xgc::vector< IBlockExtern* > mBlockExtern; 
-
 		/// @var 客户端事件列表 < event, state >
 		xgc::map< xgc_uint16, xgc_uint16 > mClientEvents;
 
@@ -220,7 +232,7 @@ namespace xgc
 			XGC_ASSERT_RETURN( x >= 0 && x < mMapConf.mCellConf.cx && y >= 0 && y < mMapConf.mCellConf.cy
 				, xgc_nullptr
 				, "scene = %s, x = %d, y = %d, map size = (%d,%d)"
-				, getString( attrSceneTitle )
+				, getString( XGameMap::MapTitle )
 				, x, y
 				, mMapConf.mCellConf.cx, mMapConf.mCellConf.cy );
 
@@ -330,55 +342,6 @@ namespace xgc
 		xgc_uint32 GetBlockExternIdx( iPoint ptCell );
 
 		///
-		/// \brief 设置地砖扩展信息
-		/// [6/25/2014] create by albert.xu
-		/// \param pExtern 扩展接口的指针
-		/// \param ptCell 地砖的坐标
-		/// \see iPoint
-		/// \see IBlockExtern
-		///
-		xgc_void SetBlockExternInfo( xgc_uint32 nBlockExternIdx, IBlockExtern* pExtern );
-
-		///
-		/// \brief 设置扩展信息槽个数
-		/// [6/25/2014] create by albert.xu
-		/// \param pExtern 扩展接口的指针
-		/// \param ptCells 地砖的坐标列表
-		/// \see iPoint
-		/// \see IBlockExtern
-		///
-		xgc_void SetBlockExternSize( xgc_size nBlockExternSize );
-
-		///
-		/// \brief 获取扩展信息槽个数
-		/// [7/4/2014] create by albert.xu
-		/// \return 扩展信息槽个数
-		///
-		xgc_size GetBlockExternSize()const;
-
-		///
-		/// \brief 扩展扩展信息槽个数
-		/// [7/4/2014] create by albert.xu
-		/// \return 扩展信息槽个数
-		///
-		xgc_size ExpandBlockExternSize( xgc_size nExpandCount );
-
-		///
-		/// \brief 获取地砖扩展信息
-		/// [6/25/2014] create by albert.xu
-		/// \param ptCell 地砖的坐标
-		/// \see iPoint
-		///
-		IBlockExtern* GetBlockExternInfo( iPoint ptCell );
-
-		///
-		/// \brief 获取地砖扩展信息
-		/// [6/25/2014] create by albert.xu
-		/// \param nBlockExternIdx 扩展信息索引号
-		///
-		IBlockExtern* GetBlockExternInfo( xgc_uint32 nBlockExternIdx );
-
-		///
 		/// \brief 设置格子掩码
 		/// [10/14/2014] create by albert.xu
 		///
@@ -402,7 +365,7 @@ namespace xgc
 		///
 		xgc_bool GetMoveFlag()const
 		{
-			return GetBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove, true );
+			return GetBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove, true );
 		}
 
 		///
@@ -412,9 +375,9 @@ namespace xgc
 		xgc_void SetMoveFlag( xgc_bool bCanMove = true )
 		{
 			if( bCanMove )
-				SetBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove );
+				SetBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove );
 			else
-				ClrBit( attrSceneFlags, (xgc_size)MapFlags::eCanMove );
+				ClrBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove );
 		}
 
 		///
@@ -760,93 +723,6 @@ namespace xgc
 		return mpCells[ptCell.y * mMapConf.mCellConf.cx + ptCell.x].data;
 	}
 
-	///
-	/// 设置地砖扩展信息
-	/// [6/25/2014] create by albert.xu
-	/// @param pExtern 扩展接口的指针
-	/// @param ptCell 地砖的坐标
-	/// @see iPoint
-	/// @see IBlockExtern
-	///
-	XGC_INLINE xgc_void XGameMap::SetBlockExternInfo( xgc_uint32 nBlockExternIdx, IBlockExtern* pExtern )
-	{
-		XGC_ASSERT_RETURN( nBlockExternIdx < (xgc_uint32) mBlockExtern.size(), xgc_void( 0 ) );
-		if( mBlockExtern[nBlockExternIdx] != pExtern )
-		{
-			SAFE_RELEASE( mBlockExtern[nBlockExternIdx] );
-			mBlockExtern[nBlockExternIdx] = pExtern;
-		}
-	}
-
-	///
-	/// 设置扩展信息槽个数
-	/// [6/25/2014] create by albert.xu
-	/// @param pExtern 扩展接口的指针
-	/// @param ptCells 地砖的坐标列表
-	/// @see iPoint
-	/// @see IBlockExtern
-	///
-	XGC_INLINE xgc_void XGameMap::SetBlockExternSize( xgc_size nBlockExternSize )
-	{
-		XGC_ASSERT( nBlockExternSize < INVALID_BLOCK_INDEX );
-		if( nBlockExternSize < mBlockExtern.size() )
-		{
-			for( xgc_size i = nBlockExternSize; i < mBlockExtern.size(); ++i )
-			{
-				SAFE_RELEASE( mBlockExtern[i] );
-			}
-		}
-		mBlockExtern.resize( nBlockExternSize, xgc_nullptr );
-	}
-
-	///
-	/// 获取扩展信息槽个数
-	/// [7/4/2014] create by albert.xu
-	/// @return 扩展信息槽个数
-	///
-	XGC_INLINE xgc_size XGameMap::GetBlockExternSize()const
-	{
-		return mBlockExtern.size();
-	}
-
-	///
-	/// 扩展扩展信息槽个数
-	/// [7/4/2014] create by albert.xu
-	/// @return 扩展信息槽个数
-	///
-	XGC_INLINE xgc_size XGameMap::ExpandBlockExternSize( xgc_size nExpandCount )
-	{
-		mBlockExtern.resize( mBlockExtern.size() + nExpandCount, xgc_nullptr );
-		return mBlockExtern.size();
-	}
-
-	///
-	/// 获取地砖扩展信息
-	/// [6/25/2014] create by albert.xu
-	/// @param ptCell 地砖的坐标
-	/// @see iPoint
-	///
-	XGC_INLINE IBlockExtern* XGameMap::GetBlockExternInfo( iPoint ptCell )
-	{
-		if( ptCell.x < 0 || ptCell.y < 0 || ptCell.x > mMapConf.mCellConf.cx || ptCell.y > mMapConf.mCellConf.cy )
-			return xgc_nullptr;
-
-		return GetBlockExternInfo( GetBlockExternIdx( ptCell ) );
-	}
-
-	///
-	/// 获取地砖扩展信息
-	/// [6/25/2014] create by albert.xu
-	/// @param nBlockExternIdx 扩展信息索引号
-	///
-	XGC_INLINE IBlockExtern* XGameMap::GetBlockExternInfo( xgc_uint32 nBlockExternIdx )
-	{
-		if( nBlockExternIdx >= mBlockExtern.size() )
-			return xgc_nullptr;
-
-		return mBlockExtern[nBlockExternIdx];
-	}
-
 	XGC_INLINE xgc_void XGameMap::SetCellBlock( xgc_int32 x, xgc_int32 y, xgc_bool bBlock /*= true*/ )
 	{
 		MapCell* pCell = GetCell( x, y );
@@ -912,7 +788,7 @@ namespace xgc
 		FUNCTION_BEGIN;
 		auto it = mClientEvents.find( nEvent );
 		
-		auto title = getString( attrSceneTitle );
+		auto title = getString( XGameMap::MapTitle );
 
 		XGC_ASSERT_RETURN( it != mClientEvents.end(), false, "Scene = %s, nEvent = %u", title, nEvent );
 
@@ -930,7 +806,7 @@ namespace xgc
 	{
 		FUNCTION_BEGIN;
 		auto it = mServerEvents.find( nEvent );
-		auto title = getString( attrSceneTitle );
+		auto title = getString( XGameMap::MapTitle );
 
 		XGC_ASSERT_RETURN( it != mServerEvents.end(), false, "Scene = %s, nEvent = %u", title, nEvent );
 

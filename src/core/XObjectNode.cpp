@@ -9,8 +9,8 @@ namespace xgc
 	/// \date 11/13/2017
 	/// \author xufeng04
 	///
-
 	XObjectNode::XObjectNode( xObject hParent )
+		: XObject()
 	{
 		SetParent( hParent );
 	}
@@ -76,11 +76,11 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xgc_void XObjectNode::RemoveAll( const XClassInfo *pClass )
+	xgc_void XObjectNode::RemoveAll()
 	{
-		while( GetChildrenCount( pClass ) )
+		while( GetChildCount() )
 		{
-			auto hObject = Search( []( xObject ){ return true; }, pClass );
+			auto hObject = Search( []( xObject ){ return true; } );
 			auto pObject = ObjectCast< XObject >( hObject );
 			if( pObject )
 				Remove( pObject );
@@ -113,11 +113,11 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xgc_void XObjectNode::DeleteAll( const XClassInfo *pClass /*= xgc_nullptr*/ )
+	xgc_void XObjectNode::DeleteAll()
 	{
-		while( GetChildrenCount( pClass ) )
+		while( GetChildCount() )
 		{
-			auto hObject = Search( []( xObject ){ return true; }, pClass );
+			auto hObject = Search( []( xObject ){ return true; } );
 			auto pObject = ObjectCast< XObject >( hObject );
 
 			Delete( pObject );
@@ -131,27 +131,11 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xObject XObjectNode::Search( const std::function<xgc_bool( xObject )>& filter, const XClassInfo * pClass ) const
+	xObject XObjectNode::Search( const std::function<xgc_bool( xObject )>& filter ) const
 	{
-		if( pClass )
-		{
-			auto it = mChildren.find( pClass );
-			if( it != mChildren.end() )
-			{
-				for( auto hObject : it->second )
-					if( filter( hObject ) )
-						return hObject;
-			}
-		}
-		else
-		{
-			for( auto &it : mChildren )
-			{
-				for( auto hObject : it.second )
-					if( filter( hObject ) )
-						return hObject;
-			}
-		}
+		for( auto hObject : mChildren )
+			if( filter( hObject ) )
+				return hObject;
 
 		return INVALID_OBJECT_ID;
 	}
@@ -162,24 +146,9 @@ namespace xgc
 	/// \date 8/3/2009
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
-	xgc_size XObjectNode::GetChildrenCount( const XClassInfo * pClass ) const
+	xgc_size XObjectNode::GetChildCount() const
 	{
-		if( pClass )
-		{
-			auto it = mChildren.find( pClass );
-			if( it == mChildren.end() )
-				return 0;
-
-			return it->second.size();
-		}
-		else
-		{
-			xgc_size count = 0;
-			for( auto &it : mChildren )
-				count += it.second.size();
-
-			return count;
-		}
+		return mChildren.size();
 	}
 
 	///
@@ -215,8 +184,7 @@ namespace xgc
 			return false;
 
 		// 此处可以使用堆来优化
-		auto pClass = &pObject->GetRuntimeClass();
-		mChildren[pClass].push_back( hObject );
+		mChildren.push_back( hObject );
 
 		return true;
 	}
@@ -233,18 +201,11 @@ namespace xgc
 		if( xgc_nullptr == pObject )
 			return false;
 
-		auto pClass = &pObject->GetRuntimeClass();
-
-		// 此处可以使用堆来优化
-		auto it1 = mChildren.find( pClass );
-		if( it1 == mChildren.end() )
+		auto it = std::find( mChildren.begin(), mChildren.end(), hObject );
+		if( it == mChildren.end() )
 			return false;
 
-		auto it2 = std::find( it1->second.begin(), it1->second.end(), hObject );
-		if( it2 == it1->second.end() )
-			return false;
-
-		it1->second.erase( it2 );
+		mChildren.erase( it );
 		return true;
 	}
 }

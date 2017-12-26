@@ -5,16 +5,14 @@
 
 namespace xgc
 {
-	extern CORE_API xAttrIndex attrSkillIndex;
-	extern CORE_API xAttrIndex attrSkillId;
-	extern CORE_API xAttrIndex attrSkillLevel;
-	extern CORE_API xAttrIndex attrSkillStartTime;
-	extern CORE_API xAttrIndex attrSkillCloseTime;
-	extern CORE_API xAttrIndex attrSkillResetTime;
-	
 	class XSkill : public XTimeline
 	{
 		DECLARE_XCLASS()
+		static xAttrIndex Index;
+		static xAttrIndex Level;
+		static xAttrIndex StartTime;
+		static xAttrIndex CloseTime;
+		static xAttrIndex ResetTime;
 
 	public:
 		XSkill( timespan interval );
@@ -25,9 +23,9 @@ namespace xgc
 		{
 			xgc_time64 nStart = datetime::now().to_milliseconds();
 
-			setValue( attrSkillStartTime, nStart );
-			setValue( attrSkillCloseTime, nStart + nDuration );
-			setValue( attrSkillResetTime, nStart + nReset );
+			setValue( StartTime, nStart );
+			setValue( CloseTime, nStart + nDuration );
+			setValue( ResetTime, nStart + nReset );
 
 			Start( datetime::now() );
 		}

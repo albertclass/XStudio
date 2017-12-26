@@ -8,36 +8,28 @@ namespace xgc
 	{
 	public:
 		DECLARE_XCLASS();
+
+		static xAttrIndex Index;			// 配置ID
+		static xAttrIndex TargetName;		// 目标对象名字
+		static xAttrIndex Serial;			// 序号
+		static xAttrIndex Count;			// 当前计数
+		static xAttrIndex FinishCount;		// 完成计数
+
 		enum objective_type
 		{
 			type_kill,	// 杀死怪物
 			type_item,	// 得到物品
 		};
 
-		XQuestObjective( xgc::string strName, xgc_uint16 nFinishCount );
+		XQuestObjective();
 		~XQuestObjective();
 
-		xgc_int32 OnKill( xObject hKiller, xObject hDead );
-		xgc_int32 OnItem( xObject hSource, xgc_uintptr lParam );
+		xgc_void OnKill( xObject hKiller, xObject hDead );
+		xgc_void OnItem( xObject hSource, xgc_uintptr lParam );
+		xgc_void OnTalk( xObject hSource, xgc_uintptr lParam );
 
 		// 增加计数,若计数和完成计数相同则任务目标达成.
 		xgc_bool Increment();
-
-		xgc_uint16 getSerial()const
-		{
-			return m_nSerial;
-		}
-
-		xgc_void setSerial( xgc_uint16 nSerial )
-		{
-			m_nSerial = nSerial;
-		}
-	private:
-		//objective_type	m_ObjectiveType;	// 目标类型
-		xgc::string			m_strName;			// 对象名字
-		xgc_uint16			m_nSerial;			// 序号
-		xgc_uint16			m_nCount;			// 当前计数
-		xgc_uint16			m_nFinishCount;		// 完成计数
 	};
 
 	class XQuest :	public XObjectNode

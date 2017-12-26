@@ -42,7 +42,7 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xgc_void RemoveAll( const XClassInfo *pClass = xgc_nullptr );
+		xgc_void RemoveAll();
 
 		///
 		/// \brief 删除子节点
@@ -58,15 +58,7 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xgc_void DeleteAll( const XClassInfo *pClass = xgc_nullptr );
-
-		///
-		/// \brief 过滤子节点
-		/// \author albert.xu
-		/// \date 8/3/2009
-		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
-		///
-		xObject Search( const std::function< xgc_bool( xObject ) > &filter, const XClassInfo *pClass = xgc_nullptr )const;
+		xgc_void DeleteAll();
 
 		///
 		/// \brief 获取子对象数量
@@ -74,43 +66,15 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xgc_size GetChildrenCount( const XClassInfo *pClass = xgc_nullptr )const;
+		xgc_size GetChildCount()const override;
 
 		///
-		/// \brief 获取组件
+		/// \brief 搜索子节点
 		/// \author albert.xu
-		/// \date 2017/11/01
+		/// \date 8/3/2009
+		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xObject GetComposition( const XClassInfo &rClass, xgc_size nIndex = 0 )const
-		{
-			auto it = mChildren.find( &rClass );
-			if( it == mChildren.end() )
-				return INVALID_OBJECT_ID;
-
-			if( it->second.size() <= nIndex )
-				return INVALID_OBJECT_ID;
-
-			return it->second[nIndex];
-		}
-
-		///
-		/// \brief 获取组件
-		/// \author albert.xu
-		/// \date 2017/11/01
-		///
-		template< template< class, class > class Continer, class _Ax = xgc_allocator >
-		typename Continer< xObject, _Ax > GetCompositions( const XClassInfo &rClass )const
-		{
-			Continer< xObject, _Ax > c;
-
-			auto it = mChildren.find( &rClass );
-			if( it != mChildren.end() )
-			{
-				std::copy( it->second.begin(), it->second.end(), std::back_inserter( c ) );
-			}
-
-			return c;
-		}
+		xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const override;
 
 	protected:
 		/************************************************************************/
@@ -156,7 +120,7 @@ namespace xgc
 
 	private:
 		/// @var children
-		xgc::unordered_map< xgc_lpcvoid, xgc::vector< xObject > > mChildren;
+		xgc::vector< xObject > mChildren;
 	};
 }
 
