@@ -63,8 +63,19 @@ namespace xgc
 		memset( mAttributes, 0, _msize( mAttributes ) );
 
 		mAttributeInfo = cls.GetAttributeInfo();
-		mImplementInfo = cls.GetImplementInfo();
 		return true;
+	}
+
+	// 获取父对象ID
+	xObject XObject::GotParent( const XClassInfo & cls ) const
+	{
+		XObject *pObject = ObjectCast< XObject >( GetObjectID() );
+		while( pObject && cls != pObject->GetRuntimeClass() )
+		{
+			pObject = ObjectCast< XObject >( pObject->GetParent() );
+		}
+
+		return pObject ? pObject->GetObjectID() : INVALID_OBJECT_ID;
 	}
 
 	xgc_void XObject::Destroy()
@@ -85,6 +96,7 @@ namespace xgc
 	/// \brief 注册事件
 	/// \author albert.xu
 	/// \date 2017/10/12
+	/// \return 该事件的token，可以使用该token删除注册的事件
 	///
 	xgc_long XObject::RegistEvent( xgc_long id, const xNotify &invoke, xObject hOwner /*= INVALID_OBJECT_ID*/ )
 	{
@@ -303,42 +315,14 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nImplementCount; ++i )
 		{
-			auto &version = pImplementInfo[i].version;
+			auto &version = pImplementInfo[i]->version;
 			if( uVersion < version.start ||	uVersion >= version.close )
 				continue;
 
-			auto &impl = pImplementInfo[i].impl;
+			auto &impl = pImplementInfo[i]->impl;
 			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
 			{
-				if( impl.flags & 0x80 )
-				{
-					decltype( impl.count ) count;
-					ar >> count;
-					/// 此处问题在于，如果缩减了数组，则必须调整读指针，忽略掉缩减的部分！
-					for( xgc_size n = 0; n < count; ++n )
-					{
-						if( n < impl.count )
-						{
-							ar >> getAttr( *impl.attr_ptr, n );
-						}
-						else if( impl.type == VT_STRING )
-						{
-							xgc_lpcstr str; ar >> str;
-						}
-						else if( impl.type == VT_STRING )
-						{
-							xgc_uint16 len; ar >> len; ar.plus_rd( len );
-						}
-						else
-						{
-							ar.plus_rd( (xgc_long)XAttribute::Type2Size( impl.type ) );
-						}
-					}
-				}
-				else
-				{
-					ar >> getAttr( *impl.attr_ptr, 0 );
-				}
+				ar >> getAttr( *impl.attr_ptr );
 			}
 			++j;
 		}
@@ -355,20 +339,10 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nAttributeCount; ++i )
 		{
-			auto &impl = pAttributeInfo[i].impl;
+			auto &impl = pAttributeInfo[i]->impl;
 			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
-			{
-				if( impl.flags & 0x80 )
-				{
-					ar << impl.count;
-					for( xgc_size n = 0; n < impl.count; ++n )
-						ar << getAttr( *impl.attr_ptr, n );
-				}
-				else
-				{
-					ar << getAttr( *impl.attr_ptr, 0 );
-				}
-			}
+				ar << getAttr( *impl.attr_ptr );
+
 			++j;
 		}
 
@@ -380,18 +354,14 @@ namespace xgc
 	/// 获取属性
 	/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
 	///
-	XAttribute XObject::getAttr( xAttrIndex nAttr, xgc_size nIndex ) const
+	XAttribute XObject::getAttr( xAttrIndex nAttr ) const
 	{
-		XGC_ASSERT_THROW( checkIndex( nAttr ), std::logic_error( "get attribute, index out of bound." ) );
+		XGC_ASSERT_THROW( isAttrValid( nAttr ), std::logic_error( "get attribute, index out of bound." ) );
 
-		auto &info = mAttributeInfo[nAttr];
-
-		xgc_lpstr lpValue = (xgc_lpstr)mAttributes + info.offset;
+		// 获取属性信息
+		auto info = mAttributeInfo[nAttr];
 
 		// 生成属性操作对象
-		if( nIndex >= info.impl.count )
-			return XAttribute( info.impl.type, xgc_nullptr );
-		else
-			return XAttribute( info.impl.type, lpValue + nIndex * XAttribute::Type2Size( info.impl.type ) );
+		return XAttribute( info->impl.type, (xgc_lpstr)mAttributes + info->offset );
 	}
 }

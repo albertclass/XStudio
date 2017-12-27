@@ -14,7 +14,9 @@ namespace xgc
 	xAttrIndex XActor::AbnormalTime;///< 特殊状态时间
 	xAttrIndex XActor::BornTime;	///< 出生时间
 	xAttrIndex XActor::GroupMask;	///< 组别掩码，用于区分阵营
-	xAttrIndex XActor::Status;		///< 角色状态
+	xAttrIndex XActor::State;		///< 角色状态
+	xAttrIndex XActor::Status;		///< 角色异常状态
+	xAttrIndex XActor::StatusTime;	///< 角色异常状态重置时间
 	xAttrIndex XActor::CanMove;		///< 可移动
 	xAttrIndex XActor::CanAttack;	///< 可攻击
 	xAttrIndex XActor::CanBeHit;	///< 可受击
@@ -33,6 +35,7 @@ namespace xgc
 		IMPLEMENT_ATTRIBUTE( BornTime, VT_I32, ATTR_FLAG_NONE, "20140912" )		// 出生时间
 		IMPLEMENT_ATTRIBUTE( GroupMask, VT_I32, ATTR_FLAG_SAVE, "20140912" )	// 组别掩码，用于区分阵营
 		IMPLEMENT_ATTRIBUTE( Status, VT_U32, ATTR_FLAG_SAVE, "20150122" )
+		IMPLEMENT_ATTRIBUTE( StatusTime, VT_U32, ATTR_FLAG_SAVE, "20150122" )
 		IMPLEMENT_ATTRIBUTE( CanMove, VT_I32, ATTR_FLAG_NONE, "20150122" )
 		IMPLEMENT_ATTRIBUTE( CanAttack, VT_I32, ATTR_FLAG_NONE, "20150122" )
 		IMPLEMENT_ATTRIBUTE( CanBeHit, VT_I32, ATTR_FLAG_NONE, "20150122" )
@@ -56,7 +59,6 @@ namespace xgc
 
 	XActor::XActor()
 		: mResetStatusTimerHandler( INVALID_TIMER_HANDLE )
-		, mActorRestonState( enActorState::sta_live )
 		, mRadius( 1.0f )
 		, mBornPoint( XVector3::ZERO )
 		, mAttacker( INVALID_OBJECT_ID )
@@ -84,24 +86,27 @@ namespace xgc
 		if( isState( enActorState::sta_dead ) )
 			return;
 
-		xgc_long nDamage = 0;
-		xgc_long nHatred = 0;
-
 		// 发送受击事件
-		XActorEvent evt;
+		AttackEvent evt;
 		evt.hAttacker = hAttacker;
+		evt.hTarget   = GetObjectID();
+		evt.nDamage   = 0;
+		evt.nHate     = 0;
+		evt.nMode     = nMode;
 		evt.lpContext = lpContext;
-		evt.attack.nDamage = nDamage;
-		evt.attack.nMode = nMode;
 
-		EmmitEvent( evt.cast, evt_actor_behit );
+		// 命中计算
+		beHit( evt );
 
 		// 是否命中，命中后返回伤害和仇恨
 		if( evt.cast.result == 0 )
 		{
 			// OnUnderAttacked 有可能递归调用死亡，会多次死亡
 			// 之前没死，之后死了
-			enActorState eBefore = getStatus();
+			enActorState eBefore = getState();
+
+			// 伤害计算
+			doAttack( evt );
 			XActor *pAttack = ObjectCast<XActor>( hAttacker );
 			if( pAttack )
 			{
@@ -109,8 +114,8 @@ namespace xgc
 			}
 
 			//之前死了才做死亡逻辑，没死则忽略
-			if( enActorState::sta_dead == eBefore &&
-				enActorState::sta_dead == getStatus() )
+			if( enActorState::sta_dead != eBefore &&
+				enActorState::sta_dead == getState() )
 			{
 				Dead( hAttacker, nMode, lpContext );
 			}
@@ -125,21 +130,23 @@ namespace xgc
 	xgc_void XActor::Dead( xObject hAttacker, xgc_long nMode, xgc_lpvoid lpContext )
 	{
 		// 处理角色场景死亡事件
-		SetState( enActorState::sta_dead );
+		setState( enActorState::sta_dead );
 
-		resetAbility( abl_actor_move );
-		resetAbility( abl_actor_attack );
-		resetAbility( abl_actor_be_hit );
-		resetAbility( abl_actor_be_tanunt );
-		resetAbility( abl_actor_dead );
-		resetAbility( abl_actor_hurt );
+		enableAbility( abl_actor_move, false );
+		enableAbility( abl_actor_attack, false );
+		enableAbility( abl_actor_be_hit, false );
+		enableAbility( abl_actor_be_tanunt, false );
+		enableAbility( abl_actor_dead, false );
+		enableAbility( abl_actor_hurt, false );
 		
 		// 发送角色死亡事件
-		XActorEvent evt;
+		AttackEvent evt;
 		evt.lpContext = lpContext;
 		evt.hAttacker = hAttacker;
+		evt.hTarget   = GetObjectID();
+		evt.nMode     = nMode;
+		evt.lpContext = lpContext;
 
-		evt.dead.nMode = nMode;
 		EmmitEvent( evt.cast, evt_actor_dead );
 	}
 
@@ -150,20 +157,27 @@ namespace xgc
 	xgc_void XActor::Relive( xgc_lpvoid lpContext )
 	{
 		// 处理场景重生事件
-		SetState( enActorState::sta_live );
+		setState( enActorState::sta_live );
+
+		resetAbility( abl_actor_move );
+		resetAbility( abl_actor_attack );
+		resetAbility( abl_actor_be_hit );
+		resetAbility( abl_actor_be_tanunt );
+		resetAbility( abl_actor_dead );
+		resetAbility( abl_actor_hurt );
 
 		// 发送角色重生事件
-		XActorEvent evt;
+		NormalEvent evt;
 		evt.lpContext = lpContext;
 
-		EmmitEvent( evt.cast, evt_actor_relive );
+		EmmitEvent( InitEvent( evt.cast, evt_actor_relive ) );
 	}
 
-	/// ------------------------------------------------ ///
-	/// 设置生物状态
-	/// [5/31/2014 jianglei.kinly]
-	/// ------------------------------------------------ ///
-	xgc_void XActor::SetState( enActorState eStatus )
+	///
+	/// \brief 设置情形
+	/// \author jianglei.kinly
+	///
+	xgc_void XActor::setStatus( enActorStatus eStatus )
 	{
 		if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 		{
@@ -172,98 +186,58 @@ namespace xgc
 		}
 
 		setValue( Status, (xgc_uint32)eStatus );
-		mActorRestonState = eStatus;
 	}
 
-	//---------------------------------------------------//
-	// [8/24/2009 Albert]
-	// 设置角色状态
-	//---------------------------------------------------//
-	xgc_void XActor::SetState( enActorState eStatus, timespan tsDuration, xgc_int32 nMode )
+	///
+	/// \brief 设置角色状态
+	/// \date 8/24/2009
+	/// \author albert.xu
+	///
+	xgc_void XActor::setStatus( enActorStatus eStatus, timespan tsDuration, xgc_int32 nMode )
 	{
 		if( isState( enActorState::sta_dead ) )
 			return;
 
-		if( tsDuration != 0 )
+		XGC_ASSERT_RETURN( tsDuration == 0, XGC_NONE );
+
+		timespan duration = tsDuration;
+		timespan remain;
+		datetime reston;
+
+		if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
 		{
-			timespan duration = tsDuration;
-			timespan remain;
-			if( mResetStatusTimerHandler != INVALID_TIMER_HANDLE )
-			{
-				remain = getTimer().remove( mResetStatusTimerHandler );
-				mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
-			}
-
-			if( eStatus == mActorRestonState )
-			{
-				switch( nMode )
-				{
-					case 0: // 覆盖
-					mResetStatusTimerHandler = getTimer().insert( 
-						std::bind( &XActor::ResetActorState, this, eStatus ), 
-						datetime::now() + duration,
-						0,
-						"once" );
-					break;
-					case 1: // 顺延
-					mResetStatusTimerHandler = getTimer().insert( 
-						std::bind( &XActor::ResetActorState, this, eStatus ), 
-						datetime::now() + duration + remain,
-						timespan( 0 ),
-						"once" );
-					break;
-					case 2: // 取最小
-					mResetStatusTimerHandler = getTimer().insert( 
-						std::bind( &XActor::ResetActorState, this, eStatus ), 
-						datetime::now() + XGC_MIN( duration, remain ),
-						0,
-						"once" );
-					break;
-					case 3: // 取最大
-					mResetStatusTimerHandler = getTimer().insert( 
-						std::bind( &XActor::ResetActorState, this, eStatus ), 
-						datetime::now() + XGC_MAX( duration, remain ),
-						0,
-						"once" );
-					break;
-				}
-			}
-			else
-			{
-				mResetStatusTimerHandler = getTimer().insert( 
-					std::bind( &XActor::ResetActorState, this, eStatus ), 
-					datetime::now() + duration,
-					timespan( 0 ),
-					"once" );
-				mActorRestonState = getStatus();
-				SetState( eStatus );
-			}
+			remain = getTimer().remove( mResetStatusTimerHandler );
+			mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
 		}
-		else
+
+		// 相同的状态重复中
+		switch( nMode )
 		{
-			if( eStatus != enActorState::sta_live )
-				enableAbility( abl_actor_move );
-			else
-				enableAbility( abl_actor_move, false );
-
-			SetState( eStatus );
+			case 0: // 覆盖
+			reston = datetime::now() + duration;
+			break;
+			case 1: // 顺延
+			reston = datetime::now() + duration + remain;
+			break;
+			case 2: // 取最小
+			reston = datetime::now() + XGC_MIN( duration, remain );
+			break;
+			case 3: // 取最大
+			reston = datetime::now() + XGC_MAX( duration, remain );
+			break;
 		}
-	}
 
-	//---------------------------------------------------//
-	// [12/23/2010 Albert]
-	// Description:	重置角色状态 
-	//---------------------------------------------------//
-	xgc_void XActor::ResetActorState( enActorState eStatus )
-	{
-		if( !isState( enActorState::sta_dead ) )
-			SetState( eStatus );
+		// 设置情形
+		setStatus( eStatus );
 
-		if( !isState( enActorState::sta_live ) )
-			enableAbility( abl_actor_move );
-		else
-			enableAbility( abl_actor_move, false );
+		// 插入状态恢复的定时器
+		if( reston > datetime::now() )
+		{
+			mResetStatusTimerHandler = getTimer().insert(
+				std::bind( (xgc_void (XActor::*)( enActorStatus ) )&XActor::setStatus, this, stu_actor_normal ),
+				reston, 0, "once" );
 
-		mResetStatusTimerHandler = INVALID_TIMER_HANDLE;
+			setValue( StatusTime, reston.to_milliseconds() );
+		}
 	}
 }

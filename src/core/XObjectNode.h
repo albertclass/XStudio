@@ -100,14 +100,14 @@ namespace xgc
 		/// \brief 增加子节点后调用
 		/// \author albert.xu
 		/// \date 8/3/2009
-		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
 		virtual xgc_void OnInsertChild( XObject* pChild, xgc_lpvoid lpContext ) = 0;
 
-		/////
-		/// 删除子节点后调用,此时对象尚未被删除
-		/// [8/3/2009 Albert]
-		/////
+		///
+		/// \brief 删除子节点后调用
+		/// \author albert.xu
+		/// \date 8/3/2009
+		///
 		virtual xgc_void OnRemoveChild( XObject* pChild ) = 0;
 
 		///

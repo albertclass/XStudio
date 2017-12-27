@@ -203,29 +203,8 @@ namespace xgc
 	///
 	enum enBagEvent
 	{
-		evt_slot_changed,
-	};
-
-	///
-	/// \brief 背包事件结构定义
-	/// \date 11/6/2017
-	/// \author xufeng04
-	///
-	struct XBagEvent
-	{
-		/// 参数转换
-		XObjectEvent cast;
-
-		/// 操作的格子编号
-		xSlot nSlot;
-		/// 格子变更
-		struct
-		{
-			/// 操作结束后格子中的物品ID
-			xObject		hGoods;
-			/// 此次操作的数量
-			xgc_uint32  nCount;
-		} Befor, After;
+		evt_bag_change,
+		evt_bag_update,
 	};
 
 	///
@@ -235,27 +214,66 @@ namespace xgc
 	///
 	class CORE_API XBag : public XObject
 	{
-	public:
 		DECLARE_XCLASS();
+	public:
+		///
+		/// \brief 背包格子更新
+		/// \date 11/6/2017
+		/// \author xufeng04
+		///
+		struct SlotEvent
+		{
+			/// 参数转换
+			XObjectEvent cast;
+			/// 操作的格子编号
+			xSlot nSlot;
+			/// 格子变更
+			struct
+			{
+				/// 操作结束后格子中的物品ID
+				xObject	hGoods;
+				/// 此次操作的数量
+				xgc_uint32 nCount;
+			} Befor, After;
+		};
 
 		///
-		XBag( xgc_uint32 nType, xgc_uint32 nCapacity )
-			: mType( nType )
-			, mCapacity( nCapacity )
-			, mSlots( xgc_nullptr )
+		/// \brief 背包操作事件 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		struct TransEvent
 		{
+			/// 参数转换
+			XObjectEvent cast;
+			/// 操作的背包
+			xObject hBag;
+			/// 操作的物品
+			xObject hGoods;
+			/// 操作的数量
+			xgc_long nCount;
+		};
 
-		}
+	public:
+		///
+		/// \brief 背包构造 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		XBag( xgc_uint32 nType, xgc_uint32 nCapacity );
 
-		~XBag()
-		{
-			for( xSlot slot = 0; slot < mCapacity; slot++ )
-				mSlots[slot].setEmpty();
+		///
+		/// \brief 背包析构 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		~XBag();
 
-			SAFE_DELETE_ARRAY( mSlots );
-			mCapacity = 0;
-		}
-
+		///
+		/// \brief 不允许的构造 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
 		XBag( const XBag &) = delete;
 		XBag( XBag &&) = delete;
 

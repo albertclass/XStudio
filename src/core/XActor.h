@@ -15,12 +15,12 @@ namespace xgc
 
 	enum enActorStatus
 	{
-		sta_actor_damage = 1,
-		sta_actor_pain = 2,
-		sta_actor_faint = 4,
-		sta_actor_fall = 8,
-		sta_actor_beat = 16,
-		sta_actor_dead = 32,
+		stu_actor_normal = 0,		///< 正常
+		stu_actor_pain   = 1 << 1,  ///< 疼痛，（硬直）
+		stu_actor_faint  = 1 << 2,  ///< 眩晕，（不可移动，不可操作）
+		stu_actor_fall   = 1 << 3,  ///< 置空，（不可移动，不可操作）
+		stu_actor_beat   = 1 << 4,  ///< 击退，（不可操作）
+		stu_actor_lie    = 1 << 5,  ///< 倒地，（不可移动，不可操作）
 	};
 
 	enum enActorAbility
@@ -47,137 +47,78 @@ namespace xgc
 		evt_actor_change_state,	///< 角色状态转换
 		evt_actor_change_target,///< 角色转换目标
 		evt_actor_attacked,		///< 角色攻击他人
+		evt_actor_killed,		///< 角色杀死目标
+		evt_actor_assists,		///< 角色杀死目标 - 助攻
 		evt_actor_behit,		///< 角色被攻击
 		evt_actor_enter_fight,	///< 进入战斗状态
 		evt_actor_leave_fight,	///< 退出战斗状态
 		evt_actor_faild_fight,	///< 角色战斗失败
 		evt_actor_befor_dead,	///< 角色濒死
 		evt_actor_dead,			///< 角色死亡
+
+		evt_actor_pick,			///< 角色捡起物品
+		evt_actor_drop,			///< 角色丢弃物品
+		evt_actor_team_join,	///< 角色队伍中有新人加入
+		evt_actor_team_kick,	///< 角色队伍中有人被踢出
+		evt_actor_enter_team,	///< 角色加入队伍
+		evt_actor_leave_team,	///< 角色离开队伍
+		evt_actor_enter_scene,	///< 角色进入场景
+		evt_actor_leave_scene,	///< 角色离开场景
 	};
-
-	///
-	/// \brief 角色事件对象
-	/// \author albert.xu
-	/// \date 2017/10/13
-	///
-	struct CORE_API XActorEvent
-	{
-		/// @var 事件
-		XObjectEvent cast;
-
-		/// @var 攻击者的对象ID
-		xObject hAttacker;
-
-		/// @var 上下文
-		xgc_lpvoid lpContext;
-
-		union
-		{
-			struct
-			{
-				/// @var 攻击方式
-				xgc_long nMode;
-				/// @var 伤害
-				xgc_long nDamage;
-				/// @var 仇恨
-				xgc_long nHate;
-			}attack;
-
-			struct
-			{
-				/// @var 攻击方式
-				xgc_long nMode;
-			}dead;
-		};
-	};
-
-	/////------
-	///// 角色在场景中的相关事件
-	/////------
-	//struct IActorMapEventHandler
-	//{
-	//	///
-	//	/// 角色在场景内死亡
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnActorDead( XActor *pActor, xObject hAttacker, enAttackMode eMode, xgc_lpvoid lpContext ) = 0;
-
-	//	///
-	//	/// 角色在场景内死亡
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnActorRelive( XActor *pActor, xgc_lpvoid lpContext ) = 0;
-
-	//	///
-	//	/// 队伍内有队员进入
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnTeamJoinActor( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 队伍内有队员离开
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnTeamKickActor( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 场景内角色加入队伍
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnActorEnterTeam( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 场景内角色离开队伍
-	//	/// [9/25/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void OnActorLeaveTeam( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 场景内角色下线
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnActorOffline( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 场景内角色离开场景
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnActorLeaveMap( XActor *pActor ) = 0;
-
-	//	///
-	//	/// 暴落物品
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnBurstGoods( XActor *pActor, xObject objId ) = 0;
-
-	//	///
-	//	/// 场景物品销毁
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnDestroySceneGoods( xObject objScene, xObject objGoods ) = 0;
-
-	//	///
-	//	/// 丢弃物品
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnActorDropGoods( XActor *pActor, xObject objId ) = 0;
-
-	//	///
-	//	/// 拾取物品
-	//	/// [9/25/2014] create by zhangyupeng
-	//	///
-	//	virtual xgc_void OnActorPickUpGoods( XActor *pActor, xObject objId ) = 0;
-
-	//	///
-	//	/// 释放对象
-	//	/// [11/20/2014] create by albert.xu
-	//	///
-	//	virtual xgc_void Release() = 0;
-	//};
 
 	class CORE_API XActor : public XGameObject
 	{
 		DECLARE_XCLASS();
+
+	public:
+		///
+		/// \brief 一般角色事件 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		struct CORE_API NormalEvent
+		{
+			/// @var 事件
+			XObjectEvent cast;
+			/// @var 上下文
+			xgc_lpvoid lpContext;
+		};
+
+		///
+		/// \brief 角色事件对象
+		/// \author albert.xu
+		/// \date 2017/10/13
+		///
+		struct CORE_API AttackEvent
+		{
+			/// @var 事件
+			XObjectEvent cast;
+			/// @var 攻击者的对象ID
+			xObject hAttacker;
+			/// @var 被攻击对象的ID
+			xObject hTarget;
+			/// @var 攻击方式
+			xgc_long nMode;
+			/// @var 伤害
+			xgc_long nDamage;
+			/// @var 仇恨
+			xgc_long nHate;
+			/// @var 上下文
+			xgc_lpvoid lpContext;
+		};
+
+		///
+		/// \brief 队伍事件 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		struct CORE_API TeamEvent
+		{
+			/// @var 事件
+			XObjectEvent cast;
+			/// @var 队伍ID
+			xgc_ulong team_id;
+		};
 
 		//////////////////////////////////////////////////////////////////////////
 		// 角色属性索引
@@ -190,7 +131,9 @@ namespace xgc
 		static xAttrIndex AbnormalTime;	///< 特殊状态时间
 		static xAttrIndex BornTime;		///< 出生时间
 		static xAttrIndex GroupMask;	///< 组别掩码，用于区分阵营
-		static xAttrIndex Status;		///< 角色状态
+		static xAttrIndex State;		///< 角色状态
+		static xAttrIndex Status;		///< 角色情形
+		static xAttrIndex StatusTime;	///< 角色异常状态重置时间
 		static xAttrIndex CanMove;		///< 可移动
 		static xAttrIndex CanAttack;	///< 可攻击
 		static xAttrIndex CanBeHit;		///< 可受击
@@ -296,9 +239,39 @@ namespace xgc
 		/// \date 8/24/2009
 		/// \author albert.xu
 		///
-		enActorState getStatus()const 
+		enActorState getState()const 
 		{ 
-			return enActorState( getValue<xgc_byte>( Status ) ); \
+			return enActorState( getValue<xgc_uint32>( State ) );
+		}
+
+		///
+		/// \brief 设置角色状态 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		xgc_void setState( enActorState eState )
+		{
+			setValue< xgc_uint32 >( State, (xgc_uint32)eState );
+		}
+
+		///
+		/// \brief 判断角色状态 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		xgc_bool isState( enActorState eState )
+		{
+			return eState == getState();
+		}
+
+		///
+		/// \brief 获取角色当前情形 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		enActorStatus getStatus()const
+		{
+			return enActorStatus( getValue<xgc_uint32>( Status ) );
 		}
 
 		///
@@ -306,21 +279,21 @@ namespace xgc
 		/// \date 8/24/2009 
 		/// \author albert.xu
 		///
-		xgc_void SetState( enActorState eStatus, timespan tsDuration, xgc_int32 nMode = 0 );
+		xgc_void setStatus( enActorStatus eStatus, timespan tsDuration, xgc_int32 nMode = 0 );
 
 		///
 		/// \brief 设置生物状态
 		/// \date 5/31/2014 
 		/// \author jianglei.kinly
 		///
-		xgc_void SetState( enActorState eStatus );
+		xgc_void setStatus( enActorStatus eStatus );
 
 		///
 		/// \brief 判断当前状态
 		/// \date 9/26/2014
 		/// \author albert.xu
 		///
-		xgc_bool isState( enActorState eStatus )const 
+		xgc_bool isStatus( enActorStatus eStatus )const 
 		{ 
 			return eStatus == getStatus(); 
 		}
@@ -354,7 +327,7 @@ namespace xgc
 		/// \date 6/22/2014
 		/// \author jianglei.kinly
 		///
-		xgc_bool isActivedAbility( enActorAbility eAbility )
+		xgc_bool isAbilityActived( enActorAbility eAbility )
 		{
 			XGC_ASSERT_RETURN( eAbility < abl_actor_count, false );
 
@@ -374,7 +347,7 @@ namespace xgc
 		xgc_real32 GetRadius()const { return mRadius; }
 
 		///
-		/// get team object ptr
+		/// 获取队伍指针
 		/// [11/12/2012 Albert.xu]
 		///
 		XTeamPtr getTeam() 
@@ -383,21 +356,21 @@ namespace xgc
 		}
 
 		///
-		/// set team object ptr
+		/// 获取队伍指针 const
+		/// [11/22/2012 Albert.xu]
+		///
+		const XTeamPtr getTeam()const
+		{
+			return mTeamPtr;
+		}
+
+		///
+		/// 设置队伍指针
 		/// [11/22/2012 Albert.xu]
 		///
 		xgc_void setTeam( XTeamPtr team ) 
 		{ 
-			mTeamPtr = team; 
-		}
-
-		///
-		/// get team object ptr const version
-		/// [11/22/2012 Albert.xu]
-		///
-		const XTeamPtr getTeam()const 
-		{ 
-			return mTeamPtr; 
+			mTeamPtr = team;
 		}
 
 		///
@@ -449,7 +422,6 @@ namespace xgc
 		//	return GetStateObjectList( buffID, buffType ).size() > 0;
 		//}
 
-	public:
 		///
 		/// 是否在战斗状态
 		/// [8/29/2014] create by jianglei.kinly
@@ -470,19 +442,30 @@ namespace xgc
 
 	protected:
 		///
-		/// \brief 重置角色状态 
+		/// \brief 战斗计算 
+		/// \date 12/27/2017
 		/// \author albert.xu
-		/// \date 12/23/2010
 		///
-		xgc_void ResetActorState( enActorState eStatus );
+		virtual xgc_void beHit( AttackEvent& evt )
+		{
+			EmmitEvent( evt.cast, evt_actor_behit );
+		}
+
+		///
+		/// \brief 战斗计算 
+		/// \date 12/27/2017
+		/// \author albert.xu
+		///
+		virtual xgc_void doAttack( AttackEvent& evt )
+		{
+			EmmitEvent( evt.cast, evt_actor_attacked );
+		}
 
 	protected:
 		/// @var 状态重置的定时器句柄
 		timer_h mResetStatusTimerHandler;
 
 	private:
-		/// @var 角色重置状态
-		enActorState mActorRestonState;
 		/// @var 战斗状态
 		xgc_bool mFightState;
 		/// @var 角色碰撞半径

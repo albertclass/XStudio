@@ -78,13 +78,8 @@ namespace xgc
 
 	xgc_void XObjectNode::RemoveAll()
 	{
-		while( GetChildCount() )
-		{
-			auto hObject = Search( []( xObject ){ return true; } );
-			auto pObject = ObjectCast< XObject >( hObject );
-			if( pObject )
-				Remove( pObject );
-		}
+		for( auto it = mChildren.rbegin(); it != mChildren.rend(); ++it )
+			Remove( ObjectCast< XObject >( *it ) );
 	}
 
 	///
@@ -96,13 +91,17 @@ namespace xgc
 
 	xgc_bool XObjectNode::Delete( XObject * pObject )
 	{
-		if( pObject->GetParent() != GetObjectID() )
-			return false;
-		
-		if( !Remove( pObject ) )
-			return false;
+		if( pObject )
+		{
+			if( pObject->GetParent() != GetObjectID() )
+				return false;
 
-		pObject->Destroy();
+			if( !Remove( pObject ) )
+				return false;
+
+			pObject->Destroy();
+		}
+
 		return true;
 	}
 
@@ -115,13 +114,8 @@ namespace xgc
 
 	xgc_void XObjectNode::DeleteAll()
 	{
-		while( GetChildCount() )
-		{
-			auto hObject = Search( []( xObject ){ return true; } );
-			auto pObject = ObjectCast< XObject >( hObject );
-
-			Delete( pObject );
-		}
+		for( auto it = mChildren.rbegin(); it != mChildren.rend(); ++it )
+			Delete( ObjectCast< XObject >( *it ) );
 	}
 
 	///
@@ -197,15 +191,16 @@ namespace xgc
 	///
 	xgc_bool XObjectNode::RemoveChild( xObject hObject )
 	{
-		auto pObject = ObjectCast<XObject>( hObject );
-		if( xgc_nullptr == pObject )
-			return false;
-
 		auto it = std::find( mChildren.begin(), mChildren.end(), hObject );
 		if( it == mChildren.end() )
 			return false;
 
 		mChildren.erase( it );
+
+		auto pObject = ObjectCast<XObject>( hObject );
+		if( pObject )
+			pObject->SetParent( INVALID_OBJECT_ID );
+
 		return true;
 	}
 }

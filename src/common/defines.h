@@ -187,7 +187,7 @@ typedef xgc_lpvoid			xgc_handle;
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #define XGC_NONE xgc_void( 0 )
 
-#define XGC_HEADER_FROM_MEMBER( TYPE, MEMBER_POINT, MEMBER_NAME ) ((TYPE *)( MEMBER_POINT - (((TYPE *)0)->MEMBER_NAME) ))
+#define XGC_CONTAINER_OF( PTR, TYPE, MEMBER ) ((TYPE *)( (char*)PTR - (size_t)(&((TYPE *)0)->MEMBER) ))
 
 #include "logger.h"
 #include "datetime.h"

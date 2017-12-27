@@ -19,6 +19,18 @@ namespace xgc
 	typedef xgc::list< xgc_uint64 > xGlobalIdList;
 
 	///
+	/// \brief 事件传送的方向 
+	/// \date 12/27/2017
+	/// \author xufeng04
+	///
+	enum eEventTrans : xgc_long
+	{
+		toSelf		= 0,
+		toParent	= 1,
+		toChildren	= 2,
+	};
+
+	///
 	/// \brief 对象事件基类
 	/// \author albert.xu
 	/// \date 2017/10/12
@@ -134,9 +146,7 @@ namespace xgc
 		/// @var 对象属性首地址
 		xgc_lpvoid mAttributes = xgc_nullptr;
 		/// @var 对象属性信息地址
-		const XAttributeInfo * mAttributeInfo = xgc_nullptr;
-		/// @var 对象属性定义地址
-		const XAttributeImpl * mImplementInfo = xgc_nullptr;
+		XAttributeInfo * const * mAttributeInfo = xgc_nullptr;
 
 		///
 		/// \brief 观察者信息
@@ -149,7 +159,7 @@ namespace xgc
 			xgc_long token;
 			/// 重入计数，防止map迭代器失效
 			xgc_long count;
-			/// 观察者通知接口
+			/// 观察者通知接口 xgc::map< token, xgc::tuple< fnNotify, xOwner > >
 			xgc::map< xgc_long, xgc::tuple< xNotify, xObject > > actions;
 		};
 
@@ -163,13 +173,16 @@ namespace xgc
 		/************************************************************************/
 		/* 层级关系函数
 		/************************************************************************/
-		xObject		GetObjectID()const { return handle()._handle; }
-		// 设置父对象
-		xgc_void	SetParent( xObject nID ) { mParentID = nID; }
+		XGC_INLINE xObject GetObjectID()const { return handle()._handle; }
 		// 得到父对象ID
-		xObject		GetParent()const { return mParentID; }
+		XGC_INLINE xObject GetParent()const { return mParentID; }
+		// 获取父对象ID
+		XGC_INLINE xObject GotParent( const XClassInfo &cls )const;
+
+		// 设置父对象
+		XGC_INLINE xgc_void SetParent( xObject nID ) { mParentID = nID; }
 		// 销毁对象
-		xgc_void	Destroy();
+		xgc_void Destroy();
 
 		///
 		/// \brief 获取对象的键值 
@@ -313,7 +326,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/10/09
 		///
-		XGC_INLINE xgc_bool checkIndex( xAttrIndex idx )const
+		XGC_INLINE xgc_bool isAttrValid( xAttrIndex idx )const
 		{
 			return idx < getAttrCount();
 		}
@@ -326,26 +339,6 @@ namespace xgc
 		XGC_INLINE xAttrType getAttrType( xAttrIndex idx )const
 		{
 			return GetRuntimeClass().GetAttributeType( idx );
-		}
-
-		///
-		/// \brief 属性是否数组类型
-		/// \author albert.xu
-		/// \date 2017/10/09
-		///
-		XGC_INLINE xgc_bool isArray( xAttrIndex idx )const
-		{
-			return GetRuntimeClass().IsArrayType( idx );
-		}
-
-		///
-		/// \brief 获取属性数组长度
-		/// \author albert.xu
-		/// \date 2017/10/09
-		///
-		XGC_INLINE xgc_size getAttrArrayLength( xAttrIndex idx )const
-		{
-			return GetRuntimeClass().GetArrayLength( idx );
 		}
 
 		///
@@ -517,17 +510,23 @@ namespace xgc
 		/// 获取属性
 		/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
 		///
-		XAttribute getAttr( xAttrIndex nAttr, xgc_size nIndex = 0 ) const;
+		XAttribute getAttr( xAttrIndex nAttr ) const;
 
 		///
 		/// \brief 属性变化时调用
 		/// \author albert.xu
 		/// \date 2017/11/09
 		///
-		xgc_void OnValueChanged( xAttrIndex nAttr, int nIndex = 0 )
+		xgc_void OnValueChanged( xAttrIndex nAttr )
 		{
-			if( mAttributeInfo[nAttr].OnValueChanged )
-				( this->*mAttributeInfo[nAttr].OnValueChanged )( nAttr, nIndex );
+			// 防止事件处理中循环触发事件
+			if( mAttributeInfo[nAttr]->cycle_change &&
+				mAttributeInfo[nAttr]->OnValueChanged )
+			{
+				--mAttributeInfo[nAttr]->cycle_change;
+				( this->*mAttributeInfo[nAttr]->OnValueChanged )( nAttr );
+				++mAttributeInfo[nAttr]->cycle_change;
+			}
 		}
 
 		///
