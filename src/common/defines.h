@@ -131,15 +131,15 @@ typedef xgc_lpvoid			xgc_handle;
 #	define XGC_VERIFY(expr)						XGC_ASSERT_MSG((expr),"")
 #	define XGC_DEBUG_CODE( ... )				__VA_ARGS__
 #elif defined( _ASSERT_LOG )
-#	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); }else{(expr)->Release();}
-#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
-#	define XGC_DEBUG_MESSAGE(msg,...)			if(!(true)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
-#	define XGC_ASSERT_POINTER(expr)				if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
+#	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WRN( "ASSERT " "%s", #expr ); }
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); }else{(expr)->Release();}
+#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ DBG_WRN( "ASSERT " msg, __VA_ARGS__ ); }
+#	define XGC_DEBUG_MESSAGE(msg,...)			if(!(true)){ DBG_WRN( "ASSERT " msg, __VA_ARGS__ ); }
+#	define XGC_ASSERT_POINTER(expr)				if(!(expr)){ DBG_WRN( "ASSERT " "%s", #expr ); }
 #	define XGC_VERIFY(expr)						XGC_ASSERT(expr)
 #	define XGC_DEBUG_CODE( ... )
 #else

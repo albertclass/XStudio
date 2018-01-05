@@ -35,7 +35,7 @@ namespace xgc
 			XGC_ASSERT( nCount <= pGoods->GetOverlapNum() );
 			if( nCount > pGoods->GetOverlapNum() )
 			{
-				USR_WARNING( "overlap overflow dbid = %u", pGoods->getValue< xgc_uint32 >( XGoods::Index ) );
+				USR_WRN( "overlap overflow dbid = %u", pGoods->getValue< xgc_uint32 >( XGoods::Index ) );
 				DumpStackFrame();
 			}
 		}

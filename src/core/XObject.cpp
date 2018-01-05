@@ -56,7 +56,7 @@ namespace xgc
 
 		if( !mAttributes )
 		{
-			SYS_ERROR( "malloc %u failed", cls.GetAttributeSize() );
+			SYS_ERR( "malloc %u failed", cls.GetAttributeSize() );
 			return false;
 		}
 
@@ -214,18 +214,13 @@ namespace xgc
 	///
 	xgc_void XObject::EmmitEvent( XObjectEvent* evt, xgc_void( *DeleteIt )( XObjectEvent* ) )
 	{
-		auto it1 = mEventSubject.find( evt->id );
-		if( it1 != mEventSubject.end() )
-		{
-			// 先通知本地的观察者
-			auto &observer = it1->second;
-
+		auto notify_all = [evt]( Observer& o ){
 			// 关闭消息通知
-			if( observer.close == false )
+			if( o.close == false )
 			{
 				// 防止在触发器执行期间增删触发器
-				++observer.count;
-				for( auto &pair : observer.actions )
+				++o.count;
+				for( auto &pair : o.actions )
 				{
 					// 取token
 					evt->token = pair.first;
@@ -237,43 +232,30 @@ namespace xgc
 					if( evt->over < 0 )
 						break;
 				}
-				--observer.count;
+				--o.count;
 			}
+		};
+
+		auto it1 = mEventSubject.find( evt->id );
+		if( it1 != mEventSubject.end() )
+		{
+			// 先通知本地的观察者
+			notify_all( it1->second );
 		}
 
-		if( evt->over > 0 )
+		// 透传消息， id 为 -1 的观察者监听该对象的所有消息
+		auto it2 = mEventSubject.find( -1 );
+		if( it2 != mEventSubject.end() )
 		{
-			// 透传消息， id 为 -1 的观察者监听该对象的所有消息
-			auto it2 = mEventSubject.find( -1 );
-			if( it2 == mEventSubject.end() )
-				return;
-
-			auto &observer = it2->second;
-			++observer.count;
-			for( auto &pair : observer.actions )
-			{
-				// 取token
-				evt->token = pair.first;
-				// 取目标对象ID
-				evt->target = std::get< 1 >( pair.second );
-				// 取触发函数，并执行
-				std::get< 0 >( pair.second )( *evt );
-
-				if( evt->over < 0 )
-					break;
-			}
-			--observer.count;
+			// 再通知监视全部消息的观察者
+			notify_all( it2->second );
 		}
 
 		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 1 ) )
 		{
-			// 对于未决的事件，向层级上级传递
+			// 对于未决的事件，且允许向上传递的，则向上级传递
 			auto xParent = GetParent();
-			if( xParent == INVALID_OBJECT_ID )
-			{
-				// 这里可以加入全局的事件通知
-			}
-			else
+			if( xParent != INVALID_OBJECT_ID )
 			{
 				// 父对象存在的，则通知父对象
 				auto pParent = ObjectCast< XObject >( xParent );
@@ -282,25 +264,27 @@ namespace xgc
 					pParent->EmmitEvent( evt );
 				}
 			}
+			//else
+			//{
+			//	// 这里可以加入全局的事件通知
+			//}
 		}
 
 		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 2 ) )
 		{
-			// 传递给子对象
-			XObjectNode* pNode = ObjectCast< XObjectNode >( GetObjectID() );
-			if( pNode )
-			{
-				// 枚举出所有的子对象，并将事件推送给子对象
-				pNode->Search( [evt ]( xObject hObject )->xgc_bool{
-					auto pChild = ObjectCast< XObject >( hObject );
-					if( pChild )
-						pChild->EmmitEvent( evt );
+			// 对于未决的事件，且允许向下传递的，则向下级传递给子对象
+			
+			// 枚举出所有的子对象，并将事件推送给子对象
+			Search( [evt]( xObject hObject )->xgc_bool{
+				auto pChild = ObjectCast< XObject >( hObject );
+				if( pChild )
+					pChild->EmmitEvent( evt );
 
-					return false;
-				} );
-			}
+				return false;
+			} );
 		}
 
+		// 有清理需求的，则调用清理的回调。
 		if( DeleteIt ) DeleteIt( evt );
 	}
 

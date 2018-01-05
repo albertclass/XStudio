@@ -229,7 +229,7 @@ static xgc_bool ReloadDebugCmd( DebugCommand::CommandInstance* pInst )
 	pugi::xml_parse_result result = xml.load_file( pInst->mConfigPath );
 	if( !result )
 	{
-		USR_ERROR( "Load %s failed. error = %s.", pInst->mConfigPath, result.description() );
+		USR_ERR( "Load %s failed. error = %s.", pInst->mConfigPath, result.description() );
 		return false;
 	}
 
@@ -300,21 +300,21 @@ xgc_bool InitDebugCmd( ini_reader &ini, const DebugCommand::CommandEntry* pMainE
 		// 此处指令表可以不放在配置文件中
 		if( xgc_nullptr == get_absolute_path( pInstance->mConfigPath, sizeof( pInstance->mConfigPath ), "%s", lpConfigPath ) )
 		{
-			SYS_INFO( "%s%s", "调试指令中发现无效的路径配置", lpConfigPath );
+			SYS_TIP( "%s%s", "调试指令中发现无效的路径配置", lpConfigPath );
 			SAFE_DELETE( pInstance );
 		}
 
 		// 批处理的运行路径
 		if( xgc_nullptr == get_absolute_path( pInstance->mScriptPath, sizeof( pInstance->mScriptPath ), "%s", lpScriptPath ) )
 		{
-			SYS_INFO( "%s%s", "调试指令中发现无效的路径配置", lpScriptPath );
+			SYS_TIP( "%s%s", "调试指令中发现无效的路径配置", lpScriptPath );
 			SAFE_DELETE( pInstance );
 		}
 
 		// 载入指令表配置，包括权限，别名等
 		if( false == ReloadDebugCmd( pInstance ) )
 		{
-			SYS_INFO( "%s%s", "载入配置错误。", lpConfigPath );
+			SYS_TIP( "%s%s", "载入配置错误。", lpConfigPath );
 			SAFE_DELETE( pInstance );
 			FiniDebugCmd();
 			return false;
@@ -485,7 +485,7 @@ namespace DebugCommand
 			// 验证是否找到，lower_bound返回等于或者大于
 			if( pCmdInfo == lpCmdTable->pLast )
 			{
-				SYS_ERROR( "验证是否找到，lower_bound返回等于或者大于 %s", argv[0] );
+				SYS_ERR( "验证是否找到，lower_bound返回等于或者大于 %s", argv[0] );
 				break;
 			}
 
@@ -494,7 +494,7 @@ namespace DebugCommand
 				// 该指令有额外参数的，则处理参数
 				if( pCmdInfo->pfnCmd && false == pCmdInfo->pfnCmd( argc, argv, pCmdInfo ) )
 				{
-					SYS_ERROR( "没有找到指令对应的执行函数 或者 执行指令失败: %s", argv[0] );
+					SYS_ERR( "没有找到指令对应的执行函数 或者 执行指令失败: %s", argv[0] );
 					return false;
 				}
 
@@ -522,7 +522,7 @@ namespace DebugCommand
 			OnCmd_CommandHelp( lpCmdTable, 0, xgc_nullptr );
 		}
 
-		SYS_ERROR( "没有找到指令对应的执行函数: %s 打印help:%s", argv[0], lpCmdTable ? "true" : "false" );
+		SYS_ERR( "没有找到指令对应的执行函数: %s 打印help:%s", argv[0], lpCmdTable ? "true" : "false" );
 		return false;
 	}
 
@@ -684,7 +684,7 @@ namespace DebugCommand
 			}
 		} while( argc < XGC_COUNTOF( argv ) && *++str );
 
-		USR_INFO( "角色请求执行GM指令 Role = %s GM = %d, Execute = %s",
+		USR_TIP( "角色请求执行GM指令 Role = %s GM = %d, Execute = %s",
 			lpRoleName,
 			gpCurrent->group,
 			szCmdString );
@@ -701,17 +701,17 @@ namespace DebugCommand
 			}
 			else
 			{
-				SYS_ERROR( "OnCmd_CommandExec return false, argc[%u]", argc );
+				SYS_ERR( "OnCmd_CommandExec return false, argc[%u]", argc );
 				for( xgc_size i = 0; i < argc && i < 64; ++i )
 				{
-					SYS_ERROR( "                                argv[%s]", argv[i] );
+					SYS_ERR( "                                argv[%s]", argv[i] );
 				}
 				return false;
 			}
 			break;
 			default:
 			{
-				USR_INFO( "指令权限未通过验证。 Role = %s GM = %d",
+				USR_TIP( "指令权限未通过验证。 Role = %s GM = %d",
 					gpCurrent->name,
 					gpCurrent->group );
 				return false;

@@ -6,11 +6,6 @@
 ///
 struct XActive
 {
-	/// 活动的执行时间
-	timespan relative;
-	/// 活动的持续时间
-	timespan duration;
-
 	/// 活动开始时执行
 	virtual xgc_bool onStart( datetime now ) = 0;
 
@@ -19,6 +14,9 @@ struct XActive
 
 	/// 活动结束时执行
 	virtual xgc_void onClose() = 0;
+
+	/// 活动销毁时执行
+	virtual xgc_void onDestory() = 0;
 };
 
 ///
@@ -34,26 +32,26 @@ enum CORE_API eTimelineEvent
 };
 
 ///
-/// \brief 时间线事件对象定义
-///
-struct CORE_API XTimelineEvent
-{
-	/// 继承自XObjectEvent
-	XObjectEvent cast;
-	/// 时间点
-	datetime current;
-	/// 相对时间
-	timespan relative;
-};
-
-///
 /// \brief 时间线类，用于管理时间线内的活动
 ///
 class XTimeline : public XObject
 {
-private:
 	DECLARE_XCLASS();
+public:
+	///
+	/// \brief 时间线事件对象定义
+	///
+	struct CORE_API Event
+	{
+		/// 继承自XObjectEvent
+		XObjectEvent cast;
+		/// 时间点
+		datetime current;
+		/// 相对时间
+		timespan relative;
+	};
 
+private:
 	/// 定时器句柄
 	timer_h  mTimerHandle;
 
@@ -65,11 +63,21 @@ private:
 	/// 更新间隔
 	timespan mInterval;
 
+	struct Action
+	{
+		/// 活动的执行时间
+		timespan relative;
+		/// 活动的持续时间
+		timespan duration;
+		/// 活动对象
+		XActive *active;
+	};
+
 	/// 需要更新的对象
-	xgc::vector< XActive* > mUpdates;
+	xgc::vector< Action > mUpdates;
 
 	/// 帧信息
-	xgc::vector< XActive* > mActives;
+	xgc::vector< Action > mActives;
 public:
 	///
 	/// \brief 时间线构造
@@ -90,7 +98,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/10/16
 	///
-	xgc_void AddActive( XActive *pActive );
+	xgc_void AddActive( timespan start, XActive *pActive, timespan duration = 0 );
 
 	///
 	/// \brief 运行时间线
@@ -100,7 +108,7 @@ public:
 	xgc_bool Start( datetime start );
 
 	///
-	/// \brief 运行时间线
+	/// \brief 停止时间线
 	/// \author albert.xu
 	/// \date 2017/11/03
 	///

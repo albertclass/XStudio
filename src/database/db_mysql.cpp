@@ -51,7 +51,7 @@ namespace xgc
 
 			if( mConnection == xgc_nullptr )
 			{
-				SYS_ERROR( "mysql_init failed." );
+				SYS_ERR( "mysql_init failed." );
 				return false;
 			}
 
@@ -60,7 +60,7 @@ namespace xgc
 			{
 				if( mysql_options( mConnection, MYSQL_SET_CHARSET_NAME, mCharacterSet ) )
 				{
-					SYS_ERROR( "mysql_options failed. %u - %s, %s",
+					SYS_ERR( "mysql_options failed. %u - %s, %s",
 						mysql_errno( mConnection ),
 						mysql_error( mConnection ),
 						mysql_sqlstate( mConnection ) );
@@ -80,7 +80,7 @@ namespace xgc
 
 			if( !myConn )
 			{
-				SYS_ERROR( "mysql_real_connect failed. %u - %s, %s", 
+				SYS_ERR( "mysql_real_connect failed. %u - %s, %s", 
 					mysql_errno( mConnection ), 
 					mysql_error( mConnection ),
 					mysql_sqlstate( mConnection ) );
@@ -92,7 +92,7 @@ namespace xgc
 			sprintf_s( szSql, "set names %s;", mCharacterSet );
 			if( Execute( szSql ) == false )
 			{
-				SYS_ERROR( "run sql '%s' failed. %u - %s, %s",
+				SYS_ERR( "run sql '%s' failed. %u - %s, %s",
 					szSql,
 					mysql_errno( mConnection ),
 					mysql_error( mConnection ),
@@ -149,7 +149,7 @@ namespace xgc
 			{
 				if( ResetConnection() == false )
 				{
-					USR_WARNING( "[DB] server lost. connection = %p", mConnection );
+					USR_WRN( "[DB] server lost. connection = %p", mConnection );
 					return false;
 				}
 			}
@@ -170,8 +170,8 @@ namespace xgc
 				if( 0 == mysql_query( mConnection, pszSQL ) )
 					return true;
 
-				USR_WARNING( "[DB] execute sql '%s' failed", pszSQL );
-				USR_WARNING( "[DB] errno = %d, state = %s, errmsg = %s, retry = %d"
+				USR_WRN( "[DB] execute sql '%s' failed", pszSQL );
+				USR_WRN( "[DB] errno = %d, state = %s, errmsg = %s, retry = %d"
 					, GetLastError()
 					, GetLastStatus()
 					, GetLastErrorInfo()
@@ -199,7 +199,7 @@ namespace xgc
 			{
 				if( ResetConnection() == false )
 				{
-					USR_WARNING( "[DB] server lost. connection = %p, %u - %s, %s", 
+					USR_WRN( "[DB] server lost. connection = %p, %u - %s, %s", 
 						mConnection
 						, GetLastError()
 						, GetLastStatus()
@@ -224,7 +224,7 @@ namespace xgc
 				if( 0 == mysql_query( mConnection, pszSQL ) )
 					break;
 
-				USR_WARNING( "[DB] execute sql '%s' failed. errno = %d, state = %s, errmsg = %s, retry = %d"
+				USR_WRN( "[DB] execute sql '%s' failed. errno = %d, state = %s, errmsg = %s, retry = %d"
 					, pszSQL ? pszSQL : "nullptr"
 					, GetLastError()
 					, GetLastStatus()
@@ -254,7 +254,7 @@ namespace xgc
 			rcdSet.m_res = mysql_store_result( mConnection );
 			if( rcdSet.m_res == xgc_nullptr )
 			{
-				USR_WARNING( "[DB] store result failed. sql = '%s', errno = %d, state = %s, errmsg = %s, retry=%u"
+				USR_WRN( "[DB] store result failed. sql = '%s', errno = %d, state = %s, errmsg = %s, retry=%u"
 					, pszSQL ? pszSQL : "nullptr"
 					, GetLastError()
 					, GetLastStatus()
@@ -279,7 +279,7 @@ namespace xgc
 			{
 				if( ResetConnection() == false )
 				{
-					USR_WARNING( "[DB] server lost. connection = %p", mConnection );
+					USR_WRN( "[DB] server lost. connection = %p", mConnection );
 					return sql_failed;
 				}
 			}
@@ -300,7 +300,7 @@ namespace xgc
 				if( 0 == mysql_real_query( mConnection, pszSQL, nLength ) )
 					break;
 
-				USR_WARNING( "[DB] execute sql '%s' failed. errno = %d, state = %s, errmsg = %s, retry = %d"
+				USR_WRN( "[DB] execute sql '%s' failed. errno = %d, state = %s, errmsg = %s, retry = %d"
 					, pszSQL ? pszSQL : "nullptr"
 					, GetLastError()
 					, GetLastStatus()
@@ -331,7 +331,7 @@ namespace xgc
 
 			if( rcdSet.m_res == xgc_nullptr )
 			{
-				USR_WARNING( "[DB] store result failed. sql = '%s', errno = %d, state = %s, errmsg = %s"
+				USR_WRN( "[DB] store result failed. sql = '%s', errno = %d, state = %s, errmsg = %s"
 					, pszSQL ? pszSQL : "nullptr"
 					, GetLastError()
 					, GetLastStatus()
@@ -356,7 +356,7 @@ namespace xgc
 			{
 				if( ResetConnection() == false )
 				{
-					USR_WARNING( "[DB] server lost. connection = %p", mConnection );
+					USR_WRN( "[DB] server lost. connection = %p", mConnection );
 					return false;
 				}
 			}
@@ -372,7 +372,7 @@ namespace xgc
 			{
 				if( ResetConnection() == false )
 				{
-					USR_WARNING( "[DB] server lost. connection = %p", mConnection );
+					USR_WRN( "[DB] server lost. connection = %p", mConnection );
 					return sql_failed;
 				}
 			}

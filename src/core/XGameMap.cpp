@@ -97,7 +97,7 @@ namespace xgc
 			iPoint ptCell = WorldToCell( vPosition.x, vPosition.y );
 			if( IsCellBlock( ptCell.x, ptCell.y, false ) )
 			{
-				USR_ERROR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( XGameObject::Name ),
+				USR_ERR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( XGameObject::Name ),
 					getString( XGameMap::MapIndex ), vPosition.x, vPosition.y );
 				return false;
 			}
@@ -389,7 +389,7 @@ namespace xgc
 
 		//if( pObject->GetClassType() == 0x14611100 )
 		//{
-		//	DBG_INFO( "[%s:%08x]移动进入[%s:%08x]的视野。",
+		//	DBG_TIP( "[%s:%08x]移动进入[%s:%08x]的视野。",
 		//		pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID(),
 		//		pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 		//}
@@ -415,7 +415,7 @@ namespace xgc
 
 		//if( pObject->GetClassType() == 0x14611100 )
 		//{
-		//	DBG_INFO( "[%s:%08x]移动离开[%s:%08x]的视野。",
+		//	DBG_TIP( "[%s:%08x]移动离开[%s:%08x]的视野。",
 		//		pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID(),
 		//		pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 		//}
@@ -423,12 +423,12 @@ namespace xgc
 		if( pTarget->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pTarget->OnLeaveEyeshot( pObject, eMode );
 		//else if( pObject->IsInheritFrom( 0x14611100 ) )
-		//	DBG_INFO( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID() );
 
 		if( pObject->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pObject->OnLeaveEyeshot( pTarget, eMode );
 		//else if( pTarget->IsInheritFrom( 0x14611100 ) )
-		//	DBG_INFO( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 	}
 
 	//---------------------------------------------------//
@@ -498,7 +498,7 @@ namespace xgc
 		auto it = mMapClock.find( lpName );
 		if( it != mMapClock.end() )
 		{
-			USR_WARNING( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
+			USR_WRN( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
 			return;
 		}
 
@@ -517,7 +517,7 @@ namespace xgc
 		timespan ts_duration = lpDuration ? timespan::convert( lpDuration ) : timespan( 0 );
 
 		xgc_char szDateTime[64] = { 0 };
-		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
+		DBG_TIP( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
 		auto evt = MakeEvent< XGameMapEvent >( evt_map_clock );
 		evt->alias = it->first.c_str();
@@ -532,7 +532,7 @@ namespace xgc
 		auto it = mMapTimer.find( lpName );
 		if( it != mMapTimer.end() )
 		{
-			USR_WARNING( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
+			USR_WRN( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
 			return;
 		}
 
@@ -551,7 +551,7 @@ namespace xgc
 		timespan ts_duration = lpDuration ? timespan::convert( lpDuration ) : timespan( 0 );
 
 		xgc_char szDateTime[64] = { 0 };
-		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
+		DBG_TIP( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
 		auto evt = XGC_NEW XGameMapEvent;
 		evt->cast.id = evt_map_timer;
@@ -616,13 +616,13 @@ namespace xgc
 		{
 			// 下溢
 			EmmitEvent( evt.cast, evt_map_counter_underflow );
-			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
+			USR_WRN( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
 		}
 		else if( nVal >= std::get< 1 >( iter->second ) )
 		{
 			// 上溢
 			EmmitEvent( evt.cast, evt_map_counter_overflow );
-			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
+			USR_WRN( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
 		}
 	}
 

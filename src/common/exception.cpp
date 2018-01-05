@@ -124,19 +124,19 @@ namespace xgc
 		hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId() );
 		if( hProcess == NULL )
 		{
-			DBG_INFO( "OpenProcess failed. err = %u", GetLastError() );
+			DBG_TIP( "OpenProcess failed. err = %u", GetLastError() );
 			return false;
 		}
 
 		// If the symbol engine is not initialized, do it now.
 		if( !SymInitialize( hProcess, NULL, TRUE ) )
 		{
-			DBG_INFO( "SymInitialize failed. err = %u", GetLastError() );
+			DBG_TIP( "SymInitialize failed. err = %u", GetLastError() );
 			return false;
 		}
 
 		DumpStackFrame();
-		SYS_INFO( "异常报告生成!" );
+		SYS_TIP( "异常报告生成!" );
 		return true;
 	}
 
@@ -242,7 +242,7 @@ namespace xgc
 		GetStackTrace( FrameSequence );
 
 		xgc_char szSymbol[sizeof( SYMBOL_INFO ) + 1024];
-		SYS_INFO( "---------------stack frame begin--------------" );
+		SYS_TIP( "---------------stack frame begin--------------" );
 
 		for( UINT nCur = 0; nCur < FrameSequence.Count && FrameSequence.Frame[nCur]; ++nCur )
 		{
@@ -264,19 +264,19 @@ namespace xgc
 				if( SymGetLineFromAddr( hProcess, (UINT_PTR)FrameSequence.Frame[nCur], &dwDisplacement, &lineInfo ) )
 				{
 					// Put this on the next line and indented a bit.
-					LOGEXT( lineInfo.FileName, pSymInfo->Name, lineInfo.LineNumber, "dump stack", "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOG_EXT( SYS, lineInfo.FileName, pSymInfo->Name, lineInfo.LineNumber, "stack", "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 				else
 				{
-					LOGFMT( "dump stack", "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOG_FMT( SYS, "stack", "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 			}
 			else
 			{
-				LOGFMT( "dump stack", "stack frame %p", FrameSequence.Frame[nCur] );
+				LOG_FMT( SYS, "stack", "stack frame %p", FrameSequence.Frame[nCur] );
 			}
 		}
-		SYS_INFO( "---------------stack frame end--------------" );
+		SYS_TIP( "---------------stack frame end--------------" );
 	}
 
 #if defined(_WIN64)
@@ -1054,19 +1054,19 @@ namespace xgc
 		#endif
 		
 		if (sig == SIGSEGV)
-			SYS_INFO("Got signal %d, faulty address is %p, from %p", sig, ctx->cr2, call);
+			SYS_TIP("Got signal %d, faulty address is %p, from %p", sig, ctx->cr2, call);
 		else
-			SYS_INFO("Got signal %d", sig);
+			SYS_TIP("Got signal %d", sig);
 
 		trace_size = backtrace(trace, 16);
 		/* overwrite sigaction with caller's address */
 		// trace[1] = call;
 		messages = backtrace_symbols(trace, trace_size);
 		/* skip first stack frame (points here) */
-		SYS_INFO("[bt] Execution stackwalk:");
+		SYS_TIP("[bt] Execution stackwalk:");
 		for (i=1; i<trace_size; ++i)
 		{
-			SYS_INFO("[bt] #%d %s\n", i, messages[i]);
+			SYS_TIP("[bt] #%d %s\n", i, messages[i]);
 		}
 
 		siglongjmp(sigjmp_env, sig);
@@ -1106,15 +1106,15 @@ namespace xgc
 		StackFrameSequence FrameSequence;
 		GetStackTrace( FrameSequence );
 
-		SYS_INFO( "---------------stack frame begin--------------" );
+		SYS_TIP( "---------------stack frame begin--------------" );
 
 		char **messages = backtrace_symbols(FrameSequence.Frame, FrameSequence.Count);
 		for( xgc_uint32 i = 0; i < FrameSequence.Count; ++i )
 		{
-			SYS_INFO("[bt] #%2d:%s", i, messages[i]);
+			SYS_TIP("[bt] #%2d:%s", i, messages[i]);
 		}
 
-		SYS_INFO( "---------------stack frame end--------------" );
+		SYS_TIP( "---------------stack frame end--------------" );
 	}
 
 	#endif // _WINDOWS

@@ -19,11 +19,11 @@ namespace xgc
 	public:
 		DECLARE_XCLASS();
 
-		static xAttrIndex Index;		// 配置ID
-		static xAttrIndex TargetName;	// 目标对象名字
-		static xAttrIndex Count;		// 当前计数
-		static xAttrIndex Total;		// 完成计数
-		static xAttrIndex Finished;		// 序号
+		static xAttrIndex Index;		///< 配置ID
+		static xAttrIndex TargetName;	///< 目标对象名字
+		static xAttrIndex Count;		///< 当前计数
+		static xAttrIndex Total;		///< 完成计数
+		static xAttrIndex Finished;		///< 完成标志
 
 		enum objective_type
 		{
@@ -77,7 +77,7 @@ namespace xgc
 		/// \date 12/27/2017
 		/// \author albert.xu
 		///
-		virtual xgc_void OnCountChanged( xAttrIndex nAttr );
+		virtual xgc_void OnValueChanged( xAttrIndex nAttr );
 	};
 
 	enum eQuestEvent

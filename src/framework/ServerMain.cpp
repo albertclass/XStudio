@@ -17,7 +17,7 @@ void InvalidParameterHandler( const wchar_t* expr
 {
 	if( func && file && expr )
 	{
-		SYS_ERROR(
+		SYS_ERR(
 			"Invalid parameter detected in: Function:%S File:%S Line:%d Expression:%S"
 			, func
 			, file
@@ -40,7 +40,7 @@ void __cdecl PureCallHandler()
 {
 	DumpStackFrame();
 	XGC_DEBUG_MESSAGE( "PURECALL" );
-	SYS_ERROR( "PURECALL" );
+	SYS_ERR( "PURECALL" );
 	throw std::exception( "pure call" );
 }
 #endif

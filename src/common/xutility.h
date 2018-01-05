@@ -253,6 +253,10 @@ namespace xgc
 	xgc::string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
 	{
 		xgc::string r;
+		
+		if( _Begin == _End )
+			return r;
+
 		auto it = _Begin;
 		r += *it;
 

@@ -202,7 +202,7 @@ namespace xgc
 
 				if( false == reconnect( conn ) )
 				{
-					SYS_ERROR( "异步数据库连接失败! %d - %s", get_error_code( conn ), get_error_info( conn ) );
+					SYS_ERR( "异步数据库连接失败! %d - %s", get_error_code( conn ), get_error_info( conn ) );
 				}
 
 				pService->m_working = true;

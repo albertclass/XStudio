@@ -123,7 +123,7 @@ namespace xgc
 
 				if( shared_file_h == xgc_invalid_handle )
 				{
-					SYS_ERROR( "CreateFile %s failed. err = %u", shared_file_path, GetLastError() );
+					SYS_ERR( "CreateFile %s failed. err = %u", shared_file_path, GetLastError() );
 					return -1;
 				}
 			}
@@ -218,14 +218,14 @@ namespace xgc
 
 					if( -1 == fd )
 					{
-						SYS_ERROR( "shm file open failed: ");
+						SYS_ERR( "shm file open failed: ");
 						return -1;
 					}
 					
 					//调整确定文件共享内存的空间
 					if( -1 == ftruncate(fd, size) )
 					{
-						SYS_ERROR("ftruncate faile: ");
+						SYS_ERR("ftruncate faile: ");
 						close( fd );
 						return -1;
 					}
@@ -242,14 +242,14 @@ namespace xgc
 
 					if( -1 == fd )
 					{
-						SYS_ERROR( "shm open failed: ");
+						SYS_ERR( "shm open failed: ");
 						return -1;
 					}
 					
 					//调整确定文件共享内存的空间
 					if( -1 == ftruncate(fd, size) )
 					{
-						SYS_ERROR("ftruncate faile: ");
+						SYS_ERR("ftruncate faile: ");
 						close( fd );
 						shm_unlink( shared_memory_name );
 						return -1;
@@ -261,7 +261,7 @@ namespace xgc
 			data_ = (xgc_lpstr)mmap( xgc_nullptr, size, PROT_WRITE, MAP_SHARED, fd, SEEK_SET );
 			if( xgc_nullptr == data_ )
 			{
-				SYS_ERROR("mmap add_r failed: ");
+				SYS_ERR("mmap add_r failed: ");
 				shm_unlink( shared_memory_name );
 				return -1;
 			}

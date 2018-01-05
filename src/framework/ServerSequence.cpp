@@ -29,7 +29,7 @@ xgc_bool InitServerSequence()
 		sql_recordset rs = 0;
 		if( SyncDBExecuteRc( sql, rs ) == sql_result::sql_failed )
 		{
-			SYS_ERROR( "[%s]查询Index标记出错", szNetworkId );
+			SYS_ERR( "[%s]查询Index标记出错", szNetworkId );
 			return false;
 		}
 
@@ -38,7 +38,7 @@ xgc_bool InitServerSequence()
 			gIndex = (xgc_uint8) field_unsigned( rs, 0, 0 );
 			if( gIndex == 0 )
 			{
-				SYS_ERROR( "[%s]查询Index标记出错", szNetworkId );
+				SYS_ERR( "[%s]查询Index标记出错", szNetworkId );
 				return false;
 			}
 		}
@@ -53,7 +53,7 @@ xgc_bool InitServerSequence()
 		auto result = SyncDBExecuteRc( sql, rs );
 		if( result == xgc::sql::sql_result::sql_failed )
 		{
-			SYS_ERROR( "检查已创建表失败:%s", SyncDBErrorInfo() );
+			SYS_ERR( "检查已创建表失败:%s", SyncDBErrorInfo() );
 			return false;
 		}
 		else if( result == xgc::sql::sql_result::sql_empty )
@@ -62,7 +62,7 @@ xgc_bool InitServerSequence()
 			sprintf_s( sql, sizeof( sql ), "insert into sequenceid (pipeindex, sid) values (%u, %llu)", xgc_uint32( gIndex ), xgc_uint64( gSIDSize ) );
 			if( false == SyncDBExecute( sql ) )
 			{
-				SYS_ERROR( "Insert sid 失败:%s", SyncDBErrorInfo() );
+				SYS_ERR( "Insert sid 失败:%s", SyncDBErrorInfo() );
 				return false;
 			}
 		}
@@ -77,13 +77,13 @@ xgc_bool InitServerSequence()
 				sprintf_s( sql, sizeof( sql ), "UPDATE sequenceid set sid = sid + %u WHERE id = %u", gSIDSize, nId );
 				if( false == SyncDBExecute( sql ) )
 				{
-					SYS_ERROR( "Update sid 失败:%s", SyncDBErrorInfo() );
+					SYS_ERR( "Update sid 失败:%s", SyncDBErrorInfo() );
 					return false;
 				}
 			}
 			else
 			{
-				SYS_ERROR( "获取 sid 失败" );
+				SYS_ERR( "获取 sid 失败" );
 				return false;
 			}
 		}
@@ -95,7 +95,7 @@ xgc_bool InitServerSequence()
 
 	if( ( gServerCode > 0xFFFF ) || ( gIndex > 0xFF ) )
 	{
-		SYS_ERROR( "gServerCode [%u], gIndex [%u] 某个值超过最大值", gServerCode, gIndex );
+		SYS_ERR( "gServerCode [%u], gIndex [%u] 某个值超过最大值", gServerCode, gIndex );
 		return false;
 	}
 	return true;
@@ -109,7 +109,7 @@ xgc_uint64 GetSID()
 		
 	if( gIndex == 0 )
 	{
-		SYS_ERROR( "还没有初始化Sequence吧" );
+		SYS_ERR( "还没有初始化Sequence吧" );
 		return 0;
 	}
 
@@ -121,7 +121,7 @@ xgc_uint64 GetSID()
 
 		if( gSIDPos > 0xFFFFFFFFFF )
 		{
-			SYS_ERROR( "SID-sequence出错了，超过了最大值" );
+			SYS_ERR( "SID-sequence出错了，超过了最大值" );
 			return 0;
 		}
 		_sid += ( gSIDPos & 0xFFFFFFFFFF );
@@ -143,7 +143,7 @@ xgc_uint64 GetSID()
 		sprintf_s( sql, sizeof( sql ), "UPDATE sequenceid set sid = sid + %u WHERE id = %u", gSIDSize, gKey );
 		if( false == SyncDBExecute( sql ) )
 		{
-			SYS_ERROR( "Update sid 失败:%s", SyncDBErrorInfo() );
+			SYS_ERR( "Update sid 失败:%s", SyncDBErrorInfo() );
 			return 0;
 		}
 		// 赋值起始位置

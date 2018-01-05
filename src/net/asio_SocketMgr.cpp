@@ -226,7 +226,7 @@ namespace xgc
 				xgc_time64 diff = current_milliseconds() - exec_;
 				if( diff >= 1000 )
 				{
-					NET_INFO( "circle %llu ms inc %llu dec %llu", diff, exec_inc_.load(), exec_dec_.load() );
+					NET_TIP( "circle %llu ms inc %llu dec %llu", diff, exec_inc_.load(), exec_dec_.load() );
 					exec_ = current_milliseconds();
 					exec_inc_ = exec_dec_ = 0;
 				}

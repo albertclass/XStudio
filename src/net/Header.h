@@ -34,9 +34,13 @@
 using namespace asio;
 #define REALSIZE( S ) (((S+sizeof(xgc_uint32))&(~0x3ff))+0x400)
 
-#define NET_ERROR( FMT, ... )	xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "error",		FMT, ##__VA_ARGS__ )
-#define NET_WARNING( FMT, ... ) xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "warning",	FMT, ##__VA_ARGS__ )
-#define NET_INFO( FMT, ... )	xgc::common::get_logger( "NET" ).write( __FILE__, __func__, __LINE__, "info",		FMT, ##__VA_ARGS__ )
+#define NET_ERR_STREAM() xgc::common::get_logger( "NET" ) << xgc::common::logger_context( __FILE__, __func__, __LINE__, "error"   )
+#define NET_WAR_STREAM() xgc::common::get_logger( "NET" ) << xgc::common::logger_context( __FILE__, __func__, __LINE__, "warning" )
+#define NET_TIP_STREAM() xgc::common::get_logger( "NET" ) << xgc::common::logger_context( __FILE__, __func__, __LINE__, "info"    )
+
+#define NET_ERR( FMT, ... )	xgc::common::get_logger( "NET" ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, "error"   ), FMT, ##__VA_ARGS__ )
+#define NET_WAR( FMT, ... ) xgc::common::get_logger( "NET" ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, "warning" ), FMT, ##__VA_ARGS__ )
+#define NET_TIP( FMT, ... )	xgc::common::get_logger( "NET" ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, "info"    ), FMT, ##__VA_ARGS__ )
 
 namespace xgc
 {

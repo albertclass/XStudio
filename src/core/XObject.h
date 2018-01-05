@@ -64,7 +64,8 @@ namespace xgc
 	template< class TObjectEvent >
 	xgc_void DeleteEvent( XObjectEvent* p )
 	{
-		delete (TObjectEvent*)p;
+		TObjectEvent* evt = XGC_CONTAINER_OF( p, TObjectEvent, cast );
+		delete evt;
 	}
 
 	typedef xgc_void( XObject::* XEventBind1 )( xgc_long, xgc_long );
@@ -358,6 +359,17 @@ namespace xgc
 		}
 
 		///
+		/// \brief 根据VT类型获取属性值
+		/// \date 12/28/2017
+		/// \author albert.xu
+		///
+		template< xAttrType VT >
+		XGC_INLINE typename XAttribute::Value2Type< VT >::type getValue( xAttrIndex nAttr )
+		{
+			return getValue< typename XAttribute::Value2Type< VT >::type >( nAttr );
+		}
+
+		///
 		/// [1/7/2014 albert.xu]
 		/// 设置属性值
 		///
@@ -373,6 +385,17 @@ namespace xgc
 		{
 			getAttr( nAttr ) = _Val;
 			OnValueChanged( nAttr );
+		}
+
+		///
+		/// \brief 根据VT类型获取属性值
+		/// \date 12/28/2017
+		/// \author albert.xu
+		///
+		template< xAttrType VT >
+		XGC_INLINE xgc_void setValue( xAttrIndex nAttr, typename XAttribute::Value2Type< VT >::type _Val )
+		{
+			return setValue< typename XAttribute::Value2Type< VT >::type >( nAttr, _Val );
 		}
 
 		///

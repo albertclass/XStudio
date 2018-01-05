@@ -29,13 +29,13 @@ xgc_void OnPipeEvt( CPipeSession* pSession, xgc_uint32 nEvent, xgc_uint64 nBring
 	switch( nEvent )
 	{
 	case EVENT_CONNECT:
-		DBG_INFO( "Pipe connected %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
+		DBG_TIP( "Pipe connected %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
 		break;
 	case EVENT_ERROR:
 		OnPipeEvtError( pSession, nBring );
 		break;
 	case EVENT_CLOSE:
-		DBG_INFO( "Pipe disconnect %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
+		DBG_TIP( "Pipe disconnect %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
 		break;
 	}
 }
@@ -58,7 +58,7 @@ xgc_void OnPipeEvtError( CPipeSession* pSession, xgc_uint64 nErrorCode )
 	//case NET_ERROR_PACKET_INVALID: 
 	//case NET_ERROR_SEND_BUFFER_FULL:
 	//}
-	SYS_ERROR( "网络发生错误 nError = %0X", nErrorCode );
+	SYS_ERR( "网络发生错误 nError = %0X", nErrorCode );
 }
 ///
 /// \brief 虚拟套接字消息

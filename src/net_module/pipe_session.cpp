@@ -250,7 +250,7 @@ namespace net_module
 
 	xgc_void CPipeSession::OnClose()
 	{
-		SYS_INFO( "Pipe %u disconnect.", GetPipeID() );
+		SYS_TIP( "Pipe %u disconnect.", GetPipeID() );
 		mEvtHandler( this, EVENT_CLOSE, 0 );
 	}
 
@@ -322,7 +322,7 @@ namespace net_module
 
 				if( ntohl( req->version ) != PIPE_VERSION )
 				{
-					SYS_ERROR( "relay version does not match! server ver: %u, client ver: %s", req->version, PIPE_VERSION );
+					SYS_ERR( "relay version does not match! server ver: %u, client ver: %s", req->version, PIPE_VERSION );
 					ack.error = -1;
 					net::SendPacket( mHandle, &ack, sizeof( ack ) );
 					net::CloseLink( mHandle );
@@ -341,7 +341,7 @@ namespace net_module
 				auto ack = static_cast<PipeVersion*>(data);
 				if( ack->error != 0 )
 				{
-					SYS_ERROR( "relay version does not match! server ver: %u, client ver: %s", PIPE_VERSION, ack->version );
+					SYS_ERR( "relay version does not match! server ver: %u, client ver: %s", PIPE_VERSION, ack->version );
 					net::CloseLink( mHandle );
 				}
 				else

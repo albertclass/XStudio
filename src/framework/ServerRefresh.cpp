@@ -45,7 +45,7 @@ xgc_bool InitServerRefresh( ini_reader &ini )
 	LuaRef conf = luaGlobal( lpConfName );
 	if( conf.isNil() )
 	{
-		SYS_ERROR( "刷新配置项不存在" );
+		SYS_ERR( "刷新配置项不存在" );
 		return false;
 	}
 
@@ -103,7 +103,7 @@ xgc_void ExecServerRefresh( datetime now )
 		}
 		catch( std::exception &err )
 		{
-			SYS_ERROR( "Lua call error %s", err.what() );
+			SYS_ERR( "Lua call error %s", err.what() );
 		}
 
 		info.next_invoke_time = adjust_cycle_next( info.next_invoke_time, info.params.c_str(), now );

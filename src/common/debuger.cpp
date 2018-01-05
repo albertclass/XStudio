@@ -164,7 +164,7 @@ namespace xgc
 					if( spn.to_millisecnods() > timeout )
 					{
 						mIsClose = true;
-						LOGEXT( mStack[mCallDeep].lpFileName, mStack[mCallDeep].lpFuncName, mStack[mCallDeep].nLine, "invoke watch", "函数执行超时%I64u毫秒", spn.to_millisecnods() );
+						LOG_EXT( DBG, mStack[mCallDeep].lpFileName, mStack[mCallDeep].lpFuncName, mStack[mCallDeep].nLine, "invoke watch", "函数执行超时%I64u毫秒", spn.to_millisecnods() );
 						mIsClose = false;
 					}
 				}

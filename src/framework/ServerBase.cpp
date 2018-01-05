@@ -26,7 +26,7 @@ int __cdecl PrintMemReport( xgc_lpcstr fmt, ... )
 	int cpy = vsprintf_s( szMsg, sizeof( szMsg ), fmt, args );
 	va_end( args );
 
-	SYS_INFO( "%s", szMsg );
+	SYS_TIP( "%s", szMsg );
 	return cpy;
 }
 
@@ -71,7 +71,7 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_rea
 	}
 	catch( std::runtime_error e )
 	{
-		SYS_ERROR( "初始化配置文件失败 ConfigPath - %s, Error - %s", lpConfigPath, e.what() );
+		SYS_ERR( "初始化配置文件失败 ConfigPath - %s, Error - %s", lpConfigPath, e.what() );
 		return false;
 	}
 
@@ -79,15 +79,15 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_rea
 	if( false == InitializeLogger( ini ) )
 		return false;
 
-	SYS_INFO( "---------------------------------------------------" );
-	SYS_INFO( "服务器正在启动..." );
-	SYS_INFO( "服务器版本编号:%s", __version_svn__ );
-	SYS_INFO( "服务器版本路径:%s", __version_url__ );
-	SYS_INFO( "服务器编译日期:%s", __version_build__ );
-	SYS_INFO( "日志系统初始化成功。服务器[%s]正在启动……", ServerName() );
-	SYS_INFO( "服务器配置文件[%s]", lpConfigPath );
-	SYS_INFO( "服务器配置路径[%s]", szConfigPath );
-	SYS_INFO( "服务器进程ID[0x%0x:%u],线程ID[0x%x:%u]", get_process_id(), get_process_id(), get_thread_id(), get_thread_id() );
+	SYS_TIP( "---------------------------------------------------" );
+	SYS_TIP( "服务器正在启动..." );
+	SYS_TIP( "服务器版本编号:%s", __version_svn__ );
+	SYS_TIP( "服务器版本路径:%s", __version_url__ );
+	SYS_TIP( "服务器编译日期:%s", __version_build__ );
+	SYS_TIP( "日志系统初始化成功。服务器[%s]正在启动……", ServerName() );
+	SYS_TIP( "服务器配置文件[%s]", lpConfigPath );
+	SYS_TIP( "服务器配置路径[%s]", szConfigPath );
+	SYS_TIP( "服务器进程ID[0x%0x:%u],线程ID[0x%x:%u]", get_process_id(), get_process_id(), get_thread_id(), get_thread_id() );
 
 	if( false == InitException() )
 		return false;
@@ -96,19 +96,19 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_rea
 	if( false == InitServerDatabase( ini ) )
 		return false;
 
-	SYS_INFO( "数据库连接初始化成功！" );
+	SYS_TIP( "数据库连接初始化成功！" );
 
 	MemMark( "refresh", pInitNode );
 	if( false == InitServerRefresh( ini ) )
 		return false;
 
-	SYS_INFO( "刷新系统初始化成功！" );
+	SYS_TIP( "刷新系统初始化成功！" );
 
 	MemMark( "debugcommand", pInitNode );
 	if( false == InitDebugCmd( ini, xgc_nullptr ) )
 		return false;
 
-	SYS_INFO( "调试指令系统初始化成功！" );
+	SYS_TIP( "调试指令系统初始化成功！" );
 
 	if( bUseSequence )
 	{
@@ -116,24 +116,24 @@ xgc_bool InitServer( xgc_lpcstr lpConfigPath, const std::function< bool( ini_rea
 		if( false == InitServerSequence() )
 			return false;
 
-		SYS_INFO( "Sequence 初始化成功！" );
+		SYS_TIP( "Sequence 初始化成功！" );
 	}
 
 	ReportServiceStatus( SERVICE_STATUS_START_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 	MemMark( "configuration", pInitNode );
 	if( false == fnInitConf( ini ) )
 	{
-		USR_ERROR( "InitConfiguration failed." );
+		USR_ERR( "InitConfiguration failed." );
 		return false;
 	}
-	SYS_INFO( "配置数据初始化成功！" );
+	SYS_TIP( "配置数据初始化成功！" );
 
 	MemMark( "network", pInitNode );
 	xgc_lpcstr network = ini.get_item_value( "Network", "config", "network.xml" );
 	if( false == InitializeNetwork( network ) )
 		return false;
 
-	SYS_INFO( "网络初始化成功！" );
+	SYS_TIP( "网络初始化成功！" );
 
 	MemMarkReport( xgc_nullptr, PrintMemReport );
 	MemMarkClear();
@@ -151,7 +151,7 @@ xgc_void LoopServer( const std::function< bool( bool ) > &GameLogic )
 {
 	// 开启超时监控
 	getInvokeWatcherMgr().Start();
-	SYS_INFO( "服务器初始化成功" );
+	SYS_TIP( "服务器初始化成功" );
 
 	xgc_bool bBusy = false;
 	datetime tLast = datetime::now();
@@ -195,13 +195,13 @@ xgc_void LoopServer( const std::function< bool( bool ) > &GameLogic )
 			xgc_uint64 nMem = 0;
 			xgc_uint64 nVMem = 0;
 			get_process_memory_usage( &nMem, &nVMem );
-			SYS_INFO( "Mem: %llu  VMem : %llu", nMem, nVMem );
+			SYS_TIP( "Mem: %llu  VMem : %llu", nMem, nVMem );
 
 			tLast = datetime::now();
 		}
 	}
 
-	SYS_INFO( "关闭超时检测..." );
+	SYS_TIP( "关闭超时检测..." );
 	getInvokeWatcherMgr().Stop();
 }
 
@@ -210,22 +210,22 @@ xgc_void FiniServer( xgc_void( *FiniConfiguration )( xgc_lpvoid ), xgc_lpvoid lp
 	FUNCTION_BEGIN;
 	ReportServiceStatus( SERVICE_STATUS_STOP_PENDING, SERVICE_ERROR_NONE, 5 * 60 * 1000 );
 	FinializeNetwork();
-	SYS_INFO( "网络库清理完成..." );
+	SYS_TIP( "网络库清理完成..." );
 
 	FiniConfiguration( lpParam );
-	SYS_INFO( "配置项清理完成..." );
+	SYS_TIP( "配置项清理完成..." );
 
 	FiniDebugCmd();
-	SYS_INFO( "调试指令系统清理完成..." );
+	SYS_TIP( "调试指令系统清理完成..." );
 
 	FiniServerRefresh();
-	SYS_INFO( "刷新系统清理完成..." );
+	SYS_TIP( "刷新系统清理完成..." );
 
 	FiniServerEvent();
-	SYS_INFO( "异步逻辑处理清理完成..." );
+	SYS_TIP( "异步逻辑处理清理完成..." );
 
 	FiniServerDatabase();
-	SYS_INFO( "数据库清理完成..." );
+	SYS_TIP( "数据库清理完成..." );
 
 	FiniException();
 	FinializeLogger();

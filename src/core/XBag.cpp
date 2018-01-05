@@ -40,7 +40,7 @@ namespace xgc
 		if( nCapacity <= mCapacity )
 		{
 			// 不需要改变
-			USR_ERROR( "Can not modify, capacity is small than old. mCapacity:[%d], nCapacity:[%d]", mCapacity, nCapacity );
+			USR_ERR( "Can not modify, capacity is small than old. mCapacity:[%d], nCapacity:[%d]", mCapacity, nCapacity );
 			return false;
 		}
 
@@ -59,7 +59,7 @@ namespace xgc
 		XSlot *pSlots = XGC_NEW XSlot[nCapacity];
 		if( xgc_nullptr == pSlots )
 		{
-			SYS_ERROR( "new XSlot failed, nCapacity:[%d]",
+			SYS_ERR( "new XSlot failed, nCapacity:[%d]",
 				nCapacity );
 			return false;
 		}
@@ -335,7 +335,7 @@ namespace xgc
 
 		if( 0 == nCount )
 		{
-			USR_INFO( "Try putting GoodsNum is 0." );
+			USR_TIP( "Try putting GoodsNum is 0." );
 			return true;
 		}
 
@@ -385,7 +385,7 @@ namespace xgc
 
 		if( 0 == nCount )
 		{
-			USR_INFO( "Try putting GoodsNum is 0." );
+			USR_TIP( "Try putting GoodsNum is 0." );
 			return true;
 		}
 

@@ -6,11 +6,11 @@
 
 namespace xgc
 {
-	xAttrIndex XQuestObjective::Index;		// 配置ID
-	xAttrIndex XQuestObjective::TargetName;	// 对象名字
-	xAttrIndex XQuestObjective::Count;		// 当前计数
-	xAttrIndex XQuestObjective::Total;		// 完成计数
-	xAttrIndex XQuestObjective::Finished;	// 是否已完成
+	xAttrIndex XQuestObjective::Index;		///< 配置ID
+	xAttrIndex XQuestObjective::TargetName;	///< 对象名字
+	xAttrIndex XQuestObjective::Count;		///< 当前计数
+	xAttrIndex XQuestObjective::Total;		///< 完成计数
+	xAttrIndex XQuestObjective::Finished;	///< 完成标志
 
 	IMPLEMENT_XCLASS_BEGIN( XQuestObjective, XObject )
 		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_SAVE, "20171227" )
@@ -20,7 +20,7 @@ namespace xgc
 		IMPLEMENT_ATTRIBUTE( Finished, VT_BOOL, ATTR_FLAG_SAVE, "20171227" )
 	IMPLEMENT_XCLASS_END();
 
-	REGIST_ATTR_LISTENER( XQuestObjective, Count, OnCountChanged );
+	REGIST_ATTR_LISTENER( XQuestObjective, Count, OnValueChanged );
 
 	XQuestObjective::XQuestObjective()
 	{
@@ -66,11 +66,13 @@ namespace xgc
 		if( pSender->GotParent( XActor::GetThisClass() ) != GotParent( XActor::GetThisClass() ) )
 			return;
 
+		// 将对象转为实际的消息对象
 		XBag::TransEvent *e = XGC_CONTAINER_OF( &evt, XBag::TransEvent, cast );
 
 		XGoods *pGoods = ObjectCast< XGoods >( e->hGoods );
 		if( pGoods )
 		{
+			// 查看物品是否满足计数条件
 			xgc_lpcstr pName = pGoods->getString( XGoods::Alias );
 			XGC_ASSERT_POINTER( pName );
 			if( pName && getString( TargetName ) == pName )
@@ -83,11 +85,14 @@ namespace xgc
 
 	}
 
-	xgc_void XQuestObjective::OnCountChanged( xAttrIndex nAttr )
+	xgc_void XQuestObjective::OnValueChanged( xAttrIndex nAttr )
 	{
-		auto nCount = getValue< xgc_uint32 >( Count );
-		if( nCount > getValue< xgc_uint32 >( Total ) )
-			setValue( Count, nCount );
+		if( nAttr == Count )
+		{
+			auto nCount = getValue< xgc_uint32 >( Count );
+			if( nCount > getValue< xgc_uint32 >( Total ) )
+				setValue( Count, nCount );
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////

@@ -107,7 +107,7 @@ namespace net_module
 		// 检查匹配，未匹配的则不允许连接
 		if( it2 == mPipeHandlerInfos.end() )
 		{
-			SYS_WARNING( "未匹配到已注册的管道处理函数。" );
+			SYS_WRN( "未匹配到已注册的管道处理函数。" );
 			return false;
 		}
 
@@ -149,7 +149,7 @@ namespace net_module
 		// 检查匹配，未匹配的则不允许连接
 		if( it2 == mPipeHandlerInfos.end() )
 		{
-			SYS_WARNING( "未匹配到已注册的管道处理函数。" );
+			SYS_WRN( "未匹配到已注册的管道处理函数。" );
 			return false;
 		}
 
