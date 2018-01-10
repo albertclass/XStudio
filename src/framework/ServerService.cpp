@@ -419,6 +419,9 @@ xgc_void ServiceRun( int argc, char ** argv )
 	// [4] umask 0
 	umask(0);
 
+	for( int i = 0; i < argc; ++i )
+		puts( argv[i] );
+		
 	/* [5] Close out the standard file descriptors */
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
@@ -426,7 +429,7 @@ xgc_void ServiceRun( int argc, char ** argv )
 
 	// [6] set termianl signal  
 	signal(SIGTERM, sigterm_handler);
-
+	
 	ServerMain( argc, argv );
 }
 #endif

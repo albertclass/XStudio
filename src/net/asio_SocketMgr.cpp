@@ -13,7 +13,7 @@ namespace xgc
 		const int handle_count = 0xffff;
 
 		/// SocketMgr 对象是否激活
-		static volatile std::atomic_long SocketMgrAlive = -1;
+		static volatile std::atomic_long SocketMgrAlive(-1);
 
 		asio_SocketMgr::asio_SocketMgr()
 			: exec_( current_milliseconds() )
@@ -184,7 +184,7 @@ namespace xgc
 			++exec_inc_;
 			std::lock_guard< std::mutex > _lock( lock_queue_ );
 
-			event_queue_.push( { data, size } );
+			event_queue_.push( std::make_tuple( data, size ) );
 		}
 
 		///
@@ -335,7 +335,7 @@ namespace xgc
 		/// \date 2016/02/24 18:07
 		///
 
-		xgc_bool asio_SocketMgr::LinkUp( asio_SocketPtr &pSocket )
+		xgc_bool asio_SocketMgr::LinkUp( const asio_SocketPtr &pSocket )
 		{
 			std::lock_guard< std::mutex > _guard( lock_ );
 			if( free_handles.empty() )
@@ -357,7 +357,7 @@ namespace xgc
 		/// \date 2016/02/24 18:07
 		///
 
-		xgc_void asio_SocketMgr::LinkDown( asio_SocketPtr &pSocket )
+		xgc_void asio_SocketMgr::LinkDown( const asio_SocketPtr &pSocket )
 		{
 			// 为防止 锁定顺序导致的死锁问题，这里不是用关键区锁保护。
 			auto handle = pSocket->get_handle();

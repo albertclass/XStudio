@@ -68,177 +68,6 @@ namespace xgc
 		template< xvariant::value_type T >
 		struct value2type;
 
-		template< >
-		struct type2value < Void >
-		{
-			enum { Value = vt_void };
-		};
-
-		template< >
-		struct type2value < Bool >
-		{
-			enum { Value = vt_bool };
-		};
-
-		template< >
-		struct type2value < Char >
-		{
-			enum { Value = vt_char };
-		};
-
-		template< >
-		struct type2value < Byte >
-		{
-			enum { Value = vt_byte };
-		};
-
-		template< >
-		struct type2value < Short >
-		{
-			enum { Value = vt_i16 };
-		};
-
-		template< >
-		struct type2value < UShort >
-		{
-			enum { Value = vt_u16 };
-		};
-
-		template< >
-		struct type2value < Integer >
-		{
-			enum { Value = vt_i32 };
-		};
-
-		template< >
-		struct type2value < Unsigned >
-		{
-			enum { Value = vt_u32 };
-		};
-
-		template< >
-		struct type2value < Long >
-		{
-			enum { Value = vt_i64 };
-		};
-
-		template< >
-		struct type2value < ULong >
-		{
-			enum { Value = vt_u64 };
-		};
-
-		template< >
-		struct type2value < Real32 >
-		{
-			enum { Value = vt_real };
-		};
-
-		template< >
-		struct type2value < Real64 >
-		{
-			enum { Value = vt_real64 };
-		};
-
-
-		template< >
-		struct type2value < StringPtr >
-		{
-			enum { Value = vt_string };
-		};
-
-
-		template< >
-		struct type2value < BufferPtr >
-		{
-			enum { Value = vt_buffer };
-		};
-
-		//////////////////////////////////////////////////////////////////////////
-		template< >
-		struct value2type < vt_void >
-		{
-			typedef Void type;
-		};
-
-		template< >
-		struct value2type < vt_bool >
-		{
-			typedef Bool type;
-		};
-
-		template< >
-		struct value2type < vt_char >
-		{
-			typedef Char type;
-		};
-
-		template< >
-		struct value2type < vt_byte >
-		{
-			typedef Byte type;
-		};
-
-		template< >
-		struct value2type < vt_i16 >
-		{
-			typedef Short type;
-		};
-
-		template< >
-		struct value2type < vt_u16 >
-		{
-			typedef UShort type;
-		};
-
-		template< >
-		struct value2type < vt_i32 >
-		{
-			typedef Integer type;
-		};
-
-		template< >
-		struct value2type < vt_u32 >
-		{
-			typedef Unsigned type;
-		};
-
-		template< >
-		struct value2type < vt_i64 >
-		{
-			typedef Long type;
-		};
-
-		template< >
-		struct value2type < vt_u64 >
-		{
-			typedef ULong type;
-		};
-
-		template< >
-		struct value2type < vt_real >
-		{
-			typedef Real32 type;
-		};
-
-		template< >
-		struct value2type < vt_real64 >
-		{
-			typedef Real64 type;
-		};
-
-		template< >
-		struct value2type < vt_string >
-		{
-			typedef StringPtr type;
-		};
-
-		template< >
-		struct value2type < vt_buffer >
-		{
-			typedef BufferPtr type;
-		};
-
 	private:
 		value_type t;
 
@@ -967,6 +796,176 @@ namespace xgc
 		xvariant& operator *= ( V _Val ) { multiplies( _Val ); return *this; }
 		template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< xvariant, V >::value, xgc_bool >::type = true >
 		xvariant& operator /= ( V _Val ) { division( _Val ); return *this; }
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Void >
+	{
+		enum { Value = xvariant::vt_void };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Bool >
+	{
+		enum { Value = xvariant::vt_bool };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Char >
+	{
+		enum { Value = xvariant::vt_char };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Byte >
+	{
+		enum { Value = xvariant::vt_byte };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Short >
+	{
+		enum { Value = xvariant::vt_i16 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::UShort >
+	{
+		enum { Value = xvariant::vt_u16 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Integer >
+	{
+		enum { Value = xvariant::vt_i32 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Unsigned >
+	{
+		enum { Value = xvariant::vt_u32 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Long >
+	{
+		enum { Value = xvariant::vt_i64 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::ULong >
+	{
+		enum { Value = xvariant::vt_u64 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Real32 >
+	{
+		enum { Value = xvariant::vt_real };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::Real64 >
+	{
+		enum { Value = xvariant::vt_real64 };
+	};
+
+	template< >
+	struct xvariant::type2value < xvariant::StringPtr >
+	{
+		enum { Value = xvariant::vt_string };
+	};
+
+
+	template< >
+	struct xvariant::type2value < xvariant::BufferPtr >
+	{
+		enum { Value = xvariant::vt_buffer };
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	template< >
+	struct xvariant::value2type < xvariant::vt_void >
+	{
+		typedef xvariant::Void type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_bool >
+	{
+		typedef xvariant::Bool type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_char >
+	{
+		typedef xvariant::Char type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_byte >
+	{
+		typedef xvariant::Byte type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_i16 >
+	{
+		typedef xvariant::Short type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_u16 >
+	{
+		typedef xvariant::UShort type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_i32 >
+	{
+		typedef xvariant::Integer type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_u32 >
+	{
+		typedef xvariant::Unsigned type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_i64 >
+	{
+		typedef xvariant::Long type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_u64 >
+	{
+		typedef xvariant::ULong type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_real >
+	{
+		typedef xvariant::Real32 type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_real64 >
+	{
+		typedef xvariant::Real64 type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_string >
+	{
+		typedef xvariant::StringPtr type;
+	};
+
+	template< >
+	struct xvariant::value2type < xvariant::vt_buffer >
+	{
+		typedef xvariant::BufferPtr type;
 	};
 
 	///

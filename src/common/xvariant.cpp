@@ -96,19 +96,19 @@ namespace xgc
 		xgc_size size = 0;
 		switch( t )
 		{
-			case vt_bool:	size = sizeof Bool;      break;
-			case vt_char:	size = sizeof Char;      break;
-			case vt_byte:	size = sizeof Byte;      break;
-			case vt_i16:	size = sizeof Short;     break;
-			case vt_i32:	size = sizeof Integer;   break;
-			case vt_i64:	size = sizeof Long;      break;
-			case vt_u16:	size = sizeof UShort;    break;
-			case vt_u32:	size = sizeof Unsigned;  break;
-			case vt_u64:	size = sizeof ULong;     break;
-			case vt_real:	size = sizeof Real32;    break;
-			case vt_real64: size = sizeof Real64;    break;
-			case vt_string: size = sizeof StringPtr; break;
-			case vt_buffer: size = sizeof BufferPtr; break;
+			case vt_bool:	size = sizeof( Bool );      break;
+			case vt_char:	size = sizeof( Char );      break;
+			case vt_byte:	size = sizeof( Byte );      break;
+			case vt_i16:	size = sizeof( Short );     break;
+			case vt_i32:	size = sizeof( Integer );   break;
+			case vt_i64:	size = sizeof( Long );      break;
+			case vt_u16:	size = sizeof( UShort );    break;
+			case vt_u32:	size = sizeof( Unsigned );  break;
+			case vt_u64:	size = sizeof( ULong );     break;
+			case vt_real:	size = sizeof( Real32 );    break;
+			case vt_real64: size = sizeof( Real64 );    break;
+			case vt_string: size = sizeof( StringPtr ); break;
+			case vt_buffer: size = sizeof( BufferPtr ); break;
 		}
 
 		return size;

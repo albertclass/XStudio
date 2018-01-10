@@ -159,7 +159,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/24 18:07
 			///
-			xgc_bool LinkUp( asio_SocketPtr &pSocket );
+			xgc_bool LinkUp( const asio_SocketPtr &pSocket );
 
 			///
 			/// \brief Á¬½Ó¶Ï¿ª
@@ -167,7 +167,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2016/02/24 18:07
 			///
-			xgc_void LinkDown( asio_SocketPtr &pSocket );
+			xgc_void LinkDown( const asio_SocketPtr &pSocket );
 
 		private:
 			///

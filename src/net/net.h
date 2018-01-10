@@ -270,9 +270,14 @@ namespace xgc
 
 		/// ´´½¨»º³å
 		template< class T >
-		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( T &value ) { return { &value, sizeof( value ) }; }
+		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( T &value ) {
+			return xgc::tuple< xgc_lpvoid, xgc_size >( &value, sizeof( value ) );
+		}
 		XGC_INLINE
-		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( xgc_lpcvoid data, xgc_size size ) { return { ( xgc_lpvoid )data, size }; }
+		xgc::tuple< xgc_lpvoid, xgc_size > MakeBuffer( xgc_lpcvoid data, xgc_size size ) 
+		{
+			return xgc::tuple< xgc_lpvoid, xgc_size >( ( xgc_lpvoid )data, size ); 
+		}
 
 		extern "C"
 		{

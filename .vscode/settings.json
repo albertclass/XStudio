@@ -55,7 +55,13 @@
         "initializer_list": "cpp",
         "system_error": "cpp",
         "lib_string.c": "cpp",
-        "luajit.c": "cpp"
+        "luajit.c": "cpp",
+        "lib_io.c": "cpp",
+        "functional": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
     },
 
     // The default character set encoding to use when reading and writing files.

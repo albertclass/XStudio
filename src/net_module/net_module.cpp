@@ -209,14 +209,14 @@ xgc_bool make_listen( pugi::xml_node &node )
 				auto addr_from = inet_addr( addr.as_string() );
 				auto addr_to   = inet_addr( addr.as_string() );
 
-				inserter = { ntohl( addr_from ), ntohl( addr_to ) };
+				inserter = std::make_tuple( ntohl( addr_from ), ntohl( addr_to ) );
 			}
 			else if( from && to )
 			{
 				auto addr_from = inet_addr( from.as_string() );
 				auto addr_to   = inet_addr(   to.as_string() );
 
-				inserter = { ntohl( addr_from ), ntohl( addr_to ) };
+				inserter = std::make_tuple( ntohl( addr_from ), ntohl( addr_to ) );
 			}
 			else
 			{
