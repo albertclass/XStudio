@@ -172,20 +172,19 @@ namespace xgc
 					// split filename and ext
 					char filename[XGC_MAX_FNAME] = { 0 };
 					strcpy_s( filename, file );
-					xgc_lpstr ext = "";
 					xgc_lpstr dot = strchr( filename, '.' );
 
-					if( dot ) { *dot = '\0'; ext = dot + 1; }
+					if( dot ) { *dot++ = '\0'; }
 
 					// normal path
 					char absolute[XGC_MAX_PATH] = { 0 };
 					if( split_size )
 					{
-						get_absolute_path( absolute, "%s/%s%s_%d.%s", path, filename, date, split_size_sn, ext );
+						get_absolute_path( absolute, "%s/%s%s_%d.%s", path, filename, date, split_size_sn, dot ? dot : "" );
 					}
 					else
 					{
-						get_absolute_path( absolute, "%s/%s%s.%s", path, filename, date, ext );
+						get_absolute_path( absolute, "%s/%s%s.%s", path, filename, date, dot ? dot : "" );
 					}
 
 					// get file size
@@ -223,17 +222,12 @@ namespace xgc
 					// split filename and ext
 					char filename[XGC_MAX_FNAME] = { 0 };
 					strcpy_s( filename, file );
-					xgc_lpcstr ext = "";
 					xgc_lpstr dot = strchr( filename, '.' );
-					if( dot )
-					{
-						*dot = '\0';
-						ext = dot + 1;
-					}
+					if( dot ) { *dot++ = '\0'; }
 
 					// normal path 
 					char absolute[XGC_MAX_PATH] = { 0 };
-					get_absolute_path( absolute, "%s/%s%s_%d.%s", path, filename, date, ++split_size_sn, ext );
+					get_absolute_path( absolute, "%s/%s%s_%d.%s", path, filename, date, ++split_size_sn, dot ? dot : "" );
 
 					// get file size
 					struct stat s;
@@ -1069,7 +1063,7 @@ namespace xgc
 		///
 		/// [01/16/2017 albert.xu]
 		///
-		xgc_void logger_impl::write( logger_context& context, xgc_lpcstr fmt, ... )
+		xgc_void logger_impl::write( logger_context context, xgc_lpcstr fmt, ... )
 		{
 			// 尽量使用宏定义的方式来使用该函数
 			if( xgc_nullptr == this )

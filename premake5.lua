@@ -182,12 +182,12 @@ group "library"
 			defines { "LINUX64" }
 
 	project "nosql"
-		kind "SharedLib"
+		kind "StaticLib"
 		language "C++"
 		cppdialect "C++11"
 		location "prj"
 		includedirs { "src/nosql", "src/common"}
-		targetdir "bin/%{cfg.buildcfg}"
+		targetdir "lib/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
 		links { "common", "hiredis" }
 
@@ -223,7 +223,9 @@ group "library"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
-			implibdir "bin/%{cfg.buildcfg}"
+			includedirs { "dep/redis" }
+			implibdir "lib/%{cfg.buildcfg}"
+			libdirs { "lib/%{cfg.buildcfg}", "dep/redis/%{cfg.buildcfg}" }
 			links { "stdc++" }
 			buildoptions { "-pthread" }
 			defines { "LINUX64" }

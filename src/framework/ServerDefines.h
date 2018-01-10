@@ -31,7 +31,8 @@
 #endif
 
 #ifdef _LINUX
-#	include<sys/wait.h>  
+#	include<sys/wait.h>
+#	include<arpa/inet.h>
 #	include<signal.h> 
 #endif
 

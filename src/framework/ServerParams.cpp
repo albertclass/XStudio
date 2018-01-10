@@ -180,7 +180,7 @@ public:
 				for( auto &kv : G_Params )
 				{
 					auto &info = kv.second;
-					SendCommand( "set %s %s %08X %s", info.key, info.val, info.mask, szDateTime );
+					SendCommand( "set %s %s %08X %s", info.key.c_str(), info.val.c_str(), info.mask, szDateTime );
 				}
 			}
 		}
@@ -229,7 +229,7 @@ public:
 
 				auto &info = it->second;
 				info.update.to_string( szDateTime );
-				SendCommand( "set %s %s %08X %s", info.key, info.val, info.mask, szDateTime );
+				SendCommand( "set %s %s %08X %s", info.key.c_str(), info.val.c_str(), info.mask, szDateTime );
 			}
 		}
 	}
@@ -261,8 +261,8 @@ static xgc_bool Load( xgc_lpcstr file )
 	for( decltype( rows ) row = 0; row < rows; ++row )
 	{
 		// 存在配置则读取，不存在则略过
-		xgc_lpcstr lpKey = csv.get_value( row, 0ULL, xgc_nullptr );
-		xgc_lpcstr lpVal = csv.get_value( row, 1ULL, xgc_nullptr );
+		xgc_lpcstr lpKey = csv.get_value( row, size_t(0), xgc_nullptr );
+		xgc_lpcstr lpVal = csv.get_value( row, size_t(1), xgc_nullptr );
 
 		XGC_ASSERT_CONTINUE( lpKey && lpVal );
 

@@ -1,32 +1,38 @@
 {
-    "configurations": [
-        {
+    "configurations": [{
             "name": "Mac",
             "includePath": [
-                "/usr/include"
+                "/usr/include",
+                "${workspaceRoot}/src",
+                "${workspaceRoot}/dep"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}/src",
+                    "${workspaceRoot}/dep"
                 ]
             },
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "clang-x64",
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
         },
         {
             "name": "Linux",
             "includePath": [
                 "/usr/include",
-                "${workspaceRoot}/inc"
+                "${workspaceRoot}/src",
+                "${workspaceRoot}/dep"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "${workspaceRoot}/inc",
                     "${workspaceRoot}"
                 ]
             },
@@ -35,7 +41,9 @@
         {
             "name": "Win32",
             "includePath": [
-                "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+                "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "${workspaceRoot}/src",
+                "${workspaceRoot}/dep"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -48,5 +56,5 @@
             "intelliSenseMode": "msvc-x64"
         }
     ],
-    "version": 2
+    "version": 3
 }

@@ -10,9 +10,13 @@ struct logLevelTag
 	static xgc_lpcstr Tag;
 };
 
+template<>
 xgc_lpcstr logLevelTag<0>::Tag = "DBG";
+template<>
 xgc_lpcstr logLevelTag<1>::Tag = "INF";
+template<>
 xgc_lpcstr logLevelTag<2>::Tag = "WRN";
+template<>
 xgc_lpcstr logLevelTag<3>::Tag = "ERR";
 
 ///

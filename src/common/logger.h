@@ -38,22 +38,23 @@
 #define DBG_WRN_STREAM() LOG_TAG_STREAM( DBG, "warning" )
 #define DBG_TIP_STREAM() LOG_TAG_STREAM( DBG, "info"	)
 
-#define LOG_EXT_FORMAT( LOG, FILE, FUNC, LINE, TAGS, FMT, ... ) \
+#define LOG_EXT_FORMAT( LOG, FILE, FUNC, LINE, TAGS, ... ) \
 	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
-		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( FILE, FUNC, LINE, TAGS ), FMT, ##__VA_ARGS__ )
-#define LOG_TAG_FORMAT( LOG, TAGS, FMT, ... ) \
-	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
-		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, TAGS ), FMT, ##__VA_ARGS__ )
+		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( FILE, FUNC, LINE, TAGS ), ##__VA_ARGS__ )
 
-#define SYS_ERR( FMT, ... )	LOG_TAG_FORMAT( SYS, "error"   , FMT, ##__VA_ARGS__ )
-#define SYS_WRN( FMT, ... ) LOG_TAG_FORMAT( SYS, "warning" , FMT, ##__VA_ARGS__ )
-#define SYS_TIP( FMT, ... )	LOG_TAG_FORMAT( SYS, "info"	   , FMT, ##__VA_ARGS__ )
-#define USR_ERR( FMT, ... )	LOG_TAG_FORMAT( USR, "error"   , FMT, ##__VA_ARGS__ )
-#define USR_WRN( FMT, ... ) LOG_TAG_FORMAT( USR, "warning" , FMT, ##__VA_ARGS__ )
-#define USR_TIP( FMT, ... )	LOG_TAG_FORMAT( USR, "info"	   , FMT, ##__VA_ARGS__ )
-#define DBG_ERR( FMT, ... )	LOG_TAG_FORMAT( DBG, "error"   , FMT, ##__VA_ARGS__ )
-#define DBG_WRN( FMT, ... ) LOG_TAG_FORMAT( DBG, "warning" , FMT, ##__VA_ARGS__ )
-#define DBG_TIP( FMT, ... )	LOG_TAG_FORMAT( DBG, "info"	   , FMT, ##__VA_ARGS__ )
+#define LOG_TAG_FORMAT( LOG, TAGS, ... ) \
+	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
+		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, TAGS ), ##__VA_ARGS__ )
+
+#define SYS_ERR( ... ) LOG_TAG_FORMAT( SYS, "error"   , ##__VA_ARGS__ )
+#define SYS_WRN( ... ) LOG_TAG_FORMAT( SYS, "warning" , ##__VA_ARGS__ )
+#define SYS_TIP( ... ) LOG_TAG_FORMAT( SYS, "info"	  , ##__VA_ARGS__ )
+#define USR_ERR( ... ) LOG_TAG_FORMAT( USR, "error"   , ##__VA_ARGS__ )
+#define USR_WRN( ... ) LOG_TAG_FORMAT( USR, "warning" , ##__VA_ARGS__ )
+#define USR_TIP( ... ) LOG_TAG_FORMAT( USR, "info"	  , ##__VA_ARGS__ )
+#define DBG_ERR( ... ) LOG_TAG_FORMAT( DBG, "error"   , ##__VA_ARGS__ )
+#define DBG_WRN( ... ) LOG_TAG_FORMAT( DBG, "warning" , ##__VA_ARGS__ )
+#define DBG_TIP( ... ) LOG_TAG_FORMAT( DBG, "info"	  , ##__VA_ARGS__ )
 
 namespace xgc
 {
@@ -522,7 +523,7 @@ namespace xgc
 			/// \author albert.xu
 			/// \date 2017/01/16
 			///
-			xgc_void write( logger_context& ctx, xgc_lpcstr fmt, ... );
+			xgc_void write( logger_context ctx, xgc_lpcstr fmt, ... );
 		};
 
 		struct logger_stream : public std::ostringstream

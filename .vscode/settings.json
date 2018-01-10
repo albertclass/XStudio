@@ -61,7 +61,10 @@
         "ratio": "cpp",
         "tuple": "cpp",
         "type_traits": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "iosfwd": "cpp",
+        "exception": "cpp",
+        "stdexcept": "cpp"
     },
 
     // The default character set encoding to use when reading and writing files.

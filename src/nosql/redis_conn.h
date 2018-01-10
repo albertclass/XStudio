@@ -10,13 +10,33 @@ class redisExecption : public std::exception
 {
 	typedef std::exception base;
 public:
-	redisExecption()throw( );
+	redisExecption() throw( )
+		: message( "no infomation." )
+	{
 
-	redisExecption( char const* _Message, int err )throw( );
+	}
 
-	explicit redisExecption( char const* const _Message ) throw( );
+	redisExecption( char const * _Message ) throw( )
+		: message( _Message )
+	{
 
-	redisExecption( redisExecption const &_Other );
+	}
+
+	redisExecption( redisExecption const & _Other )
+		: message( _Other.message )
+	{
+
+	}
+
+    /** Returns a C-style character string describing the general cause
+     *  of the current error.  */
+    virtual const char* what() const noexcept
+	{
+		return message;
+	}
+
+private:
+	char const* message;
 };
 
 class redisData;

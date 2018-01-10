@@ -18,7 +18,7 @@ static ServerEvent G_ServerEvent;
 
 xgc_bool RegistEventListener( int id, int event, const EventListener &invoke )
 {
-	auto key = ServerEvent::event_id( { id, event } );
+	auto key = ServerEvent::event_id( std::make_tuple( id, event ) );
 	try
 	{
 		G_ServerEvent._observers[key].push_back( invoke );
@@ -33,7 +33,7 @@ xgc_bool RegistEventListener( int id, int event, const EventListener &invoke )
 
 xgc_void EmitEvent( EventObject &evt )
 {
-	auto it = G_ServerEvent._observers.find( { evt.id, evt.event } );
+	auto it = G_ServerEvent._observers.find( std::make_tuple( evt.id, evt.event ) );
 	if( it != G_ServerEvent._observers.end() )
 	{
 		for( auto &invoke : it->second )

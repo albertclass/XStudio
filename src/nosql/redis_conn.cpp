@@ -1,30 +1,6 @@
 #include "nosql.h"
 #include "redis_conn.h"
 
-redisExecption::redisExecption() throw( )
-	: base()
-{
-
-}
-
-redisExecption::redisExecption( char const * _Message, int err ) throw( )
-	: base( _Message, err )
-{
-
-}
-
-redisExecption::redisExecption( char const * const _Message ) throw( )
-	: base( _Message )
-{
-
-}
-
-redisExecption::redisExecption( redisExecption const & _Other )
-	: base( _Other )
-{
-
-}
-
 xvariant redisData::value() const
 {
 	if( reply_->type == REDIS_REPLY_NIL )

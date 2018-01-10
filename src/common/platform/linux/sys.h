@@ -19,4 +19,6 @@
 #define htonll htobe64
 #define ntohll be64toh
 
+#define SOCKET int
+#define closesocket( s ) close( s )
 #endif // __XGC_SYSTEM_H__
