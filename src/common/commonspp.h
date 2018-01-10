@@ -3,17 +3,23 @@
 
 	#define XGC_CONCATENATE_MACRO(x, y)		x##y
 	#define XGC_CONCATENATE_MACRO3(x,y,z)	XGC_CONCATENATE_MACRO(x##y,z)
+
 	#define XGC_LINEID1(x, y)				XGC_CONCATENATE_MACRO(x, y)
 	#define XGC_LINEID(x)					XGC_LINEID1(x, __LINE__)
-	#define XGC_STRING(X)					#X
-	#define XGC_TOSTRING(X)					XGC_STRING(X)
+
+	#define XGC_STRING1(x)					#x
+	#define XGC_STRING2(x)					XGC_STRING1(x)
+	#define XGC_STRING3(x)					XGC_STRING2(x)
+	#define XGC_STRING(x)					XGC_STRING3(x)
 
 	#define XGC_STATIC_BLOCK(...) \
 		namespace { \
-		static struct XGC_LINEID(DUMMY) { XGC_LINEID(DUMMY)() {      \
-		__VA_ARGS__ \
-			} \
-			} XGC_LINEID(__dummy__); }
+			static struct XGC_LINEID(DUMMY) { \
+				XGC_LINEID(DUMMY)() {      \
+					__VA_ARGS__ \
+				} \
+			} XGC_LINEID(__dummy__); \
+		}
 
 	//enumerates "X" from 1 to num with "INTER" as separator
 	// XGC_ENUM(3,class T, = void XGC_COMMA) --> class T1 = void, class T2 = void, class T3 = void

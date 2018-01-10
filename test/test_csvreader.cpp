@@ -5,7 +5,7 @@
 using namespace xgc;
 using namespace xgc::common;
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	xgc_char file[XGC_MAX_PATH];
 	get_absolute_path( file, "../table.csv" );

@@ -22,7 +22,7 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	conn.host      = ini.get_item_value( "Database", "Host", xgc_nullptr );
 	if( xgc_nullptr == conn.host )
 	{
-		SYS_ERROR( "%s", "数据库配置项 Database.Host 没有正确配置。" );
+		SYS_ERR( "%s", "数据库配置项 Database.Host 没有正确配置。" );
 		return false;
 	}
 	conn.port      = ini.get_item_value( "Database", "Port", 3306 );
@@ -30,19 +30,19 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	conn.username  = ini.get_item_value( "Database", "Username", xgc_nullptr );
 	if( xgc_nullptr == conn.username )
 	{
-		SYS_ERROR( "%s", "数据库配置项 Database.Username 没有正确配置。" );
+		SYS_ERR( "%s", "数据库配置项 Database.Username 没有正确配置。" );
 		return false;
 	}
 	conn.password = ini.get_item_value( "Database", "Password", xgc_nullptr );
 	if( xgc_nullptr == conn.password )
 	{
-		SYS_ERROR( "%s", "数据库配置项 Database.Password 没有正确配置。" );
+		SYS_ERR( "%s", "数据库配置项 Database.Password 没有正确配置。" );
 		return false;
 	}
 	conn.schema = ini.get_item_value( "Database", "Schema", xgc_nullptr );
 	if( xgc_nullptr == conn.schema )
 	{
-		SYS_ERROR( "%s", "数据库配置项 Database.Schema 没有正确配置。" );
+		SYS_ERR( "%s", "数据库配置项 Database.Schema 没有正确配置。" );
 		return false;
 	}
 	conn.character = ini.get_item_value( "Database", "Character", "latin1" );
@@ -51,16 +51,16 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	MemMark( "init", lpParentNode );
 	if( false == sql_init_library() )
 	{
-		SYS_ERROR( "数据库底层库初始化失败。" );
+		SYS_ERR( "数据库底层库初始化失败。" );
 		return false;
 	}
-	SYS_INFO( "数据库底层库初始化成功。" );
+	SYS_TIP( "数据库底层库初始化成功。" );
 
 	MemMark( "async connect", lpParentNode );
 	g_async_h = async_connect( conn );
 	if( 0 == g_async_h )
 	{
-		SYS_ERROR( "数据库异步连接初始化失败。" );
+		SYS_ERR( "数据库异步连接初始化失败。" );
 		return false;
 	}
 
@@ -68,10 +68,10 @@ xgc_bool InitServerDatabase( ini_reader &ini )
 	g_sync_h = connect( conn );
 	if( 0 == g_sync_h )
 	{
-		SYS_ERROR( "同步数据库连接失败! %d - %s", get_error_code( g_sync_h ), get_error_info( g_sync_h ) );
+		SYS_ERR( "同步数据库连接失败! %d - %s", get_error_code( g_sync_h ), get_error_info( g_sync_h ) );
 		return false;
 	}
-	SYS_INFO( "数据库同步连接初始化成功。" );
+	SYS_TIP( "数据库同步连接初始化成功。" );
 
 	xgc_lpcstr lpConf = ini.get_item_value( "Database", "TableMaker", xgc_nullptr );
 	if( lpConf )

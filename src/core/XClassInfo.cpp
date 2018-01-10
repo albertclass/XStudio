@@ -1,7 +1,7 @@
 #include "XHeader.h"
 #include "XClassInfo.h"
 
-#define XAttributeVersion 20171010
+#define XAttributeVersion 20171227
 
 namespace xgc
 {
@@ -28,6 +28,8 @@ namespace xgc
 		, mImplementCount( 0 )
 		, mImplementInfo( xgc_nullptr )
 		, mAttributeInfo( xgc_nullptr )
+		, __implement( xgc_nullptr )
+		, __attribute( xgc_nullptr )
 		, mAttributeSize( 0 )
 		, mParent( pParent )
 	{
@@ -68,23 +70,34 @@ namespace xgc
 		}
 
 		// 若该类有属性定义
-		mImplementInfo = (XAttributeImpl*)malloc( mImplementCount * sizeof( XAttributeImpl ) );
+		mImplementInfo = (XAttributeImpl**)malloc( mImplementCount * sizeof( XAttributeImpl* ) );
 
 		if( pParent && pParent->mImplementInfo )
 		{
-			memcpy( mImplementInfo, pParent->mImplementInfo, pParent->mImplementCount * sizeof( XAttributeImpl ) );
+			// 复制父类中的 mImplementInfo 指针所指的内容（指针列表）
+			memcpy( mImplementInfo, pParent->mImplementInfo, pParent->mImplementCount * sizeof( XAttributeImpl* ) );
 		}
 
-		memcpy( mImplementInfo + pParent->mImplementCount, pImplementInfo, nImplementCount * sizeof( XAttributeImpl ) );
+		// 该类的属性定义
+		__implement = (XAttributeImpl *)malloc( nImplementCount * sizeof( XAttributeImpl ) );
+		memcpy( __implement, pImplementInfo, nImplementCount * sizeof( XAttributeImpl ) );
+
+		// 填充属性定义指针列表
+		for( xgc_size i = pParent->mImplementCount, j = 0; i < nImplementCount; ++i, ++j )
+		{
+			mImplementInfo[i] = __implement + j;
+		}
 
 		// 若该类有属性定义
-		mAttributeInfo = (XAttributeInfo*)malloc( mAttributeCount * sizeof( XAttributeInfo ) );
+		mAttributeInfo = (XAttributeInfo**)malloc( mAttributeCount * sizeof( XAttributeInfo* ) );
 
 		xgc_size nAttrIdx = 0;
 		xgc_size nAttrPos = 0;
+		
 		if( pParent && pParent->mAttributeInfo )
 		{
-			memcpy( mAttributeInfo, pParent->mAttributeInfo, pParent->mAttributeCount * sizeof( XAttributeInfo ) );
+			// 复制父类的属性信息指针列表
+			memcpy( mAttributeInfo, pParent->mAttributeInfo, pParent->mAttributeCount * sizeof( XAttributeInfo* ) );
 
 			nAttrIdx = pParent->mAttributeCount;
 			nAttrPos = pParent->mAttributeSize;
@@ -98,12 +111,17 @@ namespace xgc
 			if( XAttributeVersion >= pImplementInfo[j].version.close )
 				continue;
 
-			mAttributeInfo[nAttrIdx].impl = pImplementInfo[j].impl;
-			mAttributeInfo[nAttrIdx].offset = nAttrPos;
-			mAttributeInfo[nAttrIdx].OnValueChanged = xgc_nullptr;
+			// 初始化本地列表
+			__attribute[j].impl           = pImplementInfo[j].impl;
+			__attribute[j].offset         = nAttrPos;
+			__attribute[j].cycle_change   = 0;
+			__attribute[j].OnValueChanged = xgc_nullptr;
 
 			// 计算属性索引号
-			mAttributeInfo[nAttrIdx].impl.attr_ptr[0] = nAttrIdx++;
+			__attribute[j].impl.attr_ptr[0] = nAttrIdx++;
+
+			// 将指针指向本地属性列表的正确地址
+			mAttributeInfo[nAttrIdx] = __attribute + j;
 
 			// 计算属性缓冲长度
 			nAttrPos += XAttribute::Type2Size( pImplementInfo[j].impl.type ) * pImplementInfo[j].impl.count;
@@ -112,9 +130,16 @@ namespace xgc
 
 	XClassInfo::~XClassInfo()
 	{
-		FUNCTION_BEGIN;
+		free( __attribute );
+		free( __implement );
+
+		__attribute = xgc_nullptr;
+		__implement = xgc_nullptr;
+
 		free( mAttributeInfo );
+		free( mImplementInfo );
+
 		mAttributeInfo = xgc_nullptr;
-		FUNCTION_END;
+		mImplementInfo = xgc_nullptr;
 	}
 }

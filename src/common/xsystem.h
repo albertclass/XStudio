@@ -7,16 +7,6 @@
 
 #include <functional>
 
-#define SLASH_ALL "\\/"
-
-#ifdef _WINDOWS
-#	define SLASH '\\'
-#endif
-
-#ifdef _LINUX
-#	define SLASH '/'
-#endif
-
 namespace xgc
 {
 	///

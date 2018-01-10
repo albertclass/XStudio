@@ -378,14 +378,14 @@ namespace xgc
 
 			if( inotify_fd < 0 )
 			{
-				SYS_ERROR( "inotify_init error!" );
+				SYS_ERR( "inotify_init error!" );
 				return false;
 			}
 
 			epoll_fd = epoll_create(1024);
 			if( epoll_fd < 0 )
 			{
-				SYS_ERROR( "epoll_create error!" );
+				SYS_ERR( "epoll_create error!" );
 				return false;
 			}
 
@@ -401,7 +401,7 @@ namespace xgc
 			int rs = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, inotify_fd, &evt);
 			if( rs < 0 )
 			{
-				SYS_ERROR( "Could not add Inotify event in EPOLL %d", rs );
+				SYS_ERR( "Could not add Inotify event in EPOLL %d", rs );
 				return false;
 			}
 
@@ -489,7 +489,7 @@ namespace xgc
 				auto e = it->second;
 				if( -1 == inotify_rm_watch( inotify_fd, e->fd ) )
 				{
-					SYS_ERROR( "inotify_rm_watch error." );
+					SYS_ERR( "inotify_rm_watch error." );
 					return;
 				}
 
@@ -513,7 +513,7 @@ namespace xgc
 			int n = epoll_wait( epoll_fd, evts, XGC_COUNTOF(evts), timeout );
 			if( n < 0 )
 			{
-				SYS_ERROR( "epoll_wait error." );
+				SYS_ERR( "epoll_wait error." );
 				return FILE_WATCHER_ERRORDEQUE;
 			}
 

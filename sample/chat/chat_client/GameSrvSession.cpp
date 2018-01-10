@@ -115,7 +115,7 @@ xgc_void CGameSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 			}
 			else
 			{
-				DBG_INFO( "handle %0X auth failed.", handle_ );
+				DBG_TIP( "handle %0X auth failed.", handle_ );
 				CloseLink( handle_ );
 			}
 		}

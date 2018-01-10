@@ -37,7 +37,7 @@ void call_2( const char *s )
 	FUNCTION_END
 }
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	InitException();
 	FUNCTION_BEGIN

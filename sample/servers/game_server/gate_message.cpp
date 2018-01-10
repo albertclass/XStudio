@@ -17,7 +17,7 @@ xgc_void OnPipeMsg( CPipeSession* pSession, xgc_lpvoid pData, xgc_size nSize, xg
 ///
 xgc_void OnPipeEvtError( CPipeSession* pSession, xgc_uint64 nErrorCode )
 {
-	SYS_ERROR( "ÍøÂç·¢Éú´íÎó nError = %0X", nErrorCode );
+	SYS_ERR( "ÍøÂç·¢Éú´íÎó nError = %0X", nErrorCode );
 }
 
 ///
@@ -32,13 +32,13 @@ xgc_void OnPipeEvt( CPipeSession* pSession, xgc_uint32 nEvent, xgc_uint64 nBring
 	switch( nEvent )
 	{
 		case EVENT_ACCEPT:
-		DBG_INFO( "Pipe Accept %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
+		DBG_TIP( "Pipe Accept %p - %s", pSession, NetworkId2Str( nBring, szNetworkID ) );
 		break;
 		case EVENT_ERROR:
 		OnPipeEvtError( pSession, nBring );
 		break;
 		case EVENT_CLOSE:
-		DBG_INFO( "Pipe Disonnect %p - %llu", pSession, NetworkId2Str( nBring, szNetworkID ) );
+		DBG_TIP( "Pipe Disonnect %p - %llu", pSession, NetworkId2Str( nBring, szNetworkID ) );
 		break;
 	}
 }
@@ -62,13 +62,13 @@ xgc_void OnVirtualSockEvt( CRelaySession* pSession, xgc_uint32 nEvent, xgc_uint6
 	switch( nEvent )
 	{
 		case EVENT_CONNECT:
-		DBG_INFO( "Virtual sock connect %p - %llu", pSession, nBring );
+		DBG_TIP( "Virtual sock connect %p - %llu", pSession, nBring );
 		break;
 		case EVENT_ERROR:
-		DBG_INFO( "Virtual sock error %p - %llu", pSession, nBring );
+		DBG_TIP( "Virtual sock error %p - %llu", pSession, nBring );
 		break;
 		case EVENT_CLOSE:
-		DBG_INFO( "Virtual sock disonnect %p - %llu", pSession, nBring );
+		DBG_TIP( "Virtual sock disonnect %p - %llu", pSession, nBring );
 		break;
 	}
 }

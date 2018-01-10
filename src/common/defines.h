@@ -26,7 +26,7 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #define XGC_UNREFERENCED_PARAMETER(P) (P)
-
+#define XGC_NOTUSED(P) (P)
 #if defined( _MSC_VER )
 #	if _MSC_VER >= 1600
 #		define xgc_nullptr nullptr
@@ -120,26 +120,26 @@ typedef xgc_lpvoid			xgc_handle;
 
 #ifdef _DEBUG
 #	define XGC_ASSERT(expr)						XGC_ASSERT_MSG(expr,#expr,0)
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr __VA_ARGS__); }else{ (expr)->Release(); }
-#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg,##__VA_ARGS__); }
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr, ##__VA_ARGS__); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr, ##__VA_ARGS__); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ XGC_ASSERT_MSG(false,#expr, ##__VA_ARGS__); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr, ##__VA_ARGS__); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,#expr, ##__VA_ARGS__); }else{ (expr)->Release(); }
+#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ XGC_ASSERT_MSG(false,msg, ##__VA_ARGS__); }
 #	define XGC_DEBUG_MESSAGE(msg,...)			XGC_ASSERT_MSG(false,msg,##__VA_ARGS__)
 #	define XGC_ASSERT_POINTER(expr)				XGC_ASSERT_MSG((expr),"NULL POINT FOUND, IS'T RIGHT?")
 #	define XGC_VERIFY(expr)						XGC_ASSERT_MSG((expr),"")
 #	define XGC_DEBUG_CODE( ... )				__VA_ARGS__
 #elif defined( _ASSERT_LOG )
-#	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
-#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); return ret; }
-#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); throw( ret ); }
-#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); break; }
-#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); continue; }
-#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " __VA_ARGS__ ); }else{(expr)->Release();}
-#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
-#	define XGC_DEBUG_MESSAGE(msg,...)			if(!(true)){ DBG_WARNING( "ASSERT " msg, __VA_ARGS__ ); }
-#	define XGC_ASSERT_POINTER(expr)				if(!(expr)){ DBG_WARNING( "ASSERT " "%s", #expr ); }
+#	define XGC_ASSERT(expr)						if(!(expr)){ DBG_WRN( "ASSERT " "%s", #expr ); }
+#	define XGC_ASSERT_RETURN(expr,ret,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); return ret; }
+#	define XGC_ASSERT_THROW(expr,ret,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); throw( ret ); }
+#	define XGC_ASSERT_BREAK(expr,...)			if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); break; }
+#	define XGC_ASSERT_CONTINUE(expr,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); continue; }
+#	define XGC_ASSERT_RELEASE(expr,msg,...)		if(!(expr)){ DBG_WRN( "ASSERT " __VA_ARGS__ ); }else{(expr)->Release();}
+#	define XGC_ASSERT_MESSAGE(expr,msg,...)		if(!(expr)){ DBG_WRN( "ASSERT " msg, __VA_ARGS__ ); }
+#	define XGC_DEBUG_MESSAGE(msg,...)			if(!(true)){ DBG_WRN( "ASSERT " msg, __VA_ARGS__ ); }
+#	define XGC_ASSERT_POINTER(expr)				if(!(expr)){ DBG_WRN( "ASSERT " "%s", #expr ); }
 #	define XGC_VERIFY(expr)						XGC_ASSERT(expr)
 #	define XGC_DEBUG_CODE( ... )
 #else
@@ -187,7 +187,7 @@ typedef xgc_lpvoid			xgc_handle;
 //-------------------------------------------------------------------------------------------------------------------------------------------------//
 #define XGC_NONE xgc_void( 0 )
 
-#define XGC_HEADER_FROM_MEMBER( TYPE, MEMBER_POINT, MEMBER_NAME ) ((TYPE *)( MEMBER_POINT - (((TYPE *)0)->MEMBER_NAME) ))
+#define XGC_CONTAINER_OF( PTR, TYPE, MEMBER ) ((TYPE *)( (char*)PTR - (size_t)(&((TYPE *)0)->MEMBER) ))
 
 #include "logger.h"
 #include "datetime.h"

@@ -99,7 +99,7 @@ public:
 	///
 	virtual xgc_void OnError( xgc_int16 error_type, xgc_int16 error_code )
 	{
-		SYS_ERROR( "Params Socket Error: type = %d, code = %d", error_type, error_code );
+		SYS_ERR( "Params Socket Error: type = %d, code = %d", error_type, error_code );
 	}
 
 	///

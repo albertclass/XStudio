@@ -7,23 +7,23 @@
 namespace xgc
 {
 	/// @var 场景索引
-	CORE_API xAttrIndex attrSceneIndex;
+	xAttrIndex XGameMap::Index;
 	/// @var 场景显示名
-	CORE_API xAttrIndex attrSceneTitle;
+	xAttrIndex XGameMap::MapTitle;
 	/// @var 场景索引名(唯一ID)
-	CORE_API xAttrIndex attrSceneStrName;
-	/// @var 场景地图名(配置索引)
-	CORE_API xAttrIndex attrSceneMapName;
+	xAttrIndex XGameMap::MapIndex;
+	/// @var 场景地图名
+	xAttrIndex XGameMap::MapName;
 	/// @var 场景标记
-	CORE_API xAttrIndex attrSceneFlags;
+	xAttrIndex XGameMap::MapFlags;
 
 	IMPLEMENT_XCLASS_BEGIN( XGameMap, XObjectNode )
-		IMPLEMENT_ATTRIBUTE( SceneIndex, VT_U32, ATTR_FLAG_NONE, "20140912" )
-		IMPLEMENT_ATTRIBUTE( SceneTitle, VT_STRING, ATTR_FLAG_NONE, "20150211" )
-		IMPLEMENT_ATTRIBUTE( SceneStrName, VT_STRING, ATTR_FLAG_NONE, "20140912" )
-		IMPLEMENT_ATTRIBUTE( SceneMapName, VT_STRING, ATTR_FLAG_NONE, "20140912" )
-		IMPLEMENT_ATTRIBUTE( SceneFlags, VT_U32, ATTR_FLAG_NONE, "20140912" )
-	IMPLEMENT_XCLASS_END()
+		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( MapTitle, VT_STRING, ATTR_FLAG_NONE, "20150211" )
+		IMPLEMENT_ATTRIBUTE( MapIndex, VT_STRING, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( MapName, VT_STRING, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( MapFlags, VT_U32, ATTR_FLAG_NONE, "20140912" )
+	IMPLEMENT_XCLASS_END();
 
 	//////////////////////////////////////////////////////////////////////////
 	// CGameMap
@@ -37,7 +37,6 @@ namespace xgc
 
 	XGameMap::~XGameMap()
 	{
-		DestroyContainer( mBlockExtern );
 	}
 
 	xgc_void XGameMap::InitializeMap( const struct MapConf &Conf )
@@ -98,8 +97,8 @@ namespace xgc
 			iPoint ptCell = WorldToCell( vPosition.x, vPosition.y );
 			if( IsCellBlock( ptCell.x, ptCell.y, false ) )
 			{
-				USR_ERROR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( attrObjectName ),
-					getString( attrSceneStrName ), vPosition.x, vPosition.y );
+				USR_ERR( "[%s]进入场景失败[%s(%f,%f)]为无效点", pObject->getString( XGameObject::Name ),
+					getString( XGameMap::MapIndex ), vPosition.x, vPosition.y );
 				return false;
 			}
 
@@ -390,15 +389,15 @@ namespace xgc
 
 		//if( pObject->GetClassType() == 0x14611100 )
 		//{
-		//	DBG_INFO( "[%s:%08x]移动进入[%s:%08x]的视野。",
-		//		pObject->GetStrAttr( attrObjectName ), pObject->GetObjectID(),
-		//		pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]移动进入[%s:%08x]的视野。",
+		//		pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID(),
+		//		pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 		//}
 
-		if( pTarget->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pTarget->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pTarget->OnEnterEyeshot( pObject, eMode );
 
-		if( pObject->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pObject->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pObject->OnEnterEyeshot( pTarget, eMode );
 	}
 
@@ -416,20 +415,20 @@ namespace xgc
 
 		//if( pObject->GetClassType() == 0x14611100 )
 		//{
-		//	DBG_INFO( "[%s:%08x]移动离开[%s:%08x]的视野。",
-		//		pObject->GetStrAttr( attrObjectName ), pObject->GetObjectID(),
-		//		pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]移动离开[%s:%08x]的视野。",
+		//		pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID(),
+		//		pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 		//}
 
-		if( pTarget->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pTarget->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pTarget->OnLeaveEyeshot( pObject, eMode );
 		//else if( pObject->IsInheritFrom( 0x14611100 ) )
-		//	DBG_INFO( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pObject->GetStrAttr( attrObjectName ), pObject->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pObject->GetStrAttr( XGameObject::Name ), pObject->GetObjectID() );
 
-		if( pObject->GetBit( attrObjectFlags, XGameObject::Flag_NotifyEyeshot, true ) )
+		if( pObject->GetBit( XGameObject::Flags, XGameObject::Flag_NotifyEyeshot, true ) )
 			pObject->OnLeaveEyeshot( pTarget, eMode );
 		//else if( pTarget->IsInheritFrom( 0x14611100 ) )
-		//	DBG_INFO( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pTarget->GetStrAttr( attrObjectName ), pTarget->GetObjectID() );
+		//	DBG_TIP( "[%s:%08x]的[Flag_NotifyEyeshot]=false。", pTarget->GetStrAttr( XGameObject::Name ), pTarget->GetObjectID() );
 	}
 
 	//---------------------------------------------------//
@@ -499,7 +498,7 @@ namespace xgc
 		auto it = mMapClock.find( lpName );
 		if( it != mMapClock.end() )
 		{
-			USR_WARNING( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( attrSceneStrName ), lpName );
+			USR_WRN( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
 			return;
 		}
 
@@ -518,15 +517,13 @@ namespace xgc
 		timespan ts_duration = lpDuration ? timespan::convert( lpDuration ) : timespan( 0 );
 
 		xgc_char szDateTime[64] = { 0 };
-		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( attrSceneMapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
+		DBG_TIP( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
-		XGameMapEvent evt;
-		evt.cast.id = evt_map_clock;
-		evt.cast.sender = GetObjectID();
-		evt.alias = it->first.c_str();
+		auto evt = MakeEvent< XGameMapEvent >( evt_map_clock );
+		evt->alias = it->first.c_str();
 
 		mMapClock[lpName] = getClock().insert(
-			std::bind( (XEventBind1)&XObject::EmmitEvent, this, evt.cast ),
+			std::bind( (XEventBind3)&XObject::EmmitEvent, this, &evt->cast, DeleteEvent< XGameMapEvent > ),
 			dt_start, ts_duration, lpParam );
 	}
 
@@ -535,14 +532,14 @@ namespace xgc
 		auto it = mMapTimer.find( lpName );
 		if( it != mMapTimer.end() )
 		{
-			USR_WARNING( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( attrSceneStrName ), lpName );
+			USR_WRN( "场景[%s]创建定时器[%s]时发现定时器已存在。", getString( XGameMap::MapIndex ), lpName );
 			return;
 		}
 
 		datetime dt_start, dt_close;
 		datetime now = datetime::now();
 
-		if( _strnicmp( "relative", lpStart, 8 ) == 0 )
+		if( strncasecmp( "relative", lpStart, 8 ) == 0 )
 		{
 			dt_start = datetime::relative_time( timespan::convert( lpStart + 8 ) );
 		}
@@ -554,15 +551,15 @@ namespace xgc
 		timespan ts_duration = lpDuration ? timespan::convert( lpDuration ) : timespan( 0 );
 
 		xgc_char szDateTime[64] = { 0 };
-		DBG_INFO( "场景%s创建定时器%s 触发时间为%s", getString( attrSceneMapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
+		DBG_TIP( "场景%s创建定时器%s 触发时间为%s", getString( XGameMap::MapName ), lpName, dt_start.to_string( szDateTime, sizeof( szDateTime ) ) );
 
-		XGameMapEvent evt;
-		evt.cast.id = evt_map_timer;
-		evt.cast.sender = GetObjectID();
-		evt.alias = it->first.c_str();
+		auto evt = XGC_NEW XGameMapEvent;
+		evt->cast.id = evt_map_timer;
+		evt->cast.sender = GetObjectID();
+		evt->alias = it->first.c_str();
 
 		mMapTimer[lpName] = getTimer().insert(
-			std::bind( (XEventBind1)&XObject::EmmitEvent, this, evt.cast ),
+			std::bind( (XEventBind3)&XObject::EmmitEvent, this, &evt->cast, DeleteEvent< XGameMapEvent > ),
 			dt_start,
 			ts_duration,
 			lpParam );
@@ -599,7 +596,7 @@ namespace xgc
 	xgc_void XGameMap::IncCounter( xgc_lpcstr lpCounterName, xgc_long nInc )
 	{
 		auto iter = mMapCounter.find( lpCounterName );
-		XGC_ASSERT_RETURN( iter != mMapCounter.end(), xgc_void( 0 ), "Scene = %s, Counter = %s", getString( attrSceneTitle ), lpCounterName );
+		XGC_ASSERT_RETURN( iter != mMapCounter.end(), xgc_void( 0 ), "Scene = %s, Counter = %s", getString( XGameMap::MapTitle ), lpCounterName );
 
 		// ExecuteTrigger后Counter可能会被删除掉，所以，ExecuteTrigger后不要再继续使用该引用值。
 		xgc_long nVal = (std::get< 2 >(iter->second) += nInc);
@@ -612,20 +609,20 @@ namespace xgc
 		if( nInc != 0 )
 		{
 			// 计数改变
-			EmmitEvent( evt_map_counter_change, evt.cast );
+			EmmitEvent( evt.cast, evt_map_counter_change );
 		}
 
 		if( nVal <= std::get< 0 >( iter->second ) )
 		{
 			// 下溢
-			EmmitEvent( evt_map_counter_underflow, evt.cast );
-			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( attrSceneTitle ), lpCounterName, nVal, nInc );
+			EmmitEvent( evt.cast, evt_map_counter_underflow );
+			USR_WRN( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
 		}
 		else if( nVal >= std::get< 1 >( iter->second ) )
 		{
 			// 上溢
-			EmmitEvent( evt_map_counter_overflow, evt.cast );
-			USR_WARNING( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( attrSceneTitle ), lpCounterName, nVal, nInc );
+			EmmitEvent( evt.cast, evt_map_counter_overflow );
+			USR_WRN( "Scene = %s, Counter = %s nVal[%ld]:nInc[%ld]", getString( XGameMap::MapTitle ), lpCounterName, nVal, nInc );
 		}
 	}
 
@@ -654,8 +651,11 @@ namespace xgc
 			case -1:
 			{
 				// 关
-				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, -1 };
-				EmmitEvent( evt_map_turn_off, evt.cast );
+				XGameMapEvent evt;
+				evt.alias = lpSwitchName;
+				evt.switches.val = -1;
+
+				EmmitEvent( evt.cast, evt_map_turn_off );
 			}
 			break;
 			case 0:
@@ -665,8 +665,11 @@ namespace xgc
 			case 1:
 			// 开
 			{
-				XGameMapEvent evt = { XObjectEvent(), lpSwitchName, +1 };
-				EmmitEvent( evt_map_turn_on, evt.cast );
+				XGameMapEvent evt;
+				evt.alias = lpSwitchName;
+				evt.switches.val = 1;
+
+				EmmitEvent( evt.cast, evt_map_turn_on );
 			}
 			break;
 		}
@@ -685,7 +688,7 @@ namespace xgc
 	///
 	xgc_void XGameMap::BuildTrigger( XGameObject* pGameObject )
 	{
-		auto iter = mMapEventConf.find( pGameObject->getString( attrObjectAlias ) );
+		auto iter = mMapEventConf.find( pGameObject->getString( XGameObject::Alias ) );
 		if( iter == mMapEventConf.end() )
 			return;
 
@@ -984,14 +987,17 @@ namespace xgc
 
 	void XGameMap::OnExchangeBlock( XGameObject* pObject, iPoint& ptOldCell, iPoint& ptNewCell )
 	{
-		if( mBlockExtern.size() )
+		int nOld, nNew;
+		if( ( nOld = GetBlockExternIdx( ptOldCell ) ) != ( nNew = GetBlockExternIdx( ptNewCell ) ) )
 		{
-			IBlockExtern *pOld, *pNew;
-			if( ( pOld = GetBlockExternInfo( ptOldCell ) ) != ( pNew = GetBlockExternInfo( ptNewCell ) ) )
-			{
-				if( pOld ) pOld->OnLeaveBlock( pObject );
-				if( pNew ) pNew->OnEnterBlock( pObject );
-			}
+			XGameMapEvent evt;
+			evt.object = pObject->GetObjectID();
+			evt.alias = pObject->getString( XGameObject::Alias );
+			evt.block.old_id = nOld;
+			evt.block.new_id = nNew;
+
+			EmmitEvent( evt.cast, evt_map_leave_block );
+			EmmitEvent( evt.cast, evt_map_enter_block );
 		}
 	}
 

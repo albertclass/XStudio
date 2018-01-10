@@ -5,7 +5,7 @@
 #include <pugixml.hpp>
 using namespace xgc;
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	const char* module_name = get_module_name();
 	const char* module_path = get_module_path();

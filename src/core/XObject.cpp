@@ -56,15 +56,26 @@ namespace xgc
 
 		if( !mAttributes )
 		{
-			SYS_ERROR( "malloc %u failed", cls.GetAttributeSize() );
+			SYS_ERR( "malloc %u failed", cls.GetAttributeSize() );
 			return false;
 		}
 
 		memset( mAttributes, 0, _msize( mAttributes ) );
 
 		mAttributeInfo = cls.GetAttributeInfo();
-		mImplementInfo = cls.GetImplementInfo();
 		return true;
+	}
+
+	// 获取父对象ID
+	xObject XObject::GotParent( const XClassInfo & cls ) const
+	{
+		XObject *pObject = ObjectCast< XObject >( GetObjectID() );
+		while( pObject && cls != pObject->GetRuntimeClass() )
+		{
+			pObject = ObjectCast< XObject >( pObject->GetParent() );
+		}
+
+		return pObject ? pObject->GetObjectID() : INVALID_OBJECT_ID;
 	}
 
 	xgc_void XObject::Destroy()
@@ -85,6 +96,7 @@ namespace xgc
 	/// \brief 注册事件
 	/// \author albert.xu
 	/// \date 2017/10/12
+	/// \return 该事件的token，可以使用该token删除注册的事件
 	///
 	xgc_long XObject::RegistEvent( xgc_long id, const xNotify &invoke, xObject hOwner /*= INVALID_OBJECT_ID*/ )
 	{
@@ -166,15 +178,17 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/12
 	///
-	xgc_void XObject::EmmitEvent( xgc_long id, XObjectEvent & evt )
+	xgc_void XObject::EmmitEvent( xgc_long id, xgc_long direction )
 	{
-		evt.id = id;
-		evt.over = false;
-		evt.result = 0;
-		evt.sender = GetObjectID();
-		evt.target = INVALID_OBJECT_ID;
+		XObjectEvent evt;
 
-		EmmitEvent( evt );
+		evt.id		= id;
+		evt.over	= direction;
+		evt.result	= 0;
+		evt.sender	= GetObjectID();
+		evt.target	= INVALID_OBJECT_ID;
+
+		EmmitEvent( &evt, false );
 	}
 
 	///
@@ -182,43 +196,66 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/10/12
 	///
-	xgc_void XObject::EmmitEvent( XObjectEvent& evt )
+	xgc_void XObject::EmmitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction )
 	{
-		auto it1 = mEventSubject.find( evt.id );
-		if( it1 != mEventSubject.end() )
-		{
-			auto &observer = it1->second;
+		evt.id = id;
+		evt.over = direction;
+		evt.result = 0;
+		evt.sender = GetObjectID();
+		evt.target = INVALID_OBJECT_ID;
 
+		EmmitEvent( &evt, false );
+	}
+
+	///
+	/// \brief 提交事件
+	/// \author albert.xu
+	/// \date 2017/10/12
+	///
+	xgc_void XObject::EmmitEvent( XObjectEvent* evt, xgc_void( *DeleteIt )( XObjectEvent* ) )
+	{
+		auto notify_all = [evt]( Observer& o ){
 			// 关闭消息通知
-			if( observer.close == false )
+			if( o.close == false )
 			{
 				// 防止在触发器执行期间增删触发器
-				++observer.count;
-				for( auto &pair : observer.actions )
+				++o.count;
+				for( auto &pair : o.actions )
 				{
 					// 取token
-					evt.token = pair.first;
+					evt->token = pair.first;
 					// 取目标对象ID
-					evt.target = std::get< 1 >( pair.second );
+					evt->target = std::get< 1 >( pair.second );
 					// 取触发函数，并执行
-					std::get< 0 >( pair.second )( evt );
+					std::get< 0 >( pair.second )( *evt );
 
-					if( evt.over )
+					if( evt->over < 0 )
 						break;
 				}
-				--observer.count;
+				--o.count;
 			}
+		};
+
+		auto it1 = mEventSubject.find( evt->id );
+		if( it1 != mEventSubject.end() )
+		{
+			// 先通知本地的观察者
+			notify_all( it1->second );
 		}
 
-		if( !evt.over )
+		// 透传消息， id 为 -1 的观察者监听该对象的所有消息
+		auto it2 = mEventSubject.find( -1 );
+		if( it2 != mEventSubject.end() )
 		{
-			// 对于未决的事件，向层级上级传递
+			// 再通知监视全部消息的观察者
+			notify_all( it2->second );
+		}
+
+		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 1 ) )
+		{
+			// 对于未决的事件，且允许向上传递的，则向上级传递
 			auto xParent = GetParent();
-			if( xParent == INVALID_OBJECT_ID )
-			{
-				// 这里可以加入全局的事件通知
-			}
-			else
+			if( xParent != INVALID_OBJECT_ID )
 			{
 				// 父对象存在的，则通知父对象
 				auto pParent = ObjectCast< XObject >( xParent );
@@ -227,31 +264,28 @@ namespace xgc
 					pParent->EmmitEvent( evt );
 				}
 			}
+			//else
+			//{
+			//	// 这里可以加入全局的事件通知
+			//}
 		}
 
-		if( !evt.over )
+		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 2 ) )
 		{
-			// 透传消息
-			auto it2 = mEventSubject.find( -1 );
-			if( it2 == mEventSubject.end() )
-				return;
+			// 对于未决的事件，且允许向下传递的，则向下级传递给子对象
 			
-			auto &observer = it2->second;
-			++observer.count;
-			for( auto &pair : observer.actions )
-			{
-				// 取token
-				evt.token = pair.first;
-				// 取目标对象ID
-				evt.target = std::get< 1 >( pair.second );
-				// 取触发函数，并执行
-				std::get< 0 >( pair.second )( evt );
+			// 枚举出所有的子对象，并将事件推送给子对象
+			Search( [evt]( xObject hObject )->xgc_bool{
+				auto pChild = ObjectCast< XObject >( hObject );
+				if( pChild )
+					pChild->EmmitEvent( evt );
 
-				if( evt.over )
-					break;
-			}
-			--observer.count;
+				return false;
+			} );
 		}
+
+		// 有清理需求的，则调用清理的回调。
+		if( DeleteIt ) DeleteIt( evt );
 	}
 
 	xgc_bool XObject::LoadObject( xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize )
@@ -265,42 +299,14 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nImplementCount; ++i )
 		{
-			auto &version = pImplementInfo[i].version;
+			auto &version = pImplementInfo[i]->version;
 			if( uVersion < version.start ||	uVersion >= version.close )
 				continue;
 
-			auto &impl = pImplementInfo[i].impl;
+			auto &impl = pImplementInfo[i]->impl;
 			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
 			{
-				if( impl.flags & 0x80 )
-				{
-					decltype( impl.count ) count;
-					ar >> count;
-					/// 此处问题在于，如果缩减了数组，则必须调整读指针，忽略掉缩减的部分！
-					for( xgc_size n = 0; n < count; ++n )
-					{
-						if( n < impl.count )
-						{
-							ar >> getAttr( *impl.attr_ptr, n );
-						}
-						else if( impl.type == VT_STRING )
-						{
-							xgc_lpcstr str; ar >> str;
-						}
-						else if( impl.type == VT_STRING )
-						{
-							xgc_uint16 len; ar >> len; ar.plus_rd( len );
-						}
-						else
-						{
-							ar.plus_rd( (xgc_long)XAttribute::Type2Size( impl.type ) );
-						}
-					}
-				}
-				else
-				{
-					ar >> getAttr( *impl.attr_ptr, 0 );
-				}
+				ar >> getAttr( *impl.attr_ptr );
 			}
 			++j;
 		}
@@ -317,20 +323,10 @@ namespace xgc
 
 		for( xgc_size i = 0, j = 0; i < nAttributeCount; ++i )
 		{
-			auto &impl = pAttributeInfo[i].impl;
+			auto &impl = pAttributeInfo[i]->impl;
 			if( ( impl.flags & 0x7f ) == ATTR_FLAG_SAVE )
-			{
-				if( impl.flags & 0x80 )
-				{
-					ar << impl.count;
-					for( xgc_size n = 0; n < impl.count; ++n )
-						ar << getAttr( *impl.attr_ptr, n );
-				}
-				else
-				{
-					ar << getAttr( *impl.attr_ptr, 0 );
-				}
-			}
+				ar << getAttr( *impl.attr_ptr );
+
 			++j;
 		}
 
@@ -342,19 +338,14 @@ namespace xgc
 	/// 获取属性
 	/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
 	///
-
-	XAttribute XObject::getAttr( xAttrIndex nAttr, xgc_size nIndex ) const
+	XAttribute XObject::getAttr( xAttrIndex nAttr ) const
 	{
-		XGC_ASSERT_THROW( checkIndex( nAttr ), std::logic_error( "get attribute, index out of bound." ) );
+		XGC_ASSERT_THROW( isAttrValid( nAttr ), std::logic_error( "get attribute, index out of bound." ) );
 
-		auto &info = mAttributeInfo[nAttr];
-
-		xgc_lpstr lpValue = (xgc_lpstr)mAttributes + info.offset;
+		// 获取属性信息
+		auto info = mAttributeInfo[nAttr];
 
 		// 生成属性操作对象
-		if( nIndex >= info.impl.count )
-			return XAttribute( info.impl.type, xgc_nullptr );
-		else
-			return XAttribute( info.impl.type, lpValue + nIndex * XAttribute::Type2Size( info.impl.type ) );
+		return XAttribute( info->impl.type, (xgc_lpstr)mAttributes + info->offset );
 	}
 }

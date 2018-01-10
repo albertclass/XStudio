@@ -19,6 +19,18 @@ namespace xgc
 	typedef xgc::list< xgc_uint64 > xGlobalIdList;
 
 	///
+	/// \brief 事件传送的方向 
+	/// \date 12/27/2017
+	/// \author xufeng04
+	///
+	enum eEventTrans : xgc_long
+	{
+		toSelf		= 0,
+		toParent	= 1,
+		toChildren	= 2,
+	};
+
+	///
 	/// \brief 对象事件基类
 	/// \author albert.xu
 	/// \date 2017/10/12
@@ -35,12 +47,30 @@ namespace xgc
 		xgc_long	token;
 		/// @var 返回值 -1 - err, 0 - pending, 1 - ok
 		xgc_long	result;
-		/// @var 是否处理
-		xgc_bool	over;
+		/// @var 是否处理 
+		/// 0 - 只向本对象的观察者传递消息
+		/// 1 - 向上传递消息
+		/// 2 - 向下传递消息
+		/// 3 - 先向上后向下传递消息
+		/// < 0 消息已处理
+		xgc_long	over;
 	};
 
-	typedef xgc_void( XObject::* XEventBind1 )( XObjectEvent& );
-	typedef xgc_void( XObject::* XEventBind2 )( xgc_long, XObjectEvent& );
+	///
+	/// \brief 删除回调，主要是为了用模板保存类型信息，防止析构函数未能正确调用
+	/// \date 12/26/2017
+	/// \author xufeng04
+	///
+	template< class TObjectEvent >
+	xgc_void DeleteEvent( XObjectEvent* p )
+	{
+		TObjectEvent* evt = XGC_CONTAINER_OF( p, TObjectEvent, cast );
+		delete evt;
+	}
+
+	typedef xgc_void( XObject::* XEventBind1 )( xgc_long, xgc_long );
+	typedef xgc_void( XObject::* XEventBind2 )( XObjectEvent&, xgc_long, xgc_long );
+	typedef xgc_void( XObject::* XEventBind3 )( XObjectEvent*, xgc_void(*)( XObjectEvent* ) );
 
 	typedef std::function< void( XObjectEvent& ) > xNotify;
 
@@ -117,9 +147,7 @@ namespace xgc
 		/// @var 对象属性首地址
 		xgc_lpvoid mAttributes = xgc_nullptr;
 		/// @var 对象属性信息地址
-		const XAttributeInfo * mAttributeInfo = xgc_nullptr;
-		/// @var 对象属性定义地址
-		const XAttributeImpl * mImplementInfo = xgc_nullptr;
+		XAttributeInfo * const * mAttributeInfo = xgc_nullptr;
 
 		///
 		/// \brief 观察者信息
@@ -132,7 +160,7 @@ namespace xgc
 			xgc_long token;
 			/// 重入计数，防止map迭代器失效
 			xgc_long count;
-			/// 观察者通知接口
+			/// 观察者通知接口 xgc::map< token, xgc::tuple< fnNotify, xOwner > >
 			xgc::map< xgc_long, xgc::tuple< xNotify, xObject > > actions;
 		};
 
@@ -146,13 +174,16 @@ namespace xgc
 		/************************************************************************/
 		/* 层级关系函数
 		/************************************************************************/
-		xObject		GetObjectID()const { return handle()._handle; }
-		// 设置父对象
-		xgc_void	SetParent( xObject nID ) { mParentID = nID; }
+		XGC_INLINE xObject GetObjectID()const { return handle()._handle; }
 		// 得到父对象ID
-		xObject		GetParent()const { return mParentID; }
+		XGC_INLINE xObject GetParent()const { return mParentID; }
+		// 获取父对象ID
+		XGC_INLINE xObject GotParent( const XClassInfo &cls )const;
+
+		// 设置父对象
+		XGC_INLINE xgc_void SetParent( xObject nID ) { mParentID = nID; }
 		// 销毁对象
-		xgc_void	Destroy();
+		xgc_void Destroy();
 
 		///
 		/// \brief 获取对象的键值 
@@ -163,44 +194,18 @@ namespace xgc
 		virtual xgc_long Key()const { return GetObjectID(); }
 
 		///
-		/// \brief 获取节点个数 
-		/// \date 11/13/2017
+		/// \brief 获取子对象数量
+		/// \date 12/26/2017
 		/// \author xufeng04
-		/// \return 节点个数
 		///
-		virtual xgc_bool HasNode()const { return false; }
+		virtual xgc_size GetChildCount()const { return 0; }
 
 		///
-		/// \brief 添加节点 
-		/// \date 11/13/2017
+		/// \brief 枚举子对象  
+		/// \date 12/26/2017
 		/// \author xufeng04
 		///
-		virtual	xgc_bool AddNode( xgc_ulong nType, xObject hObject ) { return true; }
-
-		///
-		/// \brief 删除节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		///
-		virtual xgc_void DelNode( xgc_ulong nType ) {}
-
-		///
-		/// \brief 获取节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		/// \param nType 节点类型
-		/// \return 节点句柄
-		///
-		virtual xObject GetNode( xgc_ulong nType ) const { return INVALID_OBJECT_ID; }
-
-		///
-		/// \brief 获取节点 
-		/// \date 11/13/2017
-		/// \author xufeng04
-		/// \param nType 节点类型
-		/// \return 节点句柄
-		///
-		virtual xgc_void EnumNode( const std::function< void(xgc_ulong, xObject) > &fn ) const {}
+		virtual xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const { return INVALID_OBJECT_ID; };
 
 		/************************************************************************/
 		/* 事件操作
@@ -234,18 +239,75 @@ namespace xgc
 		xgc_void	EnableEvent( xgc_long id, xgc_bool enable = true );
 
 		///
-		/// \brief 提交事件
-		/// \author albert.xu
-		/// \date 2017/10/12
+		/// \brief 分配一个事件对象并初始化
+		/// \date 12/26/2017
+		/// \author xufeng04
 		///
-		xgc_void	EmmitEvent( xgc_long id, XObjectEvent& evt = XObjectEvent() );
+		template< class TObjectEvent >
+		TObjectEvent* MakeEvent( xgc_long id, xgc_long direction = 0 )
+		{
+			TObjectEvent *evt = XGC_NEW TObjectEvent;
+
+			evt->cast.id = id;
+			evt->cast.over = direction;
+			evt->cast.result = 0;
+			evt->cast.sender = GetObjectID();
+			evt->cast.target = INVALID_OBJECT_ID;
+
+			return evt;
+		}
+
+		template<>
+		XObjectEvent* MakeEvent< XObjectEvent >( xgc_long id, xgc_long direction )
+		{
+			XObjectEvent *evt = XGC_NEW XObjectEvent;
+
+			evt->id     = id;
+			evt->over   = direction;
+			evt->result = 0;
+			evt->sender = GetObjectID();
+			evt->target = INVALID_OBJECT_ID;
+
+			return evt;
+		}
+
+		///
+		/// \brief 初始化一个已分配事件对象
+		/// \date 12/26/2017
+		/// \author xufeng04
+		///
+		XObjectEvent* InitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction = 0 )
+		{
+			evt.id = id;
+			evt.over = direction;
+			evt.result = 0;
+			evt.sender = GetObjectID();
+			evt.target = INVALID_OBJECT_ID;
+
+			return &evt;
+		}
 
 		///
 		/// \brief 提交事件
 		/// \author albert.xu
 		/// \date 2017/10/12
 		///
-		xgc_void	EmmitEvent( XObjectEvent& evt );
+		xgc_void EmmitEvent( xgc_long id, xgc_long direction = 0 );
+
+		///
+		/// \brief 提交事件
+		/// \author albert.xu
+		/// \date 2017/10/12
+		///
+		xgc_void EmmitEvent( XObjectEvent& evt, xgc_long id, xgc_long direction = 0 );
+
+		///
+		/// \brief 提交事件
+		/// \author albert.xu
+		/// \date 2017/10/12
+		///
+		xgc_void EmmitEvent( XObjectEvent* evt, xgc_void( *DeleteIt )( XObjectEvent* ) = xgc_nullptr );
+
 		/************************************************************************/
 		/* 属性操作
 		/************************************************************************/
@@ -265,7 +327,7 @@ namespace xgc
 		/// \author albert.xu
 		/// \date 2017/10/09
 		///
-		XGC_INLINE xgc_bool checkIndex( xAttrIndex idx )const
+		XGC_INLINE xgc_bool isAttrValid( xAttrIndex idx )const
 		{
 			return idx < getAttrCount();
 		}
@@ -278,26 +340,6 @@ namespace xgc
 		XGC_INLINE xAttrType getAttrType( xAttrIndex idx )const
 		{
 			return GetRuntimeClass().GetAttributeType( idx );
-		}
-
-		///
-		/// \brief 属性是否数组类型
-		/// \author albert.xu
-		/// \date 2017/10/09
-		///
-		XGC_INLINE xgc_bool isArray( xAttrIndex idx )const
-		{
-			return GetRuntimeClass().IsArrayType( idx );
-		}
-
-		///
-		/// \brief 获取属性数组长度
-		/// \author albert.xu
-		/// \date 2017/10/09
-		///
-		XGC_INLINE xgc_size getAttrArrayLength( xAttrIndex idx )const
-		{
-			return GetRuntimeClass().GetArrayLength( idx );
 		}
 
 		///
@@ -317,6 +359,17 @@ namespace xgc
 		}
 
 		///
+		/// \brief 根据VT类型获取属性值
+		/// \date 12/28/2017
+		/// \author albert.xu
+		///
+		template< xAttrType VT >
+		XGC_INLINE typename XAttribute::Value2Type< VT >::type getValue( xAttrIndex nAttr )
+		{
+			return getValue< typename XAttribute::Value2Type< VT >::type >( nAttr );
+		}
+
+		///
 		/// [1/7/2014 albert.xu]
 		/// 设置属性值
 		///
@@ -332,6 +385,17 @@ namespace xgc
 		{
 			getAttr( nAttr ) = _Val;
 			OnValueChanged( nAttr );
+		}
+
+		///
+		/// \brief 根据VT类型获取属性值
+		/// \date 12/28/2017
+		/// \author albert.xu
+		///
+		template< xAttrType VT >
+		XGC_INLINE xgc_void setValue( xAttrIndex nAttr, typename XAttribute::Value2Type< VT >::type _Val )
+		{
+			return setValue< typename XAttribute::Value2Type< VT >::type >( nAttr, _Val );
 		}
 
 		///
@@ -469,17 +533,23 @@ namespace xgc
 		/// 获取属性
 		/// 该函数提供一个不调用属性设置Hook的方法，其他设置和取值函数皆调用Hook。
 		///
-		XAttribute getAttr( xAttrIndex nAttr, xgc_size nIndex = 0 ) const;
+		XAttribute getAttr( xAttrIndex nAttr ) const;
 
 		///
 		/// \brief 属性变化时调用
 		/// \author albert.xu
 		/// \date 2017/11/09
 		///
-		xgc_void OnValueChanged( xAttrIndex nAttr, int nIndex = 0 )
+		xgc_void OnValueChanged( xAttrIndex nAttr )
 		{
-			if( mAttributeInfo[nAttr].OnValueChanged )
-				( this->*mAttributeInfo[nAttr].OnValueChanged )( nAttr, nIndex );
+			// 防止事件处理中循环触发事件
+			if( mAttributeInfo[nAttr]->cycle_change &&
+				mAttributeInfo[nAttr]->OnValueChanged )
+			{
+				--mAttributeInfo[nAttr]->cycle_change;
+				( this->*mAttributeInfo[nAttr]->OnValueChanged )( nAttr );
+				++mAttributeInfo[nAttr]->cycle_change;
+			}
 		}
 
 		///
@@ -514,20 +584,6 @@ namespace xgc
 
 		return Pointer ? Pointer->shared_from_this() : xgc_nullptr;
 	}
-
-	///
-	/// \brief 加载对象属性
-	/// \author albert.xu
-	/// \date 2017/10/10
-	///
-	xgc_bool LoadObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
-
-	///
-	/// \brief 保存对象属性
-	/// \author albert.xu
-	/// \date 2017/10/10
-	///
-	xgc_size SaveObject( XObject* pObj, xgc_uint32 uVersion, xgc_lpvoid lpData, xgc_size uSize );
 }
 
 #endif //_XOBJECT_

@@ -552,6 +552,15 @@ namespace xgc
 		return stream;
 	}
 
+	///
+	/// [3/17/2014 albert.xu]
+	/// ÐòÁÐ»¯¶Á
+	///
+	CORE_API attr_buffer& operator >> ( attr_buffer& stream, XAttribute&& c )
+	{
+		return stream >> c;
+	}
+
 	attr_buffer& operator << ( attr_buffer& stream, const XAttribute& c )
 	{
 		switch( c.getType() )
@@ -607,4 +616,8 @@ namespace xgc
 		return stream;
 	}
 
+	CORE_API attr_buffer& operator << ( attr_buffer& stream, XAttribute&& c )
+	{
+		return stream << c;
+	}
 }

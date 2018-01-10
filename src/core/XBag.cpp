@@ -8,13 +8,39 @@ namespace xgc
 
 	IMPLEMENT_XCLASS_END();
 
+	///
+	/// \brief 背包构造 
+	/// \date 12/27/2017
+	/// \author albert.xu
+	///
+	XBag::XBag( xgc_uint32 nType, xgc_uint32 nCapacity )
+		: mType( nType )
+		, mCapacity( nCapacity )
+		, mSlots( xgc_nullptr )
+	{
+
+	}
+
+	///
+	/// \brief 背包析构 
+	/// \date 12/27/2017
+	/// \author albert.xu
+	///
+	XBag::~XBag()
+	{
+		for( xSlot slot = 0; slot < mCapacity; slot++ )
+			mSlots[slot].setEmpty();
+
+		SAFE_DELETE_ARRAY( mSlots );
+		mCapacity = 0;
+	}
 
 	xgc_bool XBag::setCapacity( xgc_uint32 nCapacity )
 	{
 		if( nCapacity <= mCapacity )
 		{
 			// 不需要改变
-			USR_ERROR( "Can not modify, capacity is small than old. mCapacity:[%d], nCapacity:[%d]", mCapacity, nCapacity );
+			USR_ERR( "Can not modify, capacity is small than old. mCapacity:[%d], nCapacity:[%d]", mCapacity, nCapacity );
 			return false;
 		}
 
@@ -33,7 +59,7 @@ namespace xgc
 		XSlot *pSlots = XGC_NEW XSlot[nCapacity];
 		if( xgc_nullptr == pSlots )
 		{
-			SYS_ERROR( "new XSlot failed, nCapacity:[%d]",
+			SYS_ERR( "new XSlot failed, nCapacity:[%d]",
 				nCapacity );
 			return false;
 		}
@@ -73,7 +99,7 @@ namespace xgc
 	{
 		for( xgc_uint32 i = nStartSlot; i < mCapacity; i++ )
 		{
-			if( mSlots[i].isThisGoods( hGoods ) )
+			if( mSlots[i].isThisGoods( hGoods ) || mSlots[i].isEmpty() )
 				return i;
 		}
 
@@ -204,7 +230,8 @@ namespace xgc
 	/// \author xufeng04
 	/// \param 操作目标
 	///
-	XBagTrans::XBagTrans( XBag &Bag ) : mBag( Bag )
+	XBagTrans::XBagTrans( XBag &Bag ) 
+		: mBag( Bag )
 		, mSequence( 0x80000000 )
 	{
 
@@ -226,17 +253,35 @@ namespace xgc
 	/// \authro albert.xu
 	/// \date 2017/11/06
 	///
-
 	xgc_void XBagTrans::Commit()
 	{
-		// 根据背包和位置生成一个更新索引
+		// 根据背包和位置生成一个操作列表，该列表记录了此位置每一步的变化
 		xgc::map< xgc::tuple< xObject, xSlot >, xgc::list< stSlotCommand* > > mapUpdate;
 
-		// 将相同位置的操作进行合并处理
+		// 根据物品生成一个增减列表
+		xgc::map< xgc::tuple< xObject, xObject >, xgc_long > mapOperator;
+
+		// 对事务所有的操作进行归并
 		for( auto &cmd : mSlotCommands )
+		{
+			// 将相同位置的操作进行合并处理
 			mapUpdate[{cmd.hBag, cmd.nSlot}].push_back( &cmd );
 
-		XBagEvent evt;
+			// 处理每一步操作，将物品的增减量提出来
+			auto it = mapOperator.find( {cmd.hBag, cmd.After.hGoods} );
+			if( it == mapOperator.end() )
+			{
+				auto ib = mapOperator.insert( { { cmd.hBag, cmd.After.hGoods }, 0 } );
+				if( false == ib.second )
+					break;
+
+				it = ib.first;
+			}
+					
+			it->second += cmd.After.nCount - cmd.Befor.nCount;
+		}
+
+		XBag::SlotEvent evt1;
 
 		// 提交更新事件
 		for( auto &upd : mapUpdate )
@@ -244,17 +289,30 @@ namespace xgc
 			auto &lst = upd.second;
 
 			auto pBag = ObjectCast< XBag >( std::get< 0 >( upd.first ) );
-			evt.nSlot = std::get< 1 >( upd.first );
+			evt1.nSlot = std::get< 1 >( upd.first );
 
 			auto top = lst.front();
-			evt.Befor.hGoods = top->Befor.hGoods;
-			evt.Befor.nCount = top->Befor.nCount;
+			evt1.Befor.hGoods = top->Befor.hGoods;
+			evt1.Befor.nCount = top->Befor.nCount;
 
 			auto end = lst.back();
-			evt.After.hGoods = top->After.hGoods;
-			evt.After.nCount = top->After.nCount;
+			evt1.After.hGoods = top->After.hGoods;
+			evt1.After.nCount = top->After.nCount;
 
-			pBag->EmmitEvent( evt_slot_changed, evt.cast );
+			pBag->EmmitEvent( pBag->InitEvent( evt1.cast, evt_bag_update) );
+		}
+
+		// 提交事务事件
+		XBag::TransEvent evt2;
+		for( auto &chg : mapOperator )
+		{
+			evt2.hBag = std::get< 0 >( chg.first );
+			evt2.hGoods = std::get< 1 >( chg.first );
+			evt2.nCount = chg.second;
+
+			auto pBag = ObjectCast< XBag >( evt2.hBag );
+			if( pBag )
+				pBag->EmmitEvent( pBag->InitEvent( evt2.cast, evt_bag_change ) );
 		}
 
 		mSlotCommands.clear();
@@ -277,7 +335,7 @@ namespace xgc
 
 		if( 0 == nCount )
 		{
-			USR_INFO( "Try putting GoodsNum is 0." );
+			USR_TIP( "Try putting GoodsNum is 0." );
 			return true;
 		}
 
@@ -327,7 +385,7 @@ namespace xgc
 
 		if( 0 == nCount )
 		{
-			USR_INFO( "Try putting GoodsNum is 0." );
+			USR_TIP( "Try putting GoodsNum is 0." );
 			return true;
 		}
 
@@ -335,7 +393,7 @@ namespace xgc
 		// 操作序号
 		stCmd.nSequence = mSequence++;
 		// 操作类型
-		stCmd.eOperator = slot_op_put;
+		stCmd.eOperator = slot_op_del;
 		// 目标包裹
 		stCmd.hBag = mBag.GetObjectID();
 

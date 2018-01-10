@@ -6,10 +6,6 @@ namespace xgc
 {
 	//////////////////////////////////////////////////////////////////////////
 	// 基础对象类， 所有屏幕上的对象都从此类派生
-	extern CORE_API xAttrIndex attrObjectName;		///< 对象名称
-	extern CORE_API xAttrIndex attrObjectAlias;		///< 对象名称
-	extern CORE_API xAttrIndex attrObjectFlags;		///< 对象标记位
-
 	enum class CORE_API VisualMode
 	{
 		eEnter,	/// 进入（从无到有）
@@ -38,6 +34,10 @@ namespace xgc
 	{
 	public:
 		DECLARE_XCLASS();
+		static xAttrIndex Name;		///< 对象名称
+		static xAttrIndex Alias;	///< 对象别名
+		static xAttrIndex Flags;	///< 对象标记位
+
 		friend class XGameMap;
 		friend class CStateMachine;
 	public:
@@ -148,9 +148,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetVisible( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				SetBit( attrObjectFlags, Flag_NotifyEyeshot );
+				SetBit( Flags, Flag_NotifyEyeshot );
 			else
-				ClrBit( attrObjectFlags, Flag_NotifyEyeshot );
+				ClrBit( Flags, Flag_NotifyEyeshot );
 		}
 
 		///
@@ -159,7 +159,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool IsVisible()
 		{
-			return GetBit( attrObjectFlags, Flag_NotifyEyeshot, true );
+			return GetBit( Flags, Flag_NotifyEyeshot, true );
 		}
 
 		///
@@ -169,9 +169,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetMoveFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				SetBit( attrObjectFlags, Flag_CanMove );
+				SetBit( Flags, Flag_CanMove );
 			else
-				ClrBit( attrObjectFlags, Flag_CanMove );
+				ClrBit( Flags, Flag_CanMove );
 		}
 
 		///
@@ -180,7 +180,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetMoveFlag()
 		{
-			return GetBit( attrObjectFlags, Flag_CanMove, true );
+			return GetBit( Flags, Flag_CanMove, true );
 		}
 
 		///
@@ -189,7 +189,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetBarrierFlag()
 		{
-			return GetBit( attrObjectFlags, Flag_Barrier, false );
+			return GetBit( Flags, Flag_Barrier, false );
 		}
 
 		///
@@ -199,9 +199,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetBarrierFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				SetBit( attrObjectFlags, Flag_Barrier );
+				SetBit( Flags, Flag_Barrier );
 			else
-				ClrBit( attrObjectFlags, Flag_Barrier );
+				ClrBit( Flags, Flag_Barrier );
 		}
 
 		///
@@ -210,7 +210,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool GetBaTiFlag()
 		{
-			return GetBit( attrObjectFlags, Flag_BaTi, false );
+			return GetBit( Flags, Flag_BaTi, false );
 		}
 
 		///
@@ -220,9 +220,9 @@ namespace xgc
 		XGC_INLINE xgc_void SetBaTiFlag( xgc_bool bEnable = true )
 		{
 			if( bEnable )
-				SetBit( attrObjectFlags, Flag_BaTi );
+				SetBit( Flags, Flag_BaTi );
 			else
-				ClrBit( attrObjectFlags, Flag_BaTi );
+				ClrBit( Flags, Flag_BaTi );
 		}
 
 		XGC_INLINE xgc_real32 GetPosX()const { return mPosition.x; }

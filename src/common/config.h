@@ -132,12 +132,13 @@ namespace xgc
 }
 ///////////////////////////////////////////////////////////
 // adpater linux to windows
+#define SLASH_ALL "\\/"
 
 #if defined( __GNUC__ )
-#	include "platform/linux/c++.h"
+#	include "platform/linux/gcc.h"
 #endif //__GNUC__
 
 #if defined( _MSC_VER )
-#	include "platform/windows/c++.h"
+#	include "platform/windows/msvc.h"
 #endif
 #endif //_CONFIG_H_

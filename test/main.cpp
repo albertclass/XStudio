@@ -18,37 +18,34 @@
 int main( int argc, char* argv[] )
 {
 	int page = 0;
-	int show = 10;
 
 	auto frame = get_test_frame();
-	auto prepage = frame.tests( page, show );
-
 	bool exit = false;
 	while( exit == false )
 	{
-		int i = 0;
-		for( auto &it : prepage )
-		{
-			printf( "%d. %s\n", i++, it->display );
-		}
+		puts( "+---------------------------------------" );
+		page = frame.show_page( page, 10 );
 
-		printf( "q. exit\n" );
+		puts( "+---------------------------------------" ); 
+		puts( "+ =. next page" );
+		puts( "+ -. prev page" );
+		puts( "+---------------------------------------" ); 
+		puts( "q. exit" );
 
 		int ch = getch();
 		if( ch >= '0' && ch <= '9' )
 		{
-			auto id = ch - '0';
-			// argv[0] = prepage[id]->name;
-			prepage[id]->entry( argc, argv );
+			auto choice = ch - '0';
+			frame.exec_test( page, 10, choice );
 		}
-		//else if( ch == KEY_NPAGE )
-		//{
-		//	output( "%s", "choice page down.\n" );
-		//}
-		//else if( ch == KEY_PPAGE )
-		//{
-		//	output( "%s", "choice page up.\n" );
-		//}
+		else if( ch == '=' )
+		{
+			++page;
+		}
+		else if( ch == '-' )
+		{
+			--page;
+		}
 		else
 		{
 			exit = (ch == 27 || ch == 'q');

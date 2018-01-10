@@ -9,10 +9,10 @@ namespace xgc
 	/// \date 11/13/2017
 	/// \author xufeng04
 	///
-
-	XObjectNode::XObjectNode()
+	XObjectNode::XObjectNode( xObject hParent )
+		: XObject()
 	{
-
+		SetParent( hParent );
 	}
 
 	///
@@ -76,15 +76,10 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xgc_void XObjectNode::RemoveAll( const XClassInfo *pClass )
+	xgc_void XObjectNode::RemoveAll()
 	{
-		while( GetChildrenCount( pClass ) )
-		{
-			auto hObject = Search( []( xObject ){ return true; }, pClass );
-			auto pObject = ObjectCast< XObject >( hObject );
-			if( pObject )
-				Remove( pObject );
-		}
+		for( auto it = mChildren.rbegin(); it != mChildren.rend(); ++it )
+			Remove( ObjectCast< XObject >( *it ) );
 	}
 
 	///
@@ -96,13 +91,17 @@ namespace xgc
 
 	xgc_bool XObjectNode::Delete( XObject * pObject )
 	{
-		if( pObject->GetParent() != GetObjectID() )
-			return false;
-		
-		if( !Remove( pObject ) )
-			return false;
+		if( pObject )
+		{
+			if( pObject->GetParent() != GetObjectID() )
+				return false;
 
-		pObject->Destroy();
+			if( !Remove( pObject ) )
+				return false;
+
+			pObject->Destroy();
+		}
+
 		return true;
 	}
 
@@ -113,15 +112,10 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xgc_void XObjectNode::DeleteAll( const XClassInfo *pClass /*= xgc_nullptr*/ )
+	xgc_void XObjectNode::DeleteAll()
 	{
-		while( GetChildrenCount( pClass ) )
-		{
-			auto hObject = Search( []( xObject ){ return true; }, pClass );
-			auto pObject = ObjectCast< XObject >( hObject );
-
-			Delete( pObject );
-		}
+		for( auto it = mChildren.rbegin(); it != mChildren.rend(); ++it )
+			Delete( ObjectCast< XObject >( *it ) );
 	}
 
 	///
@@ -131,27 +125,11 @@ namespace xgc
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
 
-	xObject XObjectNode::Search( const std::function<xgc_bool( xObject )>& filter, const XClassInfo * pClass ) const
+	xObject XObjectNode::Search( const std::function<xgc_bool( xObject )>& filter ) const
 	{
-		if( pClass )
-		{
-			auto it = mChildren.find( pClass );
-			if( it != mChildren.end() )
-			{
-				for( auto hObject : it->second )
-					if( filter( hObject ) )
-						return hObject;
-			}
-		}
-		else
-		{
-			for( auto &it : mChildren )
-			{
-				for( auto hObject : it.second )
-					if( filter( hObject ) )
-						return hObject;
-			}
-		}
+		for( auto hObject : mChildren )
+			if( filter( hObject ) )
+				return hObject;
 
 		return INVALID_OBJECT_ID;
 	}
@@ -162,24 +140,9 @@ namespace xgc
 	/// \date 8/3/2009
 	/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 	///
-	xgc_size XObjectNode::GetChildrenCount( const XClassInfo * pClass ) const
+	xgc_size XObjectNode::GetChildCount() const
 	{
-		if( pClass )
-		{
-			auto it = mChildren.find( pClass );
-			if( it == mChildren.end() )
-				return 0;
-
-			return it->second.size();
-		}
-		else
-		{
-			xgc_size count = 0;
-			for( auto &it : mChildren )
-				count += it.second.size();
-
-			return count;
-		}
+		return mChildren.size();
 	}
 
 	///
@@ -196,7 +159,7 @@ namespace xgc
 		{
 			auto pParent = ObjectCast< XObjectNode >( hParent );
 			if( pParent )
-				pParent->RemoveChild( GetObjectID() );
+				pParent->Remove( this );
 		}
 
 		DeleteAll();
@@ -215,8 +178,7 @@ namespace xgc
 			return false;
 
 		// 此处可以使用堆来优化
-		auto pClass = &pObject->GetRuntimeClass();
-		mChildren[pClass].push_back( hObject );
+		mChildren.push_back( hObject );
 
 		return true;
 	}
@@ -229,22 +191,16 @@ namespace xgc
 	///
 	xgc_bool XObjectNode::RemoveChild( xObject hObject )
 	{
+		auto it = std::find( mChildren.begin(), mChildren.end(), hObject );
+		if( it == mChildren.end() )
+			return false;
+
+		mChildren.erase( it );
+
 		auto pObject = ObjectCast<XObject>( hObject );
-		if( xgc_nullptr == pObject )
-			return false;
+		if( pObject )
+			pObject->SetParent( INVALID_OBJECT_ID );
 
-		auto pClass = &pObject->GetRuntimeClass();
-
-		// 此处可以使用堆来优化
-		auto it1 = mChildren.find( pClass );
-		if( it1 == mChildren.end() )
-			return false;
-
-		auto it2 = std::find( it1->second.begin(), it1->second.end(), hObject );
-		if( it2 == it1->second.end() )
-			return false;
-
-		it1->second.erase( it2 );
 		return true;
 	}
 }

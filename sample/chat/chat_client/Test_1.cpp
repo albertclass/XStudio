@@ -37,7 +37,7 @@ public:
 
 	~Test1()
 	{
-		// DBG_INFO( "User %s deleted.", mUsername.c_str() );
+		// DBG_TIP( "User %s deleted.", mUsername.c_str() );
 	}
 
 	virtual xgc_void OnConnect( net::network_t handle ) override
@@ -242,7 +242,7 @@ xgc_void test_1( int argc, char *argv[] )
 				char szPassword[64];
 				sprintf_s( szPassword, "test%05d", i );
 
-				DBG_INFO( "user = %s, password = %s", szUsername, szPassword );
+				DBG_TIP( "user = %s, password = %s", szUsername, szPassword );
 				Connect(
 					theApp.getGameAddr(),
 					theApp.getGamePort(),

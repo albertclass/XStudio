@@ -3,7 +3,7 @@
 using namespace xgc;
 using namespace xgc::common;
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	char sz_datetime[64];
 

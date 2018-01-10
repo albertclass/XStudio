@@ -5,14 +5,14 @@
 #include <stdlib.h>
 #include <vector>
 
-typedef int (*pfn_test)( int argc, char * argv[] );
+typedef int (*PFN_Test)();
 
 struct unit_test
 {
 	const char* name;
 	const char* display;
 
-	pfn_test entry;
+	PFN_Test entry;
 };
 
 class unit_test_frame
@@ -28,30 +28,26 @@ public:
 
 	}
 
-	void regist( const char* name, const char * display, pfn_test entry )
-	{
-		unit_test test;
-		test.name = name;
-		test.display = display;
-		test.entry = entry;
+	///
+	/// \brief 注册测试项 
+	/// \date 1/9/2018
+	/// \author albert.xu
+	///
+	void regist( const char* name, const char * display, PFN_Test entry );
 
-		view.push_back( test );
-	}
+	///
+	/// \brief 按页显示测试项 
+	/// \date 1/9/2018
+	/// \author albert.xu
+	///
+	int show_page( int page, int show );
 
-	std::vector< const unit_test* > tests( int page, int show )
-	{
-		std::vector< const unit_test* > prepage;
-		auto count = view.size();
-		auto last = ( count + show - 1 ) / show;
-
-		if( page > last )
-			return prepage;
-
-		for( auto i = page * show; i < (page + 1) * show && i < count; ++i )
-			prepage.push_back( &view[i] );
-
-		return prepage;
-	}
+	///
+	/// \brief 测试给定的项 
+	/// \date 1/9/2018
+	/// \author albert.xu
+	///
+	void exec_test( int page, int show, int item );
 private:
 	std::vector< unit_test > view;
 };
@@ -65,7 +61,7 @@ unit_test_frame &get_test_frame();
 
 struct unit_test_register
 {
-	unit_test_register( const char * name, const char * display, pfn_test entry )
+	unit_test_register( const char * name, const char * display, PFN_Test entry )
 	{
 		get_test_frame().regist( name, display, entry );
 	}

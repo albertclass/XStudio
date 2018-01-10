@@ -1,73 +1,105 @@
 #include "XHeader.h"
 #include "XQuest.h"
 #include "XActor.h"
+#include "XGoods.h"
+#include "XBag.h"
 
 namespace xgc
 {
+	xAttrIndex XQuestObjective::Index;		///< 配置ID
+	xAttrIndex XQuestObjective::TargetName;	///< 对象名字
+	xAttrIndex XQuestObjective::Count;		///< 当前计数
+	xAttrIndex XQuestObjective::Total;		///< 完成计数
+	xAttrIndex XQuestObjective::Finished;	///< 完成标志
+
 	IMPLEMENT_XCLASS_BEGIN( XQuestObjective, XObject )
-	IMPLEMENT_XCLASS_END()
+		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_SAVE, "20171227" )
+		IMPLEMENT_ATTRIBUTE( TargetName, VT_STRING, ATTR_FLAG_SAVE, "20171227" )
+		IMPLEMENT_ATTRIBUTE( Count, VT_U32, ATTR_FLAG_SAVE, "20171227" )
+		IMPLEMENT_ATTRIBUTE( Total, VT_U32, ATTR_FLAG_SAVE, "20171227" )
+		IMPLEMENT_ATTRIBUTE( Finished, VT_BOOL, ATTR_FLAG_SAVE, "20171227" )
+	IMPLEMENT_XCLASS_END();
 
-	XQuestObjective::XQuestObjective( xgc::string strName, xgc_uint16 nFinishCount )
-		: XObject()
-		, m_strName( strName )
-		, m_nFinishCount( nFinishCount )
-		, m_nCount( 0 )
-		, m_nSerial( 0 )
+	REGIST_ATTR_LISTENER( XQuestObjective, Count, OnValueChanged );
+
+	XQuestObjective::XQuestObjective()
 	{
-
 	}
 
 	XQuestObjective::~XQuestObjective(void)
 	{
-
 	}
 
-	bool XQuestObjective::Increment()
+	xgc_void XQuestObjective::incCount( xgc_long nInc )
 	{
-		++m_nCount;
-		if( m_nCount == m_nFinishCount )
+		if( false == getValue< xgc_bool >( Finished ) )
 		{
-			XQuest *pQuest = ObjectCast< XQuest >( GetParent() );
-			if( pQuest )
-				pQuest->ObjectiveNotify( m_nSerial );
+			incValue( XQuestObjective::Count, nInc );
 
-			return true;
-		}
-		return false;
-	}
-
-	xgc_int32 XQuestObjective::OnKill( xObject hKiller, xObject hDead )
-	{
-		XActor *pActor = ObjectCast< XActor >( hDead );
-		if( pActor )
-		{
-			xgc_lpcstr name = pActor->getString( attrObjectName );
-			XGC_ASSERT_POINTER( name );
-			if( name && m_strName == name && Increment() )
+			if( getValue< xgc_uint32 >( Count ) >= getValue< xgc_uint32 >( Total ) )
 			{
-				XActor *pKiller = ObjectCast< XActor >( hKiller );
-
-				if( pKiller )
-				{
-					// 任务完成则将触发器摘除
-					// ThisTriggerMgr()->DismissTrigger( hKiller, 0, this, &XQuestObjective::OnKill );
-					// pKiller->DismissTrigger( hDead, 0 );
-				}
+				setValue( Finished, true );
+				EmmitEvent( evt_objective_finished, eEventTrans::toParent );
 			}
 		}
-		return false;
 	}
 
-	xgc_int32 XQuestObjective::OnItem( xObject hSource, xgc_uintptr lParam )
+	xgc_void XQuestObjective::onKill( XObjectEvent &evt )
 	{
-		return false;
+		auto pSender = ObjectCast< XActor >( evt.sender );
+
+		if( pSender && evt.id == evt_actor_killed )
+		{
+			xgc_lpcstr name = pSender->getString( XGameObject::Alias );
+			XGC_ASSERT_POINTER( name );
+			if( name && getString( TargetName ) == name )
+				incCount();
+		}
+	}
+
+	xgc_void XQuestObjective::onPick( XObjectEvent &evt )
+	{
+		auto pSender = ObjectCast< XBag >( evt.sender );
+		XGC_ASSERT_RETURN( pSender, XGC_NONE );
+
+		// 不是放在自己背包，直接返回
+		if( pSender->GotParent( XActor::GetThisClass() ) != GotParent( XActor::GetThisClass() ) )
+			return;
+
+		// 将对象转为实际的消息对象
+		XBag::TransEvent *e = XGC_CONTAINER_OF( &evt, XBag::TransEvent, cast );
+
+		XGoods *pGoods = ObjectCast< XGoods >( e->hGoods );
+		if( pGoods )
+		{
+			// 查看物品是否满足计数条件
+			xgc_lpcstr pName = pGoods->getString( XGoods::Alias );
+			XGC_ASSERT_POINTER( pName );
+			if( pName && getString( TargetName ) == pName )
+				incCount( e->nCount );
+		}
+	}
+
+	xgc_void XQuestObjective::onTalk( XObjectEvent &evt )
+	{
+
+	}
+
+	xgc_void XQuestObjective::OnValueChanged( xAttrIndex nAttr )
+	{
+		if( nAttr == Count )
+		{
+			auto nCount = getValue< xgc_uint32 >( Count );
+			if( nCount > getValue< xgc_uint32 >( Total ) )
+				setValue( Count, nCount );
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// 任务
 	//////////////////////////////////////////////////////////////////////////
-	IMPLEMENT_XCLASS_BEGIN( XQuest, XObject )
-	IMPLEMENT_XCLASS_END()
+	IMPLEMENT_XCLASS_BEGIN( XQuest, XObjectNode )
+	IMPLEMENT_XCLASS_END();
 
 	XQuest::XQuest(void)
 		: m_FinishMask( 0 )
@@ -79,26 +111,37 @@ namespace xgc
 	{
 	}
 
-	xgc_void XQuest::OnAddChild( XObject* pChild, xgc_lpcvoid lpContext )
+	xgc_void XQuest::OnInsertChild( XObject* pChild, xgc_lpvoid lpContext )
 	{
-		xgc_size nChildCount = GetChildrenCount();
-		if( nChildCount >= 16 )
-		{
-			SYS_WARNING( "任务目标已经超过数量限制. %I", nChildCount );
+		if( false == pChild->IsInheritFrom( XQuestObjective::GetThisClass() ) )
 			return;
-		}
 
-		XGC_ASSERT( pChild && pChild->IsInheritFrom( &XQuestObjective::GetThisClass() ) );
-		XQuestObjective* pObjective = ObjectCast< XQuestObjective >( pChild->GetObjectID() );
-
-		pObjective->setSerial(1<<nChildCount);
-		m_FinishMask |= pObjective->getSerial();
+		// 注册任务目标完成的事件，该事件被触发后，任务会收到回调。
+		pChild->RegistEvent( evt_objective_finished, std::bind( &XQuest::OnFinish, this, _1 ), GetObjectID() );
 	}
 
-	xgc_void XQuest::ObjectiveNotify( xgc_uint16 nSerial )
+	xgc_void XQuest::OnRemoveChild( XObject * pChild )
 	{
-		m_Mask |= nSerial;
-		if( m_Mask == m_FinishMask )
-			OnQuestFinished();
+		// 解除自身观察的事件引用
+		pChild->RemoveEvent( GetObjectID() );
+	}
+
+	xgc_void XQuest::OnFinish( XObjectEvent &evt )
+	{
+		// 搜索子目标中，未完成的目标
+		xObject hSearch = Search( []( xObject hObject ){
+			auto pObjective = ObjectCast< XQuestObjective >( hObject );
+			if( pObjective )
+				return pObjective->isFinished() == false;
+
+			return false;
+		} );
+
+		// 没有未完成的目标，则该任务已完成。
+		if( hSearch == INVALID_OBJECT_ID )
+		{
+			// 提交任务完成事件
+			EmmitEvent( evt_quest_finished );
+		}
 	}
 }

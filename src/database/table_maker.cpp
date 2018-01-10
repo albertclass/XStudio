@@ -165,14 +165,14 @@ namespace xgc
 			sprintf_s( sql, "create database if not exists %s;", schema );
 			if( false == execute_sql( conn, sql ) )
 			{
-				SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+				SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 				return false;
 			}
 
 			sprintf_s( sql, "use %s;", schema );
 			if( false == execute_sql( conn, sql ) )
 			{
-				SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+				SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 				return false;
 			}
 
@@ -191,13 +191,13 @@ namespace xgc
 
 				if( false == execute_sql( conn, sql_create_tables ) )
 				{
-					SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+					SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 					return false;
 				}
 			}
 			else if( res == sql_failed )
 			{
-				SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+				SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 				return false;
 			}
 
@@ -238,7 +238,7 @@ namespace xgc
 
 			if( res == sql_failed )
 			{
-				SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+				SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 				#ifdef _WINDOWS
 				FreeLibrary( _M );
 				#endif
@@ -257,7 +257,7 @@ namespace xgc
 
 			if( version > version_sql )
 			{
-				SYS_INFO( "数据库表发现更新版本[%010u ==> %010u], %s", version_sql, version, name.c_str() );
+				SYS_TIP( "数据库表发现更新版本[%010u ==> %010u], %s", version_sql, version, name.c_str() );
 
 				xgc_lpstr sql = replace_environment( node.text().get() );
 				XGC_ASSERT_RETURN( sql, false );
@@ -271,7 +271,7 @@ namespace xgc
 
 				if( false == execute_sql( conn, sql ) )
 				{
-					SYS_INFO( "%d - %s: %s", get_error_code( conn ), get_error_info( conn ), sql );
+					SYS_TIP( "%d - %s: %s", get_error_code( conn ), get_error_info( conn ), sql );
 				}
 				else
 				{
@@ -286,7 +286,7 @@ namespace xgc
 
 					if( false == execute_sql( conn, ver.str().c_str() ) )
 					{
-						SYS_INFO( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
+						SYS_TIP( "%d - %s", get_error_code( conn ), get_error_info( conn ) );
 					}
 
 					free( esc );
@@ -316,7 +316,7 @@ namespace xgc
 			pugi::xml_parse_result resload = doc.load_file( fullpath );
 			if( !resload )
 			{
-				SYS_ERROR( "read table config file %s \n", fullpath );
+				SYS_ERR( "read table config file %s \n", fullpath );
 				return false;
 			}
 
@@ -324,7 +324,7 @@ namespace xgc
 			sql_connection conn = connect( cfg );
 			if( xgc_nullptr == conn )
 			{
-				SYS_ERROR( "connect database server failed. host = %s:%u schema = %s", cfg.host, cfg.port, cfg.schema );
+				SYS_ERR( "connect database server failed. host = %s:%u schema = %s", cfg.host, cfg.port, cfg.schema );
 				return false;
 			}
 
@@ -342,7 +342,7 @@ namespace xgc
 				{
 					if( false == execute_tables( conn, node2, environment ) )
 					{
-						SYS_ERROR( "generate table failed. path = %s\n", node2.path().c_str() );
+						SYS_ERR( "generate table failed. path = %s\n", node2.path().c_str() );
 						ret = true;
 						break;
 					}

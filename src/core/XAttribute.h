@@ -42,6 +42,8 @@ namespace xgc
 	class CORE_API XAttribute
 	{
 		friend CORE_API attr_buffer& operator >>( attr_buffer& stream, XAttribute& c );
+		friend CORE_API attr_buffer& operator >>( attr_buffer& stream, XAttribute&& c );
+		friend CORE_API attr_buffer& operator <<( attr_buffer& stream, XAttribute&& c );
 		friend CORE_API attr_buffer& operator <<( attr_buffer& stream, const XAttribute& c );
 
 	public:
@@ -275,6 +277,19 @@ namespace xgc
 			, mpVoid( _Val.mpVoid )
 		{
 
+		}
+
+		///
+		/// \brief 右值构造 
+		/// \date 12/26/2017
+		/// \author xufeng04
+		///
+		XAttribute( XAttribute&& _Val )
+			: mType( _Val.mType )
+			, mpVoid( _Val.mpVoid )
+		{
+			_Val.mType  = VT_VOID;
+			_Val.mpVoid = 0;
 		}
 
 		static xgc_lpcstr Type2String( xAttrType eType )
@@ -1110,9 +1125,21 @@ namespace xgc
 
 	///
 	/// [3/17/2014 albert.xu]
+	/// 序列化读
+	///
+	CORE_API attr_buffer& operator >> ( attr_buffer& stream, XAttribute&& c );
+
+	///
+	/// [3/17/2014 albert.xu]
 	/// 序列化写
 	///
 	CORE_API attr_buffer& operator << ( attr_buffer& stream, const XAttribute& c );
+
+	///
+	/// [3/17/2014 albert.xu]
+	/// 序列化写
+	///
+	CORE_API attr_buffer& operator << ( attr_buffer& stream, XAttribute&& c );
 }
 
 #endif // __XATTRIBUTE_H__

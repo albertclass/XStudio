@@ -46,13 +46,13 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 
 	if( attr_addr.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network/connect@address" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network/connect@address" );
 		return false;
 	}
 
 	if( attr_port.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network/connect@port" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network/connect@port" );
 		return false;
 	}
 
@@ -125,7 +125,7 @@ xgc_bool make_connect( pugi::xml_node &node, net_module::enListenMode mode )
 
 			if( attr_id.empty() )
 			{
-				SYS_ERROR( "读取配置文件失败 - 未找到 /network/connect@id" );
+				SYS_ERR( "读取配置文件失败 - 未找到 /network/connect@id" );
 				return false;
 			}
 
@@ -145,14 +145,14 @@ xgc_bool make_listen( pugi::xml_node &node )
 
 	if( attr_port.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network/listen@port" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network/listen@port" );
 		return false;
 	}
 
 	auto attr_mode = node.attribute( "mode" );
 	if( attr_mode.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network/listen@mode" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network/listen@mode" );
 		return false;
 	}
 
@@ -220,7 +220,7 @@ xgc_bool make_listen( pugi::xml_node &node )
 			}
 			else
 			{
-				SYS_WARNING( "allow address range format error at '%s'", node_range.path().c_str() );
+				SYS_WRN( "allow address range format error at '%s'", node_range.path().c_str() );
 			}
 			node_range = node_range.next_sibling( "address" );
 		}
@@ -307,7 +307,7 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 
 	if( false == net_module::InitPipeManager() )
 	{
-		SYS_ERROR( "初始化管道管理器失败。" );
+		SYS_ERR( "初始化管道管理器失败。" );
 		return false;
 	}
 
@@ -316,7 +316,7 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 	char filename[1024] = { 0 };
 	if( xgc_nullptr == get_absolute_path( filename, "%s", conf ) )
 	{
-		SYS_ERROR( "读取配置文件失败 - 文件路径解析失败。" );
+		SYS_ERR( "读取配置文件失败 - 文件路径解析失败。" );
 		return false;
 	}
 
@@ -324,7 +324,7 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 	pugi::xml_parse_result res = doc.load_file( filename );
 	if( false == res )
 	{
-		SYS_ERROR( "读取配置文件失败 - %s", res.description() );
+		SYS_ERR( "读取配置文件失败 - %s", res.description() );
 		return false;
 	}
 
@@ -332,14 +332,14 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 	auto node_network = root.child( "network" );
 	if( node_network.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network" );
 		return false;
 	}
 
 	auto attr_id = node_network.attribute( "id" );
 	if( attr_id.empty() )
 	{
-		SYS_ERROR( "读取配置文件失败 - 未找到 /network/server@id" );
+		SYS_ERR( "读取配置文件失败 - 未找到 /network/server@id" );
 		return false;
 	}
 
@@ -362,7 +362,7 @@ xgc_bool InitializeNetwork( xgc_lpcstr conf )
 		node = node.next_sibling();
 	}
 
-	SYS_INFO( "初始化网络模块完成" );
+	SYS_TIP( "初始化网络模块完成" );
 
 	return true;
 	FUNCTION_END;

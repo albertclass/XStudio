@@ -27,7 +27,7 @@
 	{\
 		std::string_stream ss; \
 		ss<<"Current Thread "<<__single_thread_checker__<<"Previous Thread "<<this_thread::get_id(); \\
-		SYS_WARNING( "%s" FMT, ss.str().c_str(), __VA_ARGS__ ); \
+		SYS_WRN( "%s" FMT, ss.str().c_str(), __VA_ARGS__ ); \
 		DumpStackFrame();\
 	}\
 
@@ -49,20 +49,20 @@
 		}\
 		catch( xgc::seh_exception &e )\
 		{\
-			SYS_INFO( "SEH Exception throw." );\
+			SYS_TIP( "SEH Exception throw." );\
 			XGC_DEBUG_MESSAGE( "SEH Exception. %s", e.what() ); \
 			xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
 		}\
 		catch( std::exception &e )\
 		{\
-			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			SYS_TIP( "STD Exception throw. %s", e.what() ); \
 			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
 			xgc::std_exception_call( e, __FILE__, __LINE__ ); \
 			xgc::DumpStackFrame();\
 		}\
 		catch( ... ) \
 		{\
-			SYS_INFO( "Other Exception throw." ); \
+			SYS_TIP( "Other Exception throw." ); \
 			XGC_DEBUG_MESSAGE( "THR Exception. Unknowe" ); \
 			xgc::etc_exception_call( __FILE__, __LINE__ ); \
 			xgc::DumpStackFrame();\
@@ -103,20 +103,20 @@
 		}\
 		catch( seh_exception &e )\
 		{\
-			SYS_INFO( "SEH Exception throw. %s", e.what() ); \
+			SYS_TIP( "SEH Exception throw. %s", e.what() ); \
 			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
 			xgc::seh_exception_call( e, __FILE__, __LINE__ ); \
 		}\
 		catch( std::exception &e )\
 		{\
-			SYS_INFO( "STD Exception throw. %s", e.what() ); \
+			SYS_TIP( "STD Exception throw. %s", e.what() ); \
 			XGC_DEBUG_MESSAGE( "STD Exception. %s", e.what() ); \
 			xgc::std_exception_call( e, __FILE__, __LINE__ ); \
 			xgc::DumpStackFrame();\
 		}\
 		catch( ... ) \
 		{\
-			SYS_INFO( "Other Exception throw." ); \
+			SYS_TIP( "Other Exception throw." ); \
 			XGC_DEBUG_MESSAGE( "THR Exception. Unknowe" ); \
 			xgc::etc_exception_call( __FILE__, __LINE__ ); \
 			xgc::DumpStackFrame();\

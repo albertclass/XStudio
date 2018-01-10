@@ -111,7 +111,7 @@ namespace xgc
 			bRet &= ::InternetSetOption( xgc_nullptr, INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER, &nMaxConnect, sizeof( nMaxConnect ) );
 			if( !bRet )
 			{
-				USR_ERROR( "设置Wininet最大连接数失败[%u]", nMaxConnection );
+				USR_ERR( "设置Wininet最大连接数失败[%u]", nMaxConnection );
 				return false;
 			}
 
@@ -128,14 +128,14 @@ namespace xgc
 
 			if( hInternetSession == NULL )
 			{
-				USR_WARNING( "InternetOpen error. url : %s", url );
+				USR_WRN( "InternetOpen error. url : %s", url );
 				return false;
 			}
 
 			xgc_uint32 dwTimeout = 3 * 1000;
 			if( !InternetSetOption( hInternetSession, INTERNET_OPTION_RECEIVE_TIMEOUT, (LPVOID) &dwTimeout, sizeof( dwTimeout ) ) )
 			{
-				USR_WARNING( "InternetSetOption return false. url : %s", url );
+				USR_WRN( "InternetSetOption return false. url : %s", url );
 				InternetCloseHandle( hInternetSession );
 				return false;
 			}
@@ -144,7 +144,7 @@ namespace xgc
 
 			if( hURL == NULL )
 			{
-				USR_WARNING( "InternetOpenUrl error. code = %d. url : %s ", GetLastError(), url );
+				USR_WRN( "InternetOpenUrl error. code = %d. url : %s ", GetLastError(), url );
 				InternetCloseHandle( hInternetSession );
 				return false;
 			}
@@ -160,7 +160,7 @@ namespace xgc
 				result.append( buffer, readsize );
 			}
 
-			DBG_INFO( "InternetReadFile total read %u ", result.size() );
+			DBG_TIP( "InternetReadFile total read %u ", result.size() );
 			InternetCloseHandle( hURL );
 			InternetCloseHandle( hInternetSession );
 			#endif // _WINDOWS

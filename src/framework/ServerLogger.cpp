@@ -25,7 +25,7 @@ xgc_bool InitializeLogger( ini_reader &ini )
 
 	if( _access( szLoggerPath, 0 ) == -1 && make_dirs( szLoggerPath ) == -1 )
 	{
-		SYS_ERROR( "Log目录无效或创建失败 Path - %s", szLoggerPath );
+		SYS_ERR( "Log目录无效或创建失败 Path - %s", szLoggerPath );
 		return false;
 	}
 
@@ -44,11 +44,11 @@ xgc_bool InitializeLogger( ini_reader &ini )
 
 	if( init_logger( ini ) == false )
 	{
-		SYS_ERROR( "初始化文件日志模块失败。日志路径%s", szLoggerPath );
+		SYS_ERR( "初始化文件日志模块失败。日志路径%s", szLoggerPath );
 		return false;
 	}
 
-	SYS_INFO( "初始化文件日志模块成功。日志路径%s", szLoggerPath );
+	SYS_TIP( "初始化文件日志模块成功。日志路径%s", szLoggerPath );
 
 	return true;
 	FUNCTION_END;

@@ -287,7 +287,7 @@ namespace xgc
 					if( bCheck && mCheckThread )
 					{
 						XGC_ASSERT_MESSAGE( false, "与之前不同的线程被发现。" );
-						SYS_ERROR( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, gettid() );
+						SYS_ERR( "[DB] database connection run at different thread.old = %d, new = %d", mOwnerThread, gettid() );
 					}
 
 					mOwnerThread = gettid();

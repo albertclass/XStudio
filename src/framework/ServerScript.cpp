@@ -32,7 +32,7 @@ static int luaLog( lua_State *_L )
 		ar.name ? ar.name : "(unknowe)";
 		ar.source ? ar.source : "(null)";
 
-		get_logger( "LUA" ).write( ar.source, ar.name, ar.currentline, logLevelTag<Level>::Tag, "(%s)%s", ar.what, lua_tostring( _L, -1 ) );
+		get_logger( "LUA" ).write( logger_context( ar.source, ar.name, ar.currentline, logLevelTag<Level>::Tag ), "(%s)%s", ar.what, lua_tostring( _L, -1 ) );
 	}
 
 	return 0;
@@ -137,7 +137,7 @@ xgc_bool luaDoString( xgc_lpcstr lpScript )
 	int r = luaL_dostring( _Lua, lpScript );
 	if( r != 0 )
 	{
-		SYS_ERROR( "÷¥––Ω≈±æ[%s]∑¢…˙¥ÌŒÛ°£\n%s", lpScript, lua_tostring( _Lua, -1 ) );
+		SYS_ERR( "÷¥––Ω≈±æ[%s]∑¢…˙¥ÌŒÛ°£\n%s", lpScript, lua_tostring( _Lua, -1 ) );
 		return false;
 	}
 
@@ -158,7 +158,7 @@ xgc_bool luaDoFile( xgc_lpcstr lpScriptFile )
 	int r = luaL_loadfile( _Lua, lpScriptFile );
 	if( r != 0 )
 	{
-		SYS_ERROR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
+		SYS_ERR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
 		lua_pop( _Lua, 1 );
 		return false;
 	}
@@ -166,7 +166,7 @@ xgc_bool luaDoFile( xgc_lpcstr lpScriptFile )
 	r = lua_pcall( _Lua, 0, LUA_MULTRET, 0 );
 	if( r != 0 )
 	{
-		SYS_ERROR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
+		SYS_ERR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
 		lua_pop( _Lua, 1 );
 		return false;
 	}
@@ -186,7 +186,7 @@ xgc_bool luaDoFileEx( xgc_lpcstr lpScriptFile, LuaRef* retVal, int &nCount )
 	int r = luaL_loadfile( _Lua, lpScriptFile );
 	if( r != 0 )
 	{
-		SYS_ERROR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
+		SYS_ERR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
 		lua_pop( _Lua, 1 );
 		return false;
 	}
@@ -194,7 +194,7 @@ xgc_bool luaDoFileEx( xgc_lpcstr lpScriptFile, LuaRef* retVal, int &nCount )
 	r = lua_pcall( _Lua, 0, LUA_MULTRET, 0 );
 	if( r != 0 )
 	{
-		SYS_ERROR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
+		SYS_ERR( "Ω≈±æ[%s]±‡“Î ß∞‹°£\n%s", lpScriptFile, lua_tostring( _Lua, -1 ) );
 		lua_pop( _Lua, 1 );
 		return false;
 	}
@@ -230,7 +230,7 @@ xgc_void luaTraceback( xgc_lpcstr lpFileName, xgc_lpcstr lpFuncName, xgc_int32 n
 		r = lua_getstack( _Lua, ++l, &ar );
 	}
 
-	get_logger( "LUA" ).write( lpFileName, lpFuncName, nLine, "LUA", "%s", stack_string );
+	get_logger( "LUA" ).write( logger_context( lpFileName, lpFuncName, nLine, "LUA" ), "%s", stack_string );
 }
 
 ///
@@ -242,26 +242,26 @@ xgc_void luaStackDump( xgc_lpcstr lpMark /*= "empty"*/ )
 {
 	int i;
 	int t = lua_gettop( _Lua );
-	DBG_INFO( "luaStackDump - Mark <%s> : top = %d", lpMark, t );
+	DBG_TIP( "luaStackDump - Mark <%s> : top = %d", lpMark, t );
 	for( i = 1; i <= t; ++i )
 	{
 		int t = lua_type( _Lua, i );
 		switch( t )
 		{
 			case LUA_TSTRING:
-			DBG_INFO( "  %d : %s", i, lua_tostring( _Lua, i ) );
+			DBG_TIP( "  %d : %s", i, lua_tostring( _Lua, i ) );
 			break;
 			case LUA_TBOOLEAN:
-			DBG_INFO( "  %d : %s", i, lua_toboolean( _Lua, i ) ? "true" : "false" );
+			DBG_TIP( "  %d : %s", i, lua_toboolean( _Lua, i ) ? "true" : "false" );
 			break;
 			case LUA_TNUMBER:
-			DBG_INFO( "  %d : dec(%llf); hex(%x); oct(%o)", i,
+			DBG_TIP( "  %d : dec(%llf); hex(%x); oct(%o)", i,
 				lua_tonumber( _Lua, i ),
 				(xgc_long)lua_tonumber( _Lua, i ),
 				(xgc_long)lua_tonumber( _Lua, i ) );
 			break;
 			default:
-			DBG_INFO( "  %d : type( %s )", i, lua_typename( _Lua, t ) );
+			DBG_TIP( "  %d : type( %s )", i, lua_typename( _Lua, t ) );
 			break;
 		}
 	}

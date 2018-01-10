@@ -4,15 +4,15 @@
 
 namespace xgc
 {
-	CORE_API xAttrIndex attrObjectName;		///< 对象名称
-	CORE_API xAttrIndex attrObjectAlias;	///< 对象别名
-	CORE_API xAttrIndex attrObjectFlags;	///< 对象标记位
+	xAttrIndex XGameObject::Name;	///< 对象名称
+	xAttrIndex XGameObject::Alias;	///< 对象别名
+	xAttrIndex XGameObject::Flags;	///< 对象标记位
 
 	IMPLEMENT_XCLASS_BEGIN( XGameObject, XObject )
-		IMPLEMENT_ATTRIBUTE( ObjectName,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象名字
-		IMPLEMENT_ATTRIBUTE( ObjectAlias,	VT_STRING,	ATTR_FLAG_NONE, "20140912" )	// 对象别名
-		IMPLEMENT_ATTRIBUTE( ObjectFlags,	VT_U32,		ATTR_FLAG_SAVE, "20140912" )	// 是否可见
-	IMPLEMENT_XCLASS_END()
+		IMPLEMENT_ATTRIBUTE( Name, VT_STRING, ATTR_FLAG_NONE, "20140912" )	// 对象名字
+		IMPLEMENT_ATTRIBUTE( Alias, VT_STRING, ATTR_FLAG_NONE, "20140912" )	// 对象别名
+		IMPLEMENT_ATTRIBUTE( Flags, VT_U32, ATTR_FLAG_SAVE, "20140912" )	// 是否可见
+	IMPLEMENT_XCLASS_END();
 
 	XGameObject::XGameObject()
 	{
@@ -30,7 +30,7 @@ namespace xgc
 	xgc_void XGameObject::Appear( const std::function< xgc_bool( xObject ) > &fnNotifyFilter )
 	{
 		FUNCTION_BEGIN;
-		if( ChkBit( attrObjectFlags, Flag_NotifyEyeshot, true ) )
+		if( ChkBit( Flags, Flag_NotifyEyeshot, true ) )
 			return;
 
 		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
@@ -50,7 +50,7 @@ namespace xgc
 			}
 		}
 
-		SetBit( attrObjectFlags, Flag_NotifyEyeshot );
+		SetBit( Flags, Flag_NotifyEyeshot );
 		FUNCTION_END;
 	}
 
@@ -62,7 +62,7 @@ namespace xgc
 	xgc_void XGameObject::Vanish( const std::function< xgc_bool( xObject ) > &fnNotifyFilter )
 	{
 		FUNCTION_BEGIN;
-		if( ChkBit( attrObjectFlags, Flag_NotifyEyeshot, false ) )
+		if( ChkBit( XGameObject::Flags, Flag_NotifyEyeshot, false ) )
 			return;
 
 		XGameMap* pMap = ObjectCast< XGameMap >( GetParent() );
@@ -82,7 +82,7 @@ namespace xgc
 			}
 		}
 
-		ClrBit( attrObjectFlags, Flag_NotifyEyeshot );
+		ClrBit( XGameObject::Flags, Flag_NotifyEyeshot );
 		FUNCTION_END;
 	}
 

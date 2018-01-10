@@ -8,6 +8,9 @@
 
 #define XGC_MAX_PATH 	PATH_MAX
 #define XGC_MAX_FNAME 	NAME_MAX
+#define SLASH '/'
+
+#define IF_WINDOWS(x, y) y
 
 #define xgc_invalid_handle xgc_nullptr
 

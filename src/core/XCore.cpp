@@ -143,11 +143,11 @@ namespace xgc
 	// [11/18/2010 Albert]
 	// Description:	 查询子对象
 	//---------------------------------------------------//
-	xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter, const XClassInfo *pClass )
+	xgc_bool QueryChild( xObject hParent, const std::function<xgc_bool( xObject )>& filter )
 	{
 		auto pObject = ObjectCast< XObjectNode >( hParent );
 		XGC_ASSERT_POINTER( pObject );
-		return pObject->Search( filter, pClass );
+		return pObject->Search( filter );
 	}
 
 	//---------------------------------------------------//

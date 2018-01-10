@@ -9,14 +9,16 @@
 ///
 struct RefreshInfo
 {
-	/// @var 最后一次调用时间
-	datetime next_invoke_time;
+	/// @var 刷新名
+	xgc::string name;
 	/// @var 刷新类型
 	xgc::string params;
 	/// @var 函数调用
 	LuaRef call;
 	/// @var 函数调用
 	LuaRef args;
+	/// @var 最后一次调用时间
+	datetime next_invoke_time;
 };
 
 xgc_bool operator<( const RefreshInfo &lhs, const RefreshInfo &rhs )
@@ -43,24 +45,36 @@ xgc_bool InitServerRefresh( ini_reader &ini )
 	LuaRef conf = luaGlobal( lpConfName );
 	if( conf.isNil() )
 	{
-		SYS_ERROR( "刷新配置项不存在" );
+		SYS_ERR( "刷新配置项不存在" );
 		return false;
 	}
 
-	RefreshInfo info{ datetime(), {0}, LuaRef( luaState() ), LuaRef( luaState() ) };
+	RefreshInfo info { "", {0}, LuaRef( luaState() ), LuaRef( luaState() ), datetime() };
+
+	LuaRef ref( luaState() );
 
 	for( Iterator item( conf ); !item.isNil(); ++item )
 	{
 		auto val = item.value();
-		auto start = val["start"].cast< xgc_lpcstr >();
-		auto params = val["params"].cast< xgc_lpcstr >();
+
+		ref = val["params"];
+		auto params = ref ? ref.cast< xgc_lpcstr >() : xgc_nullptr;
+
+		ref = val["name"];
+		info.name = ref ? ref.cast< xgc_lpcstr >() : xgc_nullptr;
 
 		auto invoke = val["invoke"];
+		XGC_ASSERT_CONTINUE( invoke.isFunction() );
 
-		info.next_invoke_time = datetime::convert( start );
 		info.params = params;
 		info.call = invoke["call"];
 		info.args = invoke["args"];
+
+		ref = val["start"];
+		auto start = ref ? ref.cast< xgc_lpcstr >() : xgc_nullptr;
+		XGC_ASSERT_CONTINUE( start );
+
+		info.next_invoke_time = datetime::convert( start );
 
 		mRefreshSet.emplace( std::move( info ) );
 	}
@@ -73,35 +87,30 @@ xgc_void ExecServerRefresh( datetime now )
 	auto it = mRefreshSet.begin();
 	while( it != mRefreshSet.end() )
 	{
-		if( now >= it->next_invoke_time )
+		if( now < it->next_invoke_time )
+			break;
+
+		RefreshInfo info = *it;
+
+		try
 		{
-			RefreshInfo info = *it;
+			info.call.push( info.call.state() );
+			int argc = 0;
+			for( Iterator iter( info.args ); !iter.isNil(); ++iter, ++argc )
+				(*iter).push( info.args.state() );
 
-			// info.call( info.args );
-			try
-			{
-				info.call.push( info.call.state() );
-				int argc = 0;
-				for( Iterator iter( info.args ); !iter.isNil(); ++iter, ++argc )
-					info.args.push( info.args.state() );
-
-				LuaException::pcall( info.call.state(), argc, 0 );
-			}
-			catch( std::exception &err )
-			{
-				SYS_ERROR( "Lua call error %s", err.what() );
-			}
-
-			info.next_invoke_time = adjust_cycle_next( info.next_invoke_time, info.params.c_str(), now );
-
-			mRefreshSet.insert( info );
-
-			it = mRefreshSet.begin();
+			LuaException::pcall( info.call.state(), argc, 0 );
 		}
-		else
+		catch( std::exception &err )
 		{
-			++it;
+			SYS_ERR( "Lua call error %s", err.what() );
 		}
+
+		info.next_invoke_time = adjust_cycle_next( info.next_invoke_time, info.params.c_str(), now );
+
+		mRefreshSet.insert( info );
+
+		it = mRefreshSet.begin();
 	}
 }
 
