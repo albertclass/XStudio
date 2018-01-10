@@ -30,7 +30,7 @@ public:
 	}
 };
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	thread_pool pool(16);
 

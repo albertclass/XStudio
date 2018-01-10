@@ -145,7 +145,7 @@ static void client()
 	}
 }
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	CreateNetwork( 16 );
 

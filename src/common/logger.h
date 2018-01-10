@@ -24,36 +24,36 @@
 	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
 		xgc::common::logger_stream( xgc::common::get_logger( #LOG ), xgc::common::logger_context( FILE, FUNC, LINE, TAGS ) )
 
-#define LOG_FMT_STREAM( LOG, TAGS ) \
+#define LOG_TAG_STREAM( LOG, TAGS ) \
 	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
 		xgc::common::logger_stream( xgc::common::get_logger( #LOG ), xgc::common::logger_context( __FILE__, __func__, __LINE__, TAGS ) )
 
-#define SYS_ERR_STREAM() LOG_FMT_STREAM( SYS, "error"   )
-#define SYS_WRN_STREAM() LOG_FMT_STREAM( SYS, "warning" )
-#define SYS_TIP_STREAM() LOG_FMT_STREAM( SYS, "info"	)
-#define USR_ERR_STREAM() LOG_FMT_STREAM( USR, "error"   )
-#define USR_WRN_STREAM() LOG_FMT_STREAM( USR, "warning" )
-#define USR_TIP_STREAM() LOG_FMT_STREAM( USR, "info"	)
-#define DBG_ERR_STREAM() LOG_FMT_STREAM( DBG, "error"   )
-#define DBG_WRN_STREAM() LOG_FMT_STREAM( DBG, "warning" )
-#define DBG_TIP_STREAM() LOG_FMT_STREAM( DBG, "info"	)
+#define SYS_ERR_STREAM() LOG_TAG_STREAM( SYS, "error"   )
+#define SYS_WRN_STREAM() LOG_TAG_STREAM( SYS, "warning" )
+#define SYS_TIP_STREAM() LOG_TAG_STREAM( SYS, "info"	)
+#define USR_ERR_STREAM() LOG_TAG_STREAM( USR, "error"   )
+#define USR_WRN_STREAM() LOG_TAG_STREAM( USR, "warning" )
+#define USR_TIP_STREAM() LOG_TAG_STREAM( USR, "info"	)
+#define DBG_ERR_STREAM() LOG_TAG_STREAM( DBG, "error"   )
+#define DBG_WRN_STREAM() LOG_TAG_STREAM( DBG, "warning" )
+#define DBG_TIP_STREAM() LOG_TAG_STREAM( DBG, "info"	)
 
-#define LOG_EXT( LOG, FILE, FUNC, LINE, TAGS, FMT, ... ) \
+#define LOG_EXT_FORMAT( LOG, FILE, FUNC, LINE, TAGS, FMT, ... ) \
 	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
 		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( FILE, FUNC, LINE, TAGS ), FMT, ##__VA_ARGS__ )
-#define LOG_FMT( LOG, TAGS, FMT, ... ) \
+#define LOG_TAG_FORMAT( LOG, TAGS, FMT, ... ) \
 	if( xgc::common::get_logger( #LOG ).filter( TAGS ) ) \
 		xgc::common::get_logger( #LOG ).write( xgc::common::logger_context( __FILE__, __func__, __LINE__, TAGS ), FMT, ##__VA_ARGS__ )
 
-#define SYS_ERR( FMT, ... )	LOG_FMT( SYS, "error"   , FMT, ##__VA_ARGS__ )
-#define SYS_WRN( FMT, ... ) LOG_FMT( SYS, "warning" , FMT, ##__VA_ARGS__ )
-#define SYS_TIP( FMT, ... )	LOG_FMT( SYS, "info"	, FMT, ##__VA_ARGS__ )
-#define USR_ERR( FMT, ... )	LOG_FMT( USR, "error"   , FMT, ##__VA_ARGS__ )
-#define USR_WRN( FMT, ... ) LOG_FMT( USR, "warning" , FMT, ##__VA_ARGS__ )
-#define USR_TIP( FMT, ... )	LOG_FMT( USR, "info"	, FMT, ##__VA_ARGS__ )
-#define DBG_ERR( FMT, ... )	LOG_FMT( DBG, "error"   , FMT, ##__VA_ARGS__ )
-#define DBG_WRN( FMT, ... ) LOG_FMT( DBG, "warning" , FMT, ##__VA_ARGS__ )
-#define DBG_TIP( FMT, ... )	LOG_FMT( DBG, "info"	, FMT, ##__VA_ARGS__ )
+#define SYS_ERR( FMT, ... )	LOG_TAG_FORMAT( SYS, "error"   , FMT, ##__VA_ARGS__ )
+#define SYS_WRN( FMT, ... ) LOG_TAG_FORMAT( SYS, "warning" , FMT, ##__VA_ARGS__ )
+#define SYS_TIP( FMT, ... )	LOG_TAG_FORMAT( SYS, "info"	   , FMT, ##__VA_ARGS__ )
+#define USR_ERR( FMT, ... )	LOG_TAG_FORMAT( USR, "error"   , FMT, ##__VA_ARGS__ )
+#define USR_WRN( FMT, ... ) LOG_TAG_FORMAT( USR, "warning" , FMT, ##__VA_ARGS__ )
+#define USR_TIP( FMT, ... )	LOG_TAG_FORMAT( USR, "info"	   , FMT, ##__VA_ARGS__ )
+#define DBG_ERR( FMT, ... )	LOG_TAG_FORMAT( DBG, "error"   , FMT, ##__VA_ARGS__ )
+#define DBG_WRN( FMT, ... ) LOG_TAG_FORMAT( DBG, "warning" , FMT, ##__VA_ARGS__ )
+#define DBG_TIP( FMT, ... )	LOG_TAG_FORMAT( DBG, "info"	   , FMT, ##__VA_ARGS__ )
 
 namespace xgc
 {

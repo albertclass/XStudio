@@ -584,6 +584,167 @@ namespace xgc
 			}
 		};
 
+		class sock_adapter : public logger_adapter
+		{
+		private:
+			/// pipe file describtion
+			int fd[2];
+
+			/// pipe cache size
+			xgc_uint32 sock_buffer_size;
+
+			/// udp broadcast port
+			xgc_uint32 udp_port;
+
+			/// work thread exit flag
+			std::atomic< xgc_ulong > work_thread_exit;
+
+			/// work thread
+			std::thread		work_thread;
+
+			/// adapters lock guard.
+			std::mutex		guard;
+
+			/// write lock
+			std::mutex		write_grard_;
+
+			/// 发送缓冲结构
+			struct chunk { xgc_lpcvoid data; xgc_size size; };
+
+		public:
+			///
+			/// \brief 构造 
+			/// \date 1/8/2018
+			/// \author albert.xu
+			///
+			sock_adapter()
+			{
+
+			}
+
+			///
+			/// \brief 析构
+			/// \date 1/8/2018
+			/// \author albert.xu
+			///
+			~sock_adapter()
+			{
+
+			}
+
+			// 初始化网络
+			xgc_bool init()
+			{
+				// 开启工作线程
+				work_thread = std::thread( &sock_adapter::thread, this );
+				return true;
+			}
+
+		private:
+			xgc_void thread()
+			{
+				// 写数据线程
+			}
+
+			virtual xgc_void join()
+			{
+				if( work_thread_exit == 0 )
+				{
+					xgc_uint32 len = sizeof( xgc_uint32 ) + 1;
+					struct chunk chunks[] ={
+						{ &len, sizeof( len ) },
+						{ "\xff", 1 },
+					};
+
+					sock_write( chunks, 3 );
+
+					work_thread.join();
+				}
+			}
+
+			xgc_long sock_write( xgc_lpcvoid data, xgc_size size )
+			{
+				xgc_long total_write = 0;
+				while( total_write < size )
+				{
+					int write_bytes = ::_write( fd[1], (xgc_lpstr)data + total_write, (int)( size - total_write ) );
+					XGC_ASSERT_BREAK( -1 != write_bytes );
+					total_write += write_bytes;
+				}
+
+				return total_write;
+			}
+
+			xgc_long sock_write( struct chunk chunks[], int count )
+			{
+				xgc_long total_write = 0;
+
+				std::lock_guard< decltype( write_grard_ ) > _lock( write_grard_ );
+
+				for( int i = 0; i < count; ++i )
+				{
+					auto data = chunks[i].data;
+					auto size = chunks[i].size;
+
+					int write_bytes = sock_write( data, size );
+					XGC_ASSERT_BREAK( size == write_bytes );
+					total_write += write_bytes;
+				}
+
+				return total_write;
+			}
+
+			virtual xgc_long write( logger_context& ctx ) override
+			{
+				// 准备传输的日志上下文
+				auto line = ctx.line_;
+				auto file = ctx.file_;
+				auto func = ctx.func_;
+				auto tags = ctx.tags_;
+				auto tags_len = (xgc_long)strlen( tags ) + 1;
+				auto logs = ctx.logs_;
+				auto logs_len = (xgc_long)strlen( logs ) + 1;
+
+				xgc_long len = sizeof( xgc_uint32 ) + 1
+					+ sizeof( file )
+					+ sizeof( func )
+					+ sizeof( line )
+					+ sizeof( tags_len )
+					+ tags_len
+					+ sizeof( logs_len )
+					+ logs_len;
+
+				struct chunk chunks[] ={
+					{ &len, sizeof( len ) },
+					{ "\x2", 1 },
+					{ &file, sizeof( file ) },
+					{ &func, sizeof( func ) },
+					{ &line, sizeof( line ) },
+					{ &tags_len, sizeof( tags_len ) },
+					{ tags, (xgc_size)tags_len },
+					{ &logs_len, sizeof( logs_len ) },
+					{ logs, (xgc_size)logs_len },
+				};
+
+				return sock_write( chunks, 9 );
+			}
+
+			xgc_long write( xgc_lpcvoid data, xgc_size size ) override
+			{
+				// 包的尺寸
+				xgc_uint32 len = xgc_uint32( sizeof( size ) + 1 + size );
+
+				struct chunk chunks[] ={
+					{ &len, sizeof( len ) },
+					{ "\x1", 1 },
+					{ data, size }
+				};
+
+				return sock_write( chunks, 3 );
+			}
+
+		};
+
 		class COMMON_API logger
 		{
 		private:

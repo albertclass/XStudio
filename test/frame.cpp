@@ -64,3 +64,46 @@ int output( const char *fmt, ... )
 
 	return bytes;
 }
+
+void unit_test_frame::regist( const char * name, const char * display, PFN_Test entry )
+{
+	unit_test test;
+	test.name = name;
+	test.display = display;
+	test.entry = entry;
+
+	view.push_back( test );
+}
+
+int unit_test_frame::show_page( int page, int show )
+{
+	auto count = view.size();
+	auto last = ( count + show - 1 ) / show;
+
+	if( page > last )
+		page = last;
+
+	if( page < 0 )
+		page = 0;
+
+	for( int i = page * show, j = 0; i < ( page + 1 ) * show && i < count; ++i, ++j )
+	{
+		printf( "+%2d. %s\n", j, view[i].display );
+	}
+
+	return page;
+}
+
+void unit_test_frame::exec_test( int page, int show, int item )
+{
+	auto count = view.size();
+	auto last = ( count + show - 1 ) / show;
+
+	if( page > last )
+		return;
+
+	item = page * show + item;
+
+	if( item < count )
+		view[item].entry();
+}

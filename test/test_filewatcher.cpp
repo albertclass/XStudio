@@ -21,7 +21,7 @@ xgc_void notify( xgc_lpcstr path, xgc_lpcstr filename, xgc_ulong action )
 	output( "%s/%s - %08x\n", path, filename, action );
 }
 
-static int testmain( int agrc, char * argv[] )
+static int testmain()
 {
 	init_filewatcher(0);
 	#if defined(_WINDOWS)

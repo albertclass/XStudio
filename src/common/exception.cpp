@@ -264,16 +264,16 @@ namespace xgc
 				if( SymGetLineFromAddr( hProcess, (UINT_PTR)FrameSequence.Frame[nCur], &dwDisplacement, &lineInfo ) )
 				{
 					// Put this on the next line and indented a bit.
-					LOG_EXT( SYS, lineInfo.FileName, pSymInfo->Name, lineInfo.LineNumber, "stack", "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOG_EXT_FORMAT( SYS, lineInfo.FileName, pSymInfo->Name, lineInfo.LineNumber, "stack", "stack frame %p : %s", FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 				else
 				{
-					LOG_FMT( SYS, "stack", "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
+					LOG_TAG_FORMAT( SYS, "stack", "LastError:[%u], stack frame %p", GetLastError(), FrameSequence.Frame[nCur], pSymInfo->Name );
 				}
 			}
 			else
 			{
-				LOG_FMT( SYS, "stack", "stack frame %p", FrameSequence.Frame[nCur] );
+				LOG_TAG_FORMAT( SYS, "stack", "stack frame %p", FrameSequence.Frame[nCur] );
 			}
 		}
 		SYS_TIP( "---------------stack frame end--------------" );

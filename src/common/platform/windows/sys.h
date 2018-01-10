@@ -10,6 +10,7 @@
 #define XGC_MAX_PATH 	_MAX_PATH
 #define XGC_MAX_FNAME 	_MAX_FNAME
 #define SLASH '\\'
+#define IF_WINDOWS(x, y) x
 
 #define xgc_invalid_handle INVALID_HANDLE_VALUE
 
