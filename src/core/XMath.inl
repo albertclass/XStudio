@@ -79,6 +79,7 @@
 	//----------------------------------------------------------------------------
 	__inline 	float XMath::InvSqrt (float fValue)
 	{
+		#ifdef _WINDOWS
 		if ( fValue == 1.f )
 			return 1.f;
 
@@ -96,6 +97,9 @@
 			_mm_sub_ss( _3, _mm_mul_ss( a, _mm_mul_ss( rsqrt, rsqrt ) ) ) );
 
 		return rsqrt.m128_f32[0];
+		#elif defined(_LINUX)
+		return FastInvSqrt(fValue);
+		#endif
 	}
 	//----------------------------------------------------------------------------
 	__inline 	float XMath::Log (float fValue)
@@ -399,7 +403,7 @@
 	__inline double XMath::FastInvSqrt (double dValue)
 	{
 		double dHalf = 0.5*dValue;
-		_int64 i  = *(_int64*)&dValue;
+		int64_t i  = *(int64_t*)&dValue;
 #if defined(DE_USING_VC70) || defined(DE_USING_VC6)
 		i = 0x5fe6ec85e7de30da - (i >> 1);
 #else

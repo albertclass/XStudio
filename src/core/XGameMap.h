@@ -51,12 +51,12 @@ namespace xgc
 
 	#define EYESHOTAREA_FORCEfLUSH  256   ///< 视野强制刷新,9-16
 
-	enum class CORE_API MapFlags
+	enum CORE_API eMapFlags
 	{
 		eCanMove = 0,
 	};
 
-	enum class CORE_API MapCell
+	enum CORE_API eMapCell
 	{
 		BLOCK = 1,
 		BARRIER = 2,
@@ -365,7 +365,7 @@ namespace xgc
 		///
 		xgc_bool GetMoveFlag()const
 		{
-			return GetBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove, true );
+			return GetBit( MapFlags, (xgc_size)eCanMove, true );
 		}
 
 		///
@@ -375,9 +375,9 @@ namespace xgc
 		xgc_void SetMoveFlag( xgc_bool bCanMove = true )
 		{
 			if( bCanMove )
-				SetBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove );
+				SetBit( MapFlags, (xgc_size)eCanMove );
 			else
-				ClrBit( XGameMap::MapFlags, (xgc_size)MapFlags::eCanMove );
+				ClrBit( MapFlags, (xgc_size)eCanMove );
 		}
 
 		///
@@ -658,7 +658,7 @@ namespace xgc
 		/// 设置格子阻挡信息
 		/// [6/28/2014] create by albert.xu
 		///
-		xgc_void ExchangeBlock( XGameObject *pObject, iPoint &iOldCell, iPoint &iNewCell );
+		xgc_void ExchangeBlock( XGameObject *pObject, iPoint iOldCell, iPoint iNewCell );
 
 		/////
 		/// 加入子节点后调用
@@ -684,7 +684,7 @@ namespace xgc
 		/// @param pObj		:	正在移动的对象
 		/// [8/3/2009 Albert]
 		/////
-		virtual xgc_void NotifyEnterEyeshot( XGameObject* pObj, xObject nObjID, VisualMode eMode );
+		virtual xgc_void NotifyEnterEyeshot( XGameObject* pObj, xObject nObjID, eVisualMode eMode );
 
 		/////
 		/// 通知格子内的所有对象,有人离开了视野
@@ -692,13 +692,13 @@ namespace xgc
 		/// @param pObj		:	正在移动的对象
 		/// [8/3/2009 Albert]
 		/////
-		virtual xgc_void NotifyLeaveEyeshot( XGameObject* pObj, xObject nObjID, VisualMode eMode );
+		virtual xgc_void NotifyLeaveEyeshot( XGameObject* pObj, xObject nObjID, eVisualMode eMode );
 
 		///
 		/// 对象切换格子时调用
 		/// [6/25/2014] create by albert.xu
 		///
-		virtual xgc_void OnExchangeBlock( XGameObject* pObject, iPoint &ptOldCell, iPoint &ptNewCell );
+		virtual xgc_void OnExchangeBlock( XGameObject* pObject, iPoint ptOldCell, iPoint ptNewCell );
 	};
 
 	XGC_INLINE xgc_void XGameMap::SetBlockExternIdx( iPoint ptCell, xgc_uint32 nIdx )

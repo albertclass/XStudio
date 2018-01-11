@@ -1,11 +1,22 @@
 #ifndef _COMMON_SPP_H_
 #define _COMMON_SPP_H_
 
-	#define XGC_CONCATENATE_MACRO(x, y)		x##y
-	#define XGC_CONCATENATE_MACRO3(x,y,z)	XGC_CONCATENATE_MACRO(x##y,z)
+	#define XGC_ARGS_0(...) 
+	#define XGC_ARGS_1(P1, ...) P1
+	#define XGC_ARGS_2(P1, P2, ...) P2
+	#define XGC_ARGS_3(P1, P2, P3, ...) P3
+	#define XGC_ARGS_4(P1, P2, P3, P4, ...) P4
+	#define XGC_ARGS_5(P1, P2, P3, P4, P5, ...) P5
+	#define XGC_ARGS_6(P1, P2, P3, P4, P5, P6, ...) P6
+	#define XGC_ARGS_7(P1, P2, P3, P4, P5, P6, P7, ...) P7
 
-	#define XGC_LINEID1(x, y)				XGC_CONCATENATE_MACRO(x, y)
-	#define XGC_LINEID(x)					XGC_LINEID1(x, __LINE__)
+	#define XGC_ARGS_N(N,...) XGC_JOIN(XGC_ARGS_, N) ( __VA_ARGS__ )
+
+	#define XGC_JOIN_X(x, y)			x##y
+	#define XGC_JOIN(x, y)				XGC_JOIN_X(x, y)
+	#define XGC_JOIN_WITH(with, x, y)	XGC_JOIN( x, XGC_JOIN(with, y) )
+
+	#define XGC_LINEID(x)					XGC_JOIN(x, __LINE__)
 
 	#define XGC_STRING1(x)					#x
 	#define XGC_STRING2(x)					XGC_STRING1(x)

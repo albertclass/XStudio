@@ -257,8 +257,8 @@ namespace xgc
 			return evt;
 		}
 
-		template<>
-		XObjectEvent* MakeEvent< XObjectEvent >( xgc_long id, xgc_long direction )
+		template< class TObjectEvent, typename std::enable_if< std::is_same< TObjectEvent, XObjectEvent >::value, TObjectEvent >::type >
+		XObjectEvent* MakeEvent( xgc_long id, xgc_long direction )
 		{
 			XObjectEvent *evt = XGC_NEW XObjectEvent;
 
@@ -346,14 +346,14 @@ namespace xgc
 		/// [1/7/2014 albert.xu]
 		/// 获取有符号数
 		///
-		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
+		template< class T, typename std::enable_if< is_numeric< T >::value, bool >::type = true >
 		XGC_INLINE T getValue( xAttrIndex nAttr ) const
 		{
 			return getAttr( nAttr ).toNumeric< T >();
 		}
 
-		template<>
-		XGC_INLINE xgc_bool getValue<xgc_bool>( xAttrIndex nAttr ) const
+		template< class T, typename std::enable_if< std::is_same< T, bool >::value, bool >::type = true >
+		XGC_INLINE T getValue( xAttrIndex nAttr ) const
 		{
 			return getAttr( nAttr ).toBool();
 		}
@@ -373,15 +373,15 @@ namespace xgc
 		/// [1/7/2014 albert.xu]
 		/// 设置属性值
 		///
-		template< class T, typename std::enable_if< is_numeric< T >::value, xgc_bool >::type = true >
+		template< class T, typename std::enable_if< is_numeric< T >::value, bool >::type = true >
 		XGC_INLINE xgc_void setValue( xAttrIndex nAttr, T _Val )
 		{
 			getAttr( nAttr ) = _Val;
 			OnValueChanged( nAttr );
 		}
 
-		template<>
-		XGC_INLINE xgc_void setValue<xgc_bool>( xAttrIndex nAttr, xgc_bool _Val )
+		template< class T, typename std::enable_if< std::is_same< T, bool >::value, bool >::type = true >
+		XGC_INLINE xgc_void setValue( xAttrIndex nAttr, xgc_bool _Val )
 		{
 			getAttr( nAttr ) = _Val;
 			OnValueChanged( nAttr );
@@ -565,7 +565,7 @@ namespace xgc
 	/// \date 4/25/2014
 	///
 	template< class T, typename std::enable_if< std::is_base_of< XObject, T >::value && std::is_base_of< std::enable_shared_from_this< T >, T >::value == false, xgc_bool >::type = true >
-	T* ObjectCast( typename xObject hObject )
+	T* ObjectCast( xObject hObject )
 	{
 		XObject* pObject = XObject::handle_exchange( hObject );
 		if( !pObject )
@@ -578,7 +578,7 @@ namespace xgc
 	}
 
 	template< class T, typename std::enable_if< std::is_base_of< XObject, T >::value && std::is_base_of< std::enable_shared_from_this< T >, T >::value == true, xgc_bool >::type = true >
-	std::shared_ptr< T > ObjectCast( typename xObject hObject )
+	std::shared_ptr< T > ObjectCast( xObject hObject )
 	{
 		T* Pointer = static_cast<T*>( GetXObject( hObject, &T::GetThisClass() ) );
 

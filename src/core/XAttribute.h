@@ -79,177 +79,6 @@ namespace xgc
 		template< xAttrType T >
 		struct Value2Type;
 
-		template< >
-		struct Type2Value < Void >
-		{
-			enum { Value = VT_VOID };
-		};
-
-		template< >
-		struct Type2Value < Bool >
-		{
-			enum { Value = VT_BOOL };
-		};
-
-		template< >
-		struct Type2Value < Char >
-		{
-			enum { Value = VT_CHAR };
-		};
-
-		template< >
-		struct Type2Value < Byte >
-		{
-			enum { Value = VT_BYTE };
-		};
-
-		template< >
-		struct Type2Value < Short >
-		{
-			enum { Value = VT_I16 };
-		};
-
-		template< >
-		struct Type2Value < UShort >
-		{
-			enum { Value = VT_U16 };
-		};
-
-		template< >
-		struct Type2Value < Integer >
-		{
-			enum { Value = VT_I32 };
-		};
-
-		template< >
-		struct Type2Value < Unsigned >
-		{
-			enum { Value = VT_U32 };
-		};
-
-		template< >
-		struct Type2Value < Long >
-		{
-			enum { Value = VT_I64 };
-		};
-
-		template< >
-		struct Type2Value < ULong >
-		{
-			enum { Value = VT_U64 };
-		};
-
-		template< >
-		struct Type2Value < Real32 >
-		{
-			enum { Value = VT_REAL32 };
-		};
-
-		template< >
-		struct Type2Value < Real64 >
-		{
-			enum { Value = VT_REAL64 };
-		};
-
-
-		template< >
-		struct Type2Value < StringPtr >
-		{
-			enum { Value = VT_STRING };
-		};
-
-
-		template< >
-		struct Type2Value < BufferPtr >
-		{
-			enum { Value = VT_BUFFER };
-		};
-
-		//////////////////////////////////////////////////////////////////////////
-		template< >
-		struct Value2Type < VT_VOID >
-		{
-			typedef Void type;
-		};
-
-		template< >
-		struct Value2Type < VT_BOOL >
-		{
-			typedef Bool type;
-		};
-
-		template< >
-		struct Value2Type < VT_CHAR >
-		{
-			typedef Char type;
-		};
-
-		template< >
-		struct Value2Type < VT_BYTE >
-		{
-			typedef Byte type;
-		};
-
-		template< >
-		struct Value2Type < VT_I16 >
-		{
-			typedef Short type;
-		};
-
-		template< >
-		struct Value2Type < VT_U16 >
-		{
-			typedef UShort type;
-		};
-
-		template< >
-		struct Value2Type < VT_I32 >
-		{
-			typedef Integer type;
-		};
-
-		template< >
-		struct Value2Type < VT_U32 >
-		{
-			typedef Unsigned type;
-		};
-
-		template< >
-		struct Value2Type < VT_I64 >
-		{
-			typedef Long type;
-		};
-
-		template< >
-		struct Value2Type < VT_U64 >
-		{
-			typedef ULong type;
-		};
-
-		template< >
-		struct Value2Type < VT_REAL32 >
-		{
-			typedef Real32 type;
-		};
-
-		template< >
-		struct Value2Type < VT_REAL64 >
-		{
-			typedef Real64 type;
-		};
-
-		template< >
-		struct Value2Type < VT_STRING >
-		{
-			typedef StringPtr type;
-		};
-
-		template< >
-		struct Value2Type < VT_BUFFER >
-		{
-			typedef BufferPtr type;
-		};
-
 		///
 		/// 默认构造，不允许隐式调用
 		/// [9/9/2014] create by albert.xu
@@ -321,19 +150,19 @@ namespace xgc
 			xgc_size nTypeSize = 0;
 			switch( eType )
 			{
-				case xgc::VT_BOOL: nTypeSize = sizeof Bool;      break;
-				case xgc::VT_CHAR: nTypeSize = sizeof Char;      break;
-				case xgc::VT_BYTE: nTypeSize = sizeof Byte;      break;
-				case xgc::VT_I16: nTypeSize = sizeof Short;     break;
-				case xgc::VT_I32: nTypeSize = sizeof Integer;   break;
-				case xgc::VT_I64: nTypeSize = sizeof Long;      break;
-				case xgc::VT_U16: nTypeSize = sizeof UShort;    break;
-				case xgc::VT_U32: nTypeSize = sizeof Unsigned;  break;
-				case xgc::VT_U64: nTypeSize = sizeof ULong;     break;
-				case xgc::VT_REAL32: nTypeSize = sizeof Real32;    break;
-				case xgc::VT_REAL64: nTypeSize = sizeof Real64;    break;
-				case xgc::VT_STRING: nTypeSize = sizeof StringPtr; break;
-				case xgc::VT_BUFFER: nTypeSize = sizeof BufferPtr; break;
+				case xgc::VT_BOOL:   nTypeSize = sizeof(Bool);      break;
+				case xgc::VT_CHAR:   nTypeSize = sizeof(Char);      break;
+				case xgc::VT_BYTE:   nTypeSize = sizeof(Byte);      break;
+				case xgc::VT_I16:    nTypeSize = sizeof(Short);     break;
+				case xgc::VT_I32:    nTypeSize = sizeof(Integer);   break;
+				case xgc::VT_I64:    nTypeSize = sizeof(Long);      break;
+				case xgc::VT_U16:    nTypeSize = sizeof(UShort);    break;
+				case xgc::VT_U32:    nTypeSize = sizeof(Unsigned);  break;
+				case xgc::VT_U64:    nTypeSize = sizeof(ULong);     break;
+				case xgc::VT_REAL32: nTypeSize = sizeof(Real32);    break;
+				case xgc::VT_REAL64: nTypeSize = sizeof(Real64);    break;
+				case xgc::VT_STRING: nTypeSize = sizeof(StringPtr); break;
+				case xgc::VT_BUFFER: nTypeSize = sizeof(BufferPtr); break;
 			}
 
 			return nTypeSize;
@@ -346,7 +175,7 @@ namespace xgc
 		xgc_void Release()
 		{
 			if( isNumeric() )
-				setValue( 0 );
+				setValue( int(0) );
 			else if( isBool() )
 				setValue( false );
 			else if( isString() )
@@ -456,6 +285,15 @@ namespace xgc
 		xgc_bool isValid()const { return getType() != VT_VOID; }
 
 		///
+		/// 设置bool类型
+		/// [12/24/2014] create by jianglei.kinly
+		///
+		xgc_void setValue( xgc_bool _Val )
+		{
+			*mpBool = _Val;
+		}
+
+		///
 		/// [1/8/2014 albert.xu]
 		/// 整数赋值
 		///
@@ -501,16 +339,6 @@ namespace xgc
 				XGC_DEBUG_MESSAGE( "无效的类型值" );
 				break;
 			}
-		}
-
-		///
-		/// 设置bool类型
-		/// [12/24/2014] create by jianglei.kinly
-		///
-		template<>
-		xgc_void setValue<xgc_bool>( xgc_bool _Val )
-		{
-			*mpBool = _Val;
 		}
 
 		///
@@ -1002,6 +830,177 @@ namespace xgc
 		};
 	};
 
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Void >
+	{
+		enum { Value = VT_VOID };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Bool >
+	{
+		enum { Value = VT_BOOL };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Char >
+	{
+		enum { Value = VT_CHAR };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Byte >
+	{
+		enum { Value = VT_BYTE };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Short >
+	{
+		enum { Value = VT_I16 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::UShort >
+	{
+		enum { Value = VT_U16 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Integer >
+	{
+		enum { Value = VT_I32 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Unsigned >
+	{
+		enum { Value = VT_U32 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Long >
+	{
+		enum { Value = VT_I64 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::ULong >
+	{
+		enum { Value = VT_U64 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Real32 >
+	{
+		enum { Value = VT_REAL32 };
+	};
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::Real64 >
+	{
+		enum { Value = VT_REAL64 };
+	};
+
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::StringPtr >
+	{
+		enum { Value = VT_STRING };
+	};
+
+
+	template< >
+	struct XAttribute::Type2Value < XAttribute::BufferPtr >
+	{
+		enum { Value = VT_BUFFER };
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	template< >
+	struct XAttribute::Value2Type < VT_VOID >
+	{
+		typedef XAttribute::Void type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_BOOL >
+	{
+		typedef XAttribute::Bool type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_CHAR >
+	{
+		typedef XAttribute::Char type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_BYTE >
+	{
+		typedef XAttribute::Byte type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_I16 >
+	{
+		typedef XAttribute::Short type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_U16 >
+	{
+		typedef XAttribute::UShort type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_I32 >
+	{
+		typedef XAttribute::Integer type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_U32 >
+	{
+		typedef XAttribute::Unsigned type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_I64 >
+	{
+		typedef XAttribute::Long type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_U64 >
+	{
+		typedef XAttribute::ULong type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_REAL32 >
+	{
+		typedef XAttribute::Real32 type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_REAL64 >
+	{
+		typedef XAttribute::Real64 type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_STRING >
+	{
+		typedef XAttribute::StringPtr type;
+	};
+
+	template< >
+	struct XAttribute::Value2Type < VT_BUFFER >
+	{
+		typedef XAttribute::BufferPtr type;
+	};
+
 	///
 	/// [1/9/2014 albert.xu]
 	/// 转为整型取值
@@ -1059,62 +1058,62 @@ namespace xgc
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE V operator + ( const XAttribute& _Src, V _Val )
 	{
-		return _Src.toNumeric< decltype( V ) >() + _Val;
+		return _Src.toNumeric< V >() + _Val;
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE V operator - ( const XAttribute& _Src, V _Val )
 	{
-		return _Src.toNumeric< decltype( V ) >() - _Val;
+		return _Src.toNumeric< V >() - _Val;
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator * ( const XAttribute& _Src, V _Val )
 	{
-		return _Src.toNumeric< decltype( V ) >() * _Val;
+		return _Src.toNumeric< V >() * _Val;
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator / ( const XAttribute& _Src, V _Val )
 	{
-		return _Src.toNumeric< decltype( V ) >() / _Val;
+		return _Src.toNumeric< V >() / _Val;
 	}
 
 	template< class V, typename std::enable_if< std::is_integral< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator % ( const XAttribute& _Src, V _Val )
 	{
-		return _Src.toNumeric< decltype( V ) >() % _Val;
+		return _Src.toNumeric< V >() % _Val;
 	}
 
 	//////////////////////////////////////////////////////////////////
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE V operator + ( V _Val, const XAttribute& _Src )
 	{
-		return _Val + _Src.toNumeric< decltype( V ) >();
+		return _Val + _Src.toNumeric< V >();
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE V operator - ( V _Val, const XAttribute& _Src )
 	{
-		return _Val - _Src.toNumeric< decltype( V ) >();
+		return _Val - _Src.toNumeric< V >();
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator * ( V _Val, const XAttribute& _Src )
 	{
-		return _Val * _Src.toNumeric< decltype( V ) >();
+		return _Val * _Src.toNumeric< V >();
 	}
 
 	template< class V, typename std::enable_if< is_numeric< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator / ( V _Val, const XAttribute& _Src )
 	{
-		return _Val / _Src.toNumeric< decltype( V ) >();
+		return _Val / _Src.toNumeric< V >();
 	}
 
 	template< class V, typename std::enable_if< std::is_integral< V >::value || std::is_base_of< XAttribute, V >::value, xgc_bool >::type = true >
 	XGC_INLINE XAttribute operator % ( V _Val, const XAttribute& _Src )
 	{
-		return _Val % _Src.toNumeric< decltype( V ) >();
+		return _Val % _Src.toNumeric< V >();
 	}
 
 	///

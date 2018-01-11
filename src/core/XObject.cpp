@@ -60,7 +60,7 @@ namespace xgc
 			return false;
 		}
 
-		memset( mAttributes, 0, _msize( mAttributes ) );
+		memset( mAttributes, 0, memsize( mAttributes ) );
 
 		mAttributeInfo = cls.GetAttributeInfo();
 		return true;
@@ -188,7 +188,7 @@ namespace xgc
 		evt.sender	= GetObjectID();
 		evt.target	= INVALID_OBJECT_ID;
 
-		EmmitEvent( &evt, false );
+		EmmitEvent( &evt, xgc_nullptr );
 	}
 
 	///
@@ -204,7 +204,7 @@ namespace xgc
 		evt.sender = GetObjectID();
 		evt.target = INVALID_OBJECT_ID;
 
-		EmmitEvent( &evt, false );
+		EmmitEvent( &evt, xgc_nullptr );
 	}
 
 	///

@@ -31,11 +31,11 @@ public: \
 	template< class T > \
 	static const XClassInfo& __get_##thisClass(); \
 	static const XClassInfo& __loc_##thisClass = __get_##thisClass<thisClass>(); \
-	const XClassInfo& thisClass##::GetRuntimeClass() const \
+	const XClassInfo& thisClass::GetRuntimeClass() const \
 	{ \
 		return __loc_##thisClass; \
 	} \
-	const XClassInfo& thisClass##::GetThisClass() \
+	const XClassInfo& thisClass::GetThisClass() \
 	{ \
 		return __loc_##thisClass; \
 	} \
@@ -44,23 +44,23 @@ public: \
 	{ \
 		auto thisClassName = #thisClass; \
 		auto baseClassInfo = &baseClass::GetThisClass(); \
-		static XAttributeImpl __attribute[] = { \
+		static XAttributeImpl x_attribute[] = { \
 
 #define IMPLEMENT_ATTRIBUTE( NAME, TYPE, FLAGS, VERSION )\
-			{ { TYPE, #NAME, FLAGS, 1, &T::##NAME, }, ConvertVersion( VERSION ) }, \
+			{ { TYPE, #NAME, FLAGS, 1, &T::NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_ATTRIBUTE_ARRAY( NAME, TYPE, COUNT, FLAGS, VERSION )\
-			{ { TYPE, #NAME, FLAGS | 0x80, COUNT, &T::##NAME, }, ConvertVersion( VERSION ) }, \
+			{ { TYPE, #NAME, FLAGS | 0x80, COUNT, &T::NAME, }, ConvertVersion( VERSION ) }, \
 
 #define IMPLEMENT_XCLASS_END() \
 			{ { VT_VOID, xgc_nullptr, 0, 0, xgc_nullptr }, { 0, 0 } }, \
 		}; \
-		static XClassInfo __cls__( thisClassName, __attribute, baseClassInfo ); \
+		static XClassInfo __cls__( thisClassName, x_attribute, baseClassInfo ); \
 		return __cls__; \
 	} \
 
 #define REGIST_ATTR_LISTENER( cls, attr, memberFunc )\
-	static xgc_bool XGC_LINEID( cls ) = cls##::GetThisClass().SetAttrListener( cls##::attr, &##cls##::##memberFunc )\
+	static xgc_bool XGC_LINEID( cls ) = cls::GetThisClass().SetAttrListener( cls::attr, &cls::memberFunc )\
 
 namespace xgc
 {
@@ -128,6 +128,7 @@ namespace xgc
 	typedef xgc_lpvoid	xPosition;
 
 	class XObject;
+	class XAttributeInfo;
 
 	///
 	/// [1/24/2014 albert.xu]
@@ -149,8 +150,8 @@ namespace xgc
 		xgc_size	mAttributeCount;	///< 属性个数
 		xgc_size	mAttributeSize;		///< 属性所占空间大小
 
-		XAttributeImpl * __implement;	///< 本地属性定义描述指针
-		XAttributeInfo * __attribute;	///< 本地属性信息描述指针
+		XAttributeImpl * x_implement;	///< 本地属性定义描述指针
+		XAttributeInfo * x_attribute;	///< 本地属性信息描述指针
 
 		XAttributeImpl ** mImplementInfo;	///< 属性定义描述指针
 		XAttributeInfo ** mAttributeInfo;	///< 属性信息描述指针
@@ -292,7 +293,7 @@ namespace xgc
 		XGC_INLINE xAttrIndex GetAttrIndexByName( xgc_lpcstr lpName )
 		{
 			XGC_ASSERT_RETURN( lpName, -1 );
-			auto& iter = mName2Index.find( lpName );
+			auto iter = mName2Index.find( lpName );
 			if( iter != mName2Index.end() )
 				return *( iter->second );
 			XGC_DEBUG_MESSAGE( "没有找到对应的Index[%s]", lpName );

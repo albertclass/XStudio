@@ -357,20 +357,20 @@ namespace xgc
 
 		if( pNewArea )
 		{
-			xObjectSet::_Pairib ib = pNewArea->insert( pObject->GetObjectID() );
+			auto ib = pNewArea->insert( pObject->GetObjectID() );
 			XGC_ASSERT_MESSAGE( ib.second, "场景对象进入区域失败" );
 		}
 
 		// 离开视野
 		for( auto it : leave_eyeshot_list )
 		{
-			NotifyLeaveEyeshot( pObject, it, VisualMode::eLeave );
+			NotifyLeaveEyeshot( pObject, it, eVisualMode::eLeave );
 		}
 
 		// 进入视野
 		for( auto it : enter_eyeshot_list )
 		{
-			NotifyEnterEyeshot( pObject, it, VisualMode::eEnter );
+			NotifyEnterEyeshot( pObject, it, eVisualMode::eEnter );
 		}
 		return;
 	}
@@ -381,7 +381,7 @@ namespace xgc
 	// \param nObjID 被通知的对象ID
 	// \param pObj 正在移动的对象
 	//---------------------------------------------------//
-	xgc_void XGameMap::NotifyEnterEyeshot( XGameObject* pObject, xObject nObjID, VisualMode eMode )
+	xgc_void XGameMap::NotifyEnterEyeshot( XGameObject* pObject, xObject nObjID, eVisualMode eMode )
 	{
 		XGameObject* pTarget = ObjectCast< XGameObject >( nObjID );
 		if( !pTarget || !pObject || pTarget == pObject )
@@ -407,7 +407,7 @@ namespace xgc
 	// nObjID:		被通知的对象ID
 	// pObj:		正在移动的对象
 	//---------------------------------------------------//
-	xgc_void XGameMap::NotifyLeaveEyeshot( XGameObject* pObject, xObject nObjID, VisualMode eMode )
+	xgc_void XGameMap::NotifyLeaveEyeshot( XGameObject* pObject, xObject nObjID, eVisualMode eMode )
 	{
 		XGameObject* pTarget = ObjectCast< XGameObject >( nObjID );
 		if( !pTarget || !pObject || pTarget == pObject )
@@ -505,7 +505,7 @@ namespace xgc
 		datetime dt_start, dt_close;
 		datetime now = datetime::now();
 
-		if( _strnicmp( "relative", lpStart, 8 ) == 0 )
+		if( strncasecmp( "relative", lpStart, 8 ) == 0 )
 		{
 			dt_start = datetime::relative_time( timespan::convert( lpStart + 8 ) );
 		}
@@ -964,7 +964,7 @@ namespace xgc
 		return FetchObject( rc, fn );
 	}
 
-	xgc_void XGameMap::ExchangeBlock( XGameObject* pObject, iPoint& iOldCell, iPoint& iNewCell )
+	xgc_void XGameMap::ExchangeBlock( XGameObject* pObject, iPoint iOldCell, iPoint iNewCell )
 	{
 		FUNCTION_BEGIN;
 		if( pObject->GetBarrierFlag() )
@@ -985,7 +985,7 @@ namespace xgc
 		FUNCTION_END;
 	}
 
-	void XGameMap::OnExchangeBlock( XGameObject* pObject, iPoint& ptOldCell, iPoint& ptNewCell )
+	void XGameMap::OnExchangeBlock( XGameObject* pObject, iPoint ptOldCell, iPoint ptNewCell )
 	{
 		int nOld, nNew;
 		if( ( nOld = GetBlockExternIdx( ptOldCell ) ) != ( nNew = GetBlockExternIdx( ptNewCell ) ) )

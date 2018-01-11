@@ -6,10 +6,28 @@
 #ifndef _XCORE_DEFINE_H_
 #define _XCORE_DEFINE_H_
 
-#ifdef CORE_EXPORTS
-#	define CORE_API __declspec(dllexport)
-#else
-#	define CORE_API __declspec(dllimport)
+#if defined( _WINDOWS )
+#	ifdef CORE_EXPORTS
+#	 ifdef _DLL
+#		define CORE_API __declspec(dllexport)
+#	 elif defined( _LIB )
+#		define CORE_API
+#	 endif
+#	else
+#	 ifdef _STATIC
+#		define CORE_API
+#	 else
+#		define CORE_API __declspec(dllimport)
+#	 endif
+#	endif
+#elif defined( __GNUC__ )
+#	if defined( CORE_EXPORTS ) && defined( _DLL )
+#		define CORE_API __attribute__((__visibility__("default")))
+#	else
+#		define CORE_API
+#	endif
+#else 
+#	define CORE_API
 #endif
 
 #define NODE_TYPE_XBAG		1

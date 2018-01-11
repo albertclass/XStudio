@@ -46,7 +46,7 @@ namespace xgc
 				XGameObject* pObject = ObjectCast< XGameObject >( hObject );
 				XGC_ASSERT_CONTINUE( pObject, "无效的对象句柄%x", hObject );
 
-				OnEnterEyeshot( pObject, VisualMode::eAppear );
+				OnEnterEyeshot( pObject, eVisualMode::eAppear );
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace xgc
 				XGameObject* pObject = ObjectCast< XGameObject >( hObject );
 				XGC_ASSERT_CONTINUE( pObject, "无效的对象句柄%x", hObject );
 
-				OnLeaveEyeshot( pObject, VisualMode::eVanish );
+				OnLeaveEyeshot( pObject, eVisualMode::eVanish );
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace xgc
 				XGameObject* pObject = ObjectCast< XGameObject >( hObject );
 				XGC_ASSERT_CONTINUE( pObject, "无效的对象句柄%x", hObject );
 
-				pObject->OnEnterEyeshot( this, VisualMode::eShowOther );
+				pObject->OnEnterEyeshot( this, eVisualMode::eShowOther );
 			}
 		}
 	}
@@ -131,7 +131,7 @@ namespace xgc
 				XGameObject* pObject = ObjectCast< XGameObject >( hObject );
 				XGC_ASSERT_CONTINUE( pObject, "无效的对象句柄%x", hObject );
 
-				pObject->OnLeaveEyeshot( this, VisualMode::eHideOther );
+				pObject->OnLeaveEyeshot( this, eVisualMode::eHideOther );
 			}
 		}
 	}

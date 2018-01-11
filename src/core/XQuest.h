@@ -48,7 +48,7 @@ namespace xgc
 		///
 		XGC_INLINE xgc_bool isFinished()const
 		{
-			return getValue<xgc_bool>( Finished );
+			return getValue( Finished );
 		}
 
 		///

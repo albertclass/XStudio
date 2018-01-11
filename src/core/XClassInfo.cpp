@@ -28,8 +28,8 @@ namespace xgc
 		, mImplementCount( 0 )
 		, mImplementInfo( xgc_nullptr )
 		, mAttributeInfo( xgc_nullptr )
-		, __implement( xgc_nullptr )
-		, __attribute( xgc_nullptr )
+		, x_implement( xgc_nullptr )
+		, x_attribute( xgc_nullptr )
 		, mAttributeSize( 0 )
 		, mParent( pParent )
 	{
@@ -79,13 +79,13 @@ namespace xgc
 		}
 
 		// 该类的属性定义
-		__implement = (XAttributeImpl *)malloc( nImplementCount * sizeof( XAttributeImpl ) );
-		memcpy( __implement, pImplementInfo, nImplementCount * sizeof( XAttributeImpl ) );
+		x_implement = (XAttributeImpl *)malloc( nImplementCount * sizeof( XAttributeImpl ) );
+		memcpy( x_implement, pImplementInfo, nImplementCount * sizeof( XAttributeImpl ) );
 
 		// 填充属性定义指针列表
 		for( xgc_size i = pParent->mImplementCount, j = 0; i < nImplementCount; ++i, ++j )
 		{
-			mImplementInfo[i] = __implement + j;
+			mImplementInfo[i] = x_implement + j;
 		}
 
 		// 若该类有属性定义
@@ -112,16 +112,16 @@ namespace xgc
 				continue;
 
 			// 初始化本地列表
-			__attribute[j].impl           = pImplementInfo[j].impl;
-			__attribute[j].offset         = nAttrPos;
-			__attribute[j].cycle_change   = 0;
-			__attribute[j].OnValueChanged = xgc_nullptr;
+			x_attribute[j].impl           = pImplementInfo[j].impl;
+			x_attribute[j].offset         = nAttrPos;
+			x_attribute[j].cycle_change   = 0;
+			x_attribute[j].OnValueChanged = xgc_nullptr;
 
 			// 计算属性索引号
-			__attribute[j].impl.attr_ptr[0] = nAttrIdx++;
+			x_attribute[j].impl.attr_ptr[0] = nAttrIdx++;
 
 			// 将指针指向本地属性列表的正确地址
-			mAttributeInfo[nAttrIdx] = __attribute + j;
+			mAttributeInfo[nAttrIdx] = x_attribute + j;
 
 			// 计算属性缓冲长度
 			nAttrPos += XAttribute::Type2Size( pImplementInfo[j].impl.type ) * pImplementInfo[j].impl.count;
@@ -130,11 +130,11 @@ namespace xgc
 
 	XClassInfo::~XClassInfo()
 	{
-		free( __attribute );
-		free( __implement );
+		free( x_attribute );
+		free( x_implement );
 
-		__attribute = xgc_nullptr;
-		__implement = xgc_nullptr;
+		x_attribute = xgc_nullptr;
+		x_implement = xgc_nullptr;
 
 		free( mAttributeInfo );
 		free( mImplementInfo );

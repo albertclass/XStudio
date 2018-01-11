@@ -2,6 +2,7 @@
 #include "XVector2.h"
 #include "XVector3.h"
 #include <float.h>
+#include <limits.h>
 namespace xgc
 {
 	namespace XMath

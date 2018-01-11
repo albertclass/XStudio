@@ -265,13 +265,13 @@ namespace xgc
 		for( auto &cmd : mSlotCommands )
 		{
 			// 将相同位置的操作进行合并处理
-			mapUpdate[{cmd.hBag, cmd.nSlot}].push_back( &cmd );
+			mapUpdate[std::make_tuple(cmd.hBag, cmd.nSlot)].push_back( &cmd );
 
 			// 处理每一步操作，将物品的增减量提出来
-			auto it = mapOperator.find( {cmd.hBag, cmd.After.hGoods} );
+			auto it = mapOperator.find( std::make_tuple(cmd.hBag, cmd.After.hGoods) );
 			if( it == mapOperator.end() )
 			{
-				auto ib = mapOperator.insert( { { cmd.hBag, cmd.After.hGoods }, 0 } );
+				auto ib = mapOperator.insert( std::make_pair( std::make_tuple(cmd.hBag, cmd.After.hGoods), 0 ) );
 				if( false == ib.second )
 					break;
 

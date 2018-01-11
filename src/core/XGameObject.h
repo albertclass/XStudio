@@ -4,9 +4,10 @@
 
 namespace xgc
 {
+	class XGameMap;
 	//////////////////////////////////////////////////////////////////////////
 	// 基础对象类， 所有屏幕上的对象都从此类派生
-	enum class CORE_API VisualMode
+	enum CORE_API eVisualMode
 	{
 		eEnter,	/// 进入（从无到有）
 		eLeave,	/// 离开（从有到无）
@@ -280,7 +281,7 @@ namespace xgc
 		/// 对象进入视野
 		/// @param pObject 进入视野的对象指针
 		///
-		virtual xgc_void OnEnterEyeshot( XGameObject* pObject, VisualMode eMode )
+		virtual xgc_void OnEnterEyeshot( XGameObject* pObject, eVisualMode eMode )
 		{
 			EmmitEvent( evt_enter_vision );
 		}
@@ -290,7 +291,7 @@ namespace xgc
 		/// Description:	对象离开视野
 		/// pObject	:	离开视野的对象指针
 		///
-		virtual xgc_void OnLeaveEyeshot( XGameObject* pObject, VisualMode eMode )
+		virtual xgc_void OnLeaveEyeshot( XGameObject* pObject, eVisualMode eMode )
 		{
 			EmmitEvent( evt_leave_vision );
 		}

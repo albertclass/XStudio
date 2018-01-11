@@ -2,12 +2,6 @@
 #include <math.h>
 #include <xmmintrin.h>
 
-#ifdef CORE_EXPORTS
-#define CORE_API __declspec(dllexport)
-#else
-#define CORE_API __declspec(dllimport)
-#endif	//CORE_EXPORTS
-
 namespace xgc
 {
 	#define FLOATSIGNBITSET(f)		((*(const unsigned long *)&(f)) >> 31)
