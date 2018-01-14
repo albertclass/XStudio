@@ -352,12 +352,6 @@ namespace xgc
 			return getAttr( nAttr ).toNumeric< T >();
 		}
 
-		template< class T, typename std::enable_if< std::is_same< T, bool >::value, bool >::type = true >
-		XGC_INLINE T getValue( xAttrIndex nAttr ) const
-		{
-			return getAttr( nAttr ).toBool();
-		}
-
 		///
 		/// \brief 根据VT类型获取属性值
 		/// \date 12/28/2017
@@ -558,6 +552,12 @@ namespace xgc
 		/// \date 2017/11/01
 		virtual xgc_void OnDestroy() = 0;
 	};
+
+	template<>
+	XGC_INLINE xgc_bool XObject::getValue< xgc_bool >( xAttrIndex nAttr ) const
+	{
+		return getAttr( nAttr ).toBool();
+	}
 
 	///
 	/// \brief 将一个句柄对象转为指针对象，需提供转换的目标类型

@@ -128,7 +128,7 @@ namespace xgc
 	typedef xgc_lpvoid	xPosition;
 
 	class XObject;
-	class XAttributeInfo;
+	struct XAttributeInfo;
 
 	///
 	/// [1/24/2014 albert.xu]
