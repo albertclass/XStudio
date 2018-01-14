@@ -13,8 +13,8 @@ xgc_void OnMessage( CNetSession* net, xgc_lpvoid data, xgc_size size )
 
 	auto pstr = (char*)data;
 
-	pstr += sizeof MessageHeader;
-	size -= sizeof MessageHeader;
+	pstr += sizeof( MessageHeader );
+	size -= sizeof( MessageHeader );
 
 	switch( type )
 	{

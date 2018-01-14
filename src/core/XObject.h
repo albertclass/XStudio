@@ -553,12 +553,6 @@ namespace xgc
 		virtual xgc_void OnDestroy() = 0;
 	};
 
-	template<>
-	XGC_INLINE xgc_bool XObject::getValue< xgc_bool >( xAttrIndex nAttr ) const
-	{
-		return getAttr( nAttr ).toBool();
-	}
-
 	///
 	/// \brief 将一个句柄对象转为指针对象，需提供转换的目标类型
 	/// \author albert.xu
@@ -584,6 +578,25 @@ namespace xgc
 
 		return Pointer ? Pointer->shared_from_this() : xgc_nullptr;
 	}
+
+	template<>
+	XGC_INLINE xgc_bool XObject::getValue< xgc_bool >( xAttrIndex nAttr ) const
+	{
+		return getAttr( nAttr ).toBool();
+	}
+
+	// 获取父对象ID
+	XGC_INLINE xObject XObject::GotParent( const XClassInfo & cls ) const
+	{
+		XObject *pObject = ObjectCast< XObject >( GetObjectID() );
+		while( pObject && cls != pObject->GetRuntimeClass() )
+		{
+			pObject = ObjectCast< XObject >( pObject->GetParent() );
+		}
+
+		return pObject ? pObject->GetObjectID() : INVALID_OBJECT_ID;
+	}
+
 }
 
 #endif //_XOBJECT_

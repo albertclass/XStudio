@@ -137,8 +137,8 @@ void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, T &req )
 	header.length = htons( (xgc_uint16)( sizeof( header ) + sizeof( req ) ) );
 
 	net::SendPacketChains( net->GetHandle(), {
-		{ (xgc_lpvoid)&header, sizeof( header ) },
-		{ &req, sizeof( req ) },
+		net::MakeBuffer( header ),
+		net::MakeBuffer( req ),
 	} );
 }
 
@@ -150,8 +150,8 @@ XGC_INLINE void SendPacket( CNetSession* net, xgc_uint16 type, xgc_uint16 id, xg
 	header.length = htons( xgc_uint16( sizeof( header ) + size ) );
 
 	net::SendPacketChains( net->GetHandle(), {
-		{ (xgc_lpvoid)&header, sizeof( header ) },
-		{ &data, size },
+		net::MakeBuffer( header ),
+		net::MakeBuffer( &data, size ),
 	} );
 }
 

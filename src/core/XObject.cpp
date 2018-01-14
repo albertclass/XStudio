@@ -66,18 +66,6 @@ namespace xgc
 		return true;
 	}
 
-	// 获取父对象ID
-	xObject XObject::GotParent( const XClassInfo & cls ) const
-	{
-		XObject *pObject = ObjectCast< XObject >( GetObjectID() );
-		while( pObject && cls != pObject->GetRuntimeClass() )
-		{
-			pObject = ObjectCast< XObject >( pObject->GetParent() );
-		}
-
-		return pObject ? pObject->GetObjectID() : INVALID_OBJECT_ID;
-	}
-
 	xgc_void XObject::Destroy()
 	{
 		if( false == mIsDestory )

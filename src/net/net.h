@@ -19,9 +19,9 @@ namespace xgc
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/// 套接字消息
-		#define SOCKET_MESSAGE_TYPE	0xff
+		#define SOCKET_MESSAGE_TYPE	0xf
 		/// 通知消息
-		#define NOTIFY_MESSAGE_TYPE	0xfe
+		#define NOTIFY_MESSAGE_TYPE	0xe
 
 		/// 连接建立事件
 		#define EVENT_PENDING	0
