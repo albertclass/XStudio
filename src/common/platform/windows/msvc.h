@@ -34,6 +34,7 @@
 #define strncasecmp _strnicmp
 #define memsize	_msize
 #define snprintf_s _snprintf_s
+#define vsnprintf_s _vsnprintf_s
 
 #define XGC_ASSERT_MSG(expr, msg, ...) \
 	(void)( ( !!( expr ) ) || \

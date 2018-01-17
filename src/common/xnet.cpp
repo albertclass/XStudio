@@ -51,7 +51,7 @@ namespace xgc
 					exit( 1 );
 				}
 
-				atexit( (void (*)() )WSAStartup );
+				atexit( (void (*)() )WSACleanup );
 			}
 		};
 
@@ -756,6 +756,10 @@ namespace xgc
 
 			net_sockname( s, ip, sizeof( ip ), &port );
 			return net_format_addr( fmt, fmt_len, ip, port );
+		}
+		COMMON_API int net_close( SOCKET s )
+		{
+			return closesocket( s );
 		}
 	}
 }

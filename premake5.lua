@@ -11,7 +11,7 @@ group "library"
 		kind "SharedLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs "src/common"
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -52,7 +52,7 @@ group "library"
 		kind "SharedLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { "src/net", "src/common", "dep/asio/asio/include" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -96,7 +96,7 @@ group "library"
 		kind "SharedLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { "src/net_module", "src/net", "src/common" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -138,7 +138,7 @@ group "library"
 		kind "SharedLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { "src/database", "src/common"}
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -185,7 +185,7 @@ group "library"
 		kind "StaticLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { "src/nosql", "src/common"}
 		targetdir "lib/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -234,7 +234,7 @@ group "library"
 		kind "StaticLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { 
 			"src/framework", 
 			"src/common", 
@@ -293,7 +293,7 @@ group "library"
 		kind "SharedLib"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/library"
 		includedirs { "src/core", "src/common" }
 		links { "common" }
 		targetdir "bin/%{cfg.buildcfg}"
@@ -337,7 +337,7 @@ group "sample"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/sample"
 		includedirs { "sample/network", "src/common", "src/net", "src/net_module" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -382,7 +382,7 @@ group "chat"
 			kind "ConsoleApp"
 			language "C++"
 			cppdialect "C++11"
-			location "prj"
+			location "prj/chat"
 			includedirs { 
 				"sample/chat", 
 				"sample/chat/chat_protocol",
@@ -463,7 +463,7 @@ group "servers"
 			kind "ConsoleApp"
 			language "C++"
 			cppdialect "C++11"
-			location "prj"
+			location "prj/servers"
 			includedirs { "sample/servers", "src/common", "src/database", "src/net", "src/net_module", "src/framework" }
 			targetdir "bin/%{cfg.buildcfg}"
 			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
@@ -519,70 +519,76 @@ group "servers"
 
 	server_project( "gate_server" )
 	server_project( "game_server" )
+	server_project( "game_client" )
 
-	project "game_client"
-		kind "ConsoleApp"
-		language "C++"
-		cppdialect "C++11"
-		location "prj"
-		includedirs { "sample/servers", "src/common", "src/net" }
-		targetdir "bin/%{cfg.buildcfg}"
-		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-		links { "common", "net" }
-		defines { "CLIENT" }
-		-- pchheader "sample/servers/header.h"
-		-- pchsource "sample/servers/header.cpp"
+group "tools"
+	function tools_project( prj_name, prj_kind )
+		local prj = project( prj_name )
+			kind( prj_kind )
+			language "C++"
+			cppdialect "C++11"
+			location "prj/tools"
+			includedirs {"src/common" }
+			targetdir "bin/%{cfg.buildcfg}"
+			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+			links { "common" }
 
-		flags { "MultiProcessorCompile" }
+			flags { "MultiProcessorCompile" }
 
-		files {
-			"sample/servers/header.h",
-			"sample/servers/header.cpp",
-			"sample/servers/protocol.h",
-			"sample/servers/game_client/**",
-		}
-
-		vpaths {
-			["Header Files/*"] = { 
-				"sample/servers/*.h", 
-				"sample/servers/game_client/**.h" 
-			},
-
-			["Source Files/*"] = { 
-				"sample/servers/*.cpp", 
-				"sample/servers/game_client/**.cpp" 
-			}
-		}
-
-		filter "configurations:Debug"
-			defines { "_DEBUG", "_DEBUG_OUTPUT" }
-
-		filter "configurations:Release"
-			defines { "NDEBUG", "_ASSERT_LOG" }
-			optimize "On"
-		
-		filter "system:windows"
-			includedirs { "dep/vld/src/" }
-			libdirs { 
-				"lib/%{cfg.buildcfg}", 
-				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
+			files {
+				"tools/" .. prj_name .. "/**",
 			}
 
-			systemversion "10.0.14393.0"
-			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+			vpaths {
+				["Header Files/*"] = { 
+					"tools/" .. prj_name .. "/*.h", 
+				},
 
-		filter "system:linux"
-			libdirs { "bin/%{cfg.buildcfg}" }
-			links { "stdc++", "rt", "pthread" }
-			buildoptions { "-pthread" }
-			defines { "LINUX64" }
+				["Source Files/*"] = { 
+					"tools/" .. prj_name .. "/*.cpp", 
+				}
+			}
+
+			filter "configurations:Debug"
+				defines { "_DEBUG", "_DEBUG_OUTPUT" }
+
+			filter "configurations:Release"
+				defines { "NDEBUG", "_ASSERT_LOG" }
+				optimize "On"
+			
+			filter "system:windows"
+				includedirs { "dep/vld/src/" }
+				libdirs { 
+					"lib/%{cfg.buildcfg}", 
+					"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
+				}
+
+				systemversion "10.0.14393.0"
+				defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+
+			filter "system:linux"
+				libdirs { "bin/%{cfg.buildcfg}" }
+				links { "stdc++", "rt", "pthread", "ncurses", "panel" }
+				buildoptions { "-pthread" }
+				defines { "LINUX64" }
+			return prj
+	end
+
+	tools_project( "lua_debuger_stub", "SharedLib" )
+	project( "lua_debuger_stub" )
+		includedirs {"dep/luajit/src" }
+		libdirs {"dep/luajit/src" }
+		links { "lua51" }
+		defines { "LUA_DEBUGER_EXPORTS" }
+
+	tools_project( "cpp_proto", "ConsoleApp" )
 
 group ""
 	project "unittest"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++11"
-		location "prj"
+		location "prj/sample"
 		includedirs {"src/common", "src/net", "src/database" }
 		targetdir "bin/%{cfg.buildcfg}"
 		objdir "obj/%{prj.name}/%{cfg.buildcfg}"

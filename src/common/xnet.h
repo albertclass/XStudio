@@ -54,6 +54,7 @@ namespace xgc
 		COMMON_API int net_format_addr( char *fmt, size_t fmt_len, char *ip, int port );
 		COMMON_API int net_format_peer( SOCKET s, char *fmt, size_t fmt_len );
 		COMMON_API int net_format_sock( SOCKET s, char *fmt, size_t fmt_len );
+		COMMON_API int net_close( SOCKET s );
 	}
 }
 #endif // __XNET_H__
