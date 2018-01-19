@@ -1,10 +1,4 @@
 ///////////////////////////////////////////////////////////////
-/// COPYRIGHT 传世工作室
-/// CopyRight  ? 2015 盛大网络
-/// \file timer.cpp
-/// \brief 文件简介
-/// \author xufeng04
-/// \date 十二月 2015
 ///
 /// 定时器，使用时间轮算法，该算法兼顾性能和可用性，可选择两种不同的时间生成策略
 /// 1. 基于系统时间的
@@ -329,6 +323,9 @@ namespace xgc
 		///
 		xgc_void timer::insert_once( timer_event* evtptr, xgc_time64 start, xgc_bool adjust )
 		{
+			if( evtptr->time_ == -1 )
+				return;
+
 			// 不允许插入到当前时间点
 			if( adjust )
 			{

@@ -1,6 +1,4 @@
 ///////////////////////////////////////////////////////////////
-/// COPYRIGHT 传世工作室
-/// CopyRight  ? 2015 盛大网络
 /// \file HandlerManager.h
 /// \brief 文件简介
 /// \author xufeng04
