@@ -522,66 +522,108 @@ group "servers"
 	server_project( "game_client" )
 
 group "tools"
-	function tools_project( prj_name, prj_kind )
-		local prj = project( prj_name )
-			kind( prj_kind )
-			language "C++"
-			cppdialect "C++11"
-			location "prj/tools"
-			includedirs {"src/common" }
-			targetdir "bin/%{cfg.buildcfg}"
-			objdir "obj/%{prj.name}/%{cfg.buildcfg}"
-			links { "common" }
-
-			flags { "MultiProcessorCompile" }
-
-			files {
-				"tools/" .. prj_name .. "/**",
-			}
-
-			vpaths {
-				["Header Files/*"] = { 
-					"tools/" .. prj_name .. "/*.h", 
-				},
-
-				["Source Files/*"] = { 
-					"tools/" .. prj_name .. "/*.cpp", 
-				}
-			}
-
-			filter "configurations:Debug"
-				defines { "_DEBUG", "_DEBUG_OUTPUT" }
-
-			filter "configurations:Release"
-				defines { "NDEBUG", "_ASSERT_LOG" }
-				optimize "On"
-			
-			filter "system:windows"
-				includedirs { "dep/vld/src/" }
-				libdirs { 
-					"lib/%{cfg.buildcfg}", 
-					"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
-				}
-
-				systemversion "10.0.14393.0"
-				defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
-
-			filter "system:linux"
-				libdirs { "bin/%{cfg.buildcfg}" }
-				links { "stdc++", "rt", "pthread", "ncurses", "panel" }
-				buildoptions { "-pthread" }
-				defines { "LINUX64" }
-			return prj
-	end
-
-	tools_project( "lua_debuger_stub", "SharedLib" )
-	project( "lua_debuger_stub" )
-		includedirs {"dep/luajit/src" }
+	project "lua_debuger_stub"
+		kind "SharedLib"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/tools"
+		includedirs { "src/common", "dep/luajit/src" }
 		libdirs {"dep/luajit/src" }
-		links { "lua51" }
-		defines { "LUA_DEBUGER_EXPORTS" }
+		defines "LUA_DEBUGER_EXPORTS"
 
-	tools_project( "cpp_proto", "ConsoleApp" )
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+		links { "common", "lua51" }
+
+		flags { "MultiProcessorCompile" }
+
+		files {
+			"tools/" .. "lua_debuger_stub" .. "/**",
+		}
+
+		vpaths {
+			["Header Files/*"] = { 
+				"tools/" .. "lua_debuger_stub" .. "/*.h", 
+			},
+
+			["Source Files/*"] = { 
+				"tools/" .. "lua_debuger_stub" .. "/*.cpp", 
+			}
+		}
+
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG" }
+			optimize "On"
+		
+		filter "system:windows"
+			includedirs { "dep/vld/src/" }
+			libdirs { 
+				"lib/%{cfg.buildcfg}", 
+				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
+			}
+
+			systemversion "10.0.14393.0"
+			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+
+		filter "system:linux"
+			libdirs { "bin/%{cfg.buildcfg}" }
+			links { "stdc++", "rt", "pthread", "ncurses", "panel" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
+
+	project "lua_debuger"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++11"
+		location "prj/tools"
+		includedirs { "src/common" }
+		libdirs {"dep/luajit/src" }
+
+		targetdir "bin/%{cfg.buildcfg}"
+		objdir "obj/%{prj.name}/%{cfg.buildcfg}"
+		links { "common" }
+
+		flags { "MultiProcessorCompile" }
+
+		files {
+			"tools/lua_debuger/**",
+		}
+
+		vpaths {
+			["Header Files/*"] = { 
+				"tools/lua_debuger/*.h", 
+			},
+
+			["Source Files/*"] = { 
+				"tools/lua_debuger/*.cpp", 
+			}
+		}
+
+		filter "configurations:Debug"
+			defines { "_DEBUG", "_DEBUG_OUTPUT" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG", "_ASSERT_LOG" }
+			optimize "On"
+		
+		filter "system:windows"
+			includedirs { "dep/vld/src/" }
+			libdirs { 
+				"lib/%{cfg.buildcfg}", 
+				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
+			}
+
+			systemversion "10.0.14393.0"
+			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
+
+		filter "system:linux"
+			libdirs { "bin/%{cfg.buildcfg}" }
+			links { "stdc++", "rt", "pthread", "ncurses", "panel" }
+			buildoptions { "-pthread" }
+			defines { "LINUX64" }
 
 group ""
 	project "unittest"
