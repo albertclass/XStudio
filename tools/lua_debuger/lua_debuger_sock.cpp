@@ -1,8 +1,5 @@
 #include "lua_debuger_sock.h"
 
-using namespace xgc;
-using namespace common;
-
 void wait_signal()
 {
 	if( !cli.exit )

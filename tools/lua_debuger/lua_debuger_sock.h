@@ -8,6 +8,13 @@
 #include <mutex>
 #include <atomic>
 
+using namespace xgc;
+using namespace common;
+
+// 等待信号量
+void wait_signal();
+
+// 调试上下文
 struct debuger
 {
 	SOCKET sock;
@@ -39,5 +46,8 @@ extern debuger cli;
 
 /// 调试客户端开启
 void client( int port );
+
+/// 发送数据
+void send( const void* data, int size );
 
 #endif // __LUA_DEBUGER_SOCK_H__
