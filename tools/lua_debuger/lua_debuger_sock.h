@@ -7,14 +7,11 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <iostream>
 
 using namespace xgc;
-using namespace common;
+using namespace xgc::common;
 
-// 等待信号量
-void wait_signal();
-
-// 调试上下文
 struct debuger
 {
 	SOCKET sock;
@@ -40,14 +37,20 @@ struct debuger
 	std::mutex mtx;
 	/// 同步条件
 	std::condition_variable signal;
+
+	/// 调试命令按行存储
+	list< string > response;
 };
 
 extern debuger cli;
 
+/// 等待信号量
+void wait_signal();
+
 /// 调试客户端开启
 void client( int port );
 
-/// 发送数据
-void send( const void* data, int size );
+/// 发送消息给调试器
+void request( const void* data, int size );
 
 #endif // __LUA_DEBUGER_SOCK_H__
