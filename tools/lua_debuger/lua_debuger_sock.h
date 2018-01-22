@@ -48,7 +48,7 @@ extern debuger cli;
 void wait_signal();
 
 /// 调试客户端开启
-void client( int port );
+void client( const char* host, int port );
 
 /// 发送消息给调试器
 void request( const void* data, int size );

@@ -182,7 +182,7 @@ namespace xgc
 			/// 缓冲大小
 			xgc_int16 bw, bh;
 			/// 互斥锁，用于线程同步
-			mutex	mtx;
+			mutex mtx;
 		};
 
 		/// 窗口对象数组
@@ -194,7 +194,6 @@ namespace xgc
 		/// 窗口计数
 		static std::atomic< window_t > _text_window_count = 0;
 		/// 文本双缓冲
-		static xgc_handle	active_buffer[2];
 		static xgc_lpvoid	active_buffer_exchange = xgc_nullptr;
 
 		/// 重定向信息
@@ -220,7 +219,7 @@ namespace xgc
 
 		/// 库初始化存储
 		static std::atomic< xgc_bool > g_console_library = 0;
-		static xgc_handle g_console_thread = 0;
+		static std::thread g_console_thread;
 
 		/// 鼠标位置
 		static xgc_int16 mouse_x = 0;
@@ -273,7 +272,7 @@ namespace xgc
 
 		static xgc_void adjust_cursor( text_window *w )
 		{
-			SetConsoleCursorPosition( active_buffer[0], { w->x + w->tx + w->cx, w->y + w->ty + w->cy } );
+			gotoxy( w->x + w->tx + w->cx, w->y + w->ty + w->cy );
 		}
 
 		/// 重绘窗口
@@ -286,7 +285,7 @@ namespace xgc
 			xgc_int16 rows = 0;
 			get_console_size( cols, rows );
 
-			FillConsoleOutputAttribute( active_buffer[1], 0, cols * rows, COORD { 0, 0 }, &nNum );
+			//FillConsoleOutputAttribute( active_buffer[1], 0, cols * rows, COORD { 0, 0 }, &nNum );
 
 			for( window_t i = 0; _sort_window[i] != INVALID_WINDOW_INDEX && i < XGC_COUNTOF( _sort_window ); ++i )
 			{
@@ -570,7 +569,7 @@ namespace xgc
 		}
 
 		/// 控制台更新线程
-		static unsigned int _stdcall console_update_thread( xgc_lpvoid _param )
+		static void console_update_thread()
 		{
 			char buf[4096];
 			g_console_library = 1UL;
@@ -597,10 +596,8 @@ namespace xgc
 					}
 				}
 
-				Sleep( 1 );
+				std::this_thread::yield();
 			}
-
-			return 0;
 		}
 
 		///
@@ -614,42 +611,43 @@ namespace xgc
 
 		xgc_bool init_console( xgc_int16 cols, xgc_int16 rows )
 		{
+		#ifdef _WINDOWS
 			HMENU hSysMenu = GetSystemMenu( GetConsoleWindow(), FALSE );
 			if( hSysMenu != 0 )
 			{
 				RemoveMenu( hSysMenu, SC_CLOSE, MF_BYCOMMAND );
 			}
-
+		#endif
 			memset( _sort_window, INVALID_WINDOW_INDEX, sizeof( _sort_window ) );
 
-			COORD dwConsoleBufferSize = { cols, rows };
-			SMALL_RECT rcWindow = { 0, 0, cols - 1, rows - 1 };
+			//COORD dwConsoleBufferSize = { cols, rows };
+			//SMALL_RECT rcWindow = { 0, 0, cols - 1, rows - 1 };
 
-			BOOL bRet = FALSE;
-			// 创建双缓冲
-			active_buffer[0] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
-			XGC_ASSERT_RETURN( active_buffer[0] != INVALID_HANDLE_VALUE, false );
-			active_buffer[1] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
-			XGC_ASSERT_RETURN( active_buffer[1] != INVALID_HANDLE_VALUE, false );
+			//BOOL bRet = FALSE;
+			//// 创建双缓冲
+			//active_buffer[0] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
+			//XGC_ASSERT_RETURN( active_buffer[0] != INVALID_HANDLE_VALUE, false );
+			//active_buffer[1] = CreateConsoleScreenBuffer( GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL );
+			//XGC_ASSERT_RETURN( active_buffer[1] != INVALID_HANDLE_VALUE, false );
 
-			bRet = SetConsoleScreenBufferSize( active_buffer[0], dwConsoleBufferSize );
-			XGC_ASSERT_RETURN( bRet, false );
-			bRet = SetConsoleScreenBufferSize( active_buffer[1], dwConsoleBufferSize );
-			XGC_ASSERT_RETURN( bRet, false );
+			//bRet = SetConsoleScreenBufferSize( active_buffer[0], dwConsoleBufferSize );
+			//XGC_ASSERT_RETURN( bRet, false );
+			//bRet = SetConsoleScreenBufferSize( active_buffer[1], dwConsoleBufferSize );
+			//XGC_ASSERT_RETURN( bRet, false );
 
-			bRet = SetConsoleWindowInfo( active_buffer[0], true, &rcWindow );
-			XGC_ASSERT_RETURN( bRet, false );
-			bRet = SetConsoleWindowInfo( active_buffer[1], true, &rcWindow );
-			XGC_ASSERT_RETURN( bRet, false );
+			//bRet = SetConsoleWindowInfo( active_buffer[0], true, &rcWindow );
+			//XGC_ASSERT_RETURN( bRet, false );
+			//bRet = SetConsoleWindowInfo( active_buffer[1], true, &rcWindow );
+			//XGC_ASSERT_RETURN( bRet, false );
 
-			bRet = SetConsoleActiveScreenBuffer( active_buffer[0] );
-			XGC_ASSERT_RETURN( bRet, false );
+			//bRet = SetConsoleActiveScreenBuffer( active_buffer[0] );
+			//XGC_ASSERT_RETURN( bRet, false );
 
-			SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT );
+			//SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT );
 
 			show_cursor();
 			active_buffer_exchange = malloc( cols * rows * sizeof(CHAR_INFO) );
-			g_console_thread = (xgc_handle)_beginthreadex( xgc_nullptr, 0, console_update_thread, xgc_nullptr, 0, xgc_nullptr );
+			g_console_thread = std::thread( console_update_thread );
 			return true;
 		}
 
@@ -664,7 +662,7 @@ namespace xgc
 					_write( gstdio[i].fd[1], "", 1 );
 			}
 
-			WaitForSingleObject( (HANDLE) g_console_thread, INFINITE );
+			g_console_thread.join();
 
 			for( window_t i = 0; i < XGC_COUNTOF( _text_window ); ++i )
 			{
@@ -698,10 +696,6 @@ namespace xgc
 					gstdio[i].old = -1;
 				}
 			}
-
-			SetConsoleActiveScreenBuffer( GetStdHandle( STD_OUTPUT_HANDLE ) );
-			CloseHandle( active_buffer[0] );
-			CloseHandle( active_buffer[1] );
 
 			free( active_buffer_exchange );
 		}
@@ -745,39 +739,29 @@ namespace xgc
 		/// 获取控制台窗口宽度
 		xgc_bool get_console_size( xgc_int16 &cx, xgc_int16 &cy )
 		{
-			CONSOLE_SCREEN_BUFFER_INFOEX ConsoleInfo;
-			ZeroMemory( &ConsoleInfo, sizeof( ConsoleInfo ) );
-			ConsoleInfo.cbSize = sizeof( ConsoleInfo );
+			//CONSOLE_SCREEN_BUFFER_INFOEX ConsoleInfo;
+			//ZeroMemory( &ConsoleInfo, sizeof( ConsoleInfo ) );
+			//ConsoleInfo.cbSize = sizeof( ConsoleInfo );
 
-			BOOL bRet = GetConsoleScreenBufferInfoEx( active_buffer[0], &ConsoleInfo );
+			//BOOL bRet = GetConsoleScreenBufferInfoEx( active_buffer[0], &ConsoleInfo );
 
-			cx = ConsoleInfo.dwSize.X;
-			cy = ConsoleInfo.dwSize.Y;
+			//cx = ConsoleInfo.dwSize.X;
+			//cy = ConsoleInfo.dwSize.Y;
 
-			return bRet == TRUE;
+			//return bRet == TRUE;
+
+			return true;
 		}
 
 		// 隐藏光标
 		xgc_void show_cursor( xgc_real32 percent )
 		{
-			CONSOLE_CURSOR_INFO CursorInfo;
-			if( GetConsoleCursorInfo( active_buffer[0], &CursorInfo ) )
-			{
-				CursorInfo.bVisible = true;
-				CursorInfo.dwSize	= (DWORD)(100.0f * percent);
-
-				SetConsoleCursorInfo( active_buffer[0], &CursorInfo );
-			}
+			printf( "\33[?25l" );
 		}
 
 		xgc_void hide_cursor()
 		{
-			CONSOLE_CURSOR_INFO CursorInfo;
-			if( GetConsoleCursorInfo( active_buffer[0], &CursorInfo ) )
-			{
-				CursorInfo.bVisible = false;
-				SetConsoleCursorInfo( active_buffer[0], &CursorInfo );
-			}
+			printf( "\33[?25h" );
 		}
 
 		xgc_void gotoxy( xgc_int16 col, xgc_int16 row, window_t window )
@@ -796,7 +780,13 @@ namespace xgc
 
 				if( window == focus_window )
 					adjust_cursor( w );
-			};
+			}
+			else
+			{
+				char buf[16];
+				sprintf_s( buf, "\33[%d;%dH", row, col );
+				printf( buf );
+			}
 		}
 
 		xgc_void refresh()
@@ -805,12 +795,12 @@ namespace xgc
 			xgc_int16 rows = 0;
 			get_console_size( cols, rows );
 
-			SMALL_RECT rc = { 0, 0, cols-1, rows-1 };
+			//SMALL_RECT rc = { 0, 0, cols-1, rows-1 };
 
-			if( ReadConsoleOutput( active_buffer[1], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc ) )
-			{
-				WriteConsoleOutput( active_buffer[0], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc );
-			}
+			//if( ReadConsoleOutput( active_buffer[1], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc ) )
+			//{
+			//	WriteConsoleOutput( active_buffer[0], (PCHAR_INFO)active_buffer_exchange, {cols, rows}, {0, 0}, &rc );
+			//}
 		}
 
 		buffer_t buffer( xgc_uint16 w, xgc_uint16 h )
@@ -1088,7 +1078,7 @@ namespace xgc
 			XGC_ASSERT_RETURN( window != INVALID_WINDOW_INDEX, XGC_NONE );
 			XGC_ASSERT_RETURN( _text_window_count, XGC_NONE );
 
-			xgc_handle output = active_buffer[1];
+			//xgc_handle output = active_buffer[1];
 			// 取当前需要绘制的窗口
 			text_window *w = _text_window[window];
 			if( xgc_nullptr == w )
@@ -1117,23 +1107,23 @@ namespace xgc
 					t->flags &= ~eTextDirty;
 				}
 
-				COORD BufferSize  = { t->w,  t->h  };
-				COORD BufferCoord = { w->sx, w->sy };
+				//COORD BufferSize  = { t->w,  t->h  };
+				//COORD BufferCoord = { w->sx, w->sy };
 
-				SMALL_RECT rc =
-				{
-					w->x + w->tx,
-					w->y + w->ty,
-					w->x + w->tx + w->tw - 1,
-					w->y + w->ty + w->th - 1,
-				};
+				//SMALL_RECT rc =
+				//{
+				//	w->x + w->tx,
+				//	w->y + w->ty,
+				//	w->x + w->tx + w->tw - 1,
+				//	w->y + w->ty + w->th - 1,
+				//};
 
-				DWORD ret = WriteConsoleOutputA(
-					output,
-					t->buffer,
-					BufferSize,
-					BufferCoord,
-					&rc );
+				//DWORD ret = WriteConsoleOutputA(
+				//	output,
+				//	t->buffer,
+				//	BufferSize,
+				//	BufferCoord,
+				//	&rc );
 			}
 
 			if( false == w->style.border || false == border )
@@ -1159,31 +1149,31 @@ namespace xgc
 			// draw title border
 			if( w->style.title_bar && y0 >= 0 && y0 < rows )
 			{
-				FillConsoleOutputAttribute( output, border_attr[e_border_t] | COLOR_TITLE_BAR, x1 - x0, COORD { x0, y0 }, &dwNum );
-				FillConsoleOutputCharacter( output, ' ', x1 - x0, COORD { x0, y0 }, &dwNum );
+				//FillConsoleOutputAttribute( output, border_attr[e_border_t] | COLOR_TITLE_BAR, x1 - x0, COORD { x0, y0 }, &dwNum );
+				//FillConsoleOutputCharacter( output, ' ', x1 - x0, COORD { x0, y0 }, &dwNum );
 
-				if( w->x >= 0 && w->x < cols )
-					FillConsoleOutputAttribute( output, border_attr[e_border_lt] | COLOR_TITLE_BAR, 1, COORD { w->x, y0 }, &dwNum );
-				if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
-					FillConsoleOutputAttribute( output, border_attr[e_border_rt] | COLOR_TITLE_BAR, 1, COORD { w->x + w->cols - 1, y0 }, &dwNum );
+				//if( w->x >= 0 && w->x < cols )
+				//	FillConsoleOutputAttribute( output, border_attr[e_border_lt] | COLOR_TITLE_BAR, 1, COORD { w->x, y0 }, &dwNum );
+				//if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
+				//	FillConsoleOutputAttribute( output, border_attr[e_border_rt] | COLOR_TITLE_BAR, 1, COORD { w->x + w->cols - 1, y0 }, &dwNum );
 
-				// draw title
-				xgc_int16 title_len = (xgc_int16) strlen( w->title );
-				xgc_int16 title_bar = w->cols - 4;
+				//// draw title
+				//xgc_int16 title_len = (xgc_int16) strlen( w->title );
+				//xgc_int16 title_bar = w->cols - 4;
 
-				xgc_int16 title_pos = title_bar - (title_bar + title_len) / 2;
-				if( title_pos > 1 )
-				{
-					WriteConsoleOutputCharacter( output, w->title, title_len, { w->x + 2 + title_pos, w->y }, &dwNum );
-				}
-				else
-				{
-					WriteConsoleOutputCharacter( output, "...", 3, { w->x + 2, w->y }, &dwNum );
-					WriteConsoleOutputCharacter( output
-												 , w->title + title_pos
-												 , title_bar - 3 - w->style.border * 2
-												 , { w->x + 1 + 3 + w->style.border * 2, w->y + w->style.border - 1 }, &dwNum );
-				}
+				//xgc_int16 title_pos = title_bar - (title_bar + title_len) / 2;
+				//if( title_pos > 1 )
+				//{
+				//	WriteConsoleOutputCharacter( output, w->title, title_len, { w->x + 2 + title_pos, w->y }, &dwNum );
+				//}
+				//else
+				//{
+				//	WriteConsoleOutputCharacter( output, "...", 3, { w->x + 2, w->y }, &dwNum );
+				//	WriteConsoleOutputCharacter( output
+				//								 , w->title + title_pos
+				//								 , title_bar - 3 - w->style.border * 2
+				//								 , { w->x + 1 + 3 + w->style.border * 2, w->y + w->style.border - 1 }, &dwNum );
+				//}
 
 				++y0;
 			}
@@ -1194,32 +1184,32 @@ namespace xgc
 				// set grid attribute on first line
 				if( y0 >= 0 && y0 < rows )
 				{
-					SMALL_RECT rc = { x0, y0, x1, y0 };
-					PCHAR_INFO lp = (PCHAR_INFO)active_buffer_exchange;
-					if( ReadConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc ) )
-					{
-						for( int i = 0; i < x1 - x0; ++i )
-							lp[i].Attributes |= border_attr[e_border_t];
+					//SMALL_RECT rc = { x0, y0, x1, y0 };
+					//PCHAR_INFO lp = (PCHAR_INFO)active_buffer_exchange;
+					//if( ReadConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc ) )
+					//{
+					//	for( int i = 0; i < x1 - x0; ++i )
+					//		lp[i].Attributes |= border_attr[e_border_t];
 
-						WriteConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc );
-					}
+					//	WriteConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc );
+					//}
 
-					if( w->x >= 0 && w->x < cols )
-						FillConsoleOutputAttribute( output, border_attr[e_border_lt], 1, { w->x, y0 }, &dwNum );
+					//if( w->x >= 0 && w->x < cols )
+					//	FillConsoleOutputAttribute( output, border_attr[e_border_lt], 1, { w->x, y0 }, &dwNum );
 
-					if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
-					{
-						if( w->style.scroll_bar )
-						{
-							FillConsoleOutputAttribute( output, border_attr[e_border_rt] | COLOR_SCROLL_BAR, 1, { w->x + w->cols - 1, y0 }, &dwNum );
-							FillConsoleOutputCharacter( output, '\x1e', 1, { w->x + w->cols - 1, y0 }, &dwNum );
-						}
-						else
-						{
-							FillConsoleOutputAttribute( output, border_attr[e_border_rt], 1, { w->x + w->cols - 1, y0 }, &dwNum );
-							FillConsoleOutputCharacter( output, '\x20', 1, { w->x + w->cols - 1, y0 }, &dwNum );
-						}
-					}
+					//if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
+					//{
+					//	if( w->style.scroll_bar )
+					//	{
+					//		FillConsoleOutputAttribute( output, border_attr[e_border_rt] | COLOR_SCROLL_BAR, 1, { w->x + w->cols - 1, y0 }, &dwNum );
+					//		FillConsoleOutputCharacter( output, '\x1e', 1, { w->x + w->cols - 1, y0 }, &dwNum );
+					//	}
+					//	else
+					//	{
+					//		FillConsoleOutputAttribute( output, border_attr[e_border_rt], 1, { w->x + w->cols - 1, y0 }, &dwNum );
+					//		FillConsoleOutputCharacter( output, '\x20', 1, { w->x + w->cols - 1, y0 }, &dwNum );
+					//	}
+					//}
 					++y0;
 				}
 
@@ -1228,30 +1218,30 @@ namespace xgc
 					// draw left and right
 					while( y0 < y1 )
 					{
-						// draw left
-						if( w->x >= 0 && w->x < cols )
-						{
-							FillConsoleOutputAttribute( output, border_attr[e_border_l], 1, { w->x, y0 }, &dwNum );
-							FillConsoleOutputCharacter( output, ' ', 1, { w->x, y0 }, &dwNum );
-						}
+						//// draw left
+						//if( w->x >= 0 && w->x < cols )
+						//{
+						//	FillConsoleOutputAttribute( output, border_attr[e_border_l], 1, { w->x, y0 }, &dwNum );
+						//	FillConsoleOutputCharacter( output, ' ', 1, { w->x, y0 }, &dwNum );
+						//}
 
-						// draw right
-						if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
-						{
-							if( w->style.scroll_bar )
-							{
-								FillConsoleOutputAttribute( output, border_attr[e_border_r] | COLOR_SCROLL_BAR, 1, { w->x + w->cols - 1, y0 }, &dwNum );
-								FillConsoleOutputCharacter( output, ' ', 1, { w->x + w->cols - 1, y0 }, &dwNum );
-							}
-							else
-							{
-								FillConsoleOutputAttribute( output, border_attr[e_border_r], 1, { w->x + w->cols - 1, y0 }, &dwNum );
-								FillConsoleOutputCharacter( output, ' ', 1, { w->x + w->cols - 1, y0 }, &dwNum );
-							}
-						}
+						//// draw right
+						//if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
+						//{
+						//	if( w->style.scroll_bar )
+						//	{
+						//		FillConsoleOutputAttribute( output, border_attr[e_border_r] | COLOR_SCROLL_BAR, 1, { w->x + w->cols - 1, y0 }, &dwNum );
+						//		FillConsoleOutputCharacter( output, ' ', 1, { w->x + w->cols - 1, y0 }, &dwNum );
+						//	}
+						//	else
+						//	{
+						//		FillConsoleOutputAttribute( output, border_attr[e_border_r], 1, { w->x + w->cols - 1, y0 }, &dwNum );
+						//		FillConsoleOutputCharacter( output, ' ', 1, { w->x + w->cols - 1, y0 }, &dwNum );
+						//	}
+						//}
 
-						if( w->style.scroll_bar && y0 == y1 - w->style.status_bar )
-							FillConsoleOutputCharacter( output, '\x1f', 1, { w->x + w->cols - 1, y0 }, &dwNum );
+						//if( w->style.scroll_bar && y0 == y1 - w->style.status_bar )
+						//	FillConsoleOutputCharacter( output, '\x1f', 1, { w->x + w->cols - 1, y0 }, &dwNum );
 
 						++y0;
 					}
@@ -1264,28 +1254,28 @@ namespace xgc
 				// draw status bar
 				if( w->style.status_bar && y0 >= 0 && y0 < rows )
 				{
-					// draw bar
-					FillConsoleOutputAttribute( output, border_attr[e_border_b] | COLOR_TITLE_BAR, x1 - x0, COORD { x0, y0 }, &dwNum );
-					FillConsoleOutputCharacter( output, ' ', x1 - x0, COORD { x0, y0 }, &dwNum );
+					//// draw bar
+					//FillConsoleOutputAttribute( output, border_attr[e_border_b] | COLOR_TITLE_BAR, x1 - x0, COORD { x0, y0 }, &dwNum );
+					//FillConsoleOutputCharacter( output, ' ', x1 - x0, COORD { x0, y0 }, &dwNum );
 
-					// draw left bottom corner
-					if( w->x >= 0 && w->x < cols )
-						FillConsoleOutputAttribute( output, border_attr[e_border_lb] | COLOR_TITLE_BAR, 1, COORD { w->x, y0 }, &dwNum );
+					//// draw left bottom corner
+					//if( w->x >= 0 && w->x < cols )
+					//	FillConsoleOutputAttribute( output, border_attr[e_border_lb] | COLOR_TITLE_BAR, 1, COORD { w->x, y0 }, &dwNum );
 
-					// draw right bottom corner
-					if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
-						FillConsoleOutputAttribute( output, border_attr[e_border_rb] | COLOR_TITLE_BAR, 1, COORD { w->x + w->cols - 1, y0 }, &dwNum );
+					//// draw right bottom corner
+					//if( w->x + w->cols - 1 >= 0 && w->x + w->cols - 1 < cols )
+					//	FillConsoleOutputAttribute( output, border_attr[e_border_rb] | COLOR_TITLE_BAR, 1, COORD { w->x + w->cols - 1, y0 }, &dwNum );
 
-					if( w->style.scroll_bar )
-					{
-						// draw left horizontal scroll button
-						if( w->x >= 0 && w->x < cols )
-							FillConsoleOutputCharacter( output, '\x11', 1, COORD { w->x, y0 }, &dwNum );
+					//if( w->style.scroll_bar )
+					//{
+					//	// draw left horizontal scroll button
+					//	if( w->x >= 0 && w->x < cols )
+					//		FillConsoleOutputCharacter( output, '\x11', 1, COORD { w->x, y0 }, &dwNum );
 
-						// draw right horizontal scroll button
-						if( w->x + w->cols - 2 >= 0 && w->x + w->cols - 2 < cols )
-							FillConsoleOutputCharacter( output, '\x10', 1, COORD { w->x + w->cols - 2, y0 }, &dwNum );
-					}
+					//	// draw right horizontal scroll button
+					//	if( w->x + w->cols - 2 >= 0 && w->x + w->cols - 2 < cols )
+					//		FillConsoleOutputCharacter( output, '\x10', 1, COORD { w->x + w->cols - 2, y0 }, &dwNum );
+					//}
 
 					++y0;
 				}
@@ -1294,15 +1284,15 @@ namespace xgc
 			// set last line grid attribute
 			if( y0 >= 0 && y0 < rows )
 			{
-				SMALL_RECT rc = { x0, y0, x1, y0 };
-				PCHAR_INFO lp = (PCHAR_INFO)active_buffer_exchange;
-				if( ReadConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc ) )
-				{
-					for( int i = 0; i < x1 - x0; ++i )
-						lp[i].Attributes |= border_attr[e_border_t];
+				//SMALL_RECT rc = { x0, y0, x1, y0 };
+				//PCHAR_INFO lp = (PCHAR_INFO)active_buffer_exchange;
+				//if( ReadConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc ) )
+				//{
+				//	for( int i = 0; i < x1 - x0; ++i )
+				//		lp[i].Attributes |= border_attr[e_border_t];
 
-					WriteConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc );
-				}
+				//	WriteConsoleOutput( output, lp, { x1 - x0, 1 }, { 0, 0 }, &rc );
+				//}
 			}
 		}
 
@@ -1381,14 +1371,14 @@ namespace xgc
 				else switch( *current )
 				{
 				case '\n': // 换行符
-					t->buffer[t->position].Attributes = 0;
-					t->buffer[t->position].Char.AsciiChar = '\n';
+					//t->buffer[t->position].Attributes = 0;
+					//t->buffer[t->position].Char.AsciiChar = '\n';
 					++t->position;
 
 					while( t->position % t->w )
 					{
-						t->buffer[t->position].Attributes = 0;
-						t->buffer[t->position].Char.AsciiChar = 0;
+						//t->buffer[t->position].Attributes = 0;
+						//t->buffer[t->position].Char.AsciiChar = 0;
 						++t->position;
 					}
 
@@ -1417,8 +1407,8 @@ namespace xgc
 							xgc_int16 len = XGC_MIN( t->w, t->input.input_cur );
 							for( xgc_int16 i = 0; i < len; ++i, ++t->position )
 							{
-								t->buffer[i].Attributes		= t->attr;
-								t->buffer[i].Char.AsciiChar = t->input.input_buf[i];
+								//t->buffer[i].Attributes		= t->attr;
+								//t->buffer[i].Char.AsciiChar = t->input.input_buf[i];
 							}
 
 							// 后面会删除一个字符，这里不需要了。
@@ -1431,28 +1421,28 @@ namespace xgc
 					{
 						--t->position;
 
-						if( t->buffer[t->position].Char.AsciiChar != 0 )
-							break;
+						//if( t->buffer[t->position].Char.AsciiChar != 0 )
+						//	break;
 					}
 
 					// 清除一个字符
 					if( t->position >= t->input.input_pos )
 					{
-						t->buffer[t->position].Attributes = 0;
-						t->buffer[t->position].Char.AsciiChar = 0;
+						//t->buffer[t->position].Attributes = 0;
+						//t->buffer[t->position].Char.AsciiChar = 0;
 					}
 					break;
 				case '\t': // 制表符
 					if( lock.owns_lock() )
 					{
-						t->buffer[t->position].Attributes = getcolor;
-						t->buffer[t->position].Char.AsciiChar = ' ';
+						//t->buffer[t->position].Attributes = getcolor;
+						//t->buffer[t->position].Char.AsciiChar = ' ';
 						++t->position;
 
 						while( t->position % t->w )
 						{
-							t->buffer[t->position].Attributes = getcolor;
-							t->buffer[t->position].Char.AsciiChar = 0;
+							//t->buffer[t->position].Attributes = getcolor;
+							//t->buffer[t->position].Char.AsciiChar = 0;
 							++t->position;
 
 							if( t->position % t->w % 4 == 0 )
@@ -1476,8 +1466,8 @@ namespace xgc
 						t->input.input_buf[t->input.input_cur++] = *current;
 					}
 
-					t->buffer[t->position].Attributes     = getcolor;
-					t->buffer[t->position].Char.AsciiChar = *current;
+					//t->buffer[t->position].Attributes     = getcolor;
+					//t->buffer[t->position].Char.AsciiChar = *current;
 					++t->position;
 
 					break;

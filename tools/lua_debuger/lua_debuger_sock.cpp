@@ -34,18 +34,25 @@ void parse_request()
 	}
 }
 
-void client( int port )
+void client( const char* host, int port )
 {
 	char err[XNET_ERR_LEN];
-	SOCKET client = tcp_connect( err, "127.0.0.1", port, 0 );
+	SOCKET client = tcp_connect( err, host, port, 0 );
+	if( client == -1 )
+	{
+		printf( "connect server %s:%d error = %s\n", host, port, err );
+		cli.signal.notify_one();
+		return;
+	}
 
 	if( XNET_ERR == net_nonblock( err, client ) )
 	{
 		printf( "nonblock set error %s\n", err );
+		cli.signal.notify_one();
 		return;
 	}
 
-	cli.signal.notify_all();
+	cli.signal.notify_one();
 
 	while( !cli.exit )
 	{

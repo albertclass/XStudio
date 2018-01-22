@@ -26,15 +26,15 @@ HANDLE	  hConOut;		// handle to CONOUT$
 #define SI	'\x0F'          // Shift In
 
 #define MAX_ARG 16		// max number of args in an escape sequence
-int   state;			// automata state
-TCHAR prefix;			// escape sequence prefix ( '[', ']' or '(' );
-TCHAR prefix2;			// secondary prefix ( '?' or '>' );
-TCHAR suffix;			// escape sequence suffix
-int   es_argc;			// escape sequence args count
-int   es_argv[MAX_ARG]; 	// escape sequence args
-TCHAR Pt_arg[MAX_PATH * 2];	// text parameter for Operating System Command
-int   Pt_len;
-BOOL  shifted;
+int  state;			// automata state
+char prefix;			// escape sequence prefix ( '[', ']' or '(' );
+char prefix2;			// secondary prefix ( '?' or '>' );
+char suffix;			// escape sequence suffix
+int  es_argc;			// escape sequence args count
+int  es_argv[MAX_ARG]; 	// escape sequence args
+char Pt_arg[MAX_PATH * 2];	// text parameter for Operating System Command
+int  Pt_len;
+bool shifted;
 
 
 // DEC Special Graphics Character Set from
@@ -146,7 +146,7 @@ void FlushBuffer( void )
 {
 	DWORD nWritten;
 	if( nCharInBuffer <= 0 ) return;
-	WriteConsole( hConOut, ChBuffer, nCharInBuffer, &nWritten, NULL );
+	WriteConsoleW( hConOut, ChBuffer, nCharInBuffer, &nWritten, NULL );
 	nCharInBuffer = 0;
 }
 
@@ -169,7 +169,7 @@ void PushBuffer( WCHAR c )
 // Send the string to the input buffer.
 //-----------------------------------------------------------------------------
 
-void SendSequence( const char* seq )
+void SendSequence( LPCWSTR seq )
 {
 	DWORD out;
 	INPUT_RECORD in;
@@ -184,7 +184,7 @@ void SendSequence( const char* seq )
 	for( ; *seq; ++seq )
 	{
 		in.Event.KeyEvent.uChar.UnicodeChar = *seq;
-		WriteConsoleInput( hStdIn, &in, 1, &out );
+		WriteConsoleInputW( hStdIn, &in, 1, &out );
 	}
 }
 
@@ -248,11 +248,11 @@ void InterpretEscSeq( void )
 					case 39:
 					case 49:
 					{
-						char def[4];
+						WCHAR def[4];
 						int   a;
 						*def = '7'; def[1] = '\0';
-						GetEnvironmentVariable( "ANSICON_DEF", def, lenof( def ) );
-						a = strtol( def, NULL, 16 );
+						GetEnvironmentVariableW( L"ANSICON_DEF", def, lenof( def ) );
+						a = wcstol( def, NULL, 16 );
 						grm.reverse = FALSE;
 						if( a < 0 )
 						{
@@ -336,7 +336,7 @@ void InterpretEscSeq( void )
 				case 0:		// ESC[0J erase from cursor to end of display
 				len = ( Info.dwSize.Y - Info.dwCursorPosition.Y - 1 ) * Info.dwSize.X
 					+ Info.dwSize.X - Info.dwCursorPosition.X - 1;
-				FillConsoleOutputCharacter( hConOut, ' ', len,
+				FillConsoleOutputCharacterW( hConOut, L' ', len,
 					Info.dwCursorPosition,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes, len,
@@ -349,7 +349,7 @@ void InterpretEscSeq( void )
 				Pos.Y = 0;
 				len = Info.dwCursorPosition.Y * Info.dwSize.X
 					+ Info.dwCursorPosition.X + 1;
-				FillConsoleOutputCharacter( hConOut, ' ', len, Pos,
+				FillConsoleOutputCharacterW( hConOut, L' ', len, Pos,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes, len, Pos,
 					&NumberOfCharsWritten );
@@ -359,7 +359,7 @@ void InterpretEscSeq( void )
 				Pos.X = 0;
 				Pos.Y = 0;
 				len = Info.dwSize.X * Info.dwSize.Y;
-				FillConsoleOutputCharacter( hConOut, ' ', len, Pos,
+				FillConsoleOutputCharacterW( hConOut, L' ', len, Pos,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes, len, Pos,
 					&NumberOfCharsWritten );
@@ -377,7 +377,7 @@ void InterpretEscSeq( void )
 			{
 				case 0:		// ESC[0K Clear to end of line
 				len = Info.dwSize.X - Info.dwCursorPosition.X + 1;
-				FillConsoleOutputCharacter( hConOut, ' ', len,
+				FillConsoleOutputCharacterW( hConOut, L' ', len,
 					Info.dwCursorPosition,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes, len,
@@ -388,7 +388,7 @@ void InterpretEscSeq( void )
 				case 1:		// ESC[1K Clear from start of line to cursor
 				Pos.X = 0;
 				Pos.Y = Info.dwCursorPosition.Y;
-				FillConsoleOutputCharacter( hConOut, ' ',
+				FillConsoleOutputCharacterW( hConOut, L' ',
 					Info.dwCursorPosition.X + 1, Pos,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes,
@@ -399,7 +399,7 @@ void InterpretEscSeq( void )
 				case 2:		// ESC[2K Clear whole line.
 				Pos.X = 0;
 				Pos.Y = Info.dwCursorPosition.Y;
-				FillConsoleOutputCharacter( hConOut, ' ', Info.dwSize.X, Pos,
+				FillConsoleOutputCharacterW( hConOut, L' ', Info.dwSize.X, Pos,
 					&NumberOfCharsWritten );
 				FillConsoleOutputAttribute( hConOut, Info.wAttributes,
 					Info.dwSize.X, Pos,
@@ -413,7 +413,7 @@ void InterpretEscSeq( void )
 			case 'X':                 // ESC[#X Erase # characters.
 			if( es_argc == 0 ) es_argv[es_argc++] = 1; // ESC[X == ESC[1X
 			if( es_argc != 1 ) return;
-			FillConsoleOutputCharacter( hConOut, ' ', es_argv[0],
+			FillConsoleOutputCharacterW( hConOut, L' ', es_argv[0],
 				Info.dwCursorPosition,
 				&NumberOfCharsWritten );
 			FillConsoleOutputAttribute( hConOut, Info.wAttributes, es_argv[0],
@@ -432,7 +432,7 @@ void InterpretEscSeq( void )
 			Pos.Y = Info.dwCursorPosition.Y + es_argv[0];
 			CharInfo.Char.UnicodeChar = ' ';
 			CharInfo.Attributes = Info.wAttributes;
-			ScrollConsoleScreenBuffer( hConOut, &Rect, NULL, Pos, &CharInfo );
+			ScrollConsoleScreenBufferW( hConOut, &Rect, NULL, Pos, &CharInfo );
 			return;
 
 			case 'M':                 // ESC[#M Delete # lines.
@@ -448,21 +448,21 @@ void InterpretEscSeq( void )
 			Pos.Y = Info.dwCursorPosition.Y;
 			CharInfo.Char.UnicodeChar = ' ';
 			CharInfo.Attributes = Info.wAttributes;
-			ScrollConsoleScreenBuffer( hConOut, &Rect, NULL, Pos, &CharInfo );
+			ScrollConsoleScreenBufferW( hConOut, &Rect, NULL, Pos, &CharInfo );
 			return;
 
 			case 'P':                 // ESC[#P Delete # characters.
 			if( es_argc == 0 ) es_argv[es_argc++] = 1; // ESC[P == ESC[1P
 			if( es_argc != 1 ) return;
 			if( Info.dwCursorPosition.X + es_argv[0] > Info.dwSize.X - 1 )
-				es_argv[0] = Info.dwSize.X - Info.dwCursorPosition.X;
+				es_argv[0] = Info.dwSize.X - Info.dwCursorPosition.X - 1;
 			Rect.Left = Info.dwCursorPosition.X + es_argv[0];
 			Rect.Top = Info.dwCursorPosition.Y;
 			Rect.Right = Info.dwSize.X - 1;
 			Rect.Bottom = Info.dwCursorPosition.Y;
 			CharInfo.Char.UnicodeChar = ' ';
 			CharInfo.Attributes = Info.wAttributes;
-			ScrollConsoleScreenBuffer( hConOut, &Rect, NULL, Info.dwCursorPosition,
+			ScrollConsoleScreenBufferW( hConOut, &Rect, NULL, Info.dwCursorPosition,
 				&CharInfo );
 			return;
 
@@ -479,7 +479,7 @@ void InterpretEscSeq( void )
 			Pos.Y = Info.dwCursorPosition.Y;
 			CharInfo.Char.UnicodeChar = ' ';
 			CharInfo.Attributes = Info.wAttributes;
-			ScrollConsoleScreenBuffer( hConOut, &Rect, NULL, Pos, &CharInfo );
+			ScrollConsoleScreenBufferW( hConOut, &Rect, NULL, Pos, &CharInfo );
 			return;
 
 			case 'k':                 // ESC[#k
@@ -591,13 +591,13 @@ void InterpretEscSeq( void )
 			switch( es_argv[0] )
 			{
 				case 5:		// ESC[5n Report status
-				SendSequence( "\33[0n" ); // "OK"
+				SendSequence( L"\33[0n" ); // "OK"
 				return;
 
 				case 6:		// ESC[6n Report cursor position
 				{
-					char buf[32];
-					sprintf( buf, "\33[%d;%dR", Info.dwCursorPosition.Y + 1,
+					WCHAR buf[32];
+					swprintf_s( buf, L"\33[%d;%dR", Info.dwCursorPosition.Y + 1,
 						Info.dwCursorPosition.X + 1 );
 					SendSequence( buf );
 				}
@@ -611,8 +611,8 @@ void InterpretEscSeq( void )
 			if( es_argc != 1 ) return;
 			if( es_argv[0] == 21 )	// ESC[21t Report xterm window's title
 			{
-				TCHAR buf[MAX_PATH * 2];
-				DWORD len = GetConsoleTitle( buf + 3, lenof( buf ) - 3 - 2 );
+				WCHAR buf[MAX_PATH * 2];
+				DWORD len = GetConsoleTitleW( buf + 3, lenof( buf ) - 3 - 2 );
 				// Too bad if it's too big or fails.
 				buf[0] = ESC;
 				buf[1] = ']';
@@ -658,15 +658,15 @@ BOOL ParseAndPrintANSIString( HANDLE hDev, LPCVOID lpBuffer, DWORD nNumberOfByte
 	{
 		hConOut = hDev;
 		state = 1;
-		shifted = FALSE;
+		shifted = false;
 	}
 	for( i = nNumberOfBytesToWrite, s = (LPCSTR)lpBuffer; i > 0; i--, s++ )
 	{
 		if( state == 1 )
 		{
 			if( *s == ESC ) state = 2;
-			else if( *s == SO ) shifted = TRUE;
-			else if( *s == SI ) shifted = FALSE;
+			else if( *s == SO ) shifted = true;
+			else if( *s == SI ) shifted = false;
 			else PushBuffer( *s );
 		}
 		else if( state == 2 )

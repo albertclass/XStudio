@@ -57,7 +57,7 @@ extern "C"
 	int cbrk( lua_State* L )
 	{
 		auto id = lua_tointeger( L, -1 );
-		auto it = dbg.breakpoints_ids.find( id );
+		auto it = dbg.breakpoints_ids.find( (int)id );
 		if( it != dbg.breakpoints_ids.end() )
 		{
 			auto ln = dbg.breakpoints_reg.find( std::get< 0 >( it->second ) );
