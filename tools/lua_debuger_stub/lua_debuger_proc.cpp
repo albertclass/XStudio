@@ -12,16 +12,35 @@ struct stackframe
 	string	what;
 };
 
-bool cmd_bp( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_bc( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_bl( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_bt( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
+// 设置断点
+bool cmd_bp( lua_State* L, int argc, char *argv[] );
+// 清除断点
+bool cmd_bc( lua_State* L, int argc, char *argv[] );
+// 列出断点
+bool cmd_bl( lua_State* L, int argc, char *argv[] );
+// 列出堆栈
+bool cmd_bt( lua_State* L, int argc, char *argv[] );
 
-bool cmd_stp( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_sti( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_sto( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
-bool cmd_run( lua_State* L, lua_Debug* ar, int argc, char *argv[] );
+// 单步跟踪
+bool cmd_stp( lua_State* L, int argc, char *argv[] );
+// 跟进
+bool cmd_sti( lua_State* L, int argc, char *argv[] );
+// 跟出
+bool cmd_sto( lua_State* L, int argc, char *argv[] );
+// 监视变量
+bool cmd_var( lua_State* L, int argc, char *argv[] );
+// 清除监视
+bool cmd_clr( lua_State* L, int argc, char *argv[] );
+// 继续运行
+bool cmd_run( lua_State* L, int argc, char *argv[] );
 
+// 查看变量 - 局部
+bool cmd_loc( lua_State* L, int argc, char *argv[] );
+
+// 查看变量 - 全局
+bool cmd_glb( lua_State* L, int argc, char *argv[] );
+
+// 使用空格分隔的参数列表，若参数中带空格，则参数需使用引号（""）
 long parse_cmd( char* cmd, long argc, char** argv )
 {
 	long icnt = 0;
@@ -65,7 +84,8 @@ long parse_cmd( char* cmd, long argc, char** argv )
 	return icnt;
 }
 
-bool execute_cmd( lua_State* L, lua_Debug* ar )
+/// 执行命令
+bool execute_cmd( lua_State* L )
 {
 	// 定义命令缓冲
 	char cmd[1024], *ptr = cmd;
@@ -84,33 +104,45 @@ bool execute_cmd( lua_State* L, lua_Debug* ar )
 	// 跳过数据头
 	memcpy( cmd, dbg.recv_buffer + sizeof( int ), dbg.ipkg - sizeof( int ) );
 
-	int   argc = 0;
-	char* argv[32];
+	char *argv[32];
+	long argc = XGC_COUNTOF(argv);
+	bool bret = true;
 
 	argc = parse_cmd( cmd, argc, argv );
 
 	// 处理指令
 	if( strcasecmp( "bp", argv[0] ) == 0 )
-		return cmd_bp( L, ar, argc, argv );
+		bret =  cmd_bp( L, argc, argv );
 	else if( strcasecmp( "bl" , argv[0] ) == 0 )
-		return cmd_bl( L, ar, argc, argv );
+		bret =  cmd_bl( L, argc, argv );
 	else if( strcasecmp( "bc" , argv[0] ) == 0 )
-		return cmd_bc( L, ar, argc, argv );
+		bret =  cmd_bc( L, argc, argv );
 	else if( strcasecmp( "bt" , argv[0] ) == 0 )
-		return cmd_bt( L, ar, argc, argv );
+		bret =  cmd_bt( L, argc, argv );
 	else if( strcasecmp( "stp", argv[0] ) == 0 )
-		return cmd_stp( L, ar, argc, argv );
+		bret =  cmd_stp( L, argc, argv );
 	else if( strcasecmp( "sti", argv[0] ) == 0 )
-		return cmd_sti( L, ar, argc, argv );
+		bret =  cmd_sti( L, argc, argv );
 	else if( strcasecmp( "sto", argv[0] ) == 0 )
-		return cmd_sto( L, ar, argc, argv );
+		bret =  cmd_sto( L, argc, argv );
+	else if( strcasecmp( "var", argv[0] ) == 0 )
+		bret =  cmd_var( L, argc, argv );
+	else if( strcasecmp( "clr", argv[0] ) == 0 )
+		bret =  cmd_clr( L, argc, argv );
 	else if( strcasecmp( "run", argv[0] ) == 0 )
-		return cmd_run( L, ar, argc, argv );
+		bret =  cmd_run( L, argc, argv );
+	else if( strcasecmp( "loc", argv[0] ) == 0 )
+		bret =  cmd_loc( L, argc, argv );
+	else if( strcasecmp( "glb", argv[0] ) == 0 )
+		bret =  cmd_glb( L, argc, argv );
 
-	return true;
+	if( ptr != cmd )
+		free( ptr );
+
+	return bret;
 }
 
-bool cmd_bp( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_bp( lua_State* L, int argc, char *argv[] )
 {
 	int line = str2numeric< int >( argv[1] );
 	auto ln = dbg.breakpoints_reg[line];
@@ -121,12 +153,12 @@ bool cmd_bp( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
 		dbg.breakpoints_ids[dbg.breakpoints_ids_max] = std::make_tuple( line, argv[2] );
 	}
 
-	resp( "ok" );
+	resp( "status ok\n" );
 
 	return true;
 }
 
-bool cmd_bc( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_bc( lua_State* L, int argc, char *argv[] )
 {
 	int id = str2numeric< int >( argv[1] );
 	auto it = dbg.breakpoints_ids.find( id );
@@ -140,20 +172,20 @@ bool cmd_bc( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
 		}
 	}
 
-	resp( "ok" );
+	resp( "status ok\n" );
 	return true;
 }
 
-bool cmd_bl( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_bl( lua_State* L, int argc, char *argv[] )
 {
 	for( auto &it : dbg.breakpoints_ids )
 		resp( "%02d - %s:%d", it.first, std::get< 1 >( it.second ).c_str(), std::get< 0 >( it.second ) );
 
-	resp( "ok" );
+	resp( "status ok\n" );
 	return true;
 }
 
-bool cmd_bt( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_bt( lua_State* L, int argc, char *argv[] )
 {
 	lua_Debug frame;
 	int level = 1;
@@ -170,34 +202,57 @@ bool cmd_bt( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
 		++level;
 	}
 	
-	resp( "ok" );
+	resp( "status ok\n" );
 	return true;
 }
 
-bool cmd_stp( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_stp( lua_State* L, int argc, char *argv[] )
 {
 	dbg.mode = debug_mode::e_step;
 	return false;
 }
 
-bool cmd_sti( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_sti( lua_State* L, int argc, char *argv[] )
 {
 	dbg.mode = debug_mode::e_step_in;
 	return false;
 }
 
-bool cmd_sto( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_sto( lua_State* L, int argc, char *argv[] )
 {
 	dbg.mode = debug_mode::e_step_out;
 	return false;
 }
 
-bool cmd_run( lua_State* L, lua_Debug* ar, int argc, char *argv[] )
+bool cmd_var( lua_State* L, int argc, char *argv[] )
 {
-	dbg.mode = debug_mode::e_run;
+	if( argc > 1 ) dbg.watchs.insert( argv[1] );
 	return false;
 }
 
+bool cmd_clr( lua_State* L, int argc, char *argv[] )
+{
+	if( argc > 1 ) dbg.watchs.erase( argv[1] );
+	return false;
+}
+
+bool cmd_run( lua_State* L, int argc, char *argv[] )
+{
+	dbg.mode = debug_mode::e_run;
+	return true;
+}
+
+// 查看变量 - 局部
+bool cmd_loc( lua_State* L, int argc, char *argv[] )
+{
+	return false;
+}
+
+// 查看变量 - 全局
+bool cmd_glb( lua_State* L, int argc, char *argv[] )
+{
+	return false;
+}
 
 //void LuaDebuger::makestack( lua_State *L, lua_Debug *ar )
 //{

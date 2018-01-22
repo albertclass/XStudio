@@ -11,6 +11,8 @@ enum debug_mode
 	e_step_out,
 };
 
+typedef bool( *execute )( lua_State* L );
+
 struct debuger
 {
 	SOCKET sock;
@@ -60,11 +62,11 @@ extern debuger dbg;
 /// init lua debuger 
 int init_debuger( lua_State* L, int port, int stop );
 
+/// wait a debug command
+void wait_command( lua_State* L, execute pfn );
+
 /// debuger hook
 void hook( lua_State *L, lua_Debug *ar );
-
-/// server thrad
-void server( int port );
 
 /// 发送消息给调试器
 void send( const void* data, int size );
@@ -72,38 +74,5 @@ void send( const void* data, int size );
 /// 发送消息给调试器
 void resp( const char* data, ... );
 
-
-//class LuaDebugCommander
-//{
-//public:
-//	LuaDebugCommander(void);
-//	~LuaDebugCommander(void);
-//
-//	bool	initialize( const char* lpszPipename, ProcessRetCmd fn );
-//	bool	command( const char* cmd );
-//
-//	_command_buffer*	getBuffer();
-//	void	releaseBuffer( _command_buffer* buf );
-//	bool	waitSignal( DWORD dwTimer = INFINITE );
-//protected:
-//	void	Signal();
-//	void	command();
-//	_command_buffer*	result();
-//
-//private:
-//	static unsigned int __stdcall pipe( void* param );
-//
-//	HANDLE		m_hPipe;
-//	HANDLE		m_hThread;
-//	HANDLE		m_hSignal;
-//	_command_buffer		*m_buffer_head;
-//	_command_buffer		*m_buffer_tail;
-//
-//	bool		m_bWork;
-//	run_mode	m_mode;
-//	ProcessRetCmd	m_RetFunc;
-//
-//	friend bool Debug_CheckMode( LuaDebugCommander* pDebuger, run_mode m );
-//};
 
 #endif //__LUA_DEBUGER_SOCK_H__

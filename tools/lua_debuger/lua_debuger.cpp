@@ -10,6 +10,16 @@ int main( int argc, char** argv )
 		while( true )
 		{
 			wait_signal();
+
+			for( auto &str : cli.response )
+			{
+				std::cout << str;
+			}
+
+			string cmd;
+			std::getline( std::cin, cmd );
+
+			request( cmd.c_str(), cmd.size() );
 		}
 	}
 }

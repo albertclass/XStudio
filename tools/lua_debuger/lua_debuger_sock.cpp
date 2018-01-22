@@ -1,7 +1,7 @@
 #include "lua_debuger_sock.h"
 
-using namespace xgc;
-using namespace common;
+/// 调试客户端
+debuger cli;
 
 void wait_signal()
 {
@@ -16,6 +16,24 @@ void wait_signal()
 	}
 }
 
+void parse_request()
+{
+	char* cur = cli.recv_buffer + sizeof( int );
+
+	auto split = string_split( cur, "\n" );
+	for( auto &str : split )
+	{
+		cli.response.push_back( std::move( str ) );
+
+		if( str.empty() )
+		{
+			// 等待处理请求
+			wait_signal();
+			cli.response.clear();
+		}
+	}
+}
+
 void client( int port )
 {
 	char err[XNET_ERR_LEN];
@@ -26,9 +44,6 @@ void client( int port )
 		printf( "nonblock set error %s\n", err );
 		return;
 	}
-
-	char peer_addr[64];
-	int  peer_port;
 
 	cli.signal.notify_all();
 
@@ -50,8 +65,7 @@ void client( int port )
 				// 包已收全
 				if( sizeof( cli.send_buffer ) - cli.send >= cli.ipkg )
 				{
-					// 等待处理包数据
-					wait_signal();
+					parse_request();
 
 					// 移动后续的数据
 					memmove( cli.recv_buffer, cli.recv_buffer + cli.ipkg, cli.ipkg );
@@ -82,7 +96,7 @@ void client( int port )
 }
 
 /// 发送消息给调试器
-void send( const void* data, int size )
+void request( const void* data, int size )
 {
 	if( size + sizeof( int ) > sizeof( cli.send_buffer ) - cli.send )
 		return;
