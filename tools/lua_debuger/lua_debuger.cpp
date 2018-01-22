@@ -1,4 +1,9 @@
 #include "lua_debuger_sock.h"
+void proc_response()
+{
+	for( auto &ln : cli.response )
+		printf( "%s\n", ln.c_str() );
+}
 
 int main( int argc, char** argv )
 {
@@ -121,10 +126,12 @@ int main( int argc, char** argv )
 			}
 		};
 
-		// add cmd if cmd not empty 
+		// add cmd if not empty 
 		if( !cmd.empty() ) ++max;
 
 		request( cmd.c_str(), (int)cmd.size() + 1 );
 		wait_signal();
+
+		proc_response();
 	}
 }
