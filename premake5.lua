@@ -25,7 +25,6 @@ group "library"
 			"src/common/**.cpp",
 			"src/common/**.inl",
 		}
-
 		vpaths {
 			["Header Files/*"] = { "src/common/**.h", "src/common/**.hpp" },
 			["Source Files/*"] = { "src/common/**.c", "src/common/**.cpp", "src/common/**.inl" }

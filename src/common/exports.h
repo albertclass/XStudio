@@ -1,4 +1,6 @@
-#include "config.h"
+#ifndef __EXPORT_H__
+#define __EXPORT_H__
+
 #if defined( _WINDOWS )
 #	ifdef _LIB_EXPORTS
 #	 ifdef _DLL
@@ -25,3 +27,5 @@
 #else 
 #	define COMMON_API
 #endif
+
+#endif // __EXPORT_H__

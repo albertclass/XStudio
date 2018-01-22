@@ -8,6 +8,8 @@ xgc_void FiniConfiguration( xgc_lpvoid params );
 
 int ServerMain( int argc, char **argv )
 {
+	printf( "start server\n" );
+
 	if( InitServer( argv[1], InitGameServer ) )
 	{
 		LoopServer( ProcGameServer );

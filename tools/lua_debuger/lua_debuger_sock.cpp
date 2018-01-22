@@ -1,5 +1,7 @@
 #include "lua_debuger_sock.h"
 
+debuger cli;
+
 void wait_signal()
 {
 	if( !cli.exit )

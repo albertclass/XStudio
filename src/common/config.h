@@ -1,5 +1,5 @@
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #if defined( WIN32 ) || defined( WIN64 )
 #	define _WINDOWS
@@ -130,6 +130,8 @@ namespace xgc
 	template < class ... _Types >
 	using tuple = std::tuple < _Types... >;
 }
+
+#include "exports.h"
 ///////////////////////////////////////////////////////////
 // adpater linux to windows
 #define SLASH_ALL "\\/"
@@ -141,4 +143,4 @@ namespace xgc
 #if defined( _MSC_VER )
 #	include "platform/windows/msvc.h"
 #endif
-#endif //_CONFIG_H_
+#endif //__CONFIG_H__

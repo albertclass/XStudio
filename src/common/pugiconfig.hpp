@@ -14,7 +14,7 @@
 #ifndef HEADER_PUGICONFIG_HPP
 #define HEADER_PUGICONFIG_HPP
 
-#include "exports.h"
+#include "defines.h"
 // Uncomment this to enable wchar_t mode
 // #define PUGIXML_WCHAR_MODE
 

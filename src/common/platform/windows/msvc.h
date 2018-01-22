@@ -1,5 +1,5 @@
-#ifndef __XGC_CPLUSPLUS_H__
-#define __XGC_CPLUSPLUS_H__
+#ifndef __MSVC_H__
+#define __MSVC_H__
 
 #define _CRTDBG_MAP_ALLOC
 #include <crtdefs.h>
@@ -41,5 +41,15 @@
 	( 1 != _CrtDbgReport( _CRT_ASSERT, __FILE__, __LINE__, NULL, msg, ##__VA_ARGS__ ) ) || \
 	( _CrtDbgBreak(), 0 ) )
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+	COMMON_API void xgc_printf( char *format, ... );
+	// include this file after stdio.h in order to redirect printf to the one that supports ANSI escape sequences
+#ifdef __cplusplus
+}
+#endif
 
-#endif // __XGC_CPLUSPLUS_H__
+#define printf xgc_printf
+
+#endif // __MSVC_H__
