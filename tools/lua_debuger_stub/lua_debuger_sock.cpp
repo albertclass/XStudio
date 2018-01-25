@@ -78,27 +78,23 @@ void server( int port, int stop )
 			{
 				dbg.recv += r;
 
-				if( dbg.recv > sizeof( int ) )
+				while( dbg.recv > sizeof( int ) )
 				{
 					// 解包
-					dbg.ipkg = *(int*)dbg.recv_buffer;
-				}
+					dbg.ipkg = *(int*)dbg.recv_buffer + sizeof( int );
 
-				if( dbg.recv >= dbg.ipkg )
-				{
-					// 包已收全
-					if( sizeof( dbg.send_buffer ) - dbg.send >= dbg.ipkg )
-					{
-						// 等待处理包数据
-						wait_signal();
+					if( dbg.recv < dbg.ipkg )
+						break;
+				
+					// 包已收全，等待处理包数据
+					wait_signal();
 
-						// 移动后续的数据
-						memmove( dbg.recv_buffer, dbg.recv_buffer + dbg.ipkg, dbg.ipkg );
+					// 移动后续的数据
+					memmove( dbg.recv_buffer, dbg.recv_buffer + dbg.ipkg, dbg.ipkg );
 
-						// 重新计算已接收数据包尺寸
-						dbg.recv -= dbg.ipkg;
-						dbg.ipkg = 0;
-					}
+					// 重新计算已接收数据包尺寸
+					dbg.recv -= dbg.ipkg;
+					dbg.ipkg = 0;
 				}
 			}
 
@@ -129,22 +125,23 @@ void send( const void* data, int size )
 		return;
 
 	// 注意，send_buffer处于多线程环境下，这里未做数据保护
-	memcpy( dbg.send_buffer + dbg.recv, &size, sizeof( size ) );
-	dbg.recv += sizeof( size );
-	memcpy( dbg.send_buffer + dbg.recv, data, size );
-	dbg.recv += size;
+	memcpy( dbg.send_buffer + dbg.send, &size, sizeof( size ) );
+	dbg.send += sizeof( size );
+	memcpy( dbg.send_buffer + dbg.send, data, size );
+	dbg.send += size;
 }
 
 /// 回应服务器消息
-void resp( const char* data, ... )
+void resp( const char* fmt, ... )
 {
 	char buf[1024];
 
 	va_list ap;
-	va_start( ap, data );
+	va_start( ap, fmt );
 
-	vsprintf_s( buf, data, ap );
-	send( data, (int)strlen( data ) + 1 );
+	int cpy = vsprintf_s( buf, fmt, ap );
+	if( cpy >= 0 )
+		send( buf, cpy + 1 );
 
 	va_end( ap );
 }

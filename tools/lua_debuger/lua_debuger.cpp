@@ -7,7 +7,6 @@ void proc_response()
 
 int main( int argc, char** argv )
 {
-	std::thread thr;
 	const char* host = "127.0.0.1";
 	int port = 5001;
 
@@ -25,8 +24,14 @@ int main( int argc, char** argv )
 
 	// Æô¶¯ÍøÂçÏß³Ì
 	std::unique_lock< std::mutex > lock( cli.mtx );
-	thr = std::thread( client, host, port );
+	cli.exit = false;
+	cli.client = std::thread( client, host, port );
 	cli.signal.wait( lock );
+	if( cli.exit )
+	{
+		cli.client.join();
+		return -1;
+	}
 	lock.unlock();
 
 	vector< tuple< long, string > > cmds;
@@ -126,6 +131,7 @@ int main( int argc, char** argv )
 			}
 		};
 
+		printf( "\n" );
 		// add cmd if not empty 
 		if( !cmd.empty() ) ++max;
 

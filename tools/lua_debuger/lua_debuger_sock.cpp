@@ -23,7 +23,7 @@ void parse_request()
 	auto split = string_split( cur, "\n" );
 	for( auto &str : split )
 	{
-		cli.response.push_back( std::move( str ) );
+		cli.response.push_back( str );
 
 		if( str.empty() )
 		{
@@ -37,17 +37,19 @@ void parse_request()
 void client( const char* host, int port )
 {
 	char err[XNET_ERR_LEN];
-	SOCKET client = tcp_connect( err, host, port, 0 );
-	if( client == -1 )
+	cli.sock = tcp_connect( err, host, port, 0 );
+	if( cli.sock == -1 )
 	{
 		printf( "connect server %s:%d error = %s\n", host, port, err );
+		cli.exit = true;
 		cli.signal.notify_one();
 		return;
 	}
 
-	if( XNET_ERR == net_nonblock( err, client ) )
+	if( XNET_ERR == net_nonblock( err, cli.sock ) )
 	{
 		printf( "nonblock set error %s\n", err );
+		cli.exit = true;
 		cli.signal.notify_one();
 		return;
 	}
@@ -61,26 +63,23 @@ void client( const char* host, int port )
 		{
 			cli.recv += r;
 
-			if( cli.recv > sizeof( int ) )
+			while( cli.recv > sizeof( int ) )
 			{
 				// 解包
-				cli.ipkg = *(int*)cli.recv_buffer;
-			}
+				cli.ipkg = *(int*)cli.recv_buffer + sizeof( int );
 
-			if( cli.recv >= cli.ipkg )
-			{
+				if( cli.recv < cli.ipkg )
+					break;
+				
 				// 包已收全
-				if( sizeof( cli.send_buffer ) - cli.send >= cli.ipkg )
-				{
-					parse_request();
+				parse_request();
 
-					// 移动后续的数据
-					memmove( cli.recv_buffer, cli.recv_buffer + cli.ipkg, cli.ipkg );
+				// 移动后续的数据
+				memmove( cli.recv_buffer, cli.recv_buffer + cli.ipkg, cli.ipkg );
 
-					// 重新计算已接收数据包尺寸
-					cli.recv -= cli.ipkg;
-					cli.ipkg = 0;
-				}
+				// 重新计算已接收数据包尺寸
+				cli.recv -= cli.ipkg;
+				cli.ipkg = 0;
 			}
 		}
 
@@ -109,8 +108,8 @@ void request( const void* data, int size )
 		return;
 
 	// 注意，send_buffer处于多线程环境下，这里未做数据保护
-	memcpy( cli.send_buffer + cli.recv, &size, sizeof( size ) );
-	cli.recv += sizeof( size );
-	memcpy( cli.send_buffer + cli.recv, data, size );
-	cli.recv += size;
+	memcpy( cli.send_buffer + cli.send, &size, sizeof( size ) );
+	cli.send += sizeof( size );
+	memcpy( cli.send_buffer + cli.send, data, size );
+	cli.send += size;
 }

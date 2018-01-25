@@ -46,7 +46,7 @@ long parse_cmd( char* cmd, long argc, char** argv )
 	long icnt = 0;
 
 	bool quot = false;
-	bool find = true;
+	bool find = false;
 
 	while( *cmd && icnt < argc )
 	{
@@ -81,7 +81,7 @@ long parse_cmd( char* cmd, long argc, char** argv )
 		++cmd;
 	}
 
-	return icnt;
+	return icnt += find ? 1 : 0;
 }
 
 /// 执行命令
@@ -100,6 +100,9 @@ bool execute_cmd( lua_State* L )
 			return true;
 		}
 	}
+
+	if( dbg.recv < sizeof( int ) || dbg.ipkg < dbg.recv )
+		return true;
 
 	// 跳过数据头
 	memcpy( cmd, dbg.recv_buffer + sizeof( int ), dbg.ipkg - sizeof( int ) );

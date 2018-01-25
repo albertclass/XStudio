@@ -8,7 +8,7 @@ extern "C"
 	int init( lua_State* L )
 	{
 		int top = lua_gettop( L );
-		int port = 30090;
+		int port = 5001;
 		int stop = 1;
 
 		if( lua_type( L, -1 ) != LUA_TNIL )
