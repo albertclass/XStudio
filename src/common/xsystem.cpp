@@ -428,31 +428,35 @@ namespace xgc
 		return list_directory_real( _root, _root+strlen(_root), XGC_COUNTOF(_root)-strlen(_root), 0, on_file, deep_max );
 	}
 
-	COMMON_API xgc_lpcstr path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname )
+	COMMON_API xgc_long path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname )
 	{
 		auto last_slash = fullname;
 		auto next_slash = fullname;
 		while( next_slash = strpbrk( last_slash + 1, SLASH_ALL ) )
 			last_slash = next_slash;
 
-		if( 0 == strncpy_s( path, size, fullname, last_slash - fullname ) )
-			return path;
+		if( last_slash == fullname && strchr( SLASH_ALL, last_slash[0] ) == 0 )
+			return 0;
 
-		return xgc_nullptr;
+		if( path )
+		{
+			strncpy_s( path, size, fullname, last_slash + 1 - fullname );
+		}
+
+		return last_slash + 1 - fullname;
 	}
 
-	COMMON_API xgc_lpcstr path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname )
+	COMMON_API xgc_long path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname )
 	{
-		
 		auto last_slash = fullname;
 		auto next_slash = fullname;
 		while( next_slash = strpbrk( last_slash + 1, SLASH_ALL ) )
 			last_slash = next_slash;
 
-		if( 0 == strncpy_s( name, size, last_slash + 1, _TRUNCATE ) )
-			return name;
-
-		return xgc_nullptr;
+		if( name )
+			strncpy_s( name, size, last_slash + 1, _TRUNCATE );
+			
+		return last_slash + 1 - fullname;
 	}
 
 	xgc_ulong get_process_id()

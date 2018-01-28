@@ -36,6 +36,36 @@ namespace xgc
 		}
 	}
 
+	xgc_long string_replace( char *snew, size_t size, xgc_lpcstr str, xgc_lpcstr sub, xgc_lpcstr rep )
+	{
+		xgc_long inew = 0;
+		xgc_long istr = 0;
+
+		xgc_long irep = (xgc_long)strlen( rep );
+		xgc_long isub = (xgc_long)strlen( sub );
+
+		auto src = strstr( str, sub );
+		while( size && src )
+		{
+			auto copy = src - str;
+			copy = XGC_MIN( size, copy );
+			strncpy_s( snew + inew, size, str + istr, copy );
+			size -= copy;
+			inew += copy;
+			istr += copy;
+
+			copy = XGC_MIN( size, irep );
+			strncpy_s( snew + inew, size, rep, copy );
+			size -= copy;
+			inew += copy;
+			istr += isub;
+
+			src = strstr( str + istr, sub );
+		}
+
+		return inew + sprintf_s( snew + inew, size, "%s", str + istr );
+	}
+
 	xgc_size bin2hex( xgc_lpstr data, xgc_size size, xgc_lpstr out, xgc_size out_size, xgc_size flags )
 	{
 		XGC_ASSERT_RETURN( data && out && data != out, -1 );

@@ -20,7 +20,7 @@ void parse_request()
 {
 	char* cur = cli.recv_buffer + sizeof( int );
 
-	auto split = string_split( cur, "\n" );
+	auto split = string_split( cur, "\n", true );
 	for( auto &str : split )
 	{
 		cli.response.push_back( str );

@@ -36,56 +36,10 @@ extern "C"
 		return 0;
 	}
 
-	// 设置断点
-	int sbrk( lua_State* L )
-	{
-		auto file = lua_tostring( L, -2 );
-		auto line = lua_tointeger( L, -1 );
-
-		auto ln = dbg.breakpoints_reg[(int)line];
-		auto it = ln.find( file );
-		if( it == ln.end() )
-		{
-			ln.insert( file );
-			dbg.breakpoints_ids[dbg.breakpoints_ids_max] = std::make_tuple( (int)line, file );
-		}
-
-		return 0;
-	}
-
-	// 清除断点
-	int cbrk( lua_State* L )
-	{
-		auto id = lua_tointeger( L, -1 );
-		auto it = dbg.breakpoints_ids.find( (int)id );
-		if( it != dbg.breakpoints_ids.end() )
-		{
-			auto ln = dbg.breakpoints_reg.find( std::get< 0 >( it->second ) );
-			if( ln != dbg.breakpoints_reg.end() )
-			{
-				auto &file = std::get< 1 >( it->second );
-				ln->second.erase( file );
-			}
-		}
-
-		return 0;
-	}
-
-	// 添加变量监视
-	int addw( lua_State* L )
-	{
-		return 0;
-	}
-
-	// 删除变量监视
-	int delw( lua_State* L )
-	{
-		return 0;
-	}
-
 	// 等待调试命令
 	int wait( lua_State* L )
 	{
+		lua_sethook( L, hook_all, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0 );
 		wait_command( L, execute_cmd );
 		return 0;
 	}

@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "defines.h"
+#include "xsystem.h"
 #include "xutility.h"
 #include "xnet.h"
 

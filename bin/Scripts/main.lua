@@ -1,10 +1,11 @@
-package.path = package.path .. ";..\\Scripts\\?.lua;..\\Scripts\\?.dll"
+package.path  = package.path  .. ";..\\Scripts\\?.lua"
+package.cpath = package.cpath .. ";..\\Scripts\\?.dll"
 
 local stub = require "lua_debuger_stub"
 local util = require "lua_debuger_util"
 
 stub.init( 5001, false )
-stub.sbrk( "lua_debuger_util.lua", 5 )
+stub.sbrk( "lua_debuger_util.lua", 6 )
 stub.wait()
 
 print( "hello world\n" );

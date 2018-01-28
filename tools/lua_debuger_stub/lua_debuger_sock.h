@@ -3,8 +3,9 @@
 #define __LUA_DEBUGER_SOCK_H__
 enum debug_mode
 {
+	e_detach,
+	e_attach,
 	e_run,
-	e_brk,
 	e_stop,
 	e_step,
 	e_step_in,
@@ -67,6 +68,9 @@ void wait_command( lua_State* L, execute pfn );
 
 /// debuger hook
 void hook( lua_State *L, lua_Debug *ar );
+
+/// debuger hook all
+void hook_all( lua_State *L, lua_Debug *ar );
 
 /// 发送消息给调试器
 void send( const void* data, int size );

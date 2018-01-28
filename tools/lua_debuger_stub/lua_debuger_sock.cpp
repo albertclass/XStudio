@@ -65,7 +65,7 @@ void server( int port, int stop )
 				// 设置附加状态
 				dbg.attached = true;
 				// 设置调试模式
-				dbg.mode = debug_mode::e_brk;
+				dbg.mode = debug_mode::e_attach;
 
 				// 等待调试回应
 				wait_signal();
@@ -185,7 +185,7 @@ int init_debuger( lua_State* L, int port, int stop )
 
 void hook( lua_State *L, lua_Debug *ar )
 {
-	if( dbg.mode == debug_mode::e_brk )
+	if( dbg.mode == debug_mode::e_attach )
 	{
 		lua_sethook( L, hook_all, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0 );
 		wait_command( L, execute_cmd );
@@ -196,7 +196,7 @@ void hook( lua_State *L, lua_Debug *ar )
 
 void hook_all( lua_State *L, lua_Debug *ar )
 {
-	if( dbg.mode == 0 )
+	if( dbg.mode == debug_mode::e_detach )
 	{
 		lua_sethook( L, hook, LUA_MASKCOUNT, 1 );
 		return;
@@ -223,8 +223,16 @@ void on_call( lua_State *L )
 {
 	if( dbg.mode == debug_mode::e_step_in )
 	{
-		// 断点，等待下一条指令
-		wait_command( L, execute_cmd );
+		lua_Debug ar;
+		if( lua_getstack( L, 0, &ar ) )
+		{
+			lua_getinfo( L, "Sln", &ar );
+
+			resp( "break '%s(%d):%s'\n\n", ar.short_src, ar.currentline, ar.what );
+
+			// 断点，等待下一条指令
+			wait_command( L, execute_cmd );
+		}
 	}
 }
 
@@ -232,14 +240,35 @@ void on_iret( lua_State *L )
 {
 	if( dbg.mode == debug_mode::e_step_out )
 	{
-		// 断点，等待下一条指令
-		wait_command( L, execute_cmd );
+		lua_Debug ar;
+		if( lua_getstack( L, 0, &ar ) )
+		{
+			lua_getinfo( L, "Sln", &ar );
+
+			resp( "break '%s(%d):%s'\n\n", ar.short_src, ar.currentline, ar.what );
+
+			// 断点，等待下一条指令
+			wait_command( L, execute_cmd );
+		}
 	}
 }
 
 void on_line( lua_State *L, int line )
 {
 	if( dbg.mode == debug_mode::e_step )
+	{
+		lua_Debug ar;
+		if( lua_getstack( L, 0, &ar ) )
+		{
+			lua_getinfo( L, "Sln", &ar );
+
+			resp( "break '%s(%d):%s'\n\n", ar.short_src, ar.currentline, ar.what );
+
+			// 断点，等待下一条指令
+			wait_command( L, execute_cmd );
+		}
+	}
+	else if( dbg.mode == debug_mode::e_run )
 	{
 		// 查找断点
 		auto it1 = dbg.breakpoints_reg.find( line );
@@ -248,23 +277,17 @@ void on_line( lua_State *L, int line )
 			return;
 
 		lua_Debug ar;
-		int frame = 0;
-		while( lua_getstack( L, frame, &ar ) )
-		{
-			lua_getinfo( L, "Sln", &ar );
-			printf( "%s(%d):%s", ar.short_src, ar.currentline, ar.what );
-			++frame;
-		}
-
 		if( lua_getstack( L, 0, &ar ) )
 		{
 			lua_getinfo( L, "Sln", &ar );
 
 			// 查找文件
-			auto it2 = it1->second.find( ar.source + 1 );
+			auto it2 = it1->second.find( ar.short_src );
 			if( it2 == it1->second.end() )
 				// 没有匹配的文件则返回
 				return;
+
+			resp( "break '%s(%d):%s'\n\n", ar.short_src, ar.currentline, ar.what );
 
 			// 断点，等待下一条指令
 			wait_command( L, execute_cmd );

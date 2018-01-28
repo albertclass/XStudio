@@ -105,7 +105,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/04/01 15:07
 	///
-	COMMON_API xgc_lpcstr path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname );
+	COMMON_API xgc_long path_dirs( xgc_lpstr path, xgc_size size, xgc_lpcstr fullname );
 
 	///
 	/// \brief 获取路径的目录部分
@@ -114,7 +114,7 @@ namespace xgc
 	/// \date 2017/04/01 15:07
 	///
 	template< size_t size >
-	xgc_lpcstr path_dirs( xgc_char( &path )[size], xgc_lpcstr fullname )
+	xgc_long path_dirs( xgc_char( &path )[size], xgc_lpcstr fullname )
 	{
 		return path_dirs( path, size, fullname );
 	}
@@ -125,7 +125,7 @@ namespace xgc
 	/// \author albert.xu
 	/// \date 2017/04/01 15:07
 	///
-	COMMON_API xgc_lpcstr path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname );
+	COMMON_API xgc_long path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname );
 
 	///
 	/// \brief 获取路径的目录部分
@@ -134,7 +134,7 @@ namespace xgc
 	/// \date 2017/04/01 15:07
 	///
 	template< size_t size >
-	xgc_lpcstr path_name( xgc_char( &path )[size], xgc_lpcstr fullname )
+	xgc_long path_name( xgc_char( &path )[size], xgc_lpcstr fullname )
 	{
 		return path_name( path, size, fullname );
 	}

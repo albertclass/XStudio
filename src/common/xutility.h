@@ -219,12 +219,15 @@ namespace xgc
 	/// \date [5/30/2014]
 	///
 	template< template< class, class > class _Container = xgc::vector, template< class > class _Ax = xgc_allocator >
-	_Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim )
+	_Container< std::string, _Ax< std::string > > string_split( xgc_lpcstr src, xgc_lpcstr delim, bool keep_empty = false )
 	{
 		_Container< std::string, _Ax< std::string > > r;
 		XGC_ASSERT_RETURN( src, r );
 
-		xgc_lpcstr str = src + strspn( src, delim );;
+		xgc_lpcstr str = src;
+		if( false == keep_empty )
+			str = str + strspn( src, delim );
+
 		while( *str )
 		{
 			xgc_lpcstr brk = strpbrk( str, delim );
@@ -235,7 +238,11 @@ namespace xgc
 			}
 
 			r.push_back( xgc::string( str, brk ) );
-			str = brk + strspn( brk, delim );
+			if( false == keep_empty )
+				str = brk + strspn( brk, delim );
+			else
+				str = brk + 1;
+				
 		}
 
 		return r;
@@ -248,9 +255,9 @@ namespace xgc
 	/// \date 2017/04/01 12:26
 	///
 	template< class _Iterator >
-	xgc::string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
+	string string_join( _Iterator &_Begin, _Iterator &_End, xgc_lpcstr join )
 	{
-		xgc::string r;
+		string r;
 		
 		if( _Begin == _End )
 			return r;
@@ -269,6 +276,14 @@ namespace xgc
 
 		return r;
 	}
+
+	///
+	/// \brief 字符串替换
+	///
+	/// \author albert.xu
+	/// \date 2018/01/29 6:15
+	///
+	COMMON_API xgc_long string_replace( char* snew, size_t size, xgc_lpcstr str, xgc_lpcstr sub, xgc_lpcstr rep );
 
 	///
 	/// \brief 将二进制数据转为16进制字符串
