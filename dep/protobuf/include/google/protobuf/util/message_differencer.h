@@ -64,6 +64,7 @@ class Printer;
 
 namespace util {
 
+class DefaultFieldComparator;
 class FieldContext;  // declared below MessageDifferencer
 
 // A basic differencer that can be used to determine
@@ -372,7 +373,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
                  // repeated fields have different numbers of elements, the
                  // unpaired elements are reported using ReportAdded() or
                  // ReportDeleted().
-    AS_SET,      // Treat all the repeated fields as sets by default.
+    AS_SET,      // Treat all the repeated fields as sets.
                  // See TreatAsSet(), as below.
   };
 
@@ -385,6 +386,11 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // positions.  ReportModified() is never used for this repeated field.  If
   // the only differences between the compared messages is that some fields
   // have been moved, then the comparison returns true.
+  //
+  // Note that despite the name of this method, this is really
+  // comparison as multisets: if one side of the comparison has a duplicate
+  // in the repeated field but the other side doesn't, this will count as
+  // a mismatch.
   //
   // If the scope of comparison is set to PARTIAL, then in addition to what's
   // above, extra values added to repeated fields of the second message will
@@ -470,6 +476,10 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* field,
       const MapKeyComparator* key_comparator);
 
+  // Initiates and returns a new instance of MultipleFieldsMapKeyComparator.
+  MapKeyComparator* CreateMultipleFieldsMapKeyComparator(
+      const std::vector<std::vector<const FieldDescriptor*> >& key_field_paths);
+
   // Add a custom ignore criteria that is evaluated in addition to the
   // ignored fields added with IgnoreField.
   // Takes ownership of ignore_criteria.
@@ -516,6 +526,13 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // be called before Compare. The default for a new differencer is false.
   void set_report_matches(bool report_matches) {
     report_matches_ = report_matches;
+  }
+
+  // Tells the differencer whether or not to report moves (in a set or map
+  // repeated field). This method must be called before Compare. The default for
+  // a new differencer is true.
+  void set_report_moves(bool report_moves) {
+    report_moves_ = report_moves;
   }
 
   // Sets the scope of the comparison (as defined in the Scope enumeration
@@ -620,6 +637,11 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const std::vector<SpecificField>& field_path);
 
    protected:
+    // Prints the specified path of fields to the buffer.  message is used to
+    // print map keys.
+    virtual void PrintPath(const std::vector<SpecificField>& field_path,
+                           bool left_side, const Message& message);
+
     // Prints the specified path of fields to the buffer.
     virtual void PrintPath(const std::vector<SpecificField>& field_path,
                            bool left_side);
@@ -648,11 +670,25 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   };
 
  private:
+  friend class DefaultFieldComparator;
+
   // A MapKeyComparator to be used in TreatAsMapUsingKeyComparator.
   // Implementation of this class needs to do field value comparison which
   // relies on some private methods of MessageDifferencer. That's why this
   // class is declared as a nested class of MessageDifferencer.
   class MultipleFieldsMapKeyComparator;
+
+  // A MapKeyComparator for use with map_entries.
+  class LIBPROTOBUF_EXPORT MapEntryKeyComparator : public MapKeyComparator {
+   public:
+    explicit MapEntryKeyComparator(MessageDifferencer* message_differencer);
+    virtual bool IsMatch(const Message& message1, const Message& message2,
+                         const std::vector<SpecificField>& parent_fields) const;
+
+   private:
+    MessageDifferencer* message_differencer_;
+  };
+
   // Returns true if field1's number() is less than field2's.
   static bool FieldBefore(const FieldDescriptor* field1,
                           const FieldDescriptor* field2);
@@ -765,9 +801,10 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
                              const SpecificField& field,
                              const std::vector<SpecificField>& parent_fields);
 
-  // Returns MapKeyComparator* when this field has been configured to
-  // be treated as a map.  If not, returns NULL.
-  const MapKeyComparator* GetMapKeyComparator(const FieldDescriptor* field);
+  // Returns MapKeyComparator* when this field has been configured to be treated
+  // as a map or its is_map() return true.  If not, returns NULL.
+  const MapKeyComparator* GetMapKeyComparator(
+      const FieldDescriptor* field) const;
 
   // Attempts to match indices of a repeated field, so that the contained values
   // match. Clears output vectors and sets their values to indices of paired
@@ -817,11 +854,13 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // MapKeyComparator is created for comparison purpose.
   std::vector<MapKeyComparator*> owned_key_comparators_;
   FieldKeyComparatorMap map_field_key_comparator_;
+  MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<IgnoreCriteria*> ignore_criteria_;
 
   FieldSet ignored_fields_;
 
   bool report_matches_;
+  bool report_moves_;
 
   string* output_string_;
 
