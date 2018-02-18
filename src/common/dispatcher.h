@@ -20,7 +20,7 @@ namespace xgc
 
 			inline func_type get( id_type id )
 			{
-				std::map< id_type, func_type >::iterator i = message.find( id );
+                xgc::unordered_map< id_type, func_type >::iterator i = message.find( id );
 
 				if( i != message.end() )
 					return i->second;
@@ -30,7 +30,7 @@ namespace xgc
 
 			inline func_type dismiss( id_type id )
 			{
-				std::map< id_type, func_type >::iterator i = message.find( id );
+                xgc::unordered_map< id_type, func_type >::iterator i = message.find( id );
 
 				if( i != message.end() )
 				{
