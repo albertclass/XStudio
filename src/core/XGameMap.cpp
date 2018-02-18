@@ -313,8 +313,8 @@ namespace xgc
 		if( !( nCollistionMask & EYESHOTAREA_FORCEfLUSH ) && iOldArea == iNewArea )
 			return;
 
-		xObjectList leave_eyeshot_list;
-		xObjectList enter_eyeshot_list;
+		xObjectVec leave_eyeshot_list;
+		xObjectVec enter_eyeshot_list;
 		// 替换旧格子，添加新格子
 		for( xgc_int32 x = -iEyeshot.cx; x <= iEyeshot.cx; ++x )
 		{

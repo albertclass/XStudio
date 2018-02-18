@@ -74,11 +74,7 @@ namespace xgc
 	/// 索引，字符串映射表
 	/// [3/10/2014 albert.xu]
 	///
-	struct COMMON_API string_value
-	{
-		xgc_uint32	idx;
-		xgc_lpcstr	str;
-	};
+	struct COMMON_API string_value	{ xgc_uint32 idx; xgc_lpcstr str; };
 
 	///
 	/// \brief 根据索引获取字符串
@@ -214,7 +210,7 @@ namespace xgc
 	///
 	/// \brief 字符分割
 	/// \param src 要分割的字符串
-	/// \param tokens 分隔符
+	/// \param delim 分隔符
 	/// \return 以数组的形式返回分割好的字符串
 	/// \date [5/30/2014]
 	///
@@ -280,10 +276,15 @@ namespace xgc
 	///
 	/// \brief 字符串替换
 	///
+	/// \param buf 目标缓冲
+	/// \param len 目标缓冲长度
+	/// \param src 源字符串
+	/// \param sub 被替换的串
+	/// \param rep 替换的串
 	/// \author albert.xu
 	/// \date 2018/01/29 6:15
 	///
-	COMMON_API xgc_long string_replace( char* snew, size_t size, xgc_lpcstr str, xgc_lpcstr sub, xgc_lpcstr rep );
+	COMMON_API xgc_long string_replace( char* buf, xgc_long size, xgc_lpcstr src, xgc_lpcstr sub, xgc_lpcstr rep );
 
 	///
 	/// \brief 将二进制数据转为16进制字符串

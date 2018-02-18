@@ -207,8 +207,13 @@ xgc_void test_1( int argc, char *argv[] )
 					info.chat_authenticate,
 					chat_connect_rate );
 
-				printf( "connect using %llu milliseconds, avg %0.2f connect pre seconds\n", connect_spend, info.gate_connect_count * 1000.0 / connect_spend );
-				printf( "make socket using %llu milliseconds, avg %0.2f make socket pre seconds\n", connect_spend_socket, info.gate_connect_count * 1000.0 / connect_spend_socket );
+				printf( "connect using %llu milliseconds, avg %0.2f connect pre seconds\n", 
+					connect_spend, 
+					info.gate_connect_count * 1000.0 / connect_spend );
+
+				printf( "make socket using %llu milliseconds, avg %0.2f make socket pre seconds\n", 
+					connect_spend_socket, 
+					info.gate_connect_count * 1000.0 / connect_spend_socket );
 			}
 
 			for( int i = 0; i < 10; ++i )

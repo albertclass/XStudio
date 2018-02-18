@@ -443,7 +443,7 @@ namespace xgc
 			strncpy_s( path, size, fullname, last_slash + 1 - fullname );
 		}
 
-		return last_slash + 1 - fullname;
+		return xgc_long( last_slash + 1 - fullname );
 	}
 
 	COMMON_API xgc_long path_name( xgc_lpstr name, xgc_size size, xgc_lpcstr fullname )
@@ -456,7 +456,7 @@ namespace xgc
 		if( name )
 			strncpy_s( name, size, last_slash + 1, _TRUNCATE );
 			
-		return last_slash + 1 - fullname;
+		return xgc_long( last_slash + 1 - fullname );
 	}
 
 	xgc_ulong get_process_id()

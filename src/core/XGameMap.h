@@ -201,7 +201,6 @@ namespace xgc
 		};
 
 		MapCell *mpCells;	///< 地砖数据
-		//struct IActorMapEventHandler *mpActorEventHandler; ///< 角色事件
 
 		/// @var 地图事件
 		MapEventConf mMapEventConf;
@@ -573,26 +572,26 @@ namespace xgc
 		///
 		xgc_void BuildTrigger( XGameObject* pServerObject );
 
-		/////
+		///
 		/// 在地图中添加场景对象 
 		/// @param pObject 插入到场景中的对象
 		/// @param vPosition 对象在场景中的位置
 		/// [1/5/2011 Albert]
-		/////
+		///
 		xgc_bool Insert( XGameObject* pObject, const XVector3& vPosition );
 
-		/////
+		///
 		/// 从场景中移除对象 
 		/// @param pObject 从场景中移除的对象
 		/// [1/5/2011 Albert]
-		/////
+		///
 		xgc_void Remove( XGameObject* pObject );
 
-		/////
+		///
 		/// 视野内对象选取
 		/// 注意：区域指一个视野区域，而非一个Block。视野区域是多个相邻Block的集合
 		/// [3/3/2014 baomin]
-		/////
+		///
 		xObjectSet CaptureObjectByEyeshot( const XVector3 &vCenter, const std::function< xgc_bool( xObject ) > &fnFilter = xgc_nullptr );
 
 		/// ------------------------------------------------ //
