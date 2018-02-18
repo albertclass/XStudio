@@ -1,0 +1,5 @@
+*__pycache__
+*.svn
+logs
+proto
+run.cmd

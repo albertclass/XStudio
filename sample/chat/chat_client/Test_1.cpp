@@ -75,7 +75,7 @@ public:
 		auto length = htons( header.length );
 		auto message = htons( header.message );
 
-		if( message == gate::GATE_MSG_LOGIN_ACK )
+		if( message == gate::GATE_LOGIN_ACK )
 		{
 			auto ptr = (xgc_lpstr)data + sizeof( MessageHeader );
 			auto len = (int)( size - sizeof( MessageHeader ) );
@@ -124,7 +124,7 @@ public:
 
 	virtual xgc_bool OnChatMsg( xgc_uint16 msgid, xgc_lpcstr ptr, xgc_long len )override
 	{
-		if( msgid == chat::MSG_USERAUTH_ACK )
+		if( msgid == chat::CHAT_USERAUTH_ACK )
 		{
 			++info_->chat_authenticate;
 			Disconnect();

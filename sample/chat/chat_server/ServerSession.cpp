@@ -67,16 +67,16 @@ xgc_void CServerSession::OnRecv( xgc_lpvoid data, xgc_size size )
 
 	switch( message )
 	{
-		case chat::MSG_LOGIN_REQ:
+		case chat::CHAT_LOGIN_REQ:
 		onUserLoginReq( ptr, len );
 		break;
-		case chat::MSG_LOGOUT_REQ:
+		case chat::CHAT_LOGOUT_REQ:
 		onUserLogoutReq( ptr, len );
 		break;
-		case chat::MSG_CREATE_CHANNEL_REQ:
+		case chat::CHAT_CREATE_CHANNEL_REQ:
 		onCreateChannelReq( ptr, len );
 		break;
-		case chat::MSG_SYS_CHAT_REQ:
+		case chat::CHAT_SYSTEM_CHAT_REQ:
 		onSystemNoteReq( ptr, len );
 		break;
 	}
@@ -98,7 +98,7 @@ xgc_void CServerSession::onUserLoginReq( xgc_lpvoid ptr, int len )
 	if( res < 0 )
 	{
 		ack.set_result( res );
-		Send2GameServer( chat::MSG_LOGIN_ACK, ack );
+		Send2GameServer( chat::CHAT_LOGIN_ACK, ack );
 		return;
 	}
 
@@ -109,7 +109,7 @@ xgc_void CServerSession::onUserLoginReq( xgc_lpvoid ptr, int len )
 	ack.set_user_id( req.user_id() );
 	ack.set_token( pUser->genToken() );
 
-	Send2GameServer( chat::MSG_LOGIN_ACK, ack );
+	Send2GameServer( chat::CHAT_LOGIN_ACK, ack );
 
 	auto vChannel = getChannelMgr().getChannelByWildcard< xgc::vector >( req.channel_wild() );
 	for( auto pChannel : vChannel )
@@ -150,7 +150,7 @@ xgc_void CServerSession::onCreateChannelReq( xgc_lpvoid ptr, int len )
 	ack.set_channel_id( id );
 	ack.set_channel_name( req.channel_name() );
 
-	Send2GameServer( chat::MSG_CREATE_CHANNEL_ACK, ack );
+	Send2GameServer( chat::CHAT_CREATE_CHANNEL_ACK, ack );
 }
 
 ///
@@ -175,7 +175,7 @@ xgc_void CServerSession::onSystemNoteReq( xgc_lpvoid ptr, int len )
 		pChannel->ForEachUser( [&req, &ntf]( CChannel::user &user ){
 			auto pUser = CUser::handle_exchange( user.chat_id );
 			if( pUser )
-				pUser->Send( chat::MSG_SYS_CHAT_NTF, ntf );
+				pUser->Send( chat::CHAT_SYSTEM_CHAT_NTF, ntf );
 		} );
 	}
 }

@@ -73,22 +73,22 @@ xgc_void CClientSession::OnRecv( xgc_lpvoid data, xgc_size size )
 
 	switch( message )
 	{
-		case chat::MSG_USERAUTH_REQ: 
+		case chat::CHAT_USERAUTH_REQ: 
 		onUserAuth( ptr, len ); 
 		break;
-		case chat::MSG_USERINFO_REQ: 
+		case chat::CHAT_USERINFO_REQ: 
 		onUserInfoReq( ptr, len ); 
 		break;
-		case chat::MSG_CHANNEL_ENTER_REQ: 
+		case chat::CHAT_CHANNEL_ENTER_REQ: 
 		onEnterChannelReq( ptr, len ); 
 		break;
-		case chat::MSG_CHANNEL_LEAVE_REQ: 
+		case chat::CHAT_CHANNEL_LEAVE_REQ: 
 		onLeaveChannelReq( ptr, len );
 		break;
-		case chat::MSG_USER_CHAT_REQ: 
+		case chat::CHAT_USER_CHAT_REQ: 
 		onUserChatReq( ptr, len );
 		break;
-		case chat::MSG_CHANNEL_CHAT_REQ:
+		case chat::CHAT_CHANNEL_CHAT_REQ:
 		onChannelChatReq( ptr, len );
 		break;
 	}
@@ -122,7 +122,7 @@ xgc_void CClientSession::onUserAuth( xgc_lpvoid ptr, int len )
 		ack.set_extra( pUser->getExtra() );
 	}
 
-	Send2Client( chat::MSG_USERAUTH_ACK, ack );
+	Send2Client( chat::CHAT_USERAUTH_ACK, ack );
 
 	// 发送已进入的频道
 	pUser->forEachChannel( [this]( xgc_uint32 channel_id ){
@@ -132,7 +132,7 @@ xgc_void CClientSession::onUserAuth( xgc_lpvoid ptr, int len )
 			chat::channel_enter_ntf ntf;
 			ntf.set_channel_id( channel_id );
 			ntf.set_channel_name( pChannel->getName() );
-			Send2Client( chat::MSG_CHANNEL_ENTER_NTF, ntf );
+			Send2Client( chat::CHAT_CHANNEL_ENTER_NTF, ntf );
 		}
 	} );
 }
@@ -164,7 +164,7 @@ xgc_void CClientSession::onUserInfoReq( xgc_lpvoid ptr, int len )
 		ack.set_extra( pUser->getExtra() );
 	}
 
-	Send2Client( chat::MSG_USERINFO_ACK, ack );
+	Send2Client( chat::CHAT_USERINFO_ACK, ack );
 }
 
 ///
@@ -201,7 +201,7 @@ xgc_void CClientSession::onEnterChannelReq( xgc_lpvoid ptr, int len )
 				auto res = pChannel->Enter( chat_id_, xgc_nullptr );
 				ack.set_result( res );
 
-				Send2Client( chat::MSG_CHANNEL_ENTER_ACK, ack );
+				Send2Client( chat::CHAT_CHANNEL_ENTER_ACK, ack );
 			};
 		}
 		break;
@@ -219,7 +219,7 @@ xgc_void CClientSession::onEnterChannelReq( xgc_lpvoid ptr, int len )
 				auto res = pChannel->Enter( chat_id_, xgc_nullptr );
 				ack.set_result( res );
 
-				Send2Client( chat::MSG_CHANNEL_ENTER_ACK, ack );
+				Send2Client( chat::CHAT_CHANNEL_ENTER_ACK, ack );
 			}
 		}
 		break;
@@ -237,7 +237,7 @@ xgc_void CClientSession::onEnterChannelReq( xgc_lpvoid ptr, int len )
 				auto res = pChannel->Enter( chat_id_, xgc_nullptr );
 				ack.set_result( res );
 
-				Send2Client( chat::MSG_CHANNEL_ENTER_ACK, ack );
+				Send2Client( chat::CHAT_CHANNEL_ENTER_ACK, ack );
 			}
 		}
 		break;
@@ -274,7 +274,7 @@ xgc_void CClientSession::onLeaveChannelReq( xgc_lpvoid ptr, int len )
 		ack.set_result( -1 );
 	}
 
-	Send2Client( chat::MSG_CHANNEL_LEAVE_ACK, ack );
+	Send2Client( chat::CHAT_CHANNEL_LEAVE_ACK, ack );
 }
 
 ///
@@ -299,7 +299,7 @@ xgc_void CClientSession::onUserChatReq( xgc_lpvoid ptr, int len )
 		err.set_token( req.token() );
 		err.set_description( "user is not exist." );
 
-		Send2Client( chat::MSG_CHAT_ERR, err );
+		Send2Client( chat::CHAT_CHAT_ERR, err );
 	}
 	else
 	{
@@ -308,8 +308,8 @@ xgc_void CClientSession::onUserChatReq( xgc_lpvoid ptr, int len )
 		ntf.set_chat_id( chat_id_ );
 		ntf.set_text( req.text() );
 
-		pChatTo->Send( chat::MSG_USER_CHAT_NTF, ntf );
-		Send2Client( chat::MSG_USER_CHAT_NTF, ntf );
+		pChatTo->Send( chat::CHAT_USER_CHAT_NTF, ntf );
+		Send2Client( chat::CHAT_USER_CHAT_NTF, ntf );
 	}
 }
 
@@ -335,7 +335,7 @@ xgc_void CClientSession::onChannelChatReq( xgc_lpvoid ptr, int len )
 		err.set_token( req.token() );
 		err.set_description( "channel is not exist." );
 
-		Send2Client( chat::MSG_CHAT_ERR, err );
+		Send2Client( chat::CHAT_CHAT_ERR, err );
 	}
 	else
 	{
@@ -349,7 +349,7 @@ xgc_void CClientSession::onChannelChatReq( xgc_lpvoid ptr, int len )
 			err.set_token( req.token() );
 			err.set_description( "not valid user." );
 
-			Send2Client( chat::MSG_CHAT_ERR, err );
+			Send2Client( chat::CHAT_CHAT_ERR, err );
 			return;
 		}
 		
@@ -362,7 +362,7 @@ xgc_void CClientSession::onChannelChatReq( xgc_lpvoid ptr, int len )
 			auto pUser = CUser::handle_exchange( user.chat_id );
 			if( pUser )
 			{
-				pUser->Send( chat::MSG_CHANNEL_CHAT_REQ, ntf );
+				pUser->Send( chat::CHAT_CHANNEL_CHAT_REQ, ntf );
 			}
 		} );
 	}

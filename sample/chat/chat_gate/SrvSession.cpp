@@ -41,13 +41,13 @@ xgc_void CServerSession::OnConnect( net::network_t handle )
 
 	// 服务器启动后请求聊天服务器创建如下公共频道
 	req.set_channel_name( "2-1-0-1.world" );
-	Send( chat::MSG_CREATE_CHANNEL_REQ, req );
+	Send( chat::CHAT_CREATE_CHANNEL_REQ, req );
 
 	req.set_channel_name( "2-1-0-1.guild" );
-	Send( chat::MSG_CREATE_CHANNEL_REQ, req );
+	Send( chat::CHAT_CREATE_CHANNEL_REQ, req );
 
 	req.set_channel_name( "2-1-0-1.friends" );
-	Send( chat::MSG_CREATE_CHANNEL_REQ, req );
+	Send( chat::CHAT_CREATE_CHANNEL_REQ, req );
 }
 
 xgc_void CServerSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
@@ -75,10 +75,10 @@ xgc_void CServerSession::OnRecv( xgc_lpvoid data, xgc_size size )
 
 	switch( message )
 	{
-		case chat::MSG_CREATE_CHANNEL_ACK:
+		case chat::CHAT_CREATE_CHANNEL_ACK:
 		onCreateChannelAck( ptr, len );
 		break;
-		case chat::MSG_LOGIN_ACK:
+		case chat::CHAT_LOGIN_ACK:
 		onLoginAck( ptr, len );
 		break;
 	}
@@ -140,7 +140,7 @@ xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
 		ack2.set_chat_token( ack1.token() );
 	}
 
-	session->Send( gate::GATE_MSG_LOGIN_ACK, ack2 );
+	session->Send( gate::GATE_LOGIN_ACK, ack2 );
 }
 
 ///
@@ -167,7 +167,7 @@ xgc_long CServerSession::UserLogin( xgc_uint64 user_id, const xgc::string &nickn
 	req.set_channel_wild( "2-1-0-1.*" );
 	req.set_extra( "1111 2222 3333 4444 5555" );
 
-	Send( chat::MSG_LOGIN_REQ, req );
+	Send( chat::CHAT_LOGIN_REQ, req );
 	return 0;
 }
 
@@ -186,7 +186,7 @@ xgc_void CServerSession::UserLogout( xgc_uint64 user_id )
 	chat::logout_req req;
 	req.set_user_id( user_id );
 
-	Send( chat::MSG_LOGOUT_REQ, req );
+	Send( chat::CHAT_LOGOUT_REQ, req );
 }
 
 ///
@@ -203,7 +203,7 @@ xgc_void CServerSession::SendSystemNote( xgc_uint32 channel_id, xgc::string note
 	req.set_text( note );
 	req.set_flags( flags );
 
-	Send( chat::MSG_SYS_CHAT_REQ, req );
+	Send( chat::CHAT_SYSTEM_CHAT_REQ, req );
 }
 
 ///

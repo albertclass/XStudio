@@ -151,7 +151,7 @@ xgc_long CChannel::Chat( xgc_uint32 nChatID, xgc_lpcstr lpText, xgc_size nSize, 
 		auto pUser = CUser::handle_exchange( pair.first );
 		if( pUser )
 		{
-			pUser->Send( chat::MSG_USER_CHAT_NTF, ntf );
+			pUser->Send( chat::CHAT_USER_CHAT_NTF, ntf );
 		}
 	}
 

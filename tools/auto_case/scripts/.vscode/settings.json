@@ -1,0 +1,58 @@
+// Place your settings in this file to overwrite the default settings
+{
+	// Controls the font family.
+	"editor.fontFamily": "Consolas, 微软雅黑",
+
+	// Controls the font weight.
+	"editor.fontWeight": "normal",
+
+	// Controls the font size.
+	"editor.fontSize": 16,
+
+	// The number of spaces a tab is equal to.
+	"editor.tabSize": 4,
+
+	// Insert spaces when pressing Tab.
+	"editor.insertSpaces": false,
+
+	// Controls visibility of the glyph margin
+	"editor.glyphMargin": true,
+
+	"editor.renderWhitespace": "all",
+
+	// The default character set encoding to use when reading and writing files.
+	"files.encoding": "utf8",
+
+	// The default end of line character.
+	"files.eol": "\r\n",
+
+	// Configure glob patterns for excluding files and folders.
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/.DS_Store": true,
+		"**/*.log": true,
+		"**/*.cmd": true,
+		"**/*.docx": true,
+		"**/__pycache__": true,
+		"**/md5.list": true,
+		"**/ignore_files": true,
+		"Loader/report": true
+	},
+
+	// Controls auto save of dirty files. Accepted values:  "off", "afterDelay", "onFocusChange" (editor loses focus), "onWindowChange" (window loses focus). If set to "afterDelay", you can configure the delay in "files.autoSaveDelay".
+	"files.autoSave": "onFocusChange",
+
+	// Whether to lint Python files.
+	"python.linting.enabled": false,
+
+	// Provider for formatting. Possible options include 'autopep8' and 'yapf'.
+	"python.formatting.provider": "yapf",
+
+	// Arguments passed in. Each argument is a separate item in the array.
+	"python.formatting.yapfArgs": ["--style", "{based_on_style: chromium, indent_width: 4, column_limit: 120}"],
+
+	// List of paths to libraries and the like that need to be imported by auto complete engine. E.g. when using Google App SDK, the paths are not in system path, hence need to be added into this list.
+	"python.autoComplete.extraPaths": []
+}

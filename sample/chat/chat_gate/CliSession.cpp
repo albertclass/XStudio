@@ -75,7 +75,7 @@ xgc_void CClientSession::OnRecv( xgc_lpvoid data, xgc_size size )
 
 	switch( message )
 	{
-		case gate::GATE_MSG_LOGIN_REQ:
+		case gate::GATE_LOGIN_REQ:
 		{
 			gate::login_req req;
 			req.ParseFromArray( ptr, len );
@@ -86,7 +86,7 @@ xgc_void CClientSession::OnRecv( xgc_lpvoid data, xgc_size size )
 				gate::login_ack ack;
 				ack.set_result( ret );
 
-				Send( gate::GATE_MSG_LOGIN_ACK, ack );
+				Send( gate::GATE_LOGIN_ACK, ack );
 			}
 
 			ret = theServer.UserLogin( user_id_, req.username(), handle() );
@@ -95,12 +95,12 @@ xgc_void CClientSession::OnRecv( xgc_lpvoid data, xgc_size size )
 				gate::login_ack ack;
 				ack.set_result( ret - 100 );
 
-				Send( gate::GATE_MSG_LOGIN_ACK, ack );
+				Send( gate::GATE_LOGIN_ACK, ack );
 			}
 		}
 		break;
 
-		case gate::GATE_MSG_LOGOUT_REQ:
+		case gate::GATE_LOGOUT_REQ:
 		{
 			gate::logout_req req;
 			req.ParseFromArray( ptr, len );

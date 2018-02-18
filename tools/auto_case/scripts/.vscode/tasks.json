@@ -1,0 +1,27 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "0.1.0",
+	"command": "python",
+	"isShellCommand": true,
+	"args": [],
+	"showOutput": "always",
+	"echoCommand": true,
+	"tasks": [
+		{
+			"taskName": "_this",
+			"showOutput": "silent",
+			"isBuildCommand": true,
+			"suppressTaskName": true,
+			"args": ["${file}"]
+		},
+
+		{
+			"taskName": "altername",
+			"showOutput": "silent",
+			"isBuildCommand": false,
+			"suppressTaskName": true,
+			"args": [".\\Loader\\autocase.py", "-utestQa001", "-p123456", "-h172.30.10.97:52221", "-mC000altername", "0", "1"]
+		}
+	]
+}

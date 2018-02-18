@@ -76,28 +76,28 @@ xgc_void CChatSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 	{
 		switch( message )
 		{
-			case chat::MSG_USERAUTH_ACK:
+			case chat::CHAT_USERAUTH_ACK:
 			onUserAuthAck( ptr, len );
 			break;
-			case chat::MSG_CHANNEL_ENTER_NTF:
+			case chat::CHAT_CHANNEL_ENTER_NTF:
 			onChannelEnterNtf( ptr, len );
 			break;
-			case chat::MSG_USERINFO_ACK:
+			case chat::CHAT_USERINFO_ACK:
 			onUserInfoAck( ptr, len );
 			break;
-			case chat::MSG_CHANNEL_ENTER_ACK:
+			case chat::CHAT_CHANNEL_ENTER_ACK:
 			onChannelEnterAck( ptr, len );
 			break;
-			case chat::MSG_CHANNEL_LEAVE_ACK:
+			case chat::CHAT_CHANNEL_LEAVE_ACK:
 			onchannelLeaveAck( ptr, len );
 			break;
-			case chat::MSG_USER_CHAT_NTF:
+			case chat::CHAT_USER_CHAT_NTF:
 			onUserChatNtf( ptr, len );
 			break;
-			case chat::MSG_CHANNEL_CHAT_NTF:
+			case chat::CHAT_CHANNEL_CHAT_NTF:
 			onChannelChatNtf( ptr, len );
 			break;
-			case chat::MSG_CHAT_ERR:
+			case chat::CHAT_CHAT_ERR:
 			onChatErr( ptr, len );
 			break;
 		}
@@ -116,7 +116,7 @@ xgc_void CChatSrvSession::ChatUserAuth()
 	req.set_token( token_ );
 	req.set_user_id( user_id_ );
 
-	Send2ChatSrv( chat::MSG_USERAUTH_REQ, req );
+	Send2ChatSrv( chat::CHAT_USERAUTH_REQ, req );
 }
 
 ///
@@ -131,7 +131,7 @@ xgc_void CChatSrvSession::ChatUserInfoReq( xgc_uint32 chat_id, xgc_uint64 user_i
 	req.set_chat_id( chat_id );
 	req.set_user_id( user_id );
 
-	Send2ChatSrv( chat::MSG_USERINFO_REQ, req );
+	Send2ChatSrv( chat::CHAT_USERINFO_REQ, req );
 }
 
 ///
@@ -164,7 +164,7 @@ xgc_void CChatSrvSession::ChatTo( xgc_uint32 chat_id, xgc_lpcstr text )
 
 	req.set_text( utf8, utf8_len );
 
-	Send2ChatSrv( chat::MSG_USER_CHAT_REQ, req );
+	Send2ChatSrv( chat::CHAT_USER_CHAT_REQ, req );
 
 	free( data != utf8 ? utf8 : xgc_nullptr );
 }
@@ -199,7 +199,7 @@ xgc_void CChatSrvSession::Say( xgc_uint32 channel_id, xgc_lpcstr text )
 
 	req.set_text( utf8, utf8_len );
 
-	Send2ChatSrv( chat::MSG_CHANNEL_CHAT_REQ, req );
+	Send2ChatSrv( chat::CHAT_CHANNEL_CHAT_REQ, req );
 
 	free( data != utf8 ? utf8 : xgc_nullptr );
 }

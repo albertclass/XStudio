@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B412931B-5A6D-4F03-9862-6D2A1F7A64B0}</ProjectGuid>
+    <RootNamespace>CaseServer</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\Bin\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\Obj\$(Configuration)_$(PlatformShortName)\$(ProjectName)\</IntDir>
+    <ExecutablePath>C:\Python35\DLLs;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\Python35\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Python35\libs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\Bin\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\Obj\$(Configuration)_$(PlatformShortName)\$(ProjectName)\</IntDir>
+    <ExecutablePath>C:\Python35\DLLs;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\Python35\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Python35\libs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\Protocol;..\..\Common;..\..\NetBase;..\..\Dependence\wxWidgets\include;..\..\Dependence\wxWidgets\include\msvc;..\..\Dependence\Visual Leak Detector\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN64;__WXMSW__;_WINDOWS;NOPCH;_UNICODE;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\Lib\$(Configuration)_$(PlatformShortName)\;..\..\Dependence\wxWidgets\lib\vc_x64_lib\;..\..\Dependence\Visual Leak Detector\bin\$(PlatformTarget)\$(Configuration)-v$(PlatformToolsetVersion)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Common.lib;NetBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\Dependence\wxWidgets\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\Protocol;..\..\Common;..\..\NetBase;..\..\Dependence\wxWidgets\include;..\..\Dependence\wxWidgets\include\msvc;..\..\Dependence\Visual Leak Detector\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN64;__WXMSW__;_WINDOWS;NOPCH;_UNICODE;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>..\Lib\$(Configuration)_$(PlatformShortName)\;..\..\Dependence\wxWidgets\lib\vc_x64_lib\;..\..\Dependence\Visual Leak Detector\bin\$(PlatformTarget)\$(Configuration)-v$(PlatformToolsetVersion)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Common.lib;NetBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\Dependence\wxWidgets\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Protocol\proto_def.h" />
+    <ClInclude Include="AppConfig.h" />
+    <ClInclude Include="DataViewFileSelecterRenderer.h" />
+    <ClInclude Include="MainFrame.h" />
+    <ClInclude Include="MessageHandler.h" />
+    <ClInclude Include="ClientDataViewModel.h" />
+    <ClInclude Include="PythonScript.h" />
+    <ClInclude Include="ScriptManagerDlg.h" />
+    <ClInclude Include="ScriptSelectorDlg.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="app.h" />
+    <ClInclude Include="UserSelectorDlg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Protocol\proto_def.cpp" />
+    <ClCompile Include="AppConfig.cpp" />
+    <ClCompile Include="DataViewFileSelecterRenderer.cpp" />
+    <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="MessageHandler.cpp" />
+    <ClCompile Include="ClientDataViewModel.cpp" />
+    <ClCompile Include="PythonScript.cpp" />
+    <ClCompile Include="ScriptManagerDlg.cpp" />
+    <ClCompile Include="ScriptSelectorDlg.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="app.cpp" />
+    <ClCompile Include="UserSelectorDlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="theApp.rc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;__WXMSW__;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__WXMSW__;NDEBUG;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="AutoCase.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

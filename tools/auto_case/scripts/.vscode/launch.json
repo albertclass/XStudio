@@ -1,0 +1,128 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Python Debug Current",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": false,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${file}",
+			"cwd": "${fileDirname}",
+			"debugOptions": [
+				"RedirectOutput",
+				"DebugStdLib"
+			]
+		},
+
+		{
+			"name": "Python Debug Autocase",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": false,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/Loader/main.py",
+			"cwd": "${workspaceRoot}/Loader",
+			// "args": ["-uyangwenwei01", "-p123456", "-h172.30.10.97:52221", "-maltername", "-i0", "0", "1"],
+			"args": ["--gui", "-p123456", "-h172.30.10.65:50422"],
+			"debugOptions": [
+				"RedirectOutput",
+				"DebugStdLib"
+			]
+		},
+
+		{
+			"name": "Python Debug CaseDesign",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": false,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/Tool/main.py",
+			"cwd": "${workspaceRoot}/Tool",
+			"args": [],
+			"debugOptions": [
+				"RedirectOutput",
+				"DebugStdLib"
+			]
+		},
+
+		{
+			"name": "Integrated Terminal/Console",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": true,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/Loader/autocase.py",
+			"cwd": "${workspaceRoot}/Loader",
+			"args": ["-utestcaseqa", "-p123456", "-h172.30.10.97:52221", "-s4", "-m..\\C000mail", "0", "1"],
+			"console": "integratedTerminal",
+			"debugOptions": [
+			]
+		},
+		{
+			"name": "External Terminal/Console",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": true,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${file}",
+			"console": "externalTerminal",
+			"debugOptions": [
+			]
+		},
+		{
+			"name": "Django",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": true,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/manage.py",
+			"args": [
+				"runserver",
+				"--noreload"
+			],
+			"debugOptions": [
+				"RedirectOutput",
+				"DjangoDebugging"
+			]
+		},
+		{
+			"name": "Flask",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": true,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/run.py",
+			"args": [],
+			"debugOptions": [
+				"RedirectOutput"
+			]
+		},
+		{
+			"name": "Watson",
+			"type": "python",
+			"request": "launch",
+			"stopOnEntry": true,
+			"pythonPath": "${config:python.pythonPath}",
+			"program": "${workspaceRoot}/console.py",
+			"args": [
+				"dev",
+				"runserver",
+				"--noreload=True"
+			],
+			"debugOptions": [
+				"RedirectOutput"
+			]
+		},
+		{
+			"name": "Attach (Remote Debug)",
+			"type": "python",
+			"request": "attach",
+			"localRoot": "${workspaceRoot}",
+			"remoteRoot": "${workspaceRoot}",
+			"port": 3000,
+			"secret": "my_secret",
+			"host": "localhost"
+		}
+	]
+}

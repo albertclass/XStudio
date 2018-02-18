@@ -45,7 +45,7 @@ xgc_void CGameSrvSession::OnConnect( net::network_t handle )
 	req.set_username( mUsername );
 	req.set_password( mPassword );
 
-	Send2GameSrv( gate::GATE_MSG_LOGIN_REQ, req );
+	Send2GameSrv( gate::GATE_LOGIN_REQ, req );
 }
 
 xgc_void CGameSrvSession::OnError( xgc_int16 error_type, xgc_int16 error_code )
@@ -85,7 +85,7 @@ xgc_void CGameSrvSession::OnRecv( xgc_lpvoid data, xgc_size size )
 
 	switch( message )
 	{
-		case gate::GATE_MSG_LOGIN_ACK:
+		case gate::GATE_LOGIN_ACK:
 		{
 			gate::login_ack ack;
 			ack.ParseFromArray( ptr, len );

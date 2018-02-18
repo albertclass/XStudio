@@ -17,7 +17,7 @@ public:
 private:
 	virtual xgc_bool OnChatMsg( xgc_uint16 msgid, xgc_lpcstr ptr, xgc_long len )
 	{
-		if( msgid == chat::MSG_USERAUTH_ACK )
+		if( msgid == chat::CHAT_USERAUTH_ACK )
 		{
 			Disconnect();
 			return true;

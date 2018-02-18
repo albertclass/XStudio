@@ -35,6 +35,6 @@ using namespace net;
 #include <algorithm>
 
 #include "protocol.h"
-#include "msg.pb.h"
+#include "chat.pb.h"
 
 #endif // _CLIENT_HEADER_H_
