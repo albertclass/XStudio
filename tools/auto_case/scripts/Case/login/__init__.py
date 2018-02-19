@@ -1,7 +1,7 @@
 from . import case
 from . import func
-from . import hook
+from .hook import hook_tbl as hook
 
 __all__ = ["case", "func", "hook"]
 version = '1.0.0.0'
-package = [case.login]
+packages = [case.login]

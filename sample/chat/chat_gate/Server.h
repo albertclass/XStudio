@@ -71,7 +71,7 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/16
 	///
-	xgc_void Connected()
+	XGC_INLINE xgc_void Connected()
 	{
 		++mConnectCount;
 	}
@@ -82,12 +82,10 @@ public:
 	/// \author albert.xu
 	/// \date 2017/08/16
 	///
-	xgc_void Disconnected()
+	XGC_INLINE xgc_void Disconnected()
 	{
 		--mConnectCount;
 	}
-
-
 };
 
 extern CServer theServer;

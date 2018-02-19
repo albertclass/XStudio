@@ -5,6 +5,7 @@ usage : autocase -u username -p password -h=ip:port -m module_name -i case_index
 import os
 import os.path
 import sys
+import time
 import getopt
 import version
 
@@ -117,7 +118,14 @@ if option.gui:
 			lb.grid(row=5, column=0, padx = 3, pady = 3, sticky=E)
 			self.reportVar = StringVar(value=option.report_file)
 			self.report = Entry(frame, text=option.report_file, textvariable=self.reportVar)
-			self.report.grid(row=5,column=1, padx = 3, pady = 3, sticky=NSEW)
+			self.report.grid(row=5,column=1, padx=3, pady=3, sticky=NSEW)
+
+			#debug mode
+			lb = Label(frame, text="DEBUG:")
+			lb.grid(row=6, column=0, padx = 3, pady = 3, sticky=E)
+			self.debugVar = BooleanVar(value=option.debug)
+			self.debug = Checkbutton(frame, onvalue=True, offvalue=False, variable=self.debugVar)
+			self.debug.grid(row=6, column=1, padx=3, pady=3, sticky=NSEW)
 
 			button = Button(frame, text='OK', width=40)
 			button.grid(row=7, column=1, padx=5, pady=5, sticky=E)
@@ -135,6 +143,7 @@ if option.gui:
 			option.username = self.username.get()
 			option.password = self.password.get()
 			option.report_file = self.report.get()
+			option.debug = self.debugVar.get()
 			option.host = self.host.get()
 			option.port = int(self.port.get())
 			
@@ -160,7 +169,9 @@ if option.import_name is None:
 setup_logger()
 
 # 注册全局函数
-__builtins__['call'] = restrict.call
+__builtins__['verify'] = restrict.verify
+__builtins__['assign'] = restrict.assign
+__builtins__['getvar'] = restrict.getvar
 
 # sys.meta_path.insert(0, MetaPathFinder())
 # 动态载入测试模块
@@ -176,18 +187,18 @@ command("tips 'start test username=%s, password=%s, module=%s, address=%s:%d'" %
 account.info('this\'s %s here.' % __name__)
 account.info('start test case...')
 
-if option.index >= len(robot.package):
+if option.index >= len(robot.packages):
 	ERR( "select case is not exist." )
 	sys.exit(-1)
 
-cli = network.client( robot.package[option.index], session.role, robot.hook )
+cli = network.client( robot.packages[option.index], session.role, robot.hook )
 
 # main loop
 account.info('-------------------------------------')
 account.info("connect server %s:%d" % (option.host, option.port))
 
 cli.session.setup_report(option.report_file, option.report_level)
-cli.session.report( Log=None if 'comment' not in cli.case else cli.case['comment'])
+cli.session.report( Log=None if 'comment' not in cli.package else cli.package['comment'])
 
 restrict.trigger( cli, "start" )
 

@@ -5,10 +5,10 @@ package gate;
 enum GATE_MSG_ID {
 	GATE_MSG_BEGIN = 0;
 
-	GATE_LOGIN_REQ = 0x0001;
-	GATE_LOGIN_ACK = 0x0002;
+	GATE_LOGIN_REQ = 1;
+	GATE_LOGIN_ACK = 2;
 
-	GATE_LOGOUT_REQ = 0x1003;
+	GATE_LOGOUT_REQ = 3;
 }
 
 message login_req {
@@ -20,6 +20,8 @@ message login_ack {
 	int32 result = 1;
 	uint64 user_id = 2;
 	string chat_token = 3;
+	string host = 4;
+	uint32 port = 5;
 }
 
 message logout_req {

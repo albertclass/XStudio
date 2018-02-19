@@ -1,4 +1,6 @@
+import struct
 import report
+import restrict
 
 from . import hook, make, name
 
@@ -21,6 +23,7 @@ class session:
 		self._report.record_some( **kw )
 	
 	def connect(self, host, port ):
+		account.debug( 'connect server %s:%d' % (host, port))
 		self._net.connect( (host, int(port) ) )
 
 	def close(self):
@@ -41,7 +44,7 @@ class session:
 	def close_logger(self):
 		pass
 
-	def onRecv(self, net, data):
+	def onRecv(self, data):
 		'''
 		call with whole package received.
 		'''
@@ -67,14 +70,19 @@ class session:
 			account.info("# %s.%s hook message : %d" % (handler.__module__, handler.__name__, msgid))
 			handler(self, msg)
 
-		restrict.check( msgid, msg, net )
+		restrict.check( self._net, msgid, msg )
 
 
 	def Send(self, msgid, msg):
-		data = struct.pack(
-			"!2H%ds" % len(buf), len(buf), msgid, msg.SerializeToString() if msg else bytes())
-			
-		net.send(data)
+		'''
+		send message to client\n
+		@param msgid : message id\n
+		@param msg : message data\n
+		'''
+		buf = msg.SerializeToString() if msg else bytes()
+		dat = struct.pack("!2H%ds" % len(buf), len(buf) + 4, msgid, buf )
+		
+		self._net.send(dat)
 
 class package:
 

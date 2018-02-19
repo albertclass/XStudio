@@ -24,10 +24,8 @@ chat_name = {v : k for k, v in chat_pb2.CHAT_MSG_ID.items()}
 from .name import name_tbl
 from .hook import hook_tbl
 
-def make(msgid):
+def make(msgid : int):
 	try:
-		msgid = eval(msgid)
-		
 		return None if msgid is None else __messages_pb[name_tbl[msgid]]()
 	except KeyError:
 		WRN("# message parser does't found. %d" % (msgid))

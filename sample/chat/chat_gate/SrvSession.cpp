@@ -7,7 +7,9 @@ CServerSession::CServerSession()
 	: handle_( INVALID_NETWORK_HANDLE )
 	, pingpong_( 0 )
 	, pinglast_( ticks< std::chrono::milliseconds >() )
+	, peer_port_( -1 )
 {
+	memset( peer_host_, 0, sizeof(peer_host_) );
 }
 
 CServerSession::~CServerSession()
@@ -36,6 +38,17 @@ xgc_void CServerSession::OnConnect( net::network_t handle )
 {
 	handle_ = handle;
 	fprintf( stdout, "net session %u connected\r\n", handle_ );
+	net::Param_QueryHandleInfo param;
+	param.handle = handle;
+	if( 0 == net::ExecuteState( Operator_QueryHandleInfo, &param ) )
+	{
+		in_addr in;
+		in.S_un.S_addr = htonl(param.addr[1]);
+		char* addr = inet_ntoa( in );
+		if( addr )
+			strcpy_s( peer_host_, addr );
+		peer_port_ = param.port[1];
+	}
 
 	chat::create_channel_req req;
 
@@ -138,6 +151,8 @@ xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
 	{
 		ack2.set_user_id( user_id );
 		ack2.set_chat_token( ack1.token() );
+		ack2.set_host( getPeerHost() );
+		ack2.set_port( getPeerPort() );
 	}
 
 	session->Send( gate::GATE_LOGIN_ACK, ack2 );

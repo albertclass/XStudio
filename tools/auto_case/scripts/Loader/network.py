@@ -26,13 +26,13 @@ class crc16:
 		return self.crcvalue
 
 class client:
-	def __init__(self, case, session, hook_tbl ):
+	def __init__(self, package, session, hook_tbl ):
 		self.recv_buf = bytes()
 		self.connect_flag = False
-		self.case = case
 		self.restrict = None
-
+		self.package = package
 		self.session = session(self, hook_tbl)
+		self.s = None
 
 	def __del__(self):
 		if self.s:
@@ -49,6 +49,7 @@ class client:
 		return self.connected()
 
 	def connect(self, address):
+		self.close()
 		self.address = address
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		return self.reconnect()
@@ -85,7 +86,7 @@ class client:
 				self.recv_buf = self.recv_buf[packet_size:]
 				# print( 'data:%s' % repr( self.recv_buf ) )
 
-				self.session.onRecv(self, data)
+				self.session.onRecv(data)
 				return 1
 		
 		try:

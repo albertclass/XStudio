@@ -21,10 +21,8 @@ def _get_field2( root, *fields : tuple ):
 
 	if rv is None:
 		# 获取继承关系
-		inherit = None if 'inherit' not in root else root['inherit']
-
-		if inherit is not None:
-			rv = _get_field2( inherit, *fields )
+		inherit = root.get('inherit')
+		rv = _get_field2( inherit, *fields ) if inherit else None
 	
 	return rv
 
@@ -97,10 +95,11 @@ class message(leaf):
 		if self.msgid == msgid:
 			# 没有数据检查则返回已处理，且验证通过
 			if self.cdata: 
-				if callable(self.cdata) and self.cdata():
-					self.hit += 1
+				for c in flatitem( self.cdata ):
+					if False == c(cli, session = cli.session, msg = msg):
+						break
 				else:
-					exception.throw( -1, '%s check data failed' % (self.cdata.__name__))
+					self.hit += 1
 			else:
 				self.hit += 1
 
@@ -109,7 +108,7 @@ class message(leaf):
 		return False  # 未命中
 
 	def is_finished(self):
-		return True
+		return self.hit == self.count
 
 class node(leaf):
 	'''
@@ -213,7 +212,7 @@ class collect_node(node):
 
 	def check(self, msgid, msg, cli):
 		'''
-		@brief 不分顺序，全部收集后验证通过
+		不分顺序，全部收集后验证通过
 		@param msgid 消息号
 		@param msg 消息数据
 		@param cli 客户端连接对象
@@ -235,7 +234,6 @@ class switch_node(node):
 	'''
 	选择节点
 	'''
-
 	def __init__(self):
 		super().__init__()
 		self.active = None
@@ -243,10 +241,10 @@ class switch_node(node):
 	def check(self, msgid, msg, cli):
 		'''
 		分支节点，任意节点命中后直到节点完成
-		msgid : 消息号
-		msg   : 消息数据
-		cli   : 客户端连接对象
-		return: 该消息是否命中
+		@param msgid : 消息号
+		@param msg   : 消息数据
+		@param cli   : 客户端连接对象
+		@return      : 该消息是否命中
 		'''
 		if self.active is not None:
 			# 已命中且未结束则继续该分支
@@ -274,10 +272,13 @@ class restrict:
 		# 约束超时时间
 		self.timeout = _get_field(conf, 'timeout') or 0
 		# 约束期间内忽略的消息
-		self.ignores = _get_field(conf, 'ignores')
+		ignores = _get_field(conf, 'ignores')
+		self.ignore_all = True if type(ignores) is str and ignores == "*" else False
+		if not self.ignore_all:
+			self.ignores = [eval(v) for v in flatitem(ignores) if type(v) in (int,str)]
 
 		# 重新计算超时时间
-		self.timeout = 0 if self.timeout == 0 else time.time() + self.timeout
+		self.timeout = 0 if self.timeout == 0 else time.clock() + self.timeout
 
 		# 消息约束
 		account.debug( "~ trigger %s build restrict node." % (name) )
@@ -311,7 +312,7 @@ class restrict:
 
 		# yapf: enable
 
-	def check_message(self, msgid, msg, cli):
+	def check(self, cli, msgid, msg):
 		'''
 		#brief 检查约束
 		#param msgid 消息索引
@@ -323,27 +324,24 @@ class restrict:
 			return False
 
 		if self.node:
-			if self.node.check( msgid, msg, cli ):
-				# 删除节点
-				if isinstance( self.node, inspect):
-					return True
-				elif self.node.is_empty():
-					return True
-				else:
-					return False
-			elif '*' not in self.ignores:
-				trigger(cli, 'failed' )
+			if self.node.check(msgid, msg, cli):
+				# 检查节点是否命中
+				return self.node.is_finished()
+			
+			if self.ignore_all:
+				# 全部忽略的情况，则认为未完成
 				return False
 			else:
-				return False
+				# 否则认为约束不成立，抛出异常
+				exception.throw(-2, 'message id not hit.')
 
-		return True
+		return self.node.is_finished()
 
 	def check_timeout(self):
 		'''
 		检查是否超时
 		'''
-		if self.timeout > 0 and time.time() > self.timeout:
+		if self.timeout > 0 and time.clock() > self.timeout:
 			exception.throw( 1, "restrict timeout." )
 
 	def finished(self):
@@ -357,7 +355,7 @@ def __set_optional( msg, key, val, convert ):
 	# 对 optional 属性的字段赋值
 	setattr(msg, key, val)
 
-def __set_message( msg, val ):
+def __set_message( cli, msg, val ):
 	'''
 	msg - protobuf message instance
 	val - node of message field value
@@ -368,11 +366,11 @@ def __set_message( msg, val ):
 	fields = [f.name for f in des.fields]
 	for k, v in val.items():
 		# 遍历配置中的字段，并赋值
-		if callable(v): v = v(cli = cli, session=cli.session) # 可执行的函数，则执行后取返回值
+		v = v(cli = cli, session = cli.session) if callable(v) else v # 可执行的函数，则执行后取返回值
 
-		if k in fields:
-			field_descriptor = des.field_by_name[k]
+		field_descriptor = des.fields_by_name.get(k)
 
+		if field_descriptor:
 			if field_descriptor.label == FieldDescriptor.LABEL_REPEATED:
 				# repeated type
 				set_value = __set_repeated
@@ -384,11 +382,11 @@ def __set_message( msg, val ):
 				# int type
 				set_value( msg, k, v, int )
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_INT64:
-				set_value( msg, k, v, long )
+				set_value( msg, k, v, int )
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_UINT32:
 				set_value( msg, k, v, int )
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_UINT64:
-				set_value( msg, k, v, long )
+				set_value( msg, k, v, int )
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_DOUBLE:
 				set_value( msg, k, v, float )
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_FLOAT:
@@ -402,7 +400,7 @@ def __set_message( msg, val ):
 			elif field_descriptor.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
 				# this is a message type
 				sub = getattr( msg, k )
-				__set_message( sub, v )
+				__set_message( cli, sub, v )
 		else:
 			WRN( '%s is not messgae field.' % (k) )
 			return False
@@ -413,12 +411,11 @@ def __set_message( msg, val ):
 def trigger( cli, name ):
 	'''
 	生成后续的消息约束
-	case : 测试用例
 	name : 测试名称
 	'''
 
 	# 设置测试用例
-	case = cli.case
+	package = cli.package
 	session = cli.session
 
 	account.debug( "~ trigger %s" % (name) )
@@ -427,44 +424,45 @@ def trigger( cli, name ):
 		account.debug( "~ trigger name is None" )
 		return False
 
-	if cli.case is None:
-		account.debug( "~ trigger case is None" )
+	if cli.package is None:
+		account.debug( "~ trigger package is None" )
 		return False
 
 	cli.test = name
 
 	account.debug( "~ trigger %s build restrict." % (name) )
 	# 设置当前测试配置
-	test_conf = _get_field2(case, name)
+	test_conf = _get_field2(package, name)
 	if test_conf is None:
 		# 查一下该测试集中有没有该测试，查到就继续，否则换下一个测试集
 		return False
 	
 	# 获取约束节点，遵循继承定义
-	recv_conf = _get_field2(case, name, 'recv')
+	recv_conf = _get_field2(package, name, 'recv')
 
 	# 生成消息约束
 	cli.restrict = None if recv_conf == None else restrict( recv_conf )
 
 	# 约束通过后的检查函数，该函数返回分支名
-	cli.after = _get_field2(case, name, 'after')
+	cli.after = _get_field2(package, name, 'after')
 	# 检查通过后抛出新的关键字约束，任何非约束内的关键字都将结束此次测试
-	cli.throw = _get_field2(case, name, 'throw') or 'failed'
+	cli.throw = _get_field2(package, name, 'throw') or 'failed'
 
 	# 进行准备工作，准备工作会自动调用继承测试的准备工作集
-	for code in flatitem(_get_field2(case, name, 'befor')):
+	for code in flatitem(_get_field2(package, name, 'befor')):
 		account.debug('execute code :"%s"' % (code))
 		exec(code)
 
 	# 发送字段可以发送消息
-	send = _get_field2( case, name, 'send' )
-	if send :
+	send = _get_field2(package, name, 'send')
+	if send:
 		# send 字段不为空，则根据配置填充一个 message buffer 并发送
-		msgid = _get_field2( case, name, 'send', 'msgid' )
-		field = _get_field2( case, name, 'send', 'field' )
-
+		msgid = _get_field2( package, name, 'send', 'msgid' )
+		field = _get_field2( package, name, 'send', 'field' )
+		# 转化 msgid
+		msgid = eval(msgid) if type(msgid) is str else msgid
 		msg = make( msgid )
-		if msg and __set_message(msg, field):
+		if msg and __set_message(cli, msg, field):
 			cli.session.Send( msgid, msg )
 
 	if cli.restrict is None:
@@ -473,17 +471,14 @@ def trigger( cli, name ):
 
 	return True
 
-def check( msgid, msg, cli ):
-	# 检查消息约束
-	try:
-		# 判断约束是否完成
-		if cli.restrict and cli.restrict.check_message(msgid, msg, cli):
-			# 完成则执行后续动作
-			trigger(cli, check_data(cli))
-	except exception as e:
-		# 捕获到异常则认为失败，直接退出
-		account.warning("restrict check raise a exception value = %d, message = %s" % ( e.value(), e.message()))
-		trigger(cli, 'failed')
+def check(cli, msgid, msg):
+	'''
+	检查消息约束
+	'''
+	# 判断约束是否完成
+	if cli.restrict and cli.restrict.check(cli, msgid, msg):
+		# 完成则执行后续动作
+		trigger(cli, check_data(cli))
 
 def check_data(cli):
 	# 设置运行环境
@@ -493,25 +488,22 @@ def check_data(cli):
 	# 若没有则返回默认的throw
 	throw = cli.throw
 	# 字典类型则检查每一个给出的字段
-	if 'check' in after.keys():
-		for verify in flatitem( after['check'] ):
+	check = after.get('check') if after else None
+	if check:
+		for verify in flatitem( check ):
 			# 判定验证类型
+			if not callable(verify): 
+				continue
+			
 			# lambda类型则直接调用，对应配置中的check_callback
-			if eval(verify):
-				account.info("~ %s check success!" % (verify) )
+			if verify(cli, session = cli.session):
+				account.info("~ %s after check success!" % (cli.test))
 				continue
 			else:
-				account.info("~ %s check failed!" % (verify) )
-				break
-		else:
-			# 验证通过了，则使用验证通过的返回
-			try:
-				# 默认返回check配置中的throw
-				return after['throw']
-			except KeyError:
-				return throw
+				account.info("~ %s after check failed!" % (cli.test))
+				exception.throw(-3, 'restrict after check failed.')
 	
-	# 使用默认值
+	# 验证通过了，则使用验证通过的返回
 	return throw
 
 # # Purely functional, no descriptor behaviour
@@ -533,14 +525,27 @@ def check_data(cli):
 # 	newfunc.args = args
 # 	newfunc.keywords = keywords
 # 	return newfunc
+def assign(var, val):
+	def invoke( cli, **kwargs ):
+		locals().update(kwargs)
+		obj, name = var.split('.', 1)
+		setattr(eval(obj), name, eval(val))
+		return True
 
-def call(code):
-	def invoke( **kwargs ):
-		_locals = locals()
-		for key, value in kw.items():
-			_locals[key] = value
-
-		return eval(code)
+	return invoke
+	
+def verify(var1, var2):
+	def invoke( cli, **kwargs ):
+		locals().update(kwargs)
+		val1 = eval(var1) if type(var1) is str else var1
+		val2 = eval(var2) if type(var2) is str else var2
+		return val1 == val2
 
 	return invoke
 
+def getvar(var):
+	def invoke( cli, **kwargs ):
+		locals().update(kwargs)
+		return eval(var)
+
+	return invoke

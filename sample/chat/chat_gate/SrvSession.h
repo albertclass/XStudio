@@ -16,6 +16,11 @@ protected:
 	xgc::map< xgc_uint32, xgc::string > channels_;
 	/// 服务器上的用户
 	xgc::map< xgc_uint64, xgc_uint32 > users_;
+
+	/// 聊天服务器连接地址
+	xgc_char peer_host_[64];
+	/// 聊天服务器连接端口
+	xgc_uint16 peer_port_;
 public:
 	///
 	/// \brief 构造
@@ -32,6 +37,26 @@ public:
 	/// \date 2017/08/05
 	///
 	virtual ~CServerSession();
+
+	///
+	/// \brief 获取聊天服务器地址 
+	/// \date 2/19/2018
+	/// \author albert.xu
+	///
+	XGC_INLINE xgc_lpcstr getPeerHost()const
+	{
+		return peer_host_;
+	}
+
+	///
+	/// \brief 获取聊天服务器端口号 
+	/// \date 2/19/2018
+	/// \author albert.xu
+	///
+	XGC_INLINE xgc_uint16 getPeerPort()const
+	{
+		return peer_port_;
+	}
 
 	///
 	/// \brief 获取网络句柄

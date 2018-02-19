@@ -2,17 +2,18 @@ login = {
 	'comment' : '登陆',
 	'start' : {
 		# 切换到此状态后立即执行
-		'befor' : 'session.connect( option.host, option.port )',
-		
+		'befor' : (
+			'session.connect( option.host, option.port )',
+			'session.username = option.username',
+			'session.password = option.password',
+		),
 		# 约束成功后执行
 		'after' : {
-			'check' : 'session.is_connected()',
-			# 检查通过后抛出
-			'throw' : 'certification',
+			'check' : getvar('session.is_connected()'),
 		},
 
-		# 默认抛出
-		'throw' : 'failed',
+		# 检查通过后抛出
+		'throw' : 'certification',
 	},
 
 	'certification' : {
@@ -20,20 +21,26 @@ login = {
 		'send' : {
 			'msgid' : 'GATE.GATE_LOGIN_REQ',
 			'field' : {
-				'username' : 'session.username',
-				'password' : 'session.password',
+				'username' : getvar('session.username'),
+				'password' : getvar('session.password'),
 			}
 		},
 		# 测试约束
 		'recv' : {
 			# 约束节点
 			# 类名
-			'instance' : 'collect_node',
+			'instance' : ( 'collect_node', ),
 			'children' : (
 				{
 					'instance' : ( 'message', {
 						'msgid' : 'GATE.GATE_LOGIN_ACK',
-						'check' : call('msg.result == 0'),
+						'check' : (
+							verify('msg.result', 0),
+							assign('session.user_id', 'msg.user_id'),
+							assign('session.token', 'msg.chat_token'),
+							assign('session.chat_host', 'msg.host'),
+							assign('session.chat_port', 'msg.port'),
+						),
 						'count' : 1,
 					} )
 				},
@@ -42,46 +49,55 @@ login = {
 			# 约束超时时间
 			'timeout' : 5,
 			# 约束期间内忽略的消息
-			'ignores' : '*',
+			'ignores' : (),
 		},
 
-		# 检查通过后抛出新的关键字约束，任何非约束内的关键字都将结束此次测试
-		'throw' : 'failed',
+		'after' : {
+			'check' : getvar('session.token is not None'),
+		},
+
+		# 一个默认的转换状态
+		'throw' : 'connect_chat',
 	},
 
-	'step_3' : {
+	'connect_chat' : {
 		# 准备工作
-		'send' : {
-			'msgid' : 'ID_CLIENT_ENTER_REQ',
-			'field' : {
-				'token' : 'cli.user.token',
-			},
-		},
-
-		# 测试约束
-		'recv' : {
-			# 类名
-			'instance' : 'colloc_node',
-			'children' : (
-				{
-					'msgid' : 'ids.CLIENT_LOGIN_RPN',
-					'check' : 'msg.error_code == 0',
-				},
-			),
-			# 约束超时时间
-			'timeout' : 5,
-			# 约束期间内忽略的消息
-			'ignores' : '*',
+		'befor' : {
+			'session.connect( session.chat_host, session.chat_port )',
 		},
 
 		'after' : {
 			# 约束通过后的检查函数，该函数返回分支名
-			'check' : 'login_check()',
+			'check' : 'session.is_connected()',
 		},
 
-		# 检查通过后抛出新的关键字约束，任何非约束内的关键字都将结束此次测试
-		'throw' : 'failed',
+		'throw' : 'enter_chat',
 	},
+
+	'enter_chat' : {
+		'send' : {
+			'msgid' : 'CHAT.CHAT_USERAUTH_REQ',
+			'field' : {
+				'user_id' : getvar('session.user_id'),
+				'token'   : getvar('session.token'),
+			},
+		},
+
+		'recv' : {
+			'instance' : ('message', {
+				'msgid' : 'CHAT.CHAT_USERAUTH_ACK',
+				'check' : (
+					verify('msg.result', 0),
+					verify('session.user_id', 'msg.user_id'),
+					assign('session.chat_id', 'msg.chat_id'),
+					assign('session.chat_nick', 'msg.nick'),
+					assign('session.chat_extra', 'msg.extra'),
+				),
+			})
+		},
+
+		'throw' : 'chat_msg',
+	}
 }
 
 # CASE END

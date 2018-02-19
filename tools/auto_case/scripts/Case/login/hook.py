@@ -1,9 +1,6 @@
-from Session import gate_pb2
-from Session import chat_pb2
+from . import func
 ###################################################################
-'''
-message = {
-    ids.eCLIENT_GAME_LOGIN_ACK : onLogin,
-    ids.eCLIENT_GAME_ENTER_ACK : onEnter,
+hook_tbl = {
+    GATE.GATE_LOGIN_ACK : func.onLogin,
 }
-'''
+
