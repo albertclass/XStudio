@@ -21,4 +21,4 @@
 *.pb.h
 *.pb.cc
 __pycache__
-tools\auto_case\scripts\Loader\logs
+logs/
