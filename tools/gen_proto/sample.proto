@@ -1,0 +1,26 @@
+import "header"
+
+define USERNAME_LEN 32
+
+struct userinfo
+	[0] - realname : char[USERNAME_LEN]
+	[1] - age : int
+	[2] - now : real32
+
+# login request
+struct login_req:
+	[0] - username : char[USERNAME_LEN]
+	[1] - password : int
+	[2] - userinfo : userinfo
+
+struct login_rpn
+	[0] - username : char[USERNAME_LEN]
+	[1] - token : string
+
+struct enter_req
+	[0] - token : string
+
+struct enter_rpn
+	[1] - scene : string
+	[2] - package : list<goods>
+	[3] - skills : skill[]

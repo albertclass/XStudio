@@ -152,7 +152,7 @@ xgc_void CServerSession::onLoginAck( xgc_lpvoid ptr, int len )
 		ack2.set_user_id( user_id );
 		ack2.set_chat_token( ack1.token() );
 		ack2.set_host( getPeerHost() );
-		ack2.set_port( getPeerPort() );
+		ack2.set_port( 50001 );
 	}
 
 	session->Send( gate::GATE_LOGIN_ACK, ack2 );

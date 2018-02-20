@@ -105,10 +105,12 @@ xgc_void CClientSession::onUserAuth( xgc_lpvoid ptr, int len )
 	if( xgc_nullptr == pUser )
 	{
 		ack.set_result( -1 );
+		Send2Client( chat::CHAT_USERAUTH_ACK, ack );
 	}
 	else if( !pUser->checkToken( req.token() ) )
 	{
 		ack.set_result( -2 );
+		Send2Client( chat::CHAT_USERAUTH_ACK, ack );
 	}
 	else
 	{
@@ -120,21 +122,21 @@ xgc_void CClientSession::onUserAuth( xgc_lpvoid ptr, int len )
 		ack.set_user_id( req.user_id() );
 		ack.set_nick( pUser->getNickName() );
 		ack.set_extra( pUser->getExtra() );
+
+		Send2Client( chat::CHAT_USERAUTH_ACK, ack );
+
+		// 发送已进入的频道
+		pUser->forEachChannel( [this]( xgc_uint32 channel_id ){
+			auto pChannel = CChannel::handle_exchange( channel_id );
+			if( pChannel )
+			{
+				chat::channel_enter_ntf ntf;
+				ntf.set_channel_id( channel_id );
+				ntf.set_channel_name( pChannel->getName() );
+				Send2Client( chat::CHAT_CHANNEL_ENTER_NTF, ntf );
+			}
+		} );
 	}
-
-	Send2Client( chat::CHAT_USERAUTH_ACK, ack );
-
-	// 发送已进入的频道
-	pUser->forEachChannel( [this]( xgc_uint32 channel_id ){
-		auto pChannel = CChannel::handle_exchange( channel_id );
-		if( pChannel )
-		{
-			chat::channel_enter_ntf ntf;
-			ntf.set_channel_id( channel_id );
-			ntf.set_channel_name( pChannel->getName() );
-			Send2Client( chat::CHAT_CHANNEL_ENTER_NTF, ntf );
-		}
-	} );
 }
 
 ///

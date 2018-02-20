@@ -1,36 +1,35 @@
-def onGateLoginAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onGateLoginAck(cli, msg):
+	pass
 	
-def onUserAuthAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onUserAuthAck(cli, msg):
+	pass
 	
-def onChannelEnterNtf(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onChannelEnterNtf(cli, msg):
+	pass
 	
-
-def onUserInfoAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onUserInfoAck(cli, msg):
+	pass
 	
-def onChannelEnterAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onChannelEnterAck(cli, msg):
+	pass
 	
-def onChannelLeaveAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onChannelLeaveAck(cli, msg):
+	pass
 	
-def onChannelUserAck(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
-	
-
-def onUserChatNtf(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
-	
-def onChannelChatNtf(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onChannelUserAck(cli, msg):
+	pass
 	
 
-def onChatError(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onUserChatNtf(cli, msg):
+	pass
 	
-def onSystemChatNtf(cli, msgid, msgdata):
-	msg = parse( msgid, msgdata )
+def onChannelChatNtf(cli, msg):
+	pass
+	
+
+def onChatError(cli, msg):
+	pass
+	
+def onSystemChatNtf(cli, msg):
+	pass
 	

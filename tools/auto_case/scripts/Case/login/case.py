@@ -8,9 +8,9 @@ login = {
 			'session.password = option.password',
 		),
 		# 约束成功后执行
-		'after' : {
-			'check' : getvar('session.is_connected()'),
-		},
+		'after' : (
+			getvar('session.is_connected()'),
+		),
 
 		# 检查通过后抛出
 		'throw' : 'certification',
@@ -52,9 +52,9 @@ login = {
 			'ignores' : (),
 		},
 
-		'after' : {
-			'check' : getvar('session.token is not None'),
-		},
+		'after' : (
+			getvar('session.token is not None'),
+		),
 
 		# 一个默认的转换状态
 		'throw' : 'connect_chat',
@@ -66,10 +66,10 @@ login = {
 			'session.connect( session.chat_host, session.chat_port )',
 		},
 
-		'after' : {
+		'after' : (
 			# 约束通过后的检查函数，该函数返回分支名
-			'check' : 'session.is_connected()',
-		},
+			verify('session.is_connected()', True),
+		),
 
 		'throw' : 'enter_chat',
 	},
@@ -93,10 +93,13 @@ login = {
 					assign('session.chat_nick', 'msg.nick'),
 					assign('session.chat_extra', 'msg.extra'),
 				),
-			})
+			}),
+
+			'timeout' : 5,
+			'ignores' : (),
 		},
 
-		'throw' : 'chat_msg',
+		'throw' : 'chat_login',
 	}
 }
 

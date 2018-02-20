@@ -1,12 +1,18 @@
 import os
+import io
 import sys
 import time
+import traceback
+
 from utility import flatitem
 from config import option
 from Session import make, name
 from google.protobuf.descriptor import FieldDescriptor
 
 def _get_field( node, *fields : tuple ):
+	'''
+	根据给出的根配置，取子配置，不查找模板\n
+	'''
 	if len(fields) == 0:
 		return node
 	
@@ -17,6 +23,10 @@ def _get_field( node, *fields : tuple ):
 	return None 
 
 def _get_field2( root, *fields : tuple ):
+	'''
+	根据给出的根配置，取子配置\n
+	子配置不存在则查找根配置的模板\n
+	'''
 	rv = _get_field( root, *fields )
 
 	if rv is None:
@@ -26,14 +36,49 @@ def _get_field2( root, *fields : tuple ):
 	
 	return rv
 
+# 异常的获取函数
+if hasattr(sys, '_getframe'):
+	currentframe = lambda: sys._getframe(2)
+else: #pragma: no cover
+	def currentframe():
+		"""Return the frame object for the caller's stack frame."""
+		try:
+			raise Exception
+		except Exception:
+			return sys.exc_info()[1].tb_frame.f_back
+
+# 调用栈的信息
+def stackinfo(stack=False):
+	f = currentframe()
+	#On some versions of IronPython, currentframe() returns None if
+	#IronPython isn't run with -X:Frames.
+	if f is not None:
+		f = f.f_back
+	rv = "(unknown file)", 0, "(unknown function)", None
+	if hasattr(f, "f_code"):
+		co = f.f_code
+		sinfo = None
+		if stack:
+			sio = io.StringIO()
+			sio.write('\nStack (most recent call last):\n')
+			traceback.print_stack(f, file=sio)
+			sinfo = sio.getvalue()
+			if sinfo[-1] == '\n':
+				sinfo = sinfo[:-1]
+			sio.close()
+		rv = (os.path.basename(co.co_filename), f.f_lineno, co.co_name, sinfo)
+	return rv
+
+
 class exception(Exception):
 	'''
 	约束检查的异常类
 	'''
 
-	def __init__(self, value, msg):
+	def __init__(self, value, msg, inf = None):
 		self.val = value
 		self.msg = msg
+		self.inf = inf
 
 	def __str__(self):
 		return "%s" % (repr(self.msg))
@@ -44,9 +89,21 @@ class exception(Exception):
 	def message(self):
 		return self.msg
 
+	def file(self):
+		return self.inf[0] or 'unknowe file' if self.inf else 'unknowe file'
+
+	def line(self):
+		return self.inf[1] or 0 if self.inf else 0
+
+	def func(self):
+		return self.inf[2] or 'unknowe function' if self.inf else 'unknowe function'
+
+	def trackback(self):
+		return self.inf[3] or '' if self.inf else ''
+
 	@staticmethod
-	def throw( code, message ):
-		raise exception( code, message )
+	def throw( code, message, stack=False ):
+		raise exception( code, message, stackinfo(stack) )
 
 
 class leaf:
@@ -97,7 +154,9 @@ class message(leaf):
 			if self.cdata: 
 				for c in flatitem( self.cdata ):
 					if False == c(cli, session = cli.session, msg = msg):
-						break
+						fname, _ = c.__qualname__.split(".",1)
+						if fname == "verify":
+							exception.throw(-1, "message verify failed. [%s != %s]" % tuple(str(v.cell_contents) for v in c.__closure__))
 				else:
 					self.hit += 1
 			else:
@@ -280,9 +339,6 @@ class restrict:
 		# 重新计算超时时间
 		self.timeout = 0 if self.timeout == 0 else time.clock() + self.timeout
 
-		# 消息约束
-		account.debug( "~ trigger %s build restrict node." % (name) )
-
 		# 定义递归节点生成函数
 		def make_node( conf ):
 			'''
@@ -333,7 +389,7 @@ class restrict:
 				return False
 			else:
 				# 否则认为约束不成立，抛出异常
-				exception.throw(-2, 'message id not hit.')
+				exception.throw(-2, 'message id was not hit.')
 
 		return self.node.is_finished()
 
@@ -430,7 +486,7 @@ def trigger( cli, name ):
 
 	cli.test = name
 
-	account.debug( "~ trigger %s build restrict." % (name) )
+	account.debug( "~ trigger %s start building..." % (name) )
 	# 设置当前测试配置
 	test_conf = _get_field2(package, name)
 	if test_conf is None:
@@ -442,6 +498,8 @@ def trigger( cli, name ):
 
 	# 生成消息约束
 	cli.restrict = None if recv_conf == None else restrict( recv_conf )
+	# 消息约束
+	account.debug( "~ trigger %s create restrict node." % (name) )
 
 	# 约束通过后的检查函数，该函数返回分支名
 	cli.after = _get_field2(package, name, 'after')
@@ -450,7 +508,7 @@ def trigger( cli, name ):
 
 	# 进行准备工作，准备工作会自动调用继承测试的准备工作集
 	for code in flatitem(_get_field2(package, name, 'befor')):
-		account.debug('execute code :"%s"' % (code))
+		account.debug('! execute code :"%s"' % (code))
 		exec(code)
 
 	# 发送字段可以发送消息
@@ -488,22 +546,19 @@ def check_data(cli):
 	# 若没有则返回默认的throw
 	throw = cli.throw
 	# 字典类型则检查每一个给出的字段
-	check = after.get('check') if after else None
-	if check:
-		for verify in flatitem( check ):
+	if after:
+		for check in flatitem( after ):
 			# 判定验证类型
-			if not callable(verify): 
+			if not callable(check): 
 				continue
 			
 			# lambda类型则直接调用，对应配置中的check_callback
-			if verify(cli, session = cli.session):
-				account.info("~ %s after check success!" % (cli.test))
-				continue
-			else:
-				account.info("~ %s after check failed!" % (cli.test))
-				exception.throw(-3, 'restrict after check failed.')
+			if not check(cli, session = cli.session):
+				exception.throw(-3, '%s after check failed.' % (cli.test))
+		else:
+			# 验证通过了
+			account.info("~ %s after check success!" % (cli.test))
 	
-	# 验证通过了，则使用验证通过的返回
 	return throw
 
 # # Purely functional, no descriptor behaviour

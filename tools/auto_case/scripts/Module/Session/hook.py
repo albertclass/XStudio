@@ -1,20 +1,17 @@
-from . import gate_pb2 as gate
-from . import chat_pb2 as chat
-
-from . import func
+from .func import *
 hook_tbl = {
-	gate.GATE_LOGIN_ACK : func.onGateLoginAck,
-	chat.CHAT_USERAUTH_ACK : func.onUserAuthAck,
-	chat.CHAT_CHANNEL_ENTER_NTF : func.onChannelEnterNtf,
+	GATE.GATE_LOGIN_ACK : onGateLoginAck,
+	CHAT.CHAT_USERAUTH_ACK : onUserAuthAck,
+	CHAT.CHAT_CHANNEL_ENTER_NTF : onChannelEnterNtf,
 
-	chat.CHAT_USERINFO_ACK : func.onUserInfoAck,
-	chat.CHAT_CHANNEL_ENTER_ACK : func.onChannelEnterAck,
-	chat.CHAT_CHANNEL_LEAVE_ACK : func.onChannelLeaveAck,
-	chat.CHAT_CHANNEL_USER_ACK : func.onChannelUserAck,
+	CHAT.CHAT_USERINFO_ACK : onUserInfoAck,
+	CHAT.CHAT_CHANNEL_ENTER_ACK : onChannelEnterAck,
+	CHAT.CHAT_CHANNEL_LEAVE_ACK : onChannelLeaveAck,
+	CHAT.CHAT_CHANNEL_USER_ACK : onChannelUserAck,
 
-	chat.CHAT_USER_CHAT_NTF : func.onUserChatNtf,
-	chat.CHAT_CHANNEL_CHAT_NTF : func.onChannelChatNtf,
+	CHAT.CHAT_USER_CHAT_NTF : onUserChatNtf,
+	CHAT.CHAT_CHANNEL_CHAT_NTF : onChannelChatNtf,
 
-	chat.CHAT_CHAT_ERR : func.onChatError,
-	chat.CHAT_SYSTEM_CHAT_NTF : func.onSystemChatNtf,
+	CHAT.CHAT_CHAT_ERR : onChatError,
+	CHAT.CHAT_SYSTEM_CHAT_NTF : onSystemChatNtf,
 }

@@ -1,6 +1,6 @@
 # coding=utf-8
 '''
-usage : autocase -u username -p password -h=ip:port -m module_name -i case_index --report_file file --report_level 1 --debug rfd wfd
+usage : autocase -u username -p password -h=ip:port -m module_name -i case_index --report_file file --report_level 1 --debug
 '''
 import os
 import os.path
@@ -63,27 +63,31 @@ if option.gui:
 	class Application(Frame):
 		def __init__(self,root):
 			super().__init__(root)
+			self.__state = 0
 
 			frame = self.winfo_toplevel()
 			assert(root==frame)
 
 			# print( inspect.getargspec(self.grid) )
-			self.grid(row=0, column=0)
+			self.pack(anchor=CENTER, expand=1)
 			self._createWidgets(frame)
 
 		def _createWidgets(self,frame):
 			option.load()
 
-			lb = Label(frame, text="HOST:")
+			lf = LabelFrame(frame, text='Configuration' )
+			lf.pack(fill=X, side=TOP, padx=5, pady=5)
+
+			lb = Label(lf, text="HOST:")
 			lb.grid(row=0, column=0, padx = 3, pady = 3, sticky=E)
 			self.hostVar = StringVar(value=option.host)
-			self.host = Entry(frame, textvariable=self.hostVar)
+			self.host = Entry(lf, textvariable=self.hostVar)
 			self.host.grid(row=0,column=1, padx = 3, pady = 3, sticky=NSEW)
 
-			lb = Label(frame, text="PORT:")
+			lb = Label(lf, text="PORT:")
 			lb.grid(row=1, column=0, padx = 3, pady = 3, sticky=E)
 			self.portVar = IntVar(value=option.port)
-			self.port = Entry(frame, textvariable=self.portVar)
+			self.port = Entry(lf, textvariable=self.portVar)
 			self.port.grid(row=1,column=1, padx = 3, pady = 3, sticky=NSEW)
 
 			Cases = []
@@ -93,52 +97,58 @@ if option.gui:
 
 				Cases.append(path)
 
-			lb = Label(frame, text="CASE:")
+			lb = Label(lf, text="CASE:")
 			lb.grid(row=2, column=0, padx = 3, pady = 3, sticky=E)
 
 			self.caseVar = StringVar(value=option.import_name)
-			self.case = Combobox(frame, values=Cases, textvariable=self.caseVar)
-			self.case.grid(row=2,column=1, padx = 3, pady = 3, sticky=NSEW)
+			self.case = Combobox(lf, values=Cases, textvariable=self.caseVar)
+			self.case.grid(row=2, column=1, padx = 3, pady = 3, sticky=NSEW)
 
 			#user's name and password
-			lb = Label(frame, text="USERNAME:")
+			lb = Label(lf, text="USERNAME:")
 			lb.grid(row=3, column=0, padx = 3, pady = 3, sticky=E)
 			self.usernameVar = StringVar(value=option.username)
-			self.username = Entry(frame, textvariable=self.usernameVar)
+			self.username = Entry(lf, textvariable=self.usernameVar)
 			self.username.grid(row=3,column=1, padx = 3, pady = 3, sticky=NSEW)
 
-			lb = Label(frame, text="PASSWORD:")
+			lb = Label(lf, text="PASSWORD:")
 			lb.grid(row=4, column=0, padx = 3, pady = 3, sticky=E)
 			self.passwordVar = StringVar(value=option.password)
-			self.password = Entry(frame, textvariable=self.passwordVar)
+			self.password = Entry(lf, textvariable=self.passwordVar)
 			self.password.grid(row=4,column=1, padx = 3, pady = 3, sticky=NSEW)
 
 			#report file
-			lb = Label(frame, text="REPORT:")
+			lb = Label(lf, text="REPORT:")
 			lb.grid(row=5, column=0, padx = 3, pady = 3, sticky=E)
 			self.reportVar = StringVar(value=option.report_file)
-			self.report = Entry(frame, text=option.report_file, textvariable=self.reportVar)
+			self.report = Entry(lf, text=option.report_file, textvariable=self.reportVar)
 			self.report.grid(row=5,column=1, padx=3, pady=3, sticky=NSEW)
 
 			#debug mode
-			lb = Label(frame, text="DEBUG:")
+			lb = Label(lf, text="DEBUG:")
 			lb.grid(row=6, column=0, padx = 3, pady = 3, sticky=E)
 			self.debugVar = BooleanVar(value=option.debug)
-			self.debug = Checkbutton(frame, onvalue=True, offvalue=False, variable=self.debugVar)
+			self.debug = Checkbutton(lf, onvalue=True, offvalue=False, variable=self.debugVar)
 			self.debug.grid(row=6, column=1, padx=3, pady=3, sticky=NSEW)
 
-			button = Button(frame, text='OK', width=40)
-			button.grid(row=7, column=1, padx=5, pady=5, sticky=E)
+			lf.grid_columnconfigure(0, minsize=20, weight=0)
+			lf.grid_columnconfigure(1, minsize=30, weight=1)
+
+			fr = Frame(frame)
+			button = Button(fr, text='Cancel')
+			button.pack(side=RIGHT)
+			button.bind( '<Button-1>', self._cancel )
+
+			button = Button(fr, text='OK')
+			button.pack(side=RIGHT)
 			button.bind( '<Button-1>', self._ok )
 
-			frame.grid_rowconfigure(0, weight=0)
-			frame.grid_rowconfigure(1, weight=0)
-			frame.grid_columnconfigure(0, minsize=60, weight=0)
-			frame.grid_columnconfigure(1, weight=4)
+			fr.pack(fill=X, side=BOTTOM, padx=10, pady=10)
 
 			frame.resizable(False, False)
 
 		def _ok(self, event):
+			self.__state = 1
 			option.import_name = self.case.get()
 			option.username = self.username.get()
 			option.password = self.password.get()
@@ -152,12 +162,28 @@ if option.gui:
 			self.winfo_toplevel().withdraw()
 			self.quit()
 
+		def _cancel(self, event):
+			self.__state = 0
+			self.quit()
+
+		def getState(self):
+			return self.__state
+
 	root = Tk()
 	root.title('Auto Case GUI')
-	root.geometry('300x400')
-
 	app = Application(root)
+
+	app.update_idletasks()
+	w = app.winfo_screenwidth()
+	h = app.winfo_screenheight()
+	s = (260, 280)
+	x = w/2 - s[0]/2
+	y = h/2 - s[1]/2
+	root.geometry("%dx%d+%d+%d" % (s + (x, y)))
+
 	root.mainloop()
+	if app.getState() == 0:
+		sys.exit(0)
 
 # 模块名必须配置
 if option.import_name is None:
@@ -200,7 +226,11 @@ account.info("connect server %s:%d" % (option.host, option.port))
 cli.session.setup_report(option.report_file, option.report_level)
 cli.session.report( Log=None if 'comment' not in cli.package else cli.package['comment'])
 
-restrict.trigger( cli, "start" )
+try:
+	restrict.trigger( cli, "start" )
+except restrict.exception as e:
+	# 捕获到异常则认为失败，直接退出
+	account.error( '%s - %s' % (e.value(), e.message()))
 
 # 主逻辑循环
 while cli.restrict:
@@ -224,7 +254,7 @@ while cli.restrict:
 			
 	except restrict.exception as e:
 		# 捕获到异常则认为失败，直接退出
-		account.error( '%s - %s' % (e.value(), e.message()))
+		account.error( '%s - %s (%s:%d)%s' % (e.value(), e.message(), e.file(), e.line(), e.trackback()))
 		break
 
 account.info('-------------------------------------')
