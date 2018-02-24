@@ -26,13 +26,11 @@ class crc16:
 		return self.crcvalue
 
 class client:
-	def __init__(self, package, session, hook_tbl ):
+	def __init__(self, session):
 		self.recv_buf = bytes()
 		self.connect_flag = False
-		self.restrict = None
-		self.package = package
-		self.session = session(self, hook_tbl)
 		self.s = None
+		self.session = session.setNetwork(self)
 
 	def __del__(self):
 		if self.s:
@@ -70,7 +68,7 @@ class client:
 	def connected(self):
 		return self.connect_flag
 
-	def recv(self, ids = None):
+	def recv(self):
 		if False == self.connect_flag:
 			account.error("------------------------------断开连接，客户端退出")
 			return -1

@@ -13,11 +13,13 @@ sys.path.append('../Case')
 sys.path.append('../Module')
 
 import restrict
-import network
+import client
 
 from logger import setup_logger
 from config import option
 from Session import session
+from gui import app
+
 # 分析参数
 opts, args = getopt.getopt( sys.argv[1:], "u:p:m:h:i:", ["report_file=", "report_level=", "debug", "gui"] )
 
@@ -57,133 +59,7 @@ for opt, arg in opts:
 		print( "opt = %s, arg = %s not found" % (opt, arg) )
 
 if option.gui:
-	from tkinter import *
-	from tkinter.ttk import *
-
-	class Application(Frame):
-		def __init__(self,root):
-			super().__init__(root)
-			self.__state = 0
-
-			frame = self.winfo_toplevel()
-			assert(root==frame)
-
-			# print( inspect.getargspec(self.grid) )
-			self.pack(anchor=CENTER, expand=1)
-			self._createWidgets(frame)
-
-		def _createWidgets(self,frame):
-			option.load()
-
-			lf = LabelFrame(frame, text='Configuration' )
-			lf.pack(fill=X, side=TOP, padx=5, pady=5)
-
-			lb = Label(lf, text="HOST:")
-			lb.grid(row=0, column=0, padx = 3, pady = 3, sticky=E)
-			self.hostVar = StringVar(value=option.host)
-			self.host = Entry(lf, textvariable=self.hostVar)
-			self.host.grid(row=0,column=1, padx = 3, pady = 3, sticky=NSEW)
-
-			lb = Label(lf, text="PORT:")
-			lb.grid(row=1, column=0, padx = 3, pady = 3, sticky=E)
-			self.portVar = IntVar(value=option.port)
-			self.port = Entry(lf, textvariable=self.portVar)
-			self.port.grid(row=1,column=1, padx = 3, pady = 3, sticky=NSEW)
-
-			Cases = []
-			for path in os.listdir('../Case/'):
-				if not os.path.isdir('../Case/%s' % (path)):
-					continue
-
-				Cases.append(path)
-
-			lb = Label(lf, text="CASE:")
-			lb.grid(row=2, column=0, padx = 3, pady = 3, sticky=E)
-
-			self.caseVar = StringVar(value=option.import_name)
-			self.case = Combobox(lf, values=Cases, textvariable=self.caseVar)
-			self.case.grid(row=2, column=1, padx = 3, pady = 3, sticky=NSEW)
-
-			#user's name and password
-			lb = Label(lf, text="USERNAME:")
-			lb.grid(row=3, column=0, padx = 3, pady = 3, sticky=E)
-			self.usernameVar = StringVar(value=option.username)
-			self.username = Entry(lf, textvariable=self.usernameVar)
-			self.username.grid(row=3,column=1, padx = 3, pady = 3, sticky=NSEW)
-
-			lb = Label(lf, text="PASSWORD:")
-			lb.grid(row=4, column=0, padx = 3, pady = 3, sticky=E)
-			self.passwordVar = StringVar(value=option.password)
-			self.password = Entry(lf, textvariable=self.passwordVar)
-			self.password.grid(row=4,column=1, padx = 3, pady = 3, sticky=NSEW)
-
-			#report file
-			lb = Label(lf, text="REPORT:")
-			lb.grid(row=5, column=0, padx = 3, pady = 3, sticky=E)
-			self.reportVar = StringVar(value=option.report_file)
-			self.report = Entry(lf, text=option.report_file, textvariable=self.reportVar)
-			self.report.grid(row=5,column=1, padx=3, pady=3, sticky=NSEW)
-
-			#debug mode
-			lb = Label(lf, text="DEBUG:")
-			lb.grid(row=6, column=0, padx = 3, pady = 3, sticky=E)
-			self.debugVar = BooleanVar(value=option.debug)
-			self.debug = Checkbutton(lf, onvalue=True, offvalue=False, variable=self.debugVar)
-			self.debug.grid(row=6, column=1, padx=3, pady=3, sticky=NSEW)
-
-			lf.grid_columnconfigure(0, minsize=20, weight=0)
-			lf.grid_columnconfigure(1, minsize=30, weight=1)
-
-			fr = Frame(frame)
-			button = Button(fr, text='Cancel')
-			button.pack(side=RIGHT)
-			button.bind( '<Button-1>', self._cancel )
-
-			button = Button(fr, text='OK')
-			button.pack(side=RIGHT)
-			button.bind( '<Button-1>', self._ok )
-
-			fr.pack(fill=X, side=BOTTOM, padx=10, pady=10)
-
-			frame.resizable(False, False)
-
-		def _ok(self, event):
-			self.__state = 1
-			option.import_name = self.case.get()
-			option.username = self.username.get()
-			option.password = self.password.get()
-			option.report_file = self.report.get()
-			option.debug = self.debugVar.get()
-			option.host = self.host.get()
-			option.port = int(self.port.get())
-			
-			option.save()
-
-			self.winfo_toplevel().withdraw()
-			self.quit()
-
-		def _cancel(self, event):
-			self.__state = 0
-			self.quit()
-
-		def getState(self):
-			return self.__state
-
-	root = Tk()
-	root.title('Auto Case GUI')
-	app = Application(root)
-
-	app.update_idletasks()
-	w = app.winfo_screenwidth()
-	h = app.winfo_screenheight()
-	s = (260, 280)
-	x = w/2 - s[0]/2
-	y = h/2 - s[1]/2
-	root.geometry("%dx%d+%d+%d" % (s + (x, y)))
-
-	root.mainloop()
-	if app.getState() == 0:
-		sys.exit(0)
+	app.show()
 
 # 模块名必须配置
 if option.import_name is None:
@@ -195,9 +71,9 @@ if option.import_name is None:
 setup_logger()
 
 # 注册全局函数
-__builtins__['verify'] = restrict.verify
 __builtins__['assign'] = restrict.assign
-__builtins__['getvar'] = restrict.getvar
+__builtins__['invoke'] = restrict.invoke
+__builtins__['var'] = restrict.var
 
 # sys.meta_path.insert(0, MetaPathFinder())
 # 动态载入测试模块
@@ -217,14 +93,14 @@ if option.index >= len(robot.packages):
 	ERR( "select case is not exist." )
 	sys.exit(-1)
 
-cli = network.client( robot.packages[option.index], session.role, robot.hook )
+cli = client.Client( robot.packages[option.index], session.role, robot.hook )
 
 # main loop
 account.info('-------------------------------------')
 account.info("connect server %s:%d" % (option.host, option.port))
 
-cli.session.setup_report(option.report_file, option.report_level)
-cli.session.report( Log=None if 'comment' not in cli.package else cli.package['comment'])
+cli.setup_report(option.report_file, option.report_level)
+cli.report( Log=None if 'comment' not in cli.package else cli.package['comment'])
 
 try:
 	restrict.trigger( cli, "start" )
@@ -235,21 +111,10 @@ except restrict.exception as e:
 # 主逻辑循环
 while cli.restrict:
 	try:
-		# 超时检查
-		cli.restrict.check_timeout()
-
-		ret = cli.recv()
-		if ret == -1:
-			break
-		elif ret == -2:
-			report(Log='reconnect')
-			account.error("recv error reconnect now.")
-			cli.reconnect()
-			continue
-		else:
+		if cli.loop():
 			time.sleep(0.01)
 
-		if cli.restrict.node is None:
+		if cli.throw is None:
 			break
 			
 	except restrict.exception as e:
@@ -258,6 +123,4 @@ while cli.restrict:
 		break
 
 account.info('-------------------------------------')
-account.info('test end...')
-
-cli.close()
+account.info('test complate. the last stage is %s' % (cli.test))

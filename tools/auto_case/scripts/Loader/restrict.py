@@ -125,7 +125,7 @@ class message(leaf):
 	'''
 	约束检查
 	'''
-	def __init__(self, msgid, check=None, count=1):
+	def __init__(self, msgid, check=None, count=1, **kw):
 		'''
 		初始化约束
 		cdata - 数据检查回调
@@ -239,7 +239,7 @@ class sequence_node(node):
 	序列节点
 	'''
 
-	def __init__(self):
+	def __init__(self, **kw):
 		super().__init__()
 
 	def check(self, msgid, msg, cli):
@@ -266,7 +266,7 @@ class collect_node(node):
 	收集节点
 	'''
 
-	def __init__(self):
+	def __init__(self, **kw):
 		super().__init__()
 
 	def check(self, msgid, msg, cli):
@@ -293,7 +293,7 @@ class switch_node(node):
 	'''
 	选择节点
 	'''
-	def __init__(self):
+	def __init__(self, **kw):
 		super().__init__()
 		self.active = None
 
@@ -347,15 +347,18 @@ class restrict:
 			if not conf:
 				return None
 
-			if 'instance' not in conf.keys():
+			class_ = conf.get('class')
+			if not class_:
 				return None
 
-			inst = [v for v in flatitem(conf['instance'], deep=1)]
-			node = globals().get( inst[0] )
-			if node and issubclass(node, leaf):
-				node = node( **inst[1] if type(inst[1]) is dict else inst[1:] ) if len(inst) > 1 else node()
-				for child_conf in conf.get('children') or ():
-					child = make_node( child_conf )
+			class_ = globals().get( class_ )
+			if not class_:
+				return None
+
+			if class_ and issubclass(class_, leaf):
+				node = class_( **conf )
+				for c in conf.get('child') or ():
+					child = make_node( c )
 					if child:
 						node.append( child )
 
@@ -422,7 +425,7 @@ def __set_message( cli, msg, val ):
 	fields = [f.name for f in des.fields]
 	for k, v in val.items():
 		# 遍历配置中的字段，并赋值
-		v = v(cli = cli, session = cli.session) if callable(v) else v # 可执行的函数，则执行后取返回值
+		v = v(cli, session = cli.session) if callable(v) else v # 可执行的函数，则执行后取返回值
 
 		field_descriptor = des.fields_by_name.get(k)
 
@@ -485,8 +488,13 @@ def trigger( cli, name ):
 		return False
 
 	cli.test = name
+	cli.befor = None
+	cli.after = None
+	cli.throw = None
+	cli.timeout = 0
+	cli.ignores = ()
+	cli.restrict = None
 
-	account.debug( "~ trigger %s start building..." % (name) )
 	# 设置当前测试配置
 	test_conf = _get_field2(package, name)
 	if test_conf is None:
@@ -508,7 +516,7 @@ def trigger( cli, name ):
 
 	# 进行准备工作，准备工作会自动调用继承测试的准备工作集
 	for code in flatitem(_get_field2(package, name, 'befor')):
-		account.debug('! execute code :"%s"' % (code))
+		account.debug('! execute code : {%s}' % (code))
 		exec(code)
 
 	# 发送字段可以发送消息
@@ -561,46 +569,32 @@ def check_data(cli):
 	
 	return throw
 
-# # Purely functional, no descriptor behaviour
-# def partial(func, *args, **keywords):
-# 	if hasattr(func, 'func'):
-# 		args = func.args + args
-# 		tmpkw = func.keywords.copy()
-# 		tmpkw.update(keywords)
-# 		keywords = tmpkw
-# 		del tmpkw
-# 		func = func.func
+def var(v):
+	def f(cli, **kwargs):
+		_loc = locals()
+		_loc.update(kwargs)
+		_obj, name = v.split('.', 1)
+		_obj = _loc.get(_obj)
 
-# 	@wraps(func)
-# 	def newfunc(*fargs, **fkeywords):
-# 		newkeywords = keywords.copy()
-# 		newkeywords.update(fkeywords)
-# 		return func(*(args + fargs), **newkeywords)
-# 	newfunc.func = func
-# 	newfunc.args = args
-# 	newfunc.keywords = keywords
-# 	return newfunc
+		return getattr(_obj, name)
+
+	return f
+
 def assign(var, val):
-	def invoke( cli, **kwargs ):
-		locals().update(kwargs)
-		obj, name = var.split('.', 1)
-		setattr(eval(obj), name, eval(val))
+	def f(cli, **kwargs):
+		_loc = locals()
+		_loc.update(kwargs)
+		_obj, name = var.split('.', 1)
+		_obj = _loc.get(_obj)
+
+		setattr(_obj, name, val(cli, **kwargs) if callable(val) else val )
 		return True
 
-	return invoke
+	return f
 	
-def verify(var1, var2):
-	def invoke( cli, **kwargs ):
+def invoke(code):
+	def f(cli, **kwargs):
 		locals().update(kwargs)
-		val1 = eval(var1) if type(var1) is str else var1
-		val2 = eval(var2) if type(var2) is str else var2
-		return val1 == val2
+		return eval(code)
 
-	return invoke
-
-def getvar(var):
-	def invoke( cli, **kwargs ):
-		locals().update(kwargs)
-		return eval(var)
-
-	return invoke
+	return f
