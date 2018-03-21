@@ -5,11 +5,8 @@ import traceback
 import importlib
 
 from itertools import zip_longest
-from widgets import *
-from message import *
-
-idname = sorted( ids.names.items(), key=lambda item : item[0] )
-idnums = ['ids.' + v for k, v in idname]
+from Widgets import *
+from Session import name, make
 
 def get_field( node, *fields : tuple ):
 	if len(fields) == 0:
@@ -262,7 +259,7 @@ def build_conf(tree, conf, node, vars, name=''):
 				break
 
 			if flag == 'message':
-				widget = SuggestEntry(tree, values=idnums, textvariable=tk.StringVar())
+				widget = SuggestEntry(tree, values=('1','2'), textvariable=tk.StringVar())
 				tree.inplace_custom(col, item, widget)
 				break
 

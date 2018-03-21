@@ -17,6 +17,7 @@
 /tags
 *.swp
 *.swo
+*.eap
 *.docx
 *.pb.h
 *.pb.cc

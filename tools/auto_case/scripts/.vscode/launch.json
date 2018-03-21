@@ -32,7 +32,7 @@
 		},
 
 		{
-			"name": "Python Debug CaseDesign",
+			"name": "Python Debug CaseTool",
 			"type": "python",
 			"request": "launch",
 			"stopOnEntry": false,

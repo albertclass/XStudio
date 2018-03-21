@@ -1,5 +1,7 @@
 import os
 import sys
+
+sys.path.append('../Module')
 sys.path.append('../Loader')
 sys.path.append('../Case')
 
@@ -11,11 +13,12 @@ from itertools import zip_longest
 
 from utility import *
 from functools import partial
-from widgets import *
+from Widgets.treeviewex import TreeviewEx
+from Widgets.autocomplete import SuggestEntry
 from template import *
 from monitor import *
 
-from message import *
+from Session import *
 from parse import *
 from open import *
 
@@ -90,10 +93,11 @@ class Application(Frame):
 		self.lTree.bind( '<Button-3>', self._onTreeRightButtonPress, add='+' )
 		self.lTree.bind( '<<TreeviewCellEdited>>', self._onTreeCellEdited )
 
-		idname = sorted( ids.names.items(), key=lambda item : item[0] )
-		idnums = ['ids.' + v for k, v in idname]
+		ids = {}
+		ids.update( gate )
+		ids.update( chat )
 
-		self._inplace_suggest_entry = SuggestEntry(self.lTree, values=idnums, textvariable=tk.StringVar())
+		self._inplace_suggest_entry = SuggestEntry(self.lTree, values=ids, textvariable=StringVar())
 		w.add(self.lPane)
 
 		# 右侧窗口配置
@@ -138,14 +142,14 @@ class Application(Frame):
 	def _onTreeRightButtonPress(self, event):
 		iid = self.lTree.identify('item', event.x, event.y)
 		# 设置右键点击的节点为选中状态
-		if iid:
-			self.lTree.selection_set(iid)
+		if iid: self.lTree.selection_set(iid)
 
 		menu = Menu(self.lTree, tearoff=0)
 
 		# 获取树路径对应的配置项
 		conf = self._getItemConf(iid)
 
+		# 取第三列中的值，节点类型
 		ttype = self.lTree.set(iid, '3') if iid else None 
 
 		children = (conf['children'] if 'children' in conf else []) if conf else [template]
@@ -178,8 +182,8 @@ class Application(Frame):
 			else:
 				# 没有节点重复限制，增加菜单项
 
-				# 先查看节点的类型限制
-				if ttype is None or ttype in ((str(x) for x in flatitem(c['when'])) if 'when' in c else [ttype]):
+				# 先查看父节点的类型限制
+				if ttype is None or (ttype in (str(x) for x in flatitem(c['when'])) if 'when' in c else True):
 					if inspect.isclass(c['type']):
 						# 单一类型的情况，直接增加菜单项
 						menu.add_command(label=c['menu'], command=partial(self._onTreeAddChild, node=iid, conf=c, vtype=c['type']))
@@ -210,7 +214,6 @@ class Application(Frame):
 		tree = self.lTree
 		# 插入节点
 		item = tree.insert(node, sort, open=True, text=conf['text'] or name, tags=conf['tags'], values=['', name, vtype])
-		when = conf['when'] if 'when' in conf else vtype
 
 		while 'edit' in conf:
 			col, flag, options = [x for x, _ in zip_longest(conf['edit'], range(3))]
@@ -227,7 +230,7 @@ class Application(Frame):
 				break
 
 			if flag == 'message':
-				widget = SuggestEntry(self.lTree, values=idnums, textvariable=tk.StringVar())
+				widget = SuggestEntry(self.lTree, values=idnums, textvariable=StringVar())
 				tree.inplace_custom(col, item, widget)
 				break
 
@@ -238,6 +241,7 @@ class Application(Frame):
 			break
 
 		if 'children' in conf:
+			when = conf['when'] if 'when' in conf else vtype
 			children = (x for x in conf['children'] if 'make' in x and x['make'] and vtype in flatitem(when))
 			for child in children:
 				# 默认创建的节点类型一定是一个确定的类型
@@ -307,7 +311,7 @@ class Application(Frame):
 				# 生成页签
 				self._Open(filename)
 
-			if self.fileMenu.index(tk.END) == 3:
+			if self.fileMenu.index(END) == 3:
 				self.fileMenu.insert_separator(2)
 				self.fileMenu.insert_command(3, label='New File', accelerator='Ctrl + N', command=self._onNew)
 				self.bind_all('<Control-KeyPress-n>', self._onNew)

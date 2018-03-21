@@ -1,11 +1,8 @@
 import os, sys
-import inspect
 
 from tkinter import *
-from tkinter.ttk import *
-from widgets import *
-from message import *
-import restrict
+from Session import *
+from Widgets.dialog import ButtonDialog
 
 class OpenCaseDialog(ButtonDialog):
 	def __init__(self, master, title=None):

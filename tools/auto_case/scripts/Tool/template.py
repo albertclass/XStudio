@@ -1,9 +1,7 @@
-import types
+from parse import *
 import restrict
 
-from parse import *
-
-function = types.FunctionType
+function = type(lambda : None)
 
 template = {
 	'menu' : '新建测试用例',
@@ -105,10 +103,10 @@ template = {
 								{
 									'menu' : '添加消息约束',
 									'text' : '消息约束',
-									'name' : 'instance',
-									'tags' : 'inspect',
+									'name' : 'class',
+									'tags' : 'message',
 									'mode' : 'repeat',
-									'type' : restrict.inspect,
+									'type' : restrict.message,
 									'show' : show_inspect,
 									'build' : build_by_bind,
 									'prase' : prase_by_bind,
@@ -180,7 +178,7 @@ template = {
 									'tags' : 'node',
 									'mode' : 'repeat',
 									'recursion' : True,
-									'type' : restrict.select_node,
+									'type' : restrict.switch_node,
 									'show' : show_node,
 									'prase' : lambda tree, node, conf, writer: writer.write('restrict.select_node()'),
 								},

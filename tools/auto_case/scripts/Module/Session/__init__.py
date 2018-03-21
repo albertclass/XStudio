@@ -36,5 +36,5 @@ def make(msgid : int):
 def name(msgid):
 	return gate_name.get(msgid) or chat_name.get(msgid)
 
-__all__ = ['make', 'parse', 'name']
+__all__ = ['make', 'name']
 
