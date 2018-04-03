@@ -515,9 +515,9 @@ def trigger( cli, name ):
 	cli.throw = _get_field2(package, name, 'throw') or 'failed'
 
 	# 进行准备工作，准备工作会自动调用继承测试的准备工作集
-	for code in flatitem(_get_field2(package, name, 'befor')):
-		account.debug('! execute code : {%s}' % (code))
-		exec(code)
+	for func in flatitem(_get_field2(package, name, 'befor')):
+		#account.debug('! execute befor : {%s}' % (func.code))
+		func(cli, session = cli.session, option = option)
 
 	# 发送字段可以发送消息
 	send = _get_field2(package, name, 'send')
@@ -567,7 +567,7 @@ def check_data(cli):
 			# 验证通过了
 			account.info("~ %s after check success!" % (cli.test))
 	
-	return throw
+	return throw if type(throw) is str else throw()
 
 def var(v):
 	def f(cli, **kwargs):

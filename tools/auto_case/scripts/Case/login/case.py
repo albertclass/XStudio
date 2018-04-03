@@ -1,11 +1,12 @@
 login = {
+	'inherit' : 'chat_login',
 	'comment' : '登陆',
 	'start' : {
 		# 切换到此状态后立即执行
 		'befor' : (
-			'cli.connect( "game", option.host, option.port )',
-			'session.username = option.username',
-			'session.password = option.password',
+			invoke('cli.connect( "game", option.host, option.port )'),
+			assign('session.username', var('option.username')),
+			assign('session.password', var('option.password')),
 		),
 		# 约束成功后执行
 		'after' : (
@@ -62,7 +63,7 @@ login = {
 	'connect_chat' : {
 		# 准备工作
 		'befor' : {
-			'cli.connect( "chat", session.chat_host, session.chat_port )',
+			invoke('cli.connect( "chat", session.chat_host, session.chat_port )'),
 		},
 
 		'after' : (
