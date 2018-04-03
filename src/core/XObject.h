@@ -165,11 +165,13 @@ namespace xgc
 		};
 
 		/// @var 事件观察者
-		xgc::map< xgc_long, Observer > mEventSubject;
+		map< xgc_long, Observer > mEventSubject;
 		/// @var 是否被销毁
 		xgc_bool mIsDestory;
 		/// @var 父对象ID
 		xObject	mParentID;
+		/// @var 对象组件
+		map< xgc_lpvoid, xObject > mComponents;
 	public:
 		/************************************************************************/
 		/* 层级关系函数
@@ -191,21 +193,82 @@ namespace xgc
 		/// \author xufeng04
 		/// \return 键值
 		///
-		virtual xgc_long Key()const { return GetObjectID(); }
+		virtual xgc_long GetHashCode()const { return GetObjectID(); }
+
+		/************************************************************************/
+		/* 组件操作
+		/************************************************************************/
+		///
+		/// \brief 添加组件 
+		/// \date 4/3/2018
+		/// \author albert.xu
+		///
+		template< class T, class ... _Args >
+		xgc_bool AddComponent( _Args && ... args )
+		{
+			auto pObject = XGC_NEW T( std::forward< Args >( args )... );
+			if( pObject )
+			{
+				auto &cls = pObject->GetRuntimeClass();
+				auto ib = mComponents.insert( std::make_pair( (xgc_lpvoid)&cls, pObject->GetObjectID() ) );
+				if( ib.second )
+					pObject->SetParent( GetObjectID() );
+
+				return ib.second;
+			}
+
+			return false;
+		}
 
 		///
-		/// \brief 获取子对象数量
-		/// \date 12/26/2017
-		/// \author xufeng04
+		/// \brief 删除组件 
+		/// \date 4/3/2018
+		/// \author albert.xu
 		///
-		virtual xgc_size GetChildCount()const { return 0; }
+		template< class T >
+		xgc_void DelComponent( xgc_bool bDestory = true )
+		{
+			auto iter = mComponents.find( &T::GetThisClass() );
+			if( iter != mComponents.end() )
+			{
+				if( bDestory )
+				{
+					auto pObject = ObjectCast< XObject >( iter->second );
+					if( pObject )
+					{
+						pObject->Destroy();
+					}
+				}
+
+				mComponents.erase( iter );
+			}
+		}
 
 		///
-		/// \brief 枚举子对象  
-		/// \date 12/26/2017
-		/// \author xufeng04
+		/// \brief 获取组件 
+		/// \date 4/3/2018
+		/// \author albert.xu
 		///
-		virtual xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const { return INVALID_OBJECT_ID; };
+		template< class T >
+		xObject GetComponent()
+		{
+			auto iter = mComponents.find( (xgc_lpvoid)&T::GetThisClass() );
+			if( iter != mComponents.end() )
+				return iter->second;
+
+			return INVALID_OBJECT_ID;
+		}
+		
+		///
+		/// \brief 获取组件指针 
+		/// \date 4/3/2018
+		/// \author albert.xu
+		///
+		template< class T >
+		T* GetComponentPtr()
+		{
+			return ObjectCast< T >( GetComponent< T >() );
+		}
 
 		/************************************************************************/
 		/* 事件操作

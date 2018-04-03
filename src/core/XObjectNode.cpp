@@ -4,13 +4,14 @@
 
 namespace xgc
 {
+	IMPLEMENT_XCLASS_SIMPLE( XObjectNode, XObject )
+
 	///
 	/// \brief 节点构造 
 	/// \date 11/13/2017
 	/// \author xufeng04
 	///
 	XObjectNode::XObjectNode( xObject hParent )
-		: XObject()
 	{
 		SetParent( hParent );
 	}
@@ -20,7 +21,6 @@ namespace xgc
 	/// \date 11/13/2017
 	/// \author xufeng04
 	///
-
 	XObjectNode::~XObjectNode()
 	{
 	}
@@ -134,6 +134,14 @@ namespace xgc
 		return INVALID_OBJECT_ID;
 	}
 
+	xObject XObjectNode::Get( xgc_long nHashCode ) const
+	{
+		return Search( [nHashCode]( xObject hObject ){
+			auto pObject = ObjectCast< XObject >( hObject );
+			return pObject && pObject->GetHashCode() == nHashCode;
+		} );
+	}
+
 	///
 	/// \brief 获取子对象数量
 	/// \author albert.xu
@@ -177,7 +185,6 @@ namespace xgc
 		if( xgc_nullptr == pObject )
 			return false;
 
-		// 此处可以使用堆来优化
 		mChildren.push_back( hObject );
 
 		return true;

@@ -66,6 +66,7 @@ namespace xgc
 		, mFriend( INVALID_OBJECT_ID )
 		, mFightState( false )
 	{
+		AddComponent< XGameObject >();
 	}
 
 	XActor::~XActor( void )

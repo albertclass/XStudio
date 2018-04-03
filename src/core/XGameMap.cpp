@@ -18,11 +18,11 @@ namespace xgc
 	xAttrIndex XGameMap::MapFlags;
 
 	IMPLEMENT_XCLASS_BEGIN( XGameMap, XObjectNode )
-		IMPLEMENT_ATTRIBUTE( Index, VT_U32, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( Index,    VT_U32,    ATTR_FLAG_NONE, "20140912" )
 		IMPLEMENT_ATTRIBUTE( MapTitle, VT_STRING, ATTR_FLAG_NONE, "20150211" )
 		IMPLEMENT_ATTRIBUTE( MapIndex, VT_STRING, ATTR_FLAG_NONE, "20140912" )
-		IMPLEMENT_ATTRIBUTE( MapName, VT_STRING, ATTR_FLAG_NONE, "20140912" )
-		IMPLEMENT_ATTRIBUTE( MapFlags, VT_U32, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( MapName,  VT_STRING, ATTR_FLAG_NONE, "20140912" )
+		IMPLEMENT_ATTRIBUTE( MapFlags, VT_U32,    ATTR_FLAG_NONE, "20140912" )
 	IMPLEMENT_XCLASS_END();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -271,10 +271,11 @@ namespace xgc
 		return ret;
 	}
 
-	/////
-	/// 传送对象
-	/// [8/7/2009 Albert]
-	/////
+	///
+	/// \brief 传送对象
+	/// \date 8/7/2009 
+	/// \author Albert
+	///
 	xgc_bool XGameMap::TeleportTo( XGameObject* pObject, XVector3 &vPositionNew, xgc_uintptr lpContext )
 	{
 		XGC_CHECK_REENTER_CALL( mDynamicChecker );
@@ -313,8 +314,6 @@ namespace xgc
 		if( !( nCollistionMask & EYESHOTAREA_FORCEfLUSH ) && iOldArea == iNewArea )
 			return;
 
-		xObjectVec leave_eyeshot_list;
-		xObjectVec enter_eyeshot_list;
 		// 替换旧格子，添加新格子
 		for( xgc_int32 x = -iEyeshot.cx; x <= iEyeshot.cx; ++x )
 		{
@@ -333,13 +332,19 @@ namespace xgc
 				if( pOldArea )
 				{
 					// 通知离开视野
-					copy( pOldArea->begin(), pOldArea->end(), std::back_inserter( leave_eyeshot_list ) );
+					for( auto it : *pOldArea )
+					{
+						NotifyLeaveEyeshot( pObject, it, eVisualMode::eLeave );
+					}
 				}
 
 				if( pNewArea )
 				{
 					// 通知进入视野
-					copy( pNewArea->begin(), pNewArea->end(), std::back_inserter( enter_eyeshot_list ) );
+					for( auto it : *pNewArea )
+					{
+						NotifyEnterEyeshot( pObject, it, eVisualMode::eEnter );
+					}
 				}
 			}
 		}
@@ -361,17 +366,6 @@ namespace xgc
 			XGC_ASSERT_MESSAGE( ib.second, "场景对象进入区域失败" );
 		}
 
-		// 离开视野
-		for( auto it : leave_eyeshot_list )
-		{
-			NotifyLeaveEyeshot( pObject, it, eVisualMode::eLeave );
-		}
-
-		// 进入视野
-		for( auto it : enter_eyeshot_list )
-		{
-			NotifyEnterEyeshot( pObject, it, eVisualMode::eEnter );
-		}
 		return;
 	}
 

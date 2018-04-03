@@ -131,11 +131,15 @@ namespace xgc
 		XActor* pLeader = ObjectCast< XActor >( getLeaderObjectID() );
 		if( pLeader )
 		{
-			const XVector2& vDir = pLeader->GetDirection();
-			xgc_real32 rad_xy = XMath::ATan2( vDir.y, vDir.x );
-			float x = mMembers[nSlot].vRelatively.x*XMath::Cos( rad_xy ) - mMembers[nSlot].vRelatively.y*XMath::Sin( rad_xy );
-			float y = mMembers[nSlot].vRelatively.x*XMath::Sin( rad_xy ) + mMembers[nSlot].vRelatively.y*XMath::Cos( rad_xy );
-			return XVector2(x,y);
+			auto pComp = pLeader->GetComponentPtr< XGameObject >();
+			if( pComp )
+			{
+				const XVector2& vDir = pComp->GetDirection();
+				xgc_real32 rad_xy = XMath::ATan2( vDir.y, vDir.x );
+				float x = mMembers[nSlot].vRelatively.x*XMath::Cos( rad_xy ) - mMembers[nSlot].vRelatively.y*XMath::Sin( rad_xy );
+				float y = mMembers[nSlot].vRelatively.x*XMath::Sin( rad_xy ) + mMembers[nSlot].vRelatively.y*XMath::Cos( rad_xy );
+				return XVector2( x, y );
+			}
 		}
 
 		return XVector2::ZERO;

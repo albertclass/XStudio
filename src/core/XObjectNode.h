@@ -1,10 +1,12 @@
 #pragma once
 #ifndef __XOBJECT_NODE_H__
 #define __XOBJECT_NODE_H__
+
 namespace xgc
 {
 	class CORE_API XObjectNode : public XObject
 	{
+		DECLARE_XCLASS()
 	public:
 		///
 		/// \brief 节点构造 
@@ -66,7 +68,7 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xgc_size GetChildCount()const override;
+		virtual xgc_size GetChildCount()const;
 
 		///
 		/// \brief 搜索子节点
@@ -74,8 +76,14 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const override;
+		virtual xObject Search( const std::function< xgc_bool( xObject ) > &Filter )const;
 
+		///
+		/// \brief 获取子节点 
+		/// \date 4/3/2018
+		/// \author albert.xu
+		///
+		virtual xObject Get( xgc_long nHashCode )const;
 	protected:
 		/************************************************************************/
 		/* 设置的一些事件响应虚函数。
@@ -116,11 +124,11 @@ namespace xgc
 		/// \date 8/3/2009
 		/// \return true - 确认增加子节点, false - 子节点被否决,添加节点失败.
 		///
-		virtual xgc_void OnDestroy() override;
+		virtual xgc_void OnDestroy();
 
 	private:
 		/// @var children
-		xgc::vector< xObject > mChildren;
+		vector< xObject > mChildren;
 	};
 }
 

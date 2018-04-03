@@ -258,19 +258,20 @@ namespace xgc
 			//}
 		}
 
-		if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 2 ) )
-		{
-			// 对于未决的事件，且允许向下传递的，则向下级传递给子对象
-			
-			// 枚举出所有的子对象，并将事件推送给子对象
-			Search( [evt]( xObject hObject )->xgc_bool{
-				auto pChild = ObjectCast< XObject >( hObject );
-				if( pChild )
-					pChild->EmmitEvent( evt );
+		//不再支持向下传递消息 [4/3/2018 albert.xu]
+		//if( evt->over > 0 && XGC_CHK_FLAGS( evt->over, 2 ) )
+		//{
+		//	// 对于未决的事件，且允许向下传递的，则向下级传递给子对象
+		//	
+		//	// 枚举出所有的子对象，并将事件推送给子对象
+		//	Search( [evt]( xObject hObject )->xgc_bool{
+		//		auto pChild = ObjectCast< XObject >( hObject );
+		//		if( pChild )
+		//			pChild->EmmitEvent( evt );
 
-				return false;
-			} );
-		}
+		//		return false;
+		//	} );
+		//}
 
 		// 有清理需求的，则调用清理的回调。
 		if( DeleteIt ) DeleteIt( evt );

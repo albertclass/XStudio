@@ -66,7 +66,7 @@ namespace xgc
 		evt_actor_leave_scene,	///< ½ÇÉ«Àë¿ª³¡¾°
 	};
 
-	class CORE_API XActor : public XGameObject
+	class CORE_API XActor : public XObjectNode
 	{
 		DECLARE_XCLASS();
 
