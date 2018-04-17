@@ -1,0 +1,54 @@
+#include "stdafx.h"
+
+#define MAX_NAME_LEN 512
+#define MAX_PATH_LEN 260
+
+enum FileType
+{
+	eFile_Text = 1,
+	eFile_Binary = 2,
+};
+
+struct FileInfoReq
+{
+	//@ version : 20180417
+	//@ default : ""
+	//@ describe : 文件名
+	char file[MAX_PATH_LEN];
+
+	//@ version : 20180417
+	//@ default : ""
+	//@ describe : 文件路径
+	char path[MAX_PATH_LEN];
+};
+
+struct FileInfoAck
+{
+	//@ version : 20180417
+	//@ default : ""
+	//@ describe : 文件名
+	char file[MAX_PATH_LEN];
+
+	//@ version : 20180417
+	//@ default : ""
+	//@ describe : 文件路径
+	char path[MAX_PATH_LEN];
+
+	//@ default : 0
+	uint64 file_id;
+};
+
+struct FileDataReq
+{
+	uint64 file_id;
+	uint64 file_offset;
+};
+
+struct FileDataAck
+{
+	uint64 file_id;
+	//@ range : (0, MAX_BUFFER_SIZE)
+	uint64 file_offset;
+	//@ version : 20180417
+	buffer file_buffer;
+};

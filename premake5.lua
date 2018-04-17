@@ -39,7 +39,7 @@ group "library"
 
 		filter "system:windows"
 			implibdir "lib/%{cfg.buildcfg}"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS", "_IMAGEHLP64" }
 
 		filter "system:linux"
@@ -81,7 +81,7 @@ group "library"
 		filter "system:windows"
 			libdirs { "lib/%{cfg.buildcfg}" }
 			implibdir "lib/%{cfg.buildcfg}"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS", "_IMAGEHLP64" }
 
 		filter "system:linux"
@@ -122,7 +122,7 @@ group "library"
 
 		filter "system:windows"
 			implibdir "lib/%{cfg.buildcfg}"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS", "_IMAGEHLP64" }
 			libdirs "lib/%{cfg.buildcfg}"
 
@@ -166,7 +166,7 @@ group "library"
 			optimize "On"
 
 		filter "system:windows"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			includedirs "$(MYSQL56)/include"
 			implibdir "lib/%{cfg.buildcfg}"
 			libdirs { "lib/%{cfg.buildcfg}", "$(MYSQL56)/lib" }
@@ -214,7 +214,7 @@ group "library"
 			optimize "On"
 
 		filter "system:windows"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			includedirs { "dep/redis-win" }
 			implibdir "lib/%{cfg.buildcfg}"
 			libdirs { "lib/%{cfg.buildcfg}", "dep/redis-win/%{cfg.buildcfg}" }
@@ -279,7 +279,7 @@ group "library"
 		
 		filter "system:windows"
 			libdirs { "lib/%{cfg.buildcfg}" }
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
@@ -322,7 +322,7 @@ group "library"
 
 		filter "system:windows"
 			implibdir "lib/%{cfg.buildcfg}"
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64" }
 
 		filter "system:linux"
@@ -362,7 +362,7 @@ group "sample"
 		
 		filter "system:windows"
 			libdirs { "lib/%{cfg.buildcfg}" }
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
@@ -441,7 +441,7 @@ group "chat"
 					"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
 				}
 
-				systemversion "10.0.14393.0"
+				systemversion "10.0.16299.0"
 				defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 			filter "system:linux"
@@ -505,7 +505,7 @@ group "servers"
 					"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
 				}
 
-				systemversion "10.0.14393.0"
+				systemversion "10.0.16299.0"
 				defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 			filter "system:linux"
@@ -564,7 +564,7 @@ group "tools"
 				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
 			}
 
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
@@ -615,7 +615,7 @@ group "tools"
 				"dep/vld/lib/Win$(PlatformArchitecture)/%{cfg.buildcfg}-$(PlatformToolset)" 
 			}
 
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
@@ -653,7 +653,7 @@ group ""
 		
 		filter "system:windows"
 			libdirs { "lib/%{cfg.buildcfg}" }
-			systemversion "10.0.14393.0"
+			systemversion "10.0.16299.0"
 			defines { "WIN64", "_CRT_SECURE_NO_WARNINGS" }
 
 		filter "system:linux"
