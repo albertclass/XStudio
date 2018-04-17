@@ -1,6 +1,6 @@
 // MessageCreator.cpp : 定义控制台应用程序的入口点。
 //
-#include "analyse.h"
+#include "parse.h"
 #include <conio.h>
 #include <direct.h>
 #include <process.h>

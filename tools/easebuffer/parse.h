@@ -1,4 +1,7 @@
 #pragma once
+#ifndef __PARSE_H__
+#define __PARSE_H__
+
 #include <map>
 #include <list>
 #include <stack>
@@ -282,3 +285,5 @@ void writeheader( root *proot );
 //	purpose:	将生成的消息树转换成C++文件。
 //--------------------------------------------------------//
 void writefile( root *proot );
+
+#endif // __PARSE_H__

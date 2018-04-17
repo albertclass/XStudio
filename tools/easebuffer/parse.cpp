@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "AnalyseFile.h"
+#include "parse.h"
 
 struct command
 {
@@ -1079,7 +1078,7 @@ void writenode_def( root *proot, node *pnode, string pix )
 		++inode;
 	}
 
-	strstream opi_stream, opo_stream;
+	stringstream opi_stream, opo_stream;
 	opi_stream << endl 
 		<< "MESSAGE_EXPORT bufstream& operator << ( bufstream& stream, const " << pnode->spacename + pnode->name << "& c )" << endl
 		<< "{" << endl;
